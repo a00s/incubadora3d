@@ -1,0 +1,13 @@
+{
+  "width": 120,
+  "depth": 115,
+  "height": 140,
+  "wall": 4,
+  "mixer_width": 48,
+  "gap": 8,
+  "slide_length": 80,
+  "slide_width": 30,
+  "slide_height": 16,
+  "tray_pitch": 29,
+  "port_diameter": 8
+}

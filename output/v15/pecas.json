@@ -1,0 +1,257 @@
+[
+  {
+    "nome": "pino_dobradica_22",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "pino_dobradica_102",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "porca_fecho_30",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "parafuso_fecho_30",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "lingueta_fecho_30",
+    "tipo": "latch",
+    "stl": "lingueta_fecho_30.stl"
+  },
+  {
+    "nome": "manipulo_fecho_30",
+    "tipo": "knob",
+    "stl": "manipulo_fecho_30.stl"
+  },
+  {
+    "nome": "porca_fecho_116",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "parafuso_fecho_116",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "lingueta_fecho_116",
+    "tipo": "latch",
+    "stl": "lingueta_fecho_116.stl"
+  },
+  {
+    "nome": "manipulo_fecho_116",
+    "tipo": "knob",
+    "stl": "manipulo_fecho_116.stl"
+  },
+  {
+    "nome": "junta_porta",
+    "tipo": "seal",
+    "stl": "junta_porta.stl"
+  },
+  {
+    "nome": "bandeja_1",
+    "tipo": "tray",
+    "stl": "bandeja_1.stl"
+  },
+  {
+    "nome": "uslide_referencia_1",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "bandeja_2",
+    "tipo": "tray",
+    "stl": "bandeja_2.stl"
+  },
+  {
+    "nome": "uslide_referencia_2",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "bandeja_3",
+    "tipo": "tray",
+    "stl": "bandeja_3.stl"
+  },
+  {
+    "nome": "uslide_referencia_3",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "reservatorio_agua",
+    "tipo": "part",
+    "stl": "reservatorio_agua.stl"
+  },
+  {
+    "nome": "porca_tampa_1",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "parafuso_tampa_1",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "arruela_tampa_1",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "porca_tampa_2",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "parafuso_tampa_2",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "arruela_tampa_2",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "porca_tampa_3",
+    "tipo": "hardware",
+    "stl": null
+  },
+  {
+    "nome": "parafuso_tampa_3",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "arruela_tampa_3",
+    "tipo": "lid_hardware",
+    "stl": null
+  },
+  {
+    "nome": "TPU_passagem_sensor_A",
+    "tipo": "part",
+    "stl": "TPU_passagem_sensor_A.stl"
+  },
+  {
+    "nome": "prensa_passagem_sensor_A",
+    "tipo": "part",
+    "stl": "prensa_passagem_sensor_A.stl"
+  },
+  {
+    "nome": "TPU_passagem_sensor_B",
+    "tipo": "part",
+    "stl": "TPU_passagem_sensor_B.stl"
+  },
+  {
+    "nome": "prensa_passagem_sensor_B",
+    "tipo": "part",
+    "stl": "prensa_passagem_sensor_B.stl"
+  },
+  {
+    "nome": "TPU_passagem_aquecedor_A",
+    "tipo": "part",
+    "stl": "TPU_passagem_aquecedor_A.stl"
+  },
+  {
+    "nome": "prensa_passagem_aquecedor_A",
+    "tipo": "part",
+    "stl": "prensa_passagem_aquecedor_A.stl"
+  },
+  {
+    "nome": "TPU_passagem_aquecedor_B",
+    "tipo": "part",
+    "stl": "TPU_passagem_aquecedor_B.stl"
+  },
+  {
+    "nome": "prensa_passagem_aquecedor_B",
+    "tipo": "part",
+    "stl": "prensa_passagem_aquecedor_B.stl"
+  },
+  {
+    "nome": "sensor_temperatura_umidade_referencia",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "chapa_aquecedor_referencia",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "pelicula_aquecedora_90x33_referencia",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "tampa_eletronica",
+    "tipo": "part",
+    "stl": "tampa_eletronica.stl"
+  },
+  {
+    "nome": "placa_eletronica_referencia",
+    "tipo": "reference",
+    "stl": null
+  },
+  {
+    "nome": "tampa_alimentacao_aquecedor_provisoria",
+    "tipo": "part",
+    "stl": "tampa_alimentacao_aquecedor_provisoria.stl"
+  },
+  {
+    "nome": "cobertura_sensor_e_fios",
+    "tipo": "hood",
+    "stl": "cobertura_sensor_e_fios.stl"
+  },
+  {
+    "nome": "porta_articulada",
+    "tipo": "door",
+    "stl": "porta_articulada.stl"
+  },
+  {
+    "nome": "corte_corpo_referencia",
+    "tipo": "section_body",
+    "stl": null
+  },
+  {
+    "nome": "corte_porta_referencia",
+    "tipo": "section_door",
+    "stl": null
+  },
+  {
+    "nome": "corpo_integrado",
+    "tipo": "shell",
+    "stl": "corpo_integrado.stl"
+  },
+  {
+    "nome": "junta_tampa_TPU",
+    "tipo": "mixer_seal",
+    "stl": "junta_tampa_TPU.stl"
+  },
+  {
+    "nome": "tampa_misturador",
+    "tipo": "lid",
+    "stl": "tampa_misturador.stl"
+  },
+  {
+    "nome": "bucha_sensor_TPU",
+    "tipo": "sensor_seal",
+    "stl": "bucha_sensor_TPU.stl"
+  },
+  {
+    "nome": "sensor_referencia",
+    "tipo": "sensor",
+    "stl": null
+  },
+  {
+    "nome": "passagem_gas_referencia",
+    "tipo": "channel",
+    "stl": null
+  }
+]
