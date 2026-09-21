@@ -1,6 +1,6 @@
 # Estado atual — v0.32
 
-- Arquivos atuais: `output/v32/`; histórico de revisões no README.
+- Arquivos atuais: `output/v32/`; histórico de alterações no Git.
 - Uma lingueta central em Z70, com haste Ø8 e rosca fêmea integrada à base.
 - Puxador em X17, aproximado 12 mm do fecho em relação à v27.
 - Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
