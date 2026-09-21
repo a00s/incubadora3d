@@ -1,7 +1,7 @@
-# Estado atual — v0.30
+# Estado atual — v0.31
 
-- Arquivos atuais: `output/v30/`; histórico de revisões no README.
-- Uma lingueta central em Z70, com manípulo/haste e porca impressos.
+- Arquivos atuais: `output/v31/`; histórico de revisões no README.
+- Uma lingueta central em Z70, com haste Ø8 e rosca fêmea integrada à base.
 - Puxador em X17, aproximado 12 mm do fecho em relação à v27.
 - Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
   base em Z-10, coplanar ao fundo da câmara.
@@ -16,7 +16,9 @@
   cavidades de ar atrás e canal da junta TPU preservados.
 - Passagem entre câmaras Ø4, sem tubo; diâmetro inicial de ensaio.
 - Pinos de dobradiça com cabeça e ponta roscada Ø4/passo1; porcas impressas.
-- Rosca do fecho Ø8/passo2; montagem por canal lateral e aperto pela frente.
+- Rosca do fecho Ø8/passo2 integrada ao apoio, sem porca nem abertura lateral.
+- Tampa CO₂: três parafusos impressos Ø4/passo1 e roscas integradas na base,
+  sem porcas ou canais laterais; arruelas mantidas.
 
 ## Validação geométrica
 
@@ -26,7 +28,7 @@ as peças roscadas contra os demais componentes; compressão TPU excluída.
 Todos os testes de movimento e caminhos de montagem foram adiados a pedido
 do usuário. Executar futuramente uma única rodada com:
 `python cad/model.py --check-movements`.
-Relatórios: `output/v30/build.log`, `clash_report.json` e
+Relatórios: `output/v31/build.log`, `clash_report.json` e
 `compatibilidade_k1c.json`. Verificação estática não garante movimento.
 
 ## Pendências físicas e de projeto
@@ -45,4 +47,6 @@ Sem validação operacional ou simulação térmica/de escoamento.
 Visualizador: corte horizontal ajustável entre −10 e 150 mm, com fechamento
 das superfícies seccionadas e cavidades internas preservadas.
 
-Manípulo: haste lisa por 24 mm e rosca apenas nos 7 mm finais junto à porca.
+Manípulo: haste lisa por 24 mm e rosca apenas nos 7 mm finais junto à rosca integrada.
+
+Haste lisa Ø8 mm, com folga radial de 0,35 mm no apoio e na lingueta.

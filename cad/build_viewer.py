@@ -3,9 +3,11 @@ import gzip
 import json
 from pathlib import Path
 p=Path(__file__).resolve().parents[1]
-folder=p/'output/v30'
+folder=p/'output/v31'
 # Compact display mesh only; CAD/STL export precision is unchanged.
 preview=json.loads((folder/'mesh.json').read_text())
+# Adjustable sections are computed in the viewer; omit obsolete fixed-cut meshes.
+preview=[part for part in preview if not part['kind'].startswith('section_')]
 for part in preview:
     unique={}; vertices=[]; mapping=[]
     for vertex in part['vertices']:
@@ -42,13 +44,14 @@ svg=f'''<svg viewBox="0 0 480 300" style="width:100%;max-width:600px" role="img"
 </svg>'''
 s=(p/'cad/viewer-template.html').read_text().replace('__MESH_GZIP__',mesh).replace('__SEAL_SECTION__',svg)
 out=p/'output/incubadora-3d.html';out.write_text(s)
-assert out.stat().st_size<1_000_000
+# Integral helical receivers add mesh detail; keep a bounded standalone payload.
+assert out.stat().st_size<1_500_000
 print(out,out.stat().st_size)
 # Generate the standalone page from the same fragment, so CAD and HTML stay in sync.
 standalone='''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Incubadora 3D — v0.30</title>
+<title>Incubadora 3D — v0.31</title>
 <style>
 :root{color-scheme:light dark;font-family:system-ui,sans-serif}body{margin:0;padding:20px;background:light-dark(#f6f8fa,#182027);color:light-dark(#243542,#e3edf3)}
 #incubator-view{max-width:1500px;margin:auto}.viz-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px;border:1px solid #8294a655;border-radius:10px}

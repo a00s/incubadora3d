@@ -3,7 +3,7 @@ This is a dimensional check, not slicer validation or automatic orientation.
 """
 import json,struct
 from pathlib import Path
-p=Path(__file__).resolve().parents[1]/'output/v30'
+p=Path(__file__).resolve().parents[1]/'output/v31'
 limit=(220,220,250); brim=5
 result=[]; destination=p/'k1c_posicionados';destination.mkdir(exist_ok=True)
 for path in sorted(p.glob('*.stl')):

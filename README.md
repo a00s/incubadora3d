@@ -1,11 +1,11 @@
-# Mini incubadora CO₂ — estudo v0.30
+# Mini incubadora CO₂ — estudo v0.31
 
 Modelo preliminar para revisar montagem e dimensões. **Ainda não liberado para impressão funcional.**
 
 ## Versão atual
 
-Usar `output/v30/`. As seções antigas abaixo documentam o histórico;
-a revisão v0.30 ao final descreve a configuração atual.
+Usar `output/v31/`. As seções antigas abaixo documentam o histórico;
+a revisão v0.31 ao final descreve a configuração atual.
 
 ## Visualizar e ajustar
 
@@ -74,10 +74,10 @@ python3 cad/build_viewer.py
 
 CadQuery fixado em `requirements.txt`. Os parâmetros de referência estão em
 `cad/model.py`; alguns detalhes ainda usam medidas fixas deste estudo.
-`output/v30/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
+`output/v31/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
 que distingue impressão, ferragens e referências. Os STL conservam as coordenadas
 da montagem; orientar e posicionar no fatiador após definir material e suportes.
-As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v30/`**.
+As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v31/`**.
 
 `python3 cad/build_viewer.py` atualiza tanto o fragmento quanto
 `output/visualizador.html`, sem dependências externas no navegador.
@@ -641,3 +641,15 @@ cantos. Sem testes de movimento nesta revisão. Arquivos: `output/v29/`.
 
 Haste do manípulo com 24 mm lisos (Ø6,16 mm) e rosca Ø8/passo 2
 apenas nos 7 mm finais, incluindo os 5 mm de encaixe na porca.
+
+## Revisão v0.31
+
+Haste lisa do manípulo aumentada para Ø8 mm, igual ao diâmetro externo
+da rosca, com folga radial de 0,35 mm nos furos Ø8,7 mm. Rosca mantida
+apenas na ponta junto à rosca integrada da base.
+
+Eliminadas a porca separada do fecho e as três porcas da tampa CO₂,
+assim como seus canais de acesso lateral. A tampa usa três parafusos
+impressos Ø4/passo 1, com 6 mm roscados na ponta e haste lisa Ø4.
+As roscas fêmeas fazem parte da base; eventual desgaste exige reparo
+ou reimpressão da base. As porcas dos pinos da dobradiça permanecem.

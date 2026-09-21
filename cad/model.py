@@ -7,7 +7,7 @@ import cadquery as cq
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import TopAbs_IN
-OUT=Path(__file__).resolve().parents[1]/'output'/'v30'
+OUT=Path(__file__).resolve().parents[1]/'output'/'v31'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=80,slide_width=30,slide_height=16,tray_pitch=29,port_diameter=4,insulation_extension=10,air_cell_width=6,outer_skin=2)
@@ -16,6 +16,9 @@ P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore
 P.update(tray_depth=72,tray_rear_y=80,heater_front_y=106,tray_heater_gap=26)
 parts=[]
 clash_envelopes={}
+integral_thread_cuts=[]
+integral_thread_reliefs=[]
+integral_threaded_names=set()
 def box(w,d,h,x=0,y=0,z=0):
     return cq.Workplane('XY').box(w,d,h,centered=False).translate((x,y,z))
 def add(name,obj,color,kind='part'):
@@ -125,13 +128,13 @@ for z in [22,102]:
     clash_envelopes[f'pino_dobradica_{z}']=envelope
     clash_envelopes[f'porca_pino_dobradica_{z}']=cq.Workplane('XY',origin=(126,-5,z-3.2)).polygon(6,7.5).extrude(3)
 # Fully printed adjustable latch: custom 8 mm thread, pitch 2 mm.
-# Only the last 7 mm are threaded; the nut occupies axial 26..31 mm.
+# Only the last 7 mm are threaded; the integral receiver starts at axial 26 mm.
 # Start at 24 mm (12 full pitches) to retain the mating helix phase.
 thread=printed_thread(length=7).translate((0,0,24))
-thread=thread.union(cq.Workplane('XY').circle(3.08).extrude(24.2))
-P.update(latch_shaft_smooth_length=24,latch_shaft_smooth_diameter=6.16,latch_thread_length=7)
+thread=thread.union(cq.Workplane('XY').circle(4).extrude(24.2))
+P.update(latch_shaft_smooth_length=24,latch_shaft_smooth_diameter=8,latch_shaft_radial_clearance=.35,latch_thread_length=7)
 assert thread.val().isValid() and len(thread.solids().vals())==1
-thread_clear=printed_thread(True)
+thread_clear=printed_thread(True,length=9).translate((0,0,24))
 printed_nut=cq.Workplane('XY',origin=(0,0,26)).polygon(6,14).extrude(5).cut(thread_clear)
 assert printed_nut.val().isValid() and len(printed_nut.solids().vals())==1
 assert independent(thread).intersect(printed_nut).val().Volume()<1e-5,'Printed thread clearance failed'
@@ -139,19 +142,20 @@ latches=[]
 P.update(latch_count=1,latch_height=70)
 for z in [P['latch_height']]:
     def at_latch(obj):return obj.rotate((0,0,0),(1,0,0),-90).translate((-9,-23,z))
-    tab=box(20,26,20,-20,-16,z-10).edges('|Y').fillet(3).cut(yhole(-9,-2,z,4.35,22))
-    nutseat=cq.Workplane('XZ',origin=(-9,8.3,z)).polygon(6,14.6).extrude(5.6)
-    loading=box(16,5.6,12.7,-25,2.7,z-6.35)
-    body=body.union(tab.cut(nutseat).cut(loading))
+    tab=box(20,26,20,-20,-16,z-10).edges('|Y').fillet(3)
+    # Smooth guide up to the last 7 mm of the base, then an integral female thread.
+    guide=cq.Workplane('XY').circle(4.351).extrude(26)
+    receiver_cut=at_latch(thread_clear.union(guide))
+    integral_thread_cuts.append(receiver_cut)
+    integral_thread_reliefs.append(at_latch(cq.Workplane('XY',origin=(0,0,26)).circle(4.4).extrude(7.1)))
+    body=body.union(tab).cut(at_latch(guide))
     dog=box(27,4,14,-16,-20,z-7).edges('|Y').fillet(2).cut(yhole(-9,-18,z,4.35,5))
     knob=cq.Workplane('XZ',origin=(-9,-20,z)).polygon(8,20).extrude(6).union(at_latch(thread))
-    nut=at_latch(printed_nut)
-    add(f'porca_impressa_fecho_{z}',nut,'#729daf','printed_nut')
     add(f'lingueta_fecho_{z}',dog,'#e6a454','latch')
     add(f'manipulo_fecho_{z}',knob,'#c88b43','knob')
     latches.append((z,dog))
     clash_envelopes[f'manipulo_fecho_{z}']=cq.Workplane('XZ',origin=(-9,-20,z)).polygon(8,20).extrude(6).union(yhole(-9,-7.5,z,4,15.5))
-    clash_envelopes[f'porca_impressa_fecho_{z}']=cq.Workplane('XZ',origin=(-9,8,z)).polygon(6,14).extrude(5)
+    integral_threaded_names.add(f'manipulo_fecho_{z}')
 # Pull handle, open underneath.
 handle=box(8,13,42,7,-19,49).cut(box(10,10,26,6,-17,57))
 doorpart=doorpart.union(handle.translate((10,-10,0)))
@@ -172,8 +176,8 @@ for i,z in enumerate([43,72,101],1):
     add(f'uslide_referencia_{i}',box(80,30,3,20,38,z+2),'#81c6bf','reference')
 pan=box(90,70,18,15,22,8).edges('|Z').fillet(7).cut(box(84,64,22,18,25,11).edges().fillet(4))
 add('reservatorio_agua',pan,'#6eadd8')
-# Removable D-shaped lid: three external M4 fasteners, no printed threads.
-# Reinforced top collar retains a push-in TPU gasket; underside nut pockets.
+# Removable D-shaped lid: three printed screws with integral threaded receivers.
+# Reinforced top collar retains a push-in TPU gasket; no nut pockets.
 def dshape(radius,flat,z,height,corner=4):
     shape=cq.Workplane('XY',origin=(0,cy,z)).circle(radius).extrude(height)
     shape=shape.intersect(box(radius+flat+1,2*radius+2,height+2,-radius-1,cy-radius-1,z-1))
@@ -193,20 +197,29 @@ lid=dshape(46,-0.3,mh+1,6)
 # Sensor interface: replaceable TPU grommet; physical sealing untested.
 sensor_hole=cq.Workplane('XY',origin=(-27,cy,mh)).circle(P['sensor_mount_clearance_diameter']/2).extrude(10)
 lid=lid.cut(sensor_hole)
+mixer_male=printed_thread(diameter=4,pitch=1,length=6)
+mixer_female=printed_thread(True,diameter=4,pitch=1,length=6)
+mixer_receiver=cq.Workplane('XY').circle(5).extrude(6).cut(mixer_female)
+assert independent(mixer_male).intersect(mixer_receiver).val().Volume()<1e-5,'Mixer thread clearance failed'
+P.update(latch_integral_thread=True,mixer_integral_threads=3,mixer_thread_diameter=4,mixer_thread_pitch=1,mixer_thread_length=6)
 for i,(bx,by) in enumerate([(-20,cy-38),(-49,cy),(-20,cy+38)],1):
-    bore=cq.Workplane('XY',origin=(bx,by,mh-10)).circle(2.2).extrude(25)
-    pocket=cq.Workplane('XY',origin=(bx,by,mh-8)).polygon(6,8.5).extrude(4)
-    body=body.cut(bore).cut(pocket)
+    bore=cq.Workplane('XY',origin=(bx,by,mh-2.2)).circle(2.2).extrude(17.2)
+    female=mixer_female.translate((bx,by,mh-8))
+    integral_thread_cuts.append(bore.union(female))
+    integral_thread_reliefs.append(cq.Workplane('XY',origin=(bx,by,mh-8.01)).circle(2.21).extrude(6.02))
     # Hard stop sets 1 mm gap and nominal 0.5 mm lip compression.
     stop=cq.Workplane('XY',origin=(bx,by,mh)).circle(5).circle(2.2).extrude(1)
-    body=body.union(stop)
+    body=body.union(stop).cut(bore)
     lid=lid.cut(bore)
-    nut=cq.Workplane('XY',origin=(bx,by,mh-7.8)).polygon(6,8).circle(2.2).extrude(3.5)
-    screw=cq.Workplane('XY',origin=(bx,by,mh-8)).circle(2).extrude(15.8)
+    screw=mixer_male.translate((bx,by,mh-8))
+    screw=screw.union(cq.Workplane('XY',origin=(bx,by,mh-2.1)).circle(2).extrude(9.9))
     screw=screw.union(cq.Workplane('XY',origin=(bx,by,mh+7.8)).polygon(6,8).extrude(3))
     washer=cq.Workplane('XY',origin=(bx,by,mh+7)).circle(4.5).circle(2.2).extrude(0.8)
-    add(f'porca_tampa_{i}',nut,'#505965','hardware')
-    add(f'parafuso_tampa_{i}',screw,'#505965','lid_hardware')
+    name=f'parafuso_tampa_{i}'
+    add(name,screw,'#e6a454','printed_lid_screw')
+    envelope=cq.Workplane('XY',origin=(bx,by,mh-8)).circle(2.001).extrude(15.8)
+    clash_envelopes[name]=envelope.union(cq.Workplane('XY',origin=(bx,by,mh+7.8)).polygon(6,8).extrude(3))
+    integral_threaded_names.add(name)
     add(f'arruela_tampa_{i}',washer,'#505965','lid_hardware')
 # Integral insulation skin, with sealed small air cells. Internal cavity unchanged.
 # Narrow pitched roofs reduce internal bridging when the body is printed upright.
@@ -403,13 +416,7 @@ for xx,yy,root_z in [(-48,114.5,100),(-22,114.5,100),(-48,126.6,5),(-22,126.6,5)
     body=body.cut(hole)
     pin=cq.Solid.makeCone(1.35,1.6,2,cq.Vector(xx,yy,root_z-2))
     hood=hood.union(pin)
-# M4 nuts slide in horizontally from the exposed collar perimeter.
-# 7.4 mm channel retains the two parallel flats of the 8 mm reference hex.
-# Cut after all body unions so the fairing cannot close the entrances.
-for bx,by in [(-20,cy-38),(-49,cy),(-20,cy+38)]:
-    access=box(bx+60,7.4,4,-60,by-3.7,mh-8)
-    body=body.cut(access)
-    assert independent(body).intersect(access).val().Volume()<1e-5,'Nut entry blocked'
+# Integral mixer threads eliminate lateral nut-loading channels.
 add('tampa_manutencao_CO2_eletronica',hood,'#c5d4df','hood')
 assert len(hood.solids().vals())==1,'Service cover must be one printed part'
 # Cover movement tests deferred; the assembled cover is checked in the static audit.
@@ -495,12 +502,17 @@ if CHECK_MOVEMENTS:
             moving=dog.rotate((-9,0,z),(-9,1,z),angle).translate((0,-0.8,0))
             for obstacle in (body,doorpart):
                 assert independent(obstacle).intersect(moving).val().Volume()<1e-5, f'Latch unlocking collision at {angle}'
-# Verify functional clearances after every body union, including insulation.
-for z,_ in latches:
-    body=body.cut(yhole(-9,-2,z,4.35,22),clean=False)
-    body=body.cut(cq.Workplane('XZ',origin=(-9,8.3,z)).polygon(6,14.6).extrude(5.6),clean=False)
-    body=body.cut(box(16,5.6,12.7,-25,2.7,z-6.35),clean=False)
-assert body.val().isValid(), 'Final body invalid after latch passages'
+# Reapply threaded passages after all unions so insulation cannot obstruct them.
+for index,cutter in enumerate(integral_thread_cuts,1):
+    print(f'Creating integral thread {index}/4',flush=True)
+    body=body.cut(cutter,clean=False)
+assert body.val().isValid(), 'Final body invalid after integral threads'
+# Envelopes check surrounding material; the matching helical receivers above
+# are checked separately. Reliefs affect diagnostics only, never the exported CAD.
+body_for_thread_envelopes=independent(body)
+for index,relief in enumerate(integral_thread_reliefs,1):
+    print(f'Preparing thread clearance {index}/4',flush=True)
+    body_for_thread_envelopes=body_for_thread_envelopes.cut(relief,clean=False)
 thread_motion_checks=0
 if CHECK_MOVEMENTS:
     # Screw-in motion: angle and axial travel obey each thread's pitch.
@@ -551,18 +563,13 @@ if CHECK_MOVEMENTS:
             shifted=clash_envelopes[name].translate((0,0,lift))
             for obstacle in (body,doorpart):
                 assert independent(obstacle).intersect(shifted).val().Volume()<1e-5, 'Hinge pin insertion blocked'
-    # Printed latch nut enters sideways through the accessible loading slot.
-    for z,_ in latches:
-        latch_nut=clash_envelopes[f'porca_impressa_fecho_{z}']
-        for shift in [0,-2,-5,-10,-18]:
-            print(f'Checking latch nut insertion {shift}',flush=True)
-            assert independent(body).intersect(latch_nut.translate((shift,0,0))).val().Volume()<1e-5, 'Latch nut insertion blocked'
 # Replace the earlier display/export body with final latch passages.
 parts=[(n,body if n=='corpo_integrado' else (independent(body).cut(box(240,200,90,-80,-30,70),clean=False) if n=='corte_corpo_referencia' else o),c,k) for n,o,c,k in parts]
 for n,o,c,k in parts:
     if k in ('knob','printed_nut','printed_pin','hinge_nut','latch','tray'):
         print('Checking body clearance:',n,flush=True)
-        assert independent(body).intersect(clash_envelopes.get(n,o)).val().Volume()<1e-5,'Body clash: '+n
+        obstacle=body_for_thread_envelopes if n in integral_threaded_names else body
+        assert independent(obstacle).intersect(clash_envelopes.get(n,o)).val().Volume()<1e-5,'Body clash: '+n
 sensor_tpu=next(o for n,o,c,k in parts if n=='TPU_passagem_sensor')
 for n,o,c,k in parts:
     if n in ('tampa_misturador','tampa_manutencao_CO2_eletronica','sensor_referencia','sensor_temperatura_umidade_referencia'):
@@ -575,14 +582,15 @@ for i,(an,ao,ak) in enumerate(rigid):
     for bn,bo,bk in rigid[i+1:]:
         bb=bo.val().BoundingBox()
         if min(ab.xmax,bb.xmax)-max(ab.xmin,bb.xmin)<=.001 or min(ab.ymax,bb.ymax)-max(ab.ymin,bb.ymin)<=.001 or min(ab.zmax,bb.zmax)-max(ab.zmin,bb.zmin)<=.001:continue
-        if {ak,bk}=={'knob','printed_nut'}:continue # Actual mating threads checked separately above.
         if {ak,bk}=={'printed_pin','hinge_nut'} and an.split('_')[-1]==bn.split('_')[-1]:continue
         checked+=1
         print('Checking rigid pair:',an,bn,flush=True)
-        vol=independent(clash_envelopes.get(an,ao)).intersect(independent(clash_envelopes.get(bn,bo))).val().Volume()
+        a_shape=body_for_thread_envelopes if an=='corpo_integrado' and bn in integral_threaded_names else clash_envelopes.get(an,ao)
+        b_shape=body_for_thread_envelopes if bn=='corpo_integrado' and an in integral_threaded_names else clash_envelopes.get(bn,bo)
+        vol=independent(a_shape).intersect(independent(b_shape)).val().Volume()
         assert vol<1e-4,f'Rigid clash: {an} / {bn}: {vol}'
 print(f'Rigid-parts clash audit passed: {checked} overlapping bounding-box pairs')
-(OUT/'clash_report.json').write_text(json.dumps(dict(version='v30',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Mating printed threads checked separately with interior probes']),indent=2))
+(OUT/'clash_report.json').write_text(json.dumps(dict(version='v31',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes', 'Movement checks deferred unless explicitly enabled']),indent=2))
 print('Exporting validated parts',flush=True)
 assembly=cq.Assembly()
 mesh=[]
