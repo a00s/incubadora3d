@@ -1,11 +1,11 @@
-# Mini incubadora CO₂ — estudo v0.29
+# Mini incubadora CO₂ — estudo v0.30
 
 Modelo preliminar para revisar montagem e dimensões. **Ainda não liberado para impressão funcional.**
 
 ## Versão atual
 
-Usar `output/v29/`. As seções antigas abaixo documentam o histórico;
-a revisão v0.29 ao final descreve a configuração atual.
+Usar `output/v30/`. As seções antigas abaixo documentam o histórico;
+a revisão v0.30 ao final descreve a configuração atual.
 
 ## Visualizar e ajustar
 
@@ -74,10 +74,10 @@ python3 cad/build_viewer.py
 
 CadQuery fixado em `requirements.txt`. Os parâmetros de referência estão em
 `cad/model.py`; alguns detalhes ainda usam medidas fixas deste estudo.
-`output/v29/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
+`output/v30/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
 que distingue impressão, ferragens e referências. Os STL conservam as coordenadas
 da montagem; orientar e posicionar no fatiador após definir material e suportes.
-As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v29/`**.
+As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v30/`**.
 
 `python3 cad/build_viewer.py` atualiza tanto o fragmento quanto
 `output/visualizador.html`, sem dependências externas no navegador.
@@ -636,3 +636,8 @@ plano de 3 mm, integrado ao corpo. Substitui o preenchimento longitudinal
 da v28: o espaço de ar atrás dos cantos é mantido. O canal e a junta TPU
 são preservados. Verificados material na frente e vazio atrás dos quatro
 cantos. Sem testes de movimento nesta revisão. Arquivos: `output/v29/`.
+
+## Revisão v0.30
+
+Haste do manípulo com 24 mm lisos (Ø6,16 mm) e rosca Ø8/passo 2
+apenas nos 7 mm finais, incluindo os 5 mm de encaixe na porca.

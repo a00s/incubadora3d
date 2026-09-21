@@ -19,7 +19,7 @@
   </div>
   <details><summary>Encaixe da junta TPU — corte ampliado</summary>__SEAL_SECTION__</details>
   <details open><summary>Peças — seleção por conjunto</summary><button type="button" class="btn" id="inc-all">Mostrar todas</button><div id="inc-parts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px"></div></details>
-  <div id="inc-status" class="text-small" aria-live="polite">v0.29 · Fecho central e junta encaixada sem cola.</div>
+  <div id="inc-status" class="text-small" aria-live="polite">v0.30 · Fecho central e junta encaixada sem cola.</div>
   <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 190 × 144,4 × 160 mm · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · espaço interno preservado · extensão de 10 mm · porta: painel completo de 15 mm · Entrada CO₂: mangueira Ø interno 4,5 mm · Misturador: R32 × 110 mm · flange R46 · tampa 6 mm · Lateral do misturador: parede dupla · Passagem: Ø4 mm · Raio interno principal: 6 mm</div>
 </div>
 <script>
@@ -76,7 +76,7 @@ for(const part of parts){
  const label=document.createElement('label');label.className='form-check';
  const input=document.createElement('input');input.type='checkbox';input.className='form-check-input';input.checked=true;input.id='piece-'+part.name;
  if(part.kind==='latch')names[part.name]='Lingueta giratória central';
- if(part.kind==='knob')names[part.name]='Manípulo central · rosca impressa Ø8/passo2';
+ if(part.kind==='knob')names[part.name]='Manípulo central · haste lisa e ponta roscada Ø8/passo2';
  if(part.kind==='printed_pin')names[part.name]='Pino de dobradiça · cabeça e rosca impressas';
  if(part.kind==='hinge_nut')names[part.name]='Porca do pino · rosca impressa Ø4/passo1';
  const text=document.createElement('span');text.className='form-check-label';
@@ -159,7 +159,7 @@ function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
 if(dims.checked){dim([-59,-48,-17],[131,-48,-17],'190 mm · corpo completo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,128.4,156],'144,4 mm · corpo');if(width>500){let p=project([-27,60,153]);label('Mistura · R32 × 110',p[0],p[1]);}}
 if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Furo interno Ø4 · referência',p[0],p[1]+24);}
-get('status').textContent=Number(lidLift.value)>0?'Retirar a tampa de manutenção para cima; depois soltar os três M4 da tampa. Porcas acessíveis pelos canais laterais.':unlocked?'v0.29 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.29 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+get('status').textContent=Number(lidLift.value)>0?'Retirar a tampa de manutenção para cima; depois soltar os três M4 da tampa. Porcas acessíveis pelos canais laterais.':unlocked?'v0.30 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.30 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
 for(const el of [service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);

@@ -1,6 +1,6 @@
-# Estado atual — v0.29
+# Estado atual — v0.30
 
-- Arquivos atuais: `output/v29/`; histórico de revisões no README.
+- Arquivos atuais: `output/v30/`; histórico de revisões no README.
 - Uma lingueta central em Z70, com manípulo/haste e porca impressos.
 - Puxador em X17, aproximado 12 mm do fecho em relação à v27.
 - Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
@@ -26,7 +26,7 @@ as peças roscadas contra os demais componentes; compressão TPU excluída.
 Todos os testes de movimento e caminhos de montagem foram adiados a pedido
 do usuário. Executar futuramente uma única rodada com:
 `python cad/model.py --check-movements`.
-Relatórios: `output/v29/build.log`, `clash_report.json` e
+Relatórios: `output/v30/build.log`, `clash_report.json` e
 `compatibilidade_k1c.json`. Verificação estática não garante movimento.
 
 ## Pendências físicas e de projeto
@@ -44,3 +44,5 @@ Sem validação operacional ou simulação térmica/de escoamento.
 
 Visualizador: corte horizontal ajustável entre −10 e 150 mm, com fechamento
 das superfícies seccionadas e cavidades internas preservadas.
+
+Manípulo: haste lisa por 24 mm e rosca apenas nos 7 mm finais junto à porca.

@@ -7,7 +7,7 @@ import cadquery as cq
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import TopAbs_IN
-OUT=Path(__file__).resolve().parents[1]/'output'/'v29'
+OUT=Path(__file__).resolve().parents[1]/'output'/'v30'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=80,slide_width=30,slide_height=16,tray_pitch=29,port_diameter=4,insulation_extension=10,air_cell_width=6,outer_skin=2)
@@ -125,7 +125,12 @@ for z in [22,102]:
     clash_envelopes[f'pino_dobradica_{z}']=envelope
     clash_envelopes[f'porca_pino_dobradica_{z}']=cq.Workplane('XY',origin=(126,-5,z-3.2)).polygon(6,7.5).extrude(3)
 # Fully printed adjustable latch: custom 8 mm thread, pitch 2 mm.
-thread=printed_thread()
+# Only the last 7 mm are threaded; the nut occupies axial 26..31 mm.
+# Start at 24 mm (12 full pitches) to retain the mating helix phase.
+thread=printed_thread(length=7).translate((0,0,24))
+thread=thread.union(cq.Workplane('XY').circle(3.08).extrude(24.2))
+P.update(latch_shaft_smooth_length=24,latch_shaft_smooth_diameter=6.16,latch_thread_length=7)
+assert thread.val().isValid() and len(thread.solids().vals())==1
 thread_clear=printed_thread(True)
 printed_nut=cq.Workplane('XY',origin=(0,0,26)).polygon(6,14).extrude(5).cut(thread_clear)
 assert printed_nut.val().isValid() and len(printed_nut.solids().vals())==1
@@ -577,7 +582,7 @@ for i,(an,ao,ak) in enumerate(rigid):
         vol=independent(clash_envelopes.get(an,ao)).intersect(independent(clash_envelopes.get(bn,bo))).val().Volume()
         assert vol<1e-4,f'Rigid clash: {an} / {bn}: {vol}'
 print(f'Rigid-parts clash audit passed: {checked} overlapping bounding-box pairs')
-(OUT/'clash_report.json').write_text(json.dumps(dict(version='v29',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Mating printed threads checked separately with interior probes']),indent=2))
+(OUT/'clash_report.json').write_text(json.dumps(dict(version='v30',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Mating printed threads checked separately with interior probes']),indent=2))
 print('Exporting validated parts',flush=True)
 assembly=cq.Assembly()
 mesh=[]
