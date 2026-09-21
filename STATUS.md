@@ -1,6 +1,6 @@
-# Estado atual — v0.31
+# Estado atual — v0.32
 
-- Arquivos atuais: `output/v31/`; histórico de revisões no README.
+- Arquivos atuais: `output/v32/`; histórico de revisões no README.
 - Uma lingueta central em Z70, com haste Ø8 e rosca fêmea integrada à base.
 - Puxador em X17, aproximado 12 mm do fecho em relação à v27.
 - Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
@@ -28,7 +28,7 @@ as peças roscadas contra os demais componentes; compressão TPU excluída.
 Todos os testes de movimento e caminhos de montagem foram adiados a pedido
 do usuário. Executar futuramente uma única rodada com:
 `python cad/model.py --check-movements`.
-Relatórios: `output/v31/build.log`, `clash_report.json` e
+Relatórios: `output/v32/build.log`, `clash_report.json` e
 `compatibilidade_k1c.json`. Verificação estática não garante movimento.
 
 ## Pendências físicas e de projeto
@@ -50,3 +50,10 @@ das superfícies seccionadas e cavidades internas preservadas.
 Manípulo: haste lisa por 24 mm e rosca apenas nos 7 mm finais junto à rosca integrada.
 
 Haste lisa Ø8 mm, com folga radial de 0,35 mm no apoio e na lingueta.
+
+Traseira do corpo e da tampa lateral niveladas em Y125, sem ressalto.
+Guias e pinos inferiores recuados; envelope do corpo 190 × 141 × 160 mm.
+Profundidade interna nominal da eletrônica: 22,5 mm.
+
+Lingueta ampliada com aba para os dedos, três relevos de pega e chanfro
+na face de contato. Sem testes de movimento nesta revisão.

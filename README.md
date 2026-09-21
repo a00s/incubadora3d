@@ -1,11 +1,11 @@
-# Mini incubadora CO₂ — estudo v0.31
+# Mini incubadora CO₂ — estudo v0.32
 
 Modelo preliminar para revisar montagem e dimensões. **Ainda não liberado para impressão funcional.**
 
 ## Versão atual
 
-Usar `output/v31/`. As seções antigas abaixo documentam o histórico;
-a revisão v0.31 ao final descreve a configuração atual.
+Usar `output/v32/`. As seções antigas abaixo documentam o histórico;
+a revisão v0.32 ao final descreve a configuração atual.
 
 ## Visualizar e ajustar
 
@@ -74,10 +74,10 @@ python3 cad/build_viewer.py
 
 CadQuery fixado em `requirements.txt`. Os parâmetros de referência estão em
 `cad/model.py`; alguns detalhes ainda usam medidas fixas deste estudo.
-`output/v31/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
+`output/v32/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
 que distingue impressão, ferragens e referências. Os STL conservam as coordenadas
 da montagem; orientar e posicionar no fatiador após definir material e suportes.
-As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v31/`**.
+As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v32/`**.
 
 `python3 cad/build_viewer.py` atualiza tanto o fragmento quanto
 `output/visualizador.html`, sem dependências externas no navegador.
@@ -653,3 +653,14 @@ assim como seus canais de acesso lateral. A tampa usa três parafusos
 impressos Ø4/passo 1, com 6 mm roscados na ponta e haste lisa Ø4.
 As roscas fêmeas fazem parte da base; eventual desgaste exige reparo
 ou reimpressão da base. As porcas dos pinos da dobradiça permanecem.
+
+## Revisão v0.32
+
+Tampa lateral, guias e apoio inferior recuados para o plano traseiro Y125
+da câmara. Corpo: 190 × 141 × 160 mm. Profundidade interna nominal da
+eletrônica reduzida de 25,5 para 22,5 mm. A caixinha removível do aquecedor
+é uma peça separada; orientação e suportes de impressão seguem pendentes.
+
+Lingueta com face de contato de 20 mm de altura, chanfro de entrada
+de 0,8 mm e aba elevada 11 mm com três relevos para os dedos.
+A pressão continua regulada pelo manípulo; avaliação de movimento adiada.

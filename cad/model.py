@@ -7,7 +7,7 @@ import cadquery as cq
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import TopAbs_IN
-OUT=Path(__file__).resolve().parents[1]/'output'/'v31'
+OUT=Path(__file__).resolve().parents[1]/'output'/'v32'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=80,slide_width=30,slide_height=16,tray_pitch=29,port_diameter=4,insulation_extension=10,air_cell_width=6,outer_skin=2)
@@ -149,7 +149,16 @@ for z in [P['latch_height']]:
     integral_thread_cuts.append(receiver_cut)
     integral_thread_reliefs.append(at_latch(cq.Workplane('XY',origin=(0,0,26)).circle(4.4).extrude(7.1)))
     body=body.union(tab).cut(at_latch(guide))
-    dog=box(27,4,14,-16,-20,z-7).edges('|Y').fillet(2).cut(yhole(-9,-18,z,4.35,5))
+    # Broad pressure face with a chamfered lead-in; raised finger grip clears
+    # both the central knob and the adjacent door handle in the assembled pose.
+    dog=box(30,4,20,-16,-20,z-10).edges('|Y').fillet(2)
+    dog=dog.faces('>Y').edges().chamfer(.8).cut(yhole(-9,-18,z,4.35,5))
+    grip=box(8,10.5,20,6,-30,z-10).edges('|Y').fillet(2)
+    for dz in [-6,0,6]:
+        grip=grip.union(box(6,2,2,7,-31,z+dz-1).edges('|X').fillet(.6))
+    dog=dog.union(grip)
+    assert dog.val().isValid() and len(dog.solids().vals())==1,'Invalid finger-grip latch'
+    P.update(latch_finger_grip_projection=11,latch_contact_height=20,latch_contact_chamfer=.8)
     knob=cq.Workplane('XZ',origin=(-9,-20,z)).polygon(8,20).extrude(6).union(at_latch(thread))
     add(f'lingueta_fecho_{z}',dog,'#e6a454','latch')
     add(f'manipulo_fecho_{z}',knob,'#c88b43','knob')
@@ -311,11 +320,11 @@ add('pelicula_aquecedora_90x33_referencia',box(33,.3,90,43.5,107,18),'#d1a047','
 # Compact dry compartment in the same lateral strip as the mixer, below its flange.
 # Rear face stays at Y125; side face stays at X-56.
 P.update(pcb_length=43.12,pcb_width=25.16,electronics_internal_width=41,
-         electronics_internal_depth=25.5,electronics_internal_height=90)
+         electronics_internal_depth=22.5,electronics_internal_height=90)
 case=box(49,34,95,-59,94,5)
 case=case.cut(box(41,34,90,-53.5,96.5,7.5))
-case=case.cut(box(49,3,95,-59,125,5))
-case=case.cut(box(41,6,3,-53.5,122,97.5))
+case=case.cut(box(49,6,95,-59,122,5))
+case=case.cut(box(41,9,3,-53.5,119,97.5))
 # PCB upright on the front inner wall; height of components still provisional.
 case=case.union(box(29.16,3,47.12,-49,96.5,20))
 for xx in [-49,-21.84]:case=case.union(box(2,7,47.12,xx,96.5,20))
@@ -324,13 +333,13 @@ for zz in [29,55]:
     case=case.cut(box(2,10,4,-47,95,zz)).cut(box(2,10,4,-23.84,95,zz))
 pcb=box(25.16,1.6,43.12,-47,99.5,22)
 # Rear panel is part of a single upward-removable service cover.
-cover=box(48.4,2.8,95,-58.7,125.2,5)
-cover=cover.union(box(3,3,84,-36,122.2,12))
+cover=box(48.4,2.8,95,-58.7,122.2,5)
+cover=cover.union(box(3,3,84,-36,119.2,12))
 service_guides=[]
 for xx in [-54,-14]:
-    guide=box(2,1.5,80,xx,123.7,10)
+    guide=box(2,1.5,80,xx,120.7,10)
     cover=cover.union(guide)
-    service_guides.append(box(2.4,1.9,91,xx-.2,123.5,9.8))
+    service_guides.append(box(2.4,1.9,91,xx-.2,120.5,9.8))
 # Keystone directly in side wall; local panel thickness 1.6 mm.
 rjopening=box(10,P['rj_cutout_width'],P['rj_cutout_height'],-62,108.5-P['rj_cutout_width']/2,82-P['rj_cutout_height']/2)
 rjrelief=box(6,23,27,-57.4,97,68.5)
@@ -397,21 +406,21 @@ assert independent(body).intersect(hose_approach).val().Volume()<1e-5,'Rear hose
 assert inlet.val().BoundingBox().ymax<=128 and inlet.val().BoundingBox().zmin>=-10
 # One lift-off service cover: upper dry cap and rear electronics access panel.
 # Gas-tight mixer lid and its TPU gasket remain a separate functional seal.
-hood=box(49,117,47.7,-59,11,102.3).edges('|Z').fillet(2)
-hood=hood.cut(box(50,111.5,47,-56.25,13.75,100))
-hood=hood.union(box(41,14,2.3,-56.5,111.5,100)).union(cover)
+hood=box(49,114,47.7,-59,11,102.3).edges('|Z').fillet(2)
+hood=hood.cut(box(50,108.5,47,-56.25,13.75,100))
+hood=hood.union(box(41,13.5,2.3,-56.5,111.5,100)).union(cover)
 # Overlapping skirt hides the horizontal seam; clearance stays inside the joint.
-skirt=box(49,117,5,-59,11,98).edges('|Z').fillet(2)
-skirt=skirt.cut(box(50,114.6,7,-57.8,12.2,97))
-seat=box(49.4,117.4,4.7,-59.2,10.8,97.7).edges('|Z').fillet(2.2)
-seat=seat.cut(box(50,114,6,-57.5,12.5,97))
+skirt=box(49,114,5,-59,11,98).edges('|Z').fillet(2)
+skirt=skirt.cut(box(50,111.6,7,-57.8,12.2,97))
+seat=box(49.4,114.4,4.7,-59.2,10.8,97.7).edges('|Z').fillet(2.2)
+seat=seat.cut(box(50,111,6,-57.5,12.5,97))
 body=body.cut(seat)
 hood=hood.union(skirt)
 
 # Four pins: two at upper support and two at the lower rear sill.
 P['service_cover_pin_count']=4
-body=body.union(box(49,6.4,3,-59,122,2))
-for xx,yy,root_z in [(-48,114.5,100),(-22,114.5,100),(-48,126.6,5),(-22,126.6,5)]:
+body=body.union(box(49,4,3,-59,121,2))
+for xx,yy,root_z in [(-48,114.5,100),(-22,114.5,100),(-48,123.3,5),(-22,123.3,5)]:
     hole=cq.Workplane('XY',origin=(xx,yy,root_z-2.5)).circle(1.6).extrude(3)
     body=body.cut(hole)
     pin=cq.Solid.makeCone(1.35,1.6,2,cq.Vector(xx,yy,root_z-2))
@@ -423,7 +432,13 @@ assert len(hood.solids().vals())==1,'Service cover must be one printed part'
 # Integrated lateral feet, coplanar with the main enclosure base at Z-10.
 for yy in [13,109]:
     foot=box(16,16,17,-58,yy,-10).edges('|Z').fillet(2)
+    if yy==109:
+        # Flush rear panel starts at Z5: retain 0.2 mm below its lower edge.
+        foot=foot.cut(box(18,3.1,3,-59,121.9,4.8))
     body=body.union(foot)
+# The rear foot overlaps the sill: preserve the pin sockets after their union.
+for xx in [-48,-22]:
+    body=body.cut(cq.Workplane('XY',origin=(xx,123.3,2.5)).circle(1.6).extrude(3))
 assert len(body.solids().vals())==1,'Support feet must join main body'
 P['lateral_feet_count']=2
 P['lateral_feet_base_z']=-10
@@ -507,6 +522,9 @@ for index,cutter in enumerate(integral_thread_cuts,1):
     print(f'Creating integral thread {index}/4',flush=True)
     body=body.cut(cutter,clean=False)
 assert body.val().isValid(), 'Final body invalid after integral threads'
+P['rear_plane_y']=125
+for rear_part in (body,hood):
+    assert abs(rear_part.val().BoundingBox().ymax-P['rear_plane_y'])<1e-5, 'Rear face must be flush at Y125'
 # Envelopes check surrounding material; the matching helical receivers above
 # are checked separately. Reliefs affect diagnostics only, never the exported CAD.
 body_for_thread_envelopes=independent(body)
@@ -590,7 +608,7 @@ for i,(an,ao,ak) in enumerate(rigid):
         vol=independent(a_shape).intersect(independent(b_shape)).val().Volume()
         assert vol<1e-4,f'Rigid clash: {an} / {bn}: {vol}'
 print(f'Rigid-parts clash audit passed: {checked} overlapping bounding-box pairs')
-(OUT/'clash_report.json').write_text(json.dumps(dict(version='v31',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes', 'Movement checks deferred unless explicitly enabled']),indent=2))
+(OUT/'clash_report.json').write_text(json.dumps(dict(version='v32',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes', 'Movement checks deferred unless explicitly enabled']),indent=2))
 print('Exporting validated parts',flush=True)
 assembly=cq.Assembly()
 mesh=[]
