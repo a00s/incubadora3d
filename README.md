@@ -1,6 +1,11 @@
-# Mini incubadora CO₂ — estudo v0.8
+# Mini incubadora CO₂ — estudo v0.28
 
 Modelo preliminar para revisar montagem e dimensões. **Ainda não liberado para impressão funcional.**
+
+## Versão atual
+
+Usar `output/v28/`. As seções antigas abaixo documentam o histórico;
+a revisão v0.28 ao final descreve a configuração atual.
 
 ## Visualizar e ajustar
 
@@ -8,13 +13,13 @@ Abra `output/visualizador.html` no navegador (funciona sem servidor ou conexão)
 O fragmento `output/incubadora-3d.html` é a versão embutida na conversa.
 Arraste para girar; use Abrir porta, Zoom e Retirar bandejas.
 Em Peças, marque/desmarque cada componente ou use Isolar / Mostrar todas.
-Selecione Fechos → Afrouxados e girados 90° para liberar o controle de abertura.
+Selecione Fecho → Afrouxado e girado 90° para liberar o controle de abertura.
 A retirada das bandejas fica bloqueada com a porta abaixo de 90°.
 O detalhe Encaixe da junta TPU mostra o corte do perfil, derivado das mesmas
 coordenadas usadas no CAD.
 O destaque da passagem de gás é apenas uma indicação geométrica; não é peça impressa.
 
-## Geometria atual
+## Geometria inicial — histórico v0.8
 
 - Câmara principal: 120 × 115 × 140 mm, parede nominal 4 mm.
 - Misturador semicilíndrico lateral: raio externo 32 mm, altura 110 mm,
@@ -67,13 +72,13 @@ python3 cad/build_viewer.py
 
 CadQuery fixado em `requirements.txt`. Os parâmetros de referência estão em
 `cad/model.py`; alguns detalhes ainda usam medidas fixas deste estudo.
-`output/v05/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
+`output/v28/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
 que distingue impressão, ferragens e referências. Os STL conservam as coordenadas
 da montagem; orientar e posicionar no fatiador após definir material e suportes.
-Os arquivos antigos em `output/`, `output/v02/` e `output/v03/` são das versões anteriores; **usar os STL em `output/v07/`**.
+As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v28/`**.
 
-Para atualizar o visualizador independente, aplicar o renderizador da habilidade
-visualize a `output/incubadora-3d.html`, com destino `output/visualizador.html`.
+`python3 cad/build_viewer.py` atualiza tanto o fragmento quanto
+`output/visualizador.html`, sem dependências externas no navegador.
 
 ## Verificações efetuadas
 
@@ -558,3 +563,65 @@ e mangueira montados; distribuição de massa real não foi medida.
 Tampa de manutenção com quatro pinos: dois superiores e dois inferiores.
 Arquivos atuais: output/v26/.
 # incubadora3d
+
+
+## Lingueta central e sincronização do visualizador — v0.27
+
+Um único fecho impresso em Z70 substitui os fechos inferior e superior.
+O puxador foi deslocado 22 mm para a direita para liberar a lingueta central.
+Mantidos dois pés integrados de 16 × 16 mm apenas sob a lateral CO₂/eletrônica,
+em Y13 e Y109, com base Z-10 no mesmo plano do fundo da câmara.
+O HTML anterior estava desatualizado; ambos os HTML agora são gerados juntos.
+
+A auditoria de peças rígidas inclui a carcaça. Também verifica abertura da
+porta de 0° a 110° e giro de liberação da lingueta de 0° a 90°, a cada 5°.
+Compressões intencionais de TPU são excluídas da auditoria rígida; a rosca
+impressa é conferida separadamente. Isso não simula deformação ou tolerâncias
+reais. Um só fecho exige testar a compressão da junta no topo e na base.
+Relatórios: `output/v27/clash_report.json` e `compatibilidade_k1c.json`.
+
+
+## Cantos fechados, montagem impressa e passagem discreta — v0.28
+
+Fechados os quatro canais longitudinais entre os cantos R8 da carcaça inicial
+e as paredes externas de isolamento. Preservados cavidade, canal e junta TPU.
+Puxador aproximado 12 mm da trava em relação à v27, com borda em X17 e
+folga estática de 6 mm para a ponta da lingueta travada.
+
+Fecho: lingueta, manípulo com haste helicoidal Ø8/passo2 e porca sextavada
+são STL separados. Inserir a porca pelo canal lateral; posicionar a lingueta
+e rosquear o manípulo pela frente. As superfícies helicoidais estão no CAD
+e no STL; não são cilindros ilustrativos nem roscas M4 padronizadas.
+
+Dobradiças: pinos agora têm cabeça integral, corpo liso Ø3,8 e ponta com
+rosca própria Ø4/passo1; furos Ø4,4. Inserir por cima com a porta alinhada
+e rosquear a porca impressa por baixo. Cabeça e porca retêm axialmente o pino.
+Há folga axial nominal; não apertar a ponto de prender o movimento da porta.
+A porca dos pinos inclui chanfro de entrada de 0,5 mm para iniciar o engate.
+A geração das roscas foi corrigida para manter um núcleo maciço, com
+checagem de volume e movimento helicoidal. Resistência, qualidade das
+roscas e folgas de impressão precisam de amostras.
+Os três M4 da tampa do misturador continuam sendo ferragens independentes.
+
+Passagem entre câmaras reduzida de Ø8 para Ø4, em Y60/Z34, diretamente
+na parede comum. O preenchimento em torno do furo veda a comunicação com
+as células de isolamento e fica dentro da parede. Nenhum tubo saliente.
+O destaque rosa fica restrito à espessura da parede, identificado como
+referência, excluído do STEP e dos STL. O diâmetro é de ensaio: não foi
+calculado a partir de vazão/pressão e não garante proteção contra umidade.
+Validar troca de gás e condensação antes de uso; restrição não é válvula.
+
+Verificações adicionais: quatro cantos fechados, inserção dos pinos, entrada
+lateral da porca do fecho e movimento helicoidal das duas roscas. Relatórios
+atuais em `output/v28/`, incluindo `clash_report.json` e `compatibilidade_k1c.json`.
+
+Na auditoria externa, peças roscadas usam envelopes conservadores que incluem
+os filetes. Os pares macho/porca usam a geometria real, com testes de
+movimento e pontos internos para confirmar folga e retenção axial.
+
+Por solicitação do usuário, os testes de movimento das tampas foram retirados
+da rotina atual. Mantida a verificação de interferências na posição montada.
+
+Atualização de escopo: todos os testes de movimento ficam desativados por
+padrão. A rodada atual verifica desenho e interferências estáticas. Usar
+`python cad/model.py --check-movements` somente na futura rodada de movimentos.

@@ -1,45 +1,42 @@
-# Estado atual — v0.26
+# Estado atual — v0.28
 
-- Corpo único com misturador e eletrônica na mesma faixa lateral; traseira da caixa em Y125.
-- Tampa eletrônica embutida com quatro pinos de encaixe, sem parafusos; RJ45 lateral acima da placa.
-- Porta e paredes da câmara aquecida com cavidades de ar.
-- Duas passagens com mangas sólidas: 3 fios na lateral superior junto da eletrônica (Z125) e 2 fios na traseira.
-- Sensor e aquecedor: buchas TPU únicas; passar as pontas dos fios antes de conectar.
-- Sensor de temperatura/umidade e aquecedor 90 × 33 mm como referências de posição.
-- Bucha TPU do sensor CO₂ e recorte keystone direto na parede, com amostras para teste.
-- Arquivos atuais: output/v26/; dimensões verificadas em compatibilidade_k1c.json.
+- Arquivos atuais: `output/v28/`; histórico de revisões no README.
+- Uma lingueta central em Z70, com manípulo/haste e porca impressos.
+- Puxador em X17, aproximado 12 mm do fecho em relação à v27.
+- Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
+  base em Z-10, coplanar ao fundo da câmara.
+- Tampa de manutenção com quatro pinos (dois superiores e dois inferiores).
+- Bucha do sensor com aba Ø16 e passagem Y90/Z127,5.
+- Gavetas com profundidade 72 mm e folga de 26 mm até a chapa de referência.
+- Alimentação com caixa encaixada e furo Ø8; fios do aquecedor 2 × Ø1,68 mm,
+  canais TPU Ø1,60 mm. Sensor: 3 fios Ø1,36 mm, canais TPU Ø1,30 mm.
+- `cad/build_viewer.py` gera os dois HTML a partir da mesma malha atual.
 
-Pendentes: teste de compressão das vedações dos fios, rosca da tomada de alimentação, potência do aquecedor,
-espessura e fixação da chapa, altura e fios da PCB, suporte do sensor de temperatura,
-testes de encaixe e vedação, filamentos, escape/alívio e pressão, fatiamento/suportes,
-limpeza e desempenho térmico. Sem validação operacional.
+- Quatro canais nos cantos da carcaça preenchidos, mantendo a junta TPU.
+- Passagem entre câmaras Ø4, sem tubo; diâmetro inicial de ensaio.
+- Pinos de dobradiça com cabeça e ponta roscada Ø4/passo1; porcas impressas.
+- Rosca do fecho Ø8/passo2; montagem por canal lateral e aperto pela frente.
 
-Fios do aquecedor confirmados: 2 × Ø1,68 mm; canais TPU Ø1,60 mm para teste.
+## Validação geométrica
 
-Sensor: 3 fios Ø1,36 mm, canais TPU Ø1,30 mm; conexão feita internamente.
+Auditoria estática de peças rígidas, incluindo carcaça, continuidade das
+passagens e núcleo maciço das roscas. Envelopes conservadores representam
+as peças roscadas contra os demais componentes; compressão TPU excluída.
+Todos os testes de movimento e caminhos de montagem foram adiados a pedido
+do usuário. Executar futuramente uma única rodada com:
+`python cad/model.py --check-movements`.
+Relatórios: `output/v28/build.log`, `clash_report.json` e
+`compatibilidade_k1c.json`. Verificação estática não garante movimento.
 
-Gavetas 72 mm de profundidade, trilhos encurtados e batentes traseiros; folga até a chapa de referência: 26 mm.
+## Pendências físicas e de projeto
 
-Entrada CO₂ inferior recolhida, voltada para a traseira; acesso à mangueira livre.
-Dois furos traseiros genéricos removidos. Escape/alívio ainda pendente.
-Tampo estreito de encaixe cobre apenas o percurso dos fios; cabeça do CO₂ exposta.
-Entradas laterais para as três porcas M4 da tampa, acessíveis pela lateral.
-Compartimento separado de alimentação 12 V alinhado com a saída superior dos fios do aquecedor.
-Caixinha arredondada 36 × 21 × 30 mm, com dois pinos de encaixe direto em furos cegos da carcaça. Furo Ø8 à direita olhando por trás (-X). Uma única bucha TPU do aquecedor, sem prensa, suporte, trilhos ou parafusos. Retenção e vedação por testar.
-Tampo 18 mm de largura com dois pinos cônicos de encaixe; retenção e dobra dos fios dependem de teste.
+- Ensaio de vedação com fecho único, especialmente topo e base da porta.
+- Testar retenção/resistência de roscas, pinos, encaixes e estabilidade lateral.
+- Filamentos e dureza TPU; compressão e estanqueidade das vedações.
+- Conector de alimentação real, potência do aquecedor, chapa e sua fixação.
+- Altura/fios da PCB e suporte definitivo do sensor de temperatura.
+- Escape/alívio, pressão, limpeza, condensação e desempenho térmico/CO₂.
+- Validar passagem Ø4 com vazão real; o furo não garante bloqueio de umidade.
+- Fatiamento, orientação e suportes antes de imprimir.
 
-Cobertura CO₂ anterior preservada a pedido do usuário; revisão adiada. Sensor interno próximo da lateral eletrônica, referência sem suporte definitivo.
-
-Passagem lateral superior corrigida: Y90/Z125. Bucha e sensor recuados do canto traseiro, com 11 mm até a face interna plana da parede traseira. Sensor de referência em X8..15/Y80..100/Z117,5..132,5; ausência de colisão com a carcaça verificada.
-
-Reorganização v21: tampa única removida para cima cobre a cabeça CO₂, fios e acesso traseiro à PCB. RJ45 e placa permanecem fixos. Tampa do misturador com junta permanece independente. Cobertura de manutenção com duas guias e dois pinos superiores, retenção a testar; retirar antes de inserir as porcas M4 lateralmente.
-
-Acabamento v22: tampa e base lateral alinhadas em X-59, frente Y11 e traseira Y128; topo da tampa em Z150 alinhado ao teto. Junta visual de 0,3 mm sobre a lateral. Painel traseiro com nervura interna; corpo nominal 190 × 141 × 160 mm. Folga para fios sobre a cabeça do sensor segue provisória (altura real pendente).
-
-Junção v23: saia sobreposta de 1,2 mm na tampa desce até Z98; rebaixo correspondente na base, com folga interna nominal de 0,3 mm. Fecha a abertura direta na junção sem impedir remoção vertical. Não é junta estanque.
-
-V24: quatro pinos cônicos Ø3,2 × 2 mm, em retângulo de 26 × 5 mm no apoio traseiro da tampa. Retenção por ajuste e durabilidade ainda exigem impressão de teste.
-
-V25: quatro pinos distribuídos em dois superiores e dois inferiores. Soleira inferior integrada apoia a tampa; corpo 190 × 144,4 × 160 mm. Parafusos das linguetas corrigidos para haste M4 de 30 mm e porca adiantada, sem ponta sobrando atrás do apoio. Peças roscadas continuam ferragens; solicitação de pinos impressos aguarda identificação de dobradiça versus lingueta.
-
-V26: pinos das dobradiças exportados como STL sem alterar geometria. Fechos integralmente impressos com rosca própria Ø8/passo2 e porca impressa em alojamento lateral acessível. Dois pés integrados sob CO₂/eletrônica em Z-10. Bucha do sensor reduzida a Ø16 na aba externa e elevada a Z127,5 para liberar a tampa do misturador. Ensaios de retenção, resistência das roscas/pinos e estabilidade permanecem pendentes.
+Sem validação operacional ou simulação térmica/de escoamento.

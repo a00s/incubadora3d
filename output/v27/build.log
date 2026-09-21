@@ -1,0 +1,116 @@
+Cannot create cache home directory: '/home/maia/.cache/ezdxf', cache files will not be saved.
+See also issue https://github.com/mozman/ezdxf/issues/923.
+Checking door sweep
+Checking door angle 0
+Checking door angle 5
+Checking door angle 10
+Checking door angle 15
+Checking door angle 20
+Checking door angle 25
+Checking door angle 30
+Checking door angle 35
+Checking door angle 40
+Checking door angle 45
+Checking door angle 50
+Checking door angle 55
+Checking door angle 60
+Checking door angle 65
+Checking door angle 70
+Checking door angle 75
+Checking door angle 80
+Checking door angle 85
+Checking door angle 90
+Checking door angle 95
+Checking door angle 100
+Checking door angle 105
+Checking door angle 110
+Checking latch angle 0
+Checking latch angle 5
+Checking latch angle 10
+Checking latch angle 15
+Checking latch angle 20
+Checking latch angle 25
+Checking latch angle 30
+Checking latch angle 35
+Checking latch angle 40
+Checking latch angle 45
+Checking latch angle 50
+Checking latch angle 55
+Checking latch angle 60
+Checking latch angle 65
+Checking latch angle 70
+Checking latch angle 75
+Checking latch angle 80
+Checking latch angle 85
+Checking latch angle 90
+Checking body clearance: pino_dobradica_22
+Checking body clearance: pino_dobradica_102
+Checking body clearance: porca_impressa_fecho_70
+Checking body clearance: lingueta_fecho_70
+Checking body clearance: manipulo_fecho_70
+Checking body clearance: bandeja_1
+Checking body clearance: bandeja_2
+Checking body clearance: bandeja_3
+Checking rigid pair: pino_dobradica_22 porta_articulada
+Checking rigid pair: pino_dobradica_22 corpo_integrado
+Checking rigid pair: pino_dobradica_102 porta_articulada
+Checking rigid pair: pino_dobradica_102 corpo_integrado
+Checking rigid pair: porca_impressa_fecho_70 corpo_integrado
+Checking rigid pair: lingueta_fecho_70 manipulo_fecho_70
+Checking rigid pair: lingueta_fecho_70 porta_articulada
+Checking rigid pair: manipulo_fecho_70 porta_articulada
+Checking rigid pair: manipulo_fecho_70 corpo_integrado
+Checking rigid pair: bandeja_1 uslide_referencia_1
+Checking rigid pair: bandeja_1 corpo_integrado
+Checking rigid pair: uslide_referencia_1 corpo_integrado
+Checking rigid pair: bandeja_2 uslide_referencia_2
+Checking rigid pair: bandeja_2 corpo_integrado
+Checking rigid pair: uslide_referencia_2 corpo_integrado
+Checking rigid pair: bandeja_3 uslide_referencia_3
+Checking rigid pair: bandeja_3 corpo_integrado
+Checking rigid pair: uslide_referencia_3 corpo_integrado
+Checking rigid pair: reservatorio_agua corpo_integrado
+Checking rigid pair: porca_tampa_1 parafuso_tampa_1
+Checking rigid pair: porca_tampa_1 tampa_manutencao_CO2_eletronica
+Checking rigid pair: porca_tampa_1 corpo_integrado
+Checking rigid pair: parafuso_tampa_1 arruela_tampa_1
+Checking rigid pair: parafuso_tampa_1 tampa_manutencao_CO2_eletronica
+Checking rigid pair: parafuso_tampa_1 corpo_integrado
+Checking rigid pair: parafuso_tampa_1 tampa_misturador
+Checking rigid pair: arruela_tampa_1 tampa_manutencao_CO2_eletronica
+Checking rigid pair: arruela_tampa_1 corpo_integrado
+Checking rigid pair: porca_tampa_2 parafuso_tampa_2
+Checking rigid pair: porca_tampa_2 tampa_manutencao_CO2_eletronica
+Checking rigid pair: porca_tampa_2 corpo_integrado
+Checking rigid pair: parafuso_tampa_2 arruela_tampa_2
+Checking rigid pair: parafuso_tampa_2 tampa_manutencao_CO2_eletronica
+Checking rigid pair: parafuso_tampa_2 corpo_integrado
+Checking rigid pair: parafuso_tampa_2 tampa_misturador
+Checking rigid pair: arruela_tampa_2 tampa_manutencao_CO2_eletronica
+Checking rigid pair: arruela_tampa_2 corpo_integrado
+Checking rigid pair: porca_tampa_3 parafuso_tampa_3
+Checking rigid pair: porca_tampa_3 tampa_manutencao_CO2_eletronica
+Checking rigid pair: porca_tampa_3 corpo_integrado
+Checking rigid pair: parafuso_tampa_3 arruela_tampa_3
+Checking rigid pair: parafuso_tampa_3 tampa_manutencao_CO2_eletronica
+Checking rigid pair: parafuso_tampa_3 corpo_integrado
+Checking rigid pair: parafuso_tampa_3 tampa_misturador
+Checking rigid pair: arruela_tampa_3 tampa_manutencao_CO2_eletronica
+Checking rigid pair: arruela_tampa_3 corpo_integrado
+Checking rigid pair: sensor_temperatura_umidade_referencia corpo_integrado
+Checking rigid pair: chapa_aquecedor_referencia corpo_integrado
+Checking rigid pair: pelicula_aquecedora_90x33_referencia corpo_integrado
+Checking rigid pair: placa_eletronica_referencia tampa_manutencao_CO2_eletronica
+Checking rigid pair: placa_eletronica_referencia corpo_integrado
+Checking rigid pair: caixinha_encaixe_aquecedor corpo_integrado
+Checking rigid pair: tampa_manutencao_CO2_eletronica corpo_integrado
+Checking rigid pair: tampa_manutencao_CO2_eletronica tampa_misturador
+Checking rigid pair: tampa_manutencao_CO2_eletronica sensor_referencia
+Checking rigid pair: porta_articulada corpo_integrado
+Checking rigid pair: corpo_integrado tampa_misturador
+Checking rigid pair: corpo_integrado sensor_referencia
+Checking rigid pair: tampa_misturador sensor_referencia
+Rigid-parts clash audit passed: 59 overlapping bounding-box pairs
+Exporting validated parts
+39 valid parts exported
+Door and lid removal checked; both gasket feet fit; coupons valid

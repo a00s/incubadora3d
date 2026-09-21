@@ -3,7 +3,7 @@ import gzip
 import json
 from pathlib import Path
 p=Path(__file__).resolve().parents[1]
-folder=p/'output/v26'
+folder=p/'output/v28'
 # Compact display mesh only; CAD/STL export precision is unchanged.
 preview=json.loads((folder/'mesh.json').read_text())
 for part in preview:
@@ -44,3 +44,16 @@ s=(p/'cad/viewer-template.html').read_text().replace('__MESH_GZIP__',mesh).repla
 out=p/'output/incubadora-3d.html';out.write_text(s)
 assert out.stat().st_size<1_000_000
 print(out,out.stat().st_size)
+# Generate the standalone page from the same fragment, so CAD and HTML stay in sync.
+standalone='''<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incubadora 3D — v0.28</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,sans-serif}body{margin:0;padding:20px;background:light-dark(#f6f8fa,#182027);color:light-dark(#243542,#e3edf3)}
+#incubator-view{max-width:1500px;margin:auto}.viz-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px;border:1px solid #8294a655;border-radius:10px}
+.form-label,.form-check{display:inline-flex;align-items:center;gap:7px}.form-range{max-width:150px}.form-select,button{font:inherit;padding:5px 9px;border:1px solid #8294a677;border-radius:5px;background:light-dark(#fff,#283742);color:inherit;cursor:pointer}
+input{accent-color:#328eab}details{margin:14px 0}summary{cursor:pointer;font-weight:600;margin:8px 0}.viz-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0}.text-small{font-size:13px;line-height:1.6;margin-top:10px}#inc-status{font-weight:600}
+</style></head><body>'''+s+'</body></html>'
+(p/'output/visualizador.html').write_text(standalone)
+print(p/'output/visualizador.html',len(standalone.encode()))

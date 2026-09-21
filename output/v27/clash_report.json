@@ -1,0 +1,38 @@
+{
+  "version": "v27",
+  "rigid_pairs_checked": 59,
+  "rigid_clashes": 0,
+  "door_angles_deg": [
+    0,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85,
+    90,
+    95,
+    100,
+    105,
+    110
+  ],
+  "latch_count": 1,
+  "lateral_feet_count": 2,
+  "support_plane_z_mm": -10,
+  "limitations": [
+    "Discrete movement samples",
+    "Intentional TPU compression excluded",
+    "Mating printed threads checked separately"
+  ]
+}
