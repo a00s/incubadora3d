@@ -1,0 +1,11 @@
+{
+  "rendering": "passed",
+  "adjustable_cut_heights_mm": [
+    35,
+    110,
+    70
+  ],
+  "distinct_cut_views": true,
+  "page_errors": [],
+  "movement_tests": "deferred"
+}

@@ -3,7 +3,7 @@ import gzip
 import json
 from pathlib import Path
 p=Path(__file__).resolve().parents[1]
-folder=p/'output/v28'
+folder=p/'output/v29'
 # Compact display mesh only; CAD/STL export precision is unchanged.
 preview=json.loads((folder/'mesh.json').read_text())
 for part in preview:
@@ -48,7 +48,7 @@ print(out,out.stat().st_size)
 standalone='''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Incubadora 3D — v0.28</title>
+<title>Incubadora 3D — v0.29</title>
 <style>
 :root{color-scheme:light dark;font-family:system-ui,sans-serif}body{margin:0;padding:20px;background:light-dark(#f6f8fa,#182027);color:light-dark(#243542,#e3edf3)}
 #incubator-view{max-width:1500px;margin:auto}.viz-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px;border:1px solid #8294a655;border-radius:10px}

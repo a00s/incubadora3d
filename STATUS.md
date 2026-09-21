@@ -1,6 +1,6 @@
-# Estado atual — v0.28
+# Estado atual — v0.29
 
-- Arquivos atuais: `output/v28/`; histórico de revisões no README.
+- Arquivos atuais: `output/v29/`; histórico de revisões no README.
 - Uma lingueta central em Z70, com manípulo/haste e porca impressos.
 - Puxador em X17, aproximado 12 mm do fecho em relação à v27.
 - Dois pés integrados 16 × 16 mm somente sob a lateral CO₂/eletrônica,
@@ -12,7 +12,8 @@
   canais TPU Ø1,60 mm. Sensor: 3 fios Ø1,36 mm, canais TPU Ø1,30 mm.
 - `cad/build_viewer.py` gera os dois HTML a partir da mesma malha atual.
 
-- Quatro canais nos cantos da carcaça preenchidos, mantendo a junta TPU.
+- Quatro cantos fechados apenas na frente com tampões de 3 mm;
+  cavidades de ar atrás e canal da junta TPU preservados.
 - Passagem entre câmaras Ø4, sem tubo; diâmetro inicial de ensaio.
 - Pinos de dobradiça com cabeça e ponta roscada Ø4/passo1; porcas impressas.
 - Rosca do fecho Ø8/passo2; montagem por canal lateral e aperto pela frente.
@@ -25,7 +26,7 @@ as peças roscadas contra os demais componentes; compressão TPU excluída.
 Todos os testes de movimento e caminhos de montagem foram adiados a pedido
 do usuário. Executar futuramente uma única rodada com:
 `python cad/model.py --check-movements`.
-Relatórios: `output/v28/build.log`, `clash_report.json` e
+Relatórios: `output/v29/build.log`, `clash_report.json` e
 `compatibilidade_k1c.json`. Verificação estática não garante movimento.
 
 ## Pendências físicas e de projeto
@@ -40,3 +41,6 @@ Relatórios: `output/v28/build.log`, `clash_report.json` e
 - Fatiamento, orientação e suportes antes de imprimir.
 
 Sem validação operacional ou simulação térmica/de escoamento.
+
+Visualizador: corte horizontal ajustável entre −10 e 150 mm, com fechamento
+das superfícies seccionadas e cavidades internas preservadas.

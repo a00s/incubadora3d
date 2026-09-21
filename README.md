@@ -1,17 +1,19 @@
-# Mini incubadora CO₂ — estudo v0.28
+# Mini incubadora CO₂ — estudo v0.29
 
 Modelo preliminar para revisar montagem e dimensões. **Ainda não liberado para impressão funcional.**
 
 ## Versão atual
 
-Usar `output/v28/`. As seções antigas abaixo documentam o histórico;
-a revisão v0.28 ao final descreve a configuração atual.
+Usar `output/v29/`. As seções antigas abaixo documentam o histórico;
+a revisão v0.29 ao final descreve a configuração atual.
 
 ## Visualizar e ajustar
 
 Abra `output/visualizador.html` no navegador (funciona sem servidor ou conexão).
 O fragmento `output/incubadora-3d.html` é a versão embutida na conversa.
 Arraste para girar; use Abrir porta, Zoom e Retirar bandejas.
+Ative Corte das paredes e porta e arraste Altura do corte (−10 a 150 mm).
+O corte mostra o material das paredes e preserva as cavidades internas.
 Em Peças, marque/desmarque cada componente ou use Isolar / Mostrar todas.
 Selecione Fecho → Afrouxado e girado 90° para liberar o controle de abertura.
 A retirada das bandejas fica bloqueada com a porta abaixo de 90°.
@@ -72,10 +74,10 @@ python3 cad/build_viewer.py
 
 CadQuery fixado em `requirements.txt`. Os parâmetros de referência estão em
 `cad/model.py`; alguns detalhes ainda usam medidas fixas deste estudo.
-`output/v28/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
+`output/v29/` contém o STEP, STL separado de cada peça imprimível e `pecas.json`,
 que distingue impressão, ferragens e referências. Os STL conservam as coordenadas
 da montagem; orientar e posicionar no fatiador após definir material e suportes.
-As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v28/`**.
+As pastas `output/v02/` a `output/v27/` preservam revisões anteriores; **usar os STL em `output/v29/`**.
 
 `python3 cad/build_viewer.py` atualiza tanto o fragmento quanto
 `output/visualizador.html`, sem dependências externas no navegador.
@@ -625,3 +627,12 @@ da rotina atual. Mantida a verificação de interferências na posição montada
 Atualização de escopo: todos os testes de movimento ficam desativados por
 padrão. A rodada atual verifica desenho e interferências estáticas. Usar
 `python cad/model.py --check-movements` somente na futura rodada de movimentos.
+
+
+## Fechamento frontal dos quatro cantos — v0.29
+
+Cada encontro da parte curva com a parte reta recebe um tampão frontal
+plano de 3 mm, integrado ao corpo. Substitui o preenchimento longitudinal
+da v28: o espaço de ar atrás dos cantos é mantido. O canal e a junta TPU
+são preservados. Verificados material na frente e vazio atrás dos quatro
+cantos. Sem testes de movimento nesta revisão. Arquivos: `output/v29/`.

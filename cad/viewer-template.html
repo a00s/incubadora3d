@@ -6,6 +6,7 @@
     <label class="form-label">Retirar tampa do misturador <input class="form-range" id="inc-lid" type="range" min="0" max="40" value="0"></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-shell" checked><span class="form-check-label">Carcaça</span></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-cut"><span class="form-check-label">Corte das paredes e porta</span></label>
+    <label class="form-label">Altura do corte <output id="inc-cut-value">70 mm</output><input class="form-range" id="inc-cut-height" type="range" min="-10" max="150" step="1" value="70" disabled><small>Move o corte horizontal das paredes e da porta.</small></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-dims" checked><span class="form-check-label">Dimensões</span></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-channel"><span class="form-check-label">Destacar furo interno (referência)</span></label>
     <label class="form-label">Retirar bandejas <input class="form-range" id="inc-trays" type="range" min="0" max="70" value="0"></label>
@@ -18,7 +19,7 @@
   </div>
   <details><summary>Encaixe da junta TPU — corte ampliado</summary>__SEAL_SECTION__</details>
   <details open><summary>Peças — seleção por conjunto</summary><button type="button" class="btn" id="inc-all">Mostrar todas</button><div id="inc-parts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px"></div></details>
-  <div id="inc-status" class="text-small" aria-live="polite">v0.28 · Fecho central e junta encaixada sem cola.</div>
+  <div id="inc-status" class="text-small" aria-live="polite">v0.29 · Fecho central e junta encaixada sem cola.</div>
   <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 190 × 144,4 × 160 mm · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · espaço interno preservado · extensão de 10 mm · porta: painel completo de 15 mm · Entrada CO₂: mangueira Ø interno 4,5 mm · Misturador: R32 × 110 mm · flange R46 · tampa 6 mm · Lateral do misturador: parede dupla · Passagem: Ø4 mm · Raio interno principal: 6 mm</div>
 </div>
 <script>
@@ -29,6 +30,7 @@ const parts=JSON.parse(await new Response(new Blob([packed]).stream().pipeThroug
 for(const part of parts){let previous=[0,0,0];part.vertices=part.vertices.map(v=>{previous=v.map((n,i)=>n+previous[i]);return previous.map(n=>n/10)});}
 const get=id=>root.querySelector('#inc-'+id);
 const service=get('service');
+const cutHeight=get('cut-height');
 const cut=get('cut'),lidLift=get('lid'),lock=get('lock'),door=get('door'),shell=get('shell'),dims=get('dims'),channel=get('channel'),trays=get('trays'),angle=get('angle'),zoom=get('zoom');
 const gl=canvas.getContext('webgl',{antialias:true,alpha:true,preserveDrawingBuffer:true});
 if(!gl){get('status').textContent='Visualização 3D indisponível: ative a aceleração gráfica do navegador.';return;}
@@ -86,9 +88,42 @@ for(const part of parts){
  isolate.addEventListener('click',()=>{for(const [name,check] of visibility)check.checked=name===part.name;shell.checked=true;channel.checked=part.kind==='channel';if(part.kind==='fastener')door.value=0;draw();});
 }
 get('all').addEventListener('click',()=>{for(const check of visibility.values())check.checked=true;shell.checked=true;draw();});
+// Cache only the current height. Clip in model coordinates and cap using even-odd
+// scanline strips: inner contours remain hollow, including the double walls.
+const sectionCache=new Map();
+function sectionAt(part,height){
+ const cached=sectionCache.get(part.name);if(cached?.height===height)return cached.mesh;
+ const z=height+0.00001,vertices=[],faces=[],segments=[];
+ function triangle(a,b,c){const n=vertices.length;vertices.push(a,b,c);faces.push([n,n+1,n+2]);}
+ for(const face of part.faces){
+  const polygon=face.map(i=>part.vertices[i]),clipped=[],crossings=[];
+  for(let i=0;i<3;i++){
+   const a=polygon[i],b=polygon[(i+1)%3],inside=a[2]<=z;
+   if(inside)clipped.push(a);
+   if(inside!==(b[2]<=z)){
+    const t=(z-a[2])/(b[2]-a[2]),p=[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1]),z];
+    clipped.push(p);crossings.push(p);
+   }
+  }
+  for(let i=1;i+1<clipped.length;i++)triangle(clipped[0],clipped[i],clipped[i+1]);
+  if(crossings.length===2&&Math.abs(crossings[0][1]-crossings[1][1])>1e-8)segments.push(crossings);
+ }
+ const levels=[...new Set(segments.flatMap(s=>s.map(p=>p[1])))].sort((a,b)=>a-b);
+ const xAt=(s,y)=>s[0][0]+(y-s[0][1])*(s[1][0]-s[0][0])/(s[1][1]-s[0][1]);
+ for(let i=0;i+1<levels.length;i++){
+  const lo=levels[i],hi=levels[i+1];if(hi-lo<1e-8)continue;
+  const mid=(lo+hi)/2,edges=segments.filter(s=>mid>Math.min(s[0][1],s[1][1])&&mid<Math.max(s[0][1],s[1][1])).sort((a,b)=>xAt(a,mid)-xAt(b,mid));
+  for(let j=0;j+1<edges.length;j+=2){
+   const a=[xAt(edges[j],lo),lo,z],b=[xAt(edges[j+1],lo),lo,z],c=[xAt(edges[j+1],hi),hi,z],d=[xAt(edges[j],hi),hi,z];
+   triangle(a,b,c);triangle(a,c,d);
+  }
+ }
+ const mesh={vertices,faces};sectionCache.set(part.name,{height,mesh});return mesh;
+}
 let pitch=.4,drag=null,yawDegrees=Number(angle.value);
 function draw(){
 syncGroups();
+cutHeight.disabled=!cut.checked;get('cut-value').value=cutHeight.value+' mm';
 const width=canvas.clientWidth,height=480,dpr=window.devicePixelRatio||1;
 for(const c of [canvas,labels]){c.width=width*dpr;c.height=height*dpr;}
 gl.viewport(0,0,canvas.width,canvas.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -111,11 +146,12 @@ const a=x*Math.cos(yaw)-y*Math.sin(yaw),b=x*Math.sin(yaw)+y*Math.cos(yaw);
 return [width/2+a*scale,height/2+(-b*Math.sin(pitch)-z*Math.cos(pitch))*scale,b*Math.cos(pitch)-z*Math.sin(pitch)];}
 let data=[];
 for(const part of parts){
-if(part.kind.startsWith('section_')){if(!cut.checked)continue;const key=part.kind==='section_body'?'corpo_integrado':'porta_articulada';if(!visibility.get(key).checked)continue;if(part.kind==='section_body'&&!shell.checked)continue;}
-else {if(!visibility.get(part.name).checked)continue;if(cut.checked&&['corpo_integrado','porta_articulada'].includes(part.name))continue;}
+if(part.kind.startsWith('section_'))continue;
+if(!visibility.get(part.name).checked)continue;
 if(part.kind==='fastener'&&Number(door.value)>0)continue;if(['shell','lid','seal','mixer_seal'].includes(part.kind)&&!shell.checked)continue;if(part.kind==='channel'&&!channel.checked)continue;
-const vs=part.vertices.map(v=>project(v,part)),rgb=part.color.match(/\w\w/g).map(c=>parseInt(c,16)/255);
-for(const f of part.faces){const [a,b,c]=f.map(i=>vs[i]);const nx=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]),ny=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]),nz=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const light=.58+.42*Math.abs((nx*.3+ny*.4+nz*.86)/(Math.hypot(nx,ny,nz)||1));
+const mesh=cut.checked&&['corpo_integrado','porta_articulada'].includes(part.name)?sectionAt(part,Number(cutHeight.value)):part;
+const vs=mesh.vertices.map(v=>project(v,part)),rgb=part.color.match(/\w\w/g).map(c=>parseInt(c,16)/255);
+for(const f of mesh.faces){const [a,b,c]=f.map(i=>vs[i]);const nx=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]),ny=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]),nz=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const light=.58+.42*Math.abs((nx*.3+ny*.4+nz*.86)/(Math.hypot(nx,ny,nz)||1));
 for(const p of [a,b,c])data.push(p[0]/width*2-1,1-p[1]/height*2,p[2]/700,...rgb.map(x=>x*light));}}
 gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,data.length/6);
 const fg=getComputedStyle(root).color;ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.font='13px sans-serif';ctx.lineWidth=1;
@@ -123,10 +159,10 @@ function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
 if(dims.checked){dim([-59,-48,-17],[131,-48,-17],'190 mm · corpo completo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,128.4,156],'144,4 mm · corpo');if(width>500){let p=project([-27,60,153]);label('Mistura · R32 × 110',p[0],p[1]);}}
 if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Furo interno Ø4 · referência',p[0],p[1]+24);}
-get('status').textContent=Number(lidLift.value)>0?'Retirar a tampa de manutenção para cima; depois soltar os três M4 da tampa. Porcas acessíveis pelos canais laterais.':unlocked?'v0.28 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.28 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+get('status').textContent=Number(lidLift.value)>0?'Retirar a tampa de manutenção para cima; depois soltar os três M4 da tampa. Porcas acessíveis pelos canais laterais.':unlocked?'v0.29 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.29 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
-for(const el of [service,cut,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);
+for(const el of [service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);
 canvas.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId)});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;yawDegrees+=(e.clientX-drag[0])*.5;angle.value=((yawDegrees+180)%360+360)%360-180;pitch+=(e.clientY-drag[1])*.006;drag=[e.clientX,e.clientY];draw()});
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom.value=Math.max(.2,Math.min(8,Number(zoom.value)*Math.exp(-e.deltaY*.001)));draw();},{passive:false});

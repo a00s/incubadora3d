@@ -7,7 +7,7 @@ import cadquery as cq
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import TopAbs_IN
-OUT=Path(__file__).resolve().parents[1]/'output'/'v28'
+OUT=Path(__file__).resolve().parents[1]/'output'/'v29'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=80,slide_width=30,slide_height=16,tray_pitch=29,port_diameter=4,insulation_extension=10,air_cell_width=6,outer_skin=2)
@@ -231,13 +231,16 @@ body=body.union(cellular_block(0,0,-10,120,115,10))
 # Continuous left insulating wall; mixer shifted outboard by 10 mm.
 left=cellular_block(-10,0,-10,10,125,160)
 body=body.union(left)
-# Close the four longitudinal gaps between the rounded original shell and
-# the squared insulation panels. Keep the gasket groove and chamber intact.
-corner_infill=box(w,d,h).cut(outer)
-body=body.union(corner_infill).cut(ring)
+# Flat front caps close the four corners while retaining the void behind them.
+P['front_corner_cap_depth']=3
+for xx,zz in [(0,0),(w-10,0),(0,h-10),(w-10,h-10)]:
+    cap=box(10,P['front_corner_cap_depth'],10,xx,0,zz).cut(cavity)
+    body=body.union(cap)
+body=body.cut(ring)
 for xx,zz in [(0.5,0.5),(w-.5,.5),(.5,h-.5),(w-.5,h-.5)]:
-    for yy in [0.2,4,60,114]:
-        assert body.val().isInside((xx,yy,zz)), 'Unclosed shell corner'
+    for yy in [.2,1.5,2.8]:
+        assert body.val().isInside((xx,yy,zz)), 'Front corner cap missing'
+    assert not body.val().isInside((xx,12,zz)), 'Corner air void filled'
 P['closed_corner_channels']=4
 # Solid sleeve through the insulation prevents gas entering the air cells.
 sleeve=cq.Workplane('YZ',origin=(-10,cy,34)).circle(6).extrude(14)
@@ -574,7 +577,7 @@ for i,(an,ao,ak) in enumerate(rigid):
         vol=independent(clash_envelopes.get(an,ao)).intersect(independent(clash_envelopes.get(bn,bo))).val().Volume()
         assert vol<1e-4,f'Rigid clash: {an} / {bn}: {vol}'
 print(f'Rigid-parts clash audit passed: {checked} overlapping bounding-box pairs')
-(OUT/'clash_report.json').write_text(json.dumps(dict(version='v28',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Mating printed threads checked separately with interior probes']),indent=2))
+(OUT/'clash_report.json').write_text(json.dumps(dict(version='v29',rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",latch_count=1,lateral_feet_count=2,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Mating printed threads checked separately with interior probes']),indent=2))
 print('Exporting validated parts',flush=True)
 assembly=cq.Assembly()
 mesh=[]
