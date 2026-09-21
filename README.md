@@ -5,6 +5,20 @@ em CadQuery e visualizador HTML interativo. O corpo mede 190 × 141 × 160 mm.
 É um protótipo de projeto: o funcionamento térmico, a vedação e o controle
 de CO₂ ainda precisam de validação física.
 
+## Imagens
+
+Visualizador com a incubadora fechada e os controles de inspeção.
+
+![Incubadora fechada no visualizador, com controles e seleção de peças](docs/imagens/visualizador.png)
+
+Porta aberta, bandejas retiradas parcialmente e tampas elevadas para visualizar o interior.
+
+![Incubadora aberta com bandejas e tampas afastadas](docs/imagens/incubadora-aberta.png)
+
+Corte das paredes e da porta, mostrando as cavidades internas e a disposição das peças.
+
+![Corte da incubadora com bandejas, compartimentos e paredes com cavidades de ar](docs/imagens/corte-interno.png)
+
 ## Como funciona
 
 A câmara contém três bandejas e um reservatório de água. A lateral reúne
