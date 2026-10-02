@@ -1,6 +1,6 @@
-# Estado atual — v58
+# Estado atual — v59
 
-Arquivos atuais em [output/v58](output/v58/), com visualizador e projeto Creality Print
+Arquivos atuais em [output/v59](output/v59/), com visualizador e projeto Creality Print
 na raiz de `output/`. A árvore atual mantém somente esta versão; revisões anteriores
 estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho atual.
 
@@ -12,7 +12,9 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Porta monolítica com ressalto inteiro em V, junta TPU labial retida e junta secundária no corpo.
 - Fecho central; lingueta liberando a abertura quando girada 90° após afrouxar o manípulo.
 - Duas dobradiças M4 × 20 escareadas, porcas metálicas na porta e apoios externos a 45°.
-- Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta; faces finais verificadas.
+- Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta.
+- Rampa externa da lingueta elimina a face plana remanescente; cavidade CO₂ preservada.
+- Auditoria final dos apoios inclui ambos os lados da base da lingueta e das dobradiças.
 - Suporte removível reforçado, guias abertas, apoio de 6 mm e folga lateral de 0,8 mm por lado.
 - Gavetas com base de 3 mm e rebaixo de lâmina de 0,6 mm; nenhum elemento sobre a lâmina.
 - Lâminas conferidas: 76 × 26 e 75 × 25 mm, espessuras 0,9, 1 e 1,2 mm.
@@ -22,16 +24,16 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 ## Validação
 
 - Corpo único e peças válidas; 60 pares rígidos sem colisão.
-- Faces finais dos tetos internos auditadas nas duas dobradiças e no fecho: rampas a 45°, pontes restantes ≤0,4 mm.
+- Faces finais dos tetos auditadas nas duas dobradiças e no fecho: rampas a 45°, pontes restantes ≤0,4 mm.
 - Amostra da dobradiça recortada da parede oca real, com ambas as rampas.
 - Porta, lingueta, inserção do inox e retirada da caixinha conferidas geometricamente.
 - Extração das gavetas a 0, 5, 15, 30, 50, 72 e 80 mm com porta a 110°.
 - Apoio inferior e limites laterais das lâminas conferidos; envelope superior de 40 mm livre.
 - 36 STL compatíveis com a K1C e margem de 5 mm.
 - 3MF com 36 bandejas em escala 1:1, sem G-code; Creality Print 7.2.1: saída 0, 36 malhas manifold.
-- Visualizador WebGL e controles conferidos; imagens do manual correspondem à v58.
+- Visualizador WebGL e controles conferidos; imagens do manual correspondem à v59.
 
-Relatórios em [output/v58](output/v58/). Os ensaios amplos de roscas/movimento continuam
+Relatórios em [output/v59](output/v59/). Os ensaios amplos de roscas/movimento continuam
 opcionais em `cad/model.py --check-movements`. TPU com compressão intencional é excluído
 da auditoria rígida. As verificações não simulam deformação, resistência ou vazamento.
 

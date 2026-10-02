@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
-parser=argparse.ArgumentParser();parser.add_argument('--version',default='v58');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--version',default='v59');args=parser.parse_args()
 folder=ROOT/'output'/args.version
 manifest=json.loads((folder/'bandejas_creality.json').read_text())
 path=folder/manifest['arquivo'];ns={'m':'http://schemas.microsoft.com/3dmanufacturing/core/2015/02'}

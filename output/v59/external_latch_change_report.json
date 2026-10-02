@@ -1,0 +1,11 @@
+{
+  "version": "v59",
+  "previous_version": "v58",
+  "changed_stl_files": [
+    "corpo_integrado.stl"
+  ],
+  "former_flat_roof_area_mm2": 238.554,
+  "external_latch_flat_roof_area_mm2": 0,
+  "replacement_ramp_angle_deg": 45,
+  "gas_cavity_preserved": true
+}

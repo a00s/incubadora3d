@@ -13,7 +13,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--version', default='v58')
+parser.add_argument('--version', default='v59')
 args = parser.parse_args()
 FOLDER = ROOT / 'output' / args.version
 DEST = FOLDER / f'incubadora_{args.version}_CrealityPrint_7.2.1.3mf'

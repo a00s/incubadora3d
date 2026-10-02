@@ -1,5 +1,5 @@
 {
-  "arquivo": "incubadora_v58_CrealityPrint_7.2.1.3mf",
+  "arquivo": "incubadora_v59_CrealityPrint_7.2.1.3mf",
   "versao_creality": "7.2.1",
   "impressora": "K1C",
   "bico_inicial_mm": 0.4,
@@ -22,8 +22,8 @@
         160.0,
         141.0
       ],
-      "vertices": 11906,
-      "triangulos": 23736,
+      "vertices": 11919,
+      "triangulos": 23758,
       "faces_de_area_zero_removidas": 0,
       "orientacao": "traseira na mesa"
     },

@@ -146,6 +146,26 @@
   "latch_count": 1,
   "latch_height": 70,
   "latch_axis_x": -13,
+  "latch_external_support_ramp_angle_deg": 45,
+  "latch_external_support_ramp_profile_xy": [
+    [
+      -24,
+      9.8
+    ],
+    [
+      -10,
+      9.8
+    ],
+    [
+      -10,
+      24
+    ],
+    [
+      -24,
+      10
+    ]
+  ],
+  "latch_external_support_gas_cavity_preserved": true,
   "latch_internal_wall_support_ramp_angle_deg": 45,
   "latch_internal_wall_support_ramp_profile_xy": [
     [
@@ -478,7 +498,7 @@
   "slide_upper_clearance_continuous_sweep_mm": 40,
   "slide_retention_geometry_checked": true,
   "tray_open_clearance_geometry_checked": true,
-  "body_solid_volume_mm3": 930508.0500980541,
+  "body_solid_volume_mm3": 930905.5166573942,
   "service_cover_removal_lifts_mm": [
     0,
     0.5,
