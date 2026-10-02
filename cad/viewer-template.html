@@ -19,7 +19,7 @@
   </div>
   <details><summary>Encaixe da junta TPU — corte ampliado</summary>__SEAL_SECTION__</details>
   <details open><summary>Peças — seleção por conjunto</summary><button type="button" class="btn" id="inc-all">Mostrar todas</button><div id="inc-parts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px"></div></details>
-  <div id="inc-status" class="text-small" aria-live="polite">v0.57 · Fecho central e junta encaixada sem cola.</div>
+  <div id="inc-status" class="text-small" aria-live="polite">v0.58 · Fecho central e junta encaixada sem cola.</div>
   <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 195 × 141 × 160 mm · traseira plana para impressão · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · entrada livre 112 × 132 mm · fundo plano · revestimento inox 0,3 mm · apoios removíveis · extensão de 10 mm · porta: painel de 15 mm · porta monolítica com ressalto inteiro em V e TPU labial · dobradiças com M4×20 e porca na porta · TPU 95A com dois lábios de 0,6 mm · Entrada CO₂: mangueira Ø externo 5,8 mm · alojamento Ø5,6 × 12 mm · canal reto Ø3,5 mm · CO₂: parede única · curva externa R49 · fechamento interno 45° para impressão traseira · flange R46 · teto integrado 6 mm · Lateral do misturador: parede única · Passagem: Ø5,6 mm · encaixe opcional de mangueira Ø externo 5,8 mm · Raio interno principal: 6 mm</div>
 </div>
 <script>
@@ -161,7 +161,7 @@ function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
 if(dims.checked){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
 if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Passagem interna Ø5,6 · referência',p[0],p[1]+24);}
-get('status').textContent=Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.57 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.57 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+get('status').textContent=Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.58 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.58 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
 for(const el of [service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);

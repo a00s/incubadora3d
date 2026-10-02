@@ -1,0 +1,10 @@
+{
+  "version": "v58",
+  "changed_stl": [
+    "corpo_integrado.stl",
+    "amostra_dobradica_base_M4x20.stl"
+  ],
+  "unchanged_stl_count": 34,
+  "hinge_bores_unchanged": true,
+  "door_and_trays_unchanged": true
+}

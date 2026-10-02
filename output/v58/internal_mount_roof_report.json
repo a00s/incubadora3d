@@ -1,0 +1,25 @@
+{
+  "version": "v58",
+  "build_direction": "-Y",
+  "maximum_ceiling_angle_deg": 45,
+  "actual_final_body_faces_checked": true,
+  "maximum_retained_bridge_mm": 0.4,
+  "regions": [
+    {
+      "region": "hinge_lower",
+      "ceiling_faces_checked": 2,
+      "flat_ceiling_area_mm2": 0
+    },
+    {
+      "region": "hinge_upper",
+      "ceiling_faces_checked": 2,
+      "flat_ceiling_area_mm2": 0
+    },
+    {
+      "region": "latch",
+      "ceiling_faces_checked": 10,
+      "flat_ceiling_area_mm2": 0.8179640689253858
+    }
+  ],
+  "limitation": "CAD roof-face check; support generation must be checked in slicer preview"
+}

@@ -93,9 +93,9 @@
     {
       "peca": "amostra_dobradica_base_M4x20.stl",
       "dimensoes_mm": [
-        20.0,
+        16.0,
         18.0,
-        26.0
+        30.0
       ],
       "cabe_com_margem_5mm": true
     },

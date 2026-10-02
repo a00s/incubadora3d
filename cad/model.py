@@ -7,7 +7,7 @@ import cadquery as cq
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
 from OCP.gp import gp_Pnt
 from OCP.TopAbs import TopAbs_IN
-OUT=Path(__file__).resolve().parents[1]/'output'/'v57'
+OUT=Path(__file__).resolve().parents[1]/'output'/'v58'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=5.6,insulation_extension=10,air_cell_width=6,outer_skin=2)
@@ -148,7 +148,19 @@ for z in [22,102]:
     # 45 degrees, then support its rear half up to the widest circular section.
     hinge_ramp=cq.Workplane('XY',origin=(0,0,z+4.75)).polyline(
         [(128,-6),(136,-6),(136,6),(128,14)]).close().extrude(8)
-    fixed=fixed.union(hinge_ramp)
+    # The mounting web enters the insulation void at X124..128, Y2..6.
+    # Its former flat rear face at Y6 needs support INSIDE the closed wall.
+    # Grow it from the existing outer skin X128 at Y10 toward X124 at Y6.
+    hinge_internal_ramp=cq.Workplane('XY',origin=(0,0,z+4.75)).polyline(
+        [(124,-6),(130,-6),(130,12),(124,6)]).close().extrude(8)
+    fixed=fixed.union(hinge_ramp).union(hinge_internal_ramp)
+    internal_roof_faces=[f for f in hinge_internal_ramp.val().Faces() if f.normalAt().y>.1]
+    assert len(internal_roof_faces)==1
+    assert abs(internal_roof_faces[0].normalAt().y-1/math.sqrt(2))<1e-6
+    P.update(hinge_internal_wall_support_ramp_angle_deg=45,
+             hinge_internal_wall_support_ramp_count=2,
+             hinge_internal_wall_support_ramp_profile_xy=[[124,-6],[130,-6],[130,12],[124,6]],
+             hinge_internal_wall_supported_void_region_xy=[124,128,6,10])
     P.update(hinge_external_support_ramp_angle_deg=45,
              hinge_external_support_ramp_build_direction='-Y',
              hinge_external_support_ramp_count=2,
@@ -202,6 +214,17 @@ P.update(latch_count=1,latch_height=70,latch_axis_x=-13)
 for z in [P['latch_height']]:
     def at_latch(obj):return obj.rotate((0,0,0),(1,0,0),-90).translate((-13,-23,z))
     tab=box(19.75,26,20,-24,-16,z-10).edges('|Y').fillet(3)
+    # Fill only the insulation behind the latch mounting web, not the gas cavity.
+    # Start in the outer skin X-8 at Y13.75; reach X-4.25 at Y10 with a 45° roof.
+    latch_internal_ramp=cq.Workplane('XY',origin=(0,0,z-10)).polyline(
+        [(-10,9.8),(-4.25,9.8),(-4.25,10),(-10,15.75)]).close().extrude(20)
+    tab=tab.union(latch_internal_ramp)
+    latch_roof_faces=[f for f in latch_internal_ramp.val().Faces() if f.normalAt().y>.1]
+    assert len(latch_roof_faces)==1
+    assert abs(latch_roof_faces[0].normalAt().y-1/math.sqrt(2))<1e-6
+    P.update(latch_internal_wall_support_ramp_angle_deg=45,
+             latch_internal_wall_support_ramp_profile_xy=[[-10,9.8],[-4.25,9.8],[-4.25,10],[-10,15.75]],
+             latch_internal_wall_supported_void_region_xy=[-8,-4.25,10,13.75])
     # Smooth guide up to the last 7 mm of the base, then an integral female thread.
     guide=cq.Workplane('XY').circle(4.351).extrude(26)
     receiver_cut=at_latch(thread_clear.union(guide))
@@ -883,7 +906,7 @@ P.update(tray_extraction_positions_checked_mm=tray_pull_positions,
          slide_upper_clearance_continuous_sweep_mm=40,
          slide_retention_geometry_checked=True,tray_open_clearance_geometry_checked=True)
 (OUT/'tray_retention_report.json').write_text(json.dumps(dict(
-    version='v57',tray_count=3,drawer_extraction_positions_mm=tray_pull_positions,
+    version='v58',tray_count=3,drawer_extraction_positions_mm=tray_pull_positions,
     drawer_lateral_clearance_per_side_mm=.8,drawer_upper_guides=False,
     drawer_lateral_stops_checked=True,nominal_slide_sizes_mm=[[76,26],[75,25]],
     slide_thicknesses_checked_mm=[.9,1,1.2],slide_vertical_placement_envelope_mm=40,
@@ -921,6 +944,37 @@ for index,cutter in enumerate(integral_thread_cuts,1):
     body=body.cut(cutter,clean=False)
 assert body.val().isValid(), 'Final body invalid after integral threads'
 assert len(body.solids().vals())==1, 'Body must remain one connected solid'
+# Audit the ACTUAL final ceiling faces inside the wall, after all mounting unions.
+# Front face is -Y; ceilings inside a closed void face +Y (toward the bed).
+internal_roof_regions=[('hinge_lower',box(5.998,18,7.998,122.001,2,26.751)),
+                       ('hinge_upper',box(5.998,18,7.998,122.001,2,106.751)),
+                       ('latch',box(5.998,18,19.998,-7.999,2,60.001))]
+internal_roof_audit=[]
+for name,region in internal_roof_regions:
+    roof_count=0;flat_roof_area=0
+    for face in body.val().Faces():
+        if face.geomType()!='PLANE':continue
+        normal=face.normalAt()
+        if normal.y<.01:continue
+        clipped_face=face.intersect(region.val())
+        overlap=clipped_face.Area()
+        if overlap<1e-5:continue
+        roof_count+=1
+        if normal.y>.99:
+            # The existing insulation roof ends in a nominal 0.4 mm bridge.
+            # Keep that tiny closure, reject the former broad mounting ledges.
+            span=clipped_face.BoundingBox().xlen
+            assert span<=.40001, f'Unsupported internal flat mounting roof: {name}, span {span}'
+            flat_roof_area+=overlap
+        else:
+            assert normal.y<=1/math.sqrt(2)+1e-6, f'Unsupported internal mounting ramp: {name}'
+    assert roof_count>0, f'Missing internal mounting ramp: {name}'
+    internal_roof_audit.append(dict(region=name,ceiling_faces_checked=roof_count,flat_ceiling_area_mm2=flat_roof_area))
+(OUT/'internal_mount_roof_report.json').write_text(json.dumps(dict(
+    version='v58',build_direction='-Y',maximum_ceiling_angle_deg=45,
+    actual_final_body_faces_checked=True,maximum_retained_bridge_mm=.4,regions=internal_roof_audit,
+    limitation='CAD roof-face check; support generation must be checked in slicer preview'),indent=2))
+
 P['body_solid_volume_mm3']=body.val().Volume()
 P['service_cover_removal_lifts_mm']=[0,.5,2,5,12,25,50,90,110]
 P['rear_plane_y']=125
@@ -1009,7 +1063,7 @@ for i,(an,ao,ak) in enumerate(rigid):
         vol=independent(a_shape).intersect(independent(b_shape)).val().Volume()
         assert vol<1e-4,f'Rigid clash: {an} / {bn}: {vol}'
 print(f'Rigid-parts clash audit passed: {checked} overlapping bounding-box pairs')
-(OUT/'clash_report.json').write_text(json.dumps(dict(version='v57',changed_door_angles_deg=P['changed_door_angles_checked'],liner_insertion=P['liner_insertion_test'],removable_rack_clearance_checked=True,latch_free_door_angles_deg=P['latch_free_door_angles_checked'],latch_release_angles_deg=P['latch_release_angles_checked'],rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",service_cover_removal_lifts_mm=P['service_cover_removal_lifts_mm'],latch_count=1,lateral_feet_count=0,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes', 'Movement checks deferred unless explicitly enabled', 'Service M4 shaft is checked at thread-root diameter; actual thread crests intentionally engage plastic.']),indent=2))
+(OUT/'clash_report.json').write_text(json.dumps(dict(version='v58',changed_door_angles_deg=P['changed_door_angles_checked'],liner_insertion=P['liner_insertion_test'],removable_rack_clearance_checked=True,latch_free_door_angles_deg=P['latch_free_door_angles_checked'],latch_release_angles_deg=P['latch_release_angles_checked'],rigid_pairs_checked=checked,rigid_clashes=0,door_angles_deg=list(range(0,111,5)) if CHECK_MOVEMENTS else [],movement_tests="executed" if CHECK_MOVEMENTS else "deferred",service_cover_removal_lifts_mm=P['service_cover_removal_lifts_mm'],latch_count=1,lateral_feet_count=0,support_plane_z_mm=-10,closed_corner_channels=4,gas_passage_diameter_mm=P['port_diameter'],thread_motion_checks=thread_motion_checks,limitations=['Discrete movement samples', 'Intentional TPU compression excluded', 'Conservative envelopes for threaded parts against surrounding components', 'Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes', 'Movement checks deferred unless explicitly enabled', 'Service M4 shaft is checked at thread-root diameter; actual thread crests intentionally engage plastic.']),indent=2))
 print('Exporting validated parts',flush=True)
 assembly=cq.Assembly()
 mesh=[]
@@ -1035,6 +1089,9 @@ cq.exporters.export(rear_down,str(print_folder/'corpo_integrado.stl'))
 (OUT/'parameters.json').write_text(json.dumps(P,indent=2))
 print(f'{len(parts)} valid parts exported')
 
+# Actual hollow wall coupon includes both the external and internal hinge ramps.
+hinge_fixed_coupon=body.intersect(box(18,31,18,120,-13,22))
+assert hinge_fixed_coupon.val().isValid() and len(hinge_fixed_coupon.solids().vals())==1
 # Printable short fit coupons use exactly the same seal/channel profiles.
 def section(stations,length):
     points=[(10+half,y) for y,half in stations]+[(10-half,y) for y,half in reversed(stations)]

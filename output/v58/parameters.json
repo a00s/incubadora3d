@@ -109,6 +109,32 @@
   "hinge_sleeve_length": 8.5,
   "hinge_nuts_in_door": true,
   "hinge_head_style": "countersunk, confirmed by user",
+  "hinge_internal_wall_support_ramp_angle_deg": 45,
+  "hinge_internal_wall_support_ramp_count": 2,
+  "hinge_internal_wall_support_ramp_profile_xy": [
+    [
+      124,
+      -6
+    ],
+    [
+      130,
+      -6
+    ],
+    [
+      130,
+      12
+    ],
+    [
+      124,
+      6
+    ]
+  ],
+  "hinge_internal_wall_supported_void_region_xy": [
+    124,
+    128,
+    6,
+    10
+  ],
   "hinge_external_support_ramp_angle_deg": 45,
   "hinge_external_support_ramp_build_direction": "-Y",
   "hinge_external_support_ramp_count": 2,
@@ -120,6 +146,31 @@
   "latch_count": 1,
   "latch_height": 70,
   "latch_axis_x": -13,
+  "latch_internal_wall_support_ramp_angle_deg": 45,
+  "latch_internal_wall_support_ramp_profile_xy": [
+    [
+      -10,
+      9.8
+    ],
+    [
+      -4.25,
+      9.8
+    ],
+    [
+      -4.25,
+      10
+    ],
+    [
+      -10,
+      15.75
+    ]
+  ],
+  "latch_internal_wall_supported_void_region_xy": [
+    -8,
+    -4.25,
+    10,
+    13.75
+  ],
   "latch_finger_grip_projection": 11,
   "latch_contact_height": 16,
   "latch_contact_chamfer": 0.8,
@@ -427,7 +478,7 @@
   "slide_upper_clearance_continuous_sweep_mm": 40,
   "slide_retention_geometry_checked": true,
   "tray_open_clearance_geometry_checked": true,
-  "body_solid_volume_mm3": 930252.7150316349,
+  "body_solid_volume_mm3": 930508.0500980541,
   "service_cover_removal_lifts_mm": [
     0,
     0.5,

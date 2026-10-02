@@ -3,7 +3,7 @@ import gzip
 import json
 from pathlib import Path
 p=Path(__file__).resolve().parents[1]
-folder=p/'output/v57'
+folder=p/'output/v58'
 # Compact display mesh only; CAD/STL export precision is unchanged.
 preview=json.loads((folder/'mesh.json').read_text())
 # Adjustable sections are computed in the viewer; omit obsolete fixed-cut meshes.

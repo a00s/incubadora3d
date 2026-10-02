@@ -1,19 +1,20 @@
-# Mini incubadora CO₂ — v57
+# Mini incubadora CO₂ — v58
 
 Modelo mecânico para impressão 3D, desenvolvido em CadQuery, com porta articulada,
 três gavetas removíveis, reservatório de água e compartimentos de CO₂ e eletrônica.
-A versão atual usa guias abertas para as gavetas e apoia as lâminas somente por baixo.
+A versão atual acrescenta rampas a 45° dentro das paredes atrás das dobradiças e do fecho.
+As gavetas usam guias abertas e as lâminas são apoiadas somente por baixo.
 Vedação, resistência e funcionamento térmico ainda precisam de validação física.
 
-![Incubadora v57 fechada, com porta e fecho central](docs/imagens/incubadora-fechada.png)
+![Incubadora v58 fechada, com porta e fecho central](docs/imagens/incubadora-fechada.png)
 
 ## Arquivos para visualizar e imprimir
 
 - [Visualizador interativo offline](output/visualizador.html): baixe e abra no navegador.
 - [Projeto Creality Print 7.2.1](output/incubadora_CrealityPrint_7.2.1.3mf): 36 bandejas, escala 1:1, sem fatiamento ou G-code.
-- [STL da carcaça com a traseira na mesa](output/v57/impressao_traseira_na_mesa/corpo_integrado.stl).
-- [STL, STEP, amostras e relatórios da v57](output/v57/).
-- [Conjunto completo em STEP](output/v57/conjunto.step).
+- [STL da carcaça com a traseira na mesa](output/v58/impressao_traseira_na_mesa/corpo_integrado.stl).
+- [STL, STEP, amostras e relatórios da v58](output/v58/).
+- [Conjunto completo em STEP](output/v58/conjunto.step).
 - [Situação técnica e pendências](STATUS.md).
 
 O GitHub não executa o HTML: salve o arquivo localmente para usar os controles.
@@ -36,7 +37,7 @@ As medidas estão em milímetros. Largura × altura × profundidade para a câma
 | Alojamento das lâminas | 76,8 × 26,8; rebaixo de 0,6 |
 | Caixinha traseira, largura × altura × profundidade | 70 × 60 × 21 |
 
-A caixa inox e o [molde de referência](output/v57/molde_caixa_inox_referencia.stl)
+A caixa inox e o [molde de referência](output/v58/molde_caixa_inox_referencia.stl)
 não constituem um plano de corte de chapa: dobras, raios e acabamento precisam ser
 conferidos na fabricação. Os furos de referência do inox alinham as passagens de CO₂ e fios.
 
@@ -50,8 +51,10 @@ O manípulo central regula a compressão. A estanqueidade depende do ajuste e de
 Para abrir, afrouxe o manípulo e gire a lingueta central 90° para baixo.
 As duas dobradiças usam M4 × 20 escareados, porcas metálicas na porta e buchas de compressão.
 Os apoios fixos têm rampas externas a 45° para impressão da carcaça com a traseira na mesa.
+Atrás das duas dobradiças e da base da lingueta, as rampas dentro da parede também
+fecham a 45°, substituindo os tetos retos sobre as cavidades de isolamento.
 
-![Porta aberta a 110° e gavetas parcialmente retiradas na v57](docs/imagens/incubadora-aberta.png)
+![Porta aberta a 110° e gavetas parcialmente retiradas na v58](docs/imagens/incubadora-aberta.png)
 
 O misturador de CO₂ tem teto integrado, com abertura para o sensor.
 A tampa lateral removível dá acesso à eletrônica: solte seu M4 × 12 e retire-a para cima.
@@ -88,9 +91,9 @@ do piloto e 6,25 mm nas laterais. A parede quente de 4 mm permanece contínua so
 
 As passagens de fios usam buchas TPU. Montagem dos fios, compressão das buchas,
 retenção dos parafusos e vedação precisam ser conferidas com os componentes reais.
-Teste primeiro a [amostra da fixação M4](output/v57/amostra_caixinha_fixacao_M4.stl).
+Teste primeiro a [amostra da fixação M4](output/v58/amostra_caixinha_fixacao_M4.stl).
 
-![Vista traseira com caixinha de fios e fixações da v57](docs/imagens/traseira-caixinha.png)
+![Vista traseira com caixinha de fios e fixações da v58](docs/imagens/traseira-caixinha.png)
 
 ## Impressão
 
@@ -119,7 +122,7 @@ Imprima as amostras de encaixe e vedação antes de comprometer a carcaça intei
 
 ## Visualizador
 
-![Controles atuais do visualizador da v57](docs/imagens/visualizador.png)
+![Controles atuais do visualizador da v58](docs/imagens/visualizador.png)
 
 - Arraste o modelo para girar e use **Zoom** para aproximar.
 - Selecione **Fecho → Afrouxado e girado 90°** para abrir a porta.
@@ -139,8 +142,8 @@ python3 -m venv .venv
 .venv/bin/python cad/model.py
 .venv/bin/python cad/check_k1c.py
 .venv/bin/python cad/build_viewer.py
-.venv/bin/python cad/build_creality_project.py --version v57
-.venv/bin/python cad/check_creality_project.py --version v57
+.venv/bin/python cad/build_creality_project.py --version v58
+.venv/bin/python cad/check_creality_project.py --version v58
 ```
 
 O gerador confere sólidos, interferências e movimentos específicos da porta,
@@ -162,12 +165,13 @@ Acesse `http://IP_DO_SERVIDOR:8081/` com a porta acessível na rede.
 
 ## Validação disponível
 
-A v57 passou em 60 pares rígidos sem colisões. O projeto contém 36 bandejas em escala 1:1;
+A v58 passou em 60 pares rígidos sem colisões. O projeto contém 36 bandejas em escala 1:1;
 as malhas cabem na K1C com margem de 5 mm. A leitura nativa do Creality Print 7.2.1
 terminou com 36 malhas manifold. Gavetas foram conferidas em sete posições de extração;
 a área acima das lâminas está livre em um envelope vertical contínuo de 40 mm.
 
-Relatórios: [geometria e colisões](output/v57/clash_report.json),
-[gavetas e lâminas](output/v57/tray_retention_report.json) e
-[projeto Creality](output/v57/projeto_creality_verificacao.json).
+Relatórios: [tetos internos dos apoios](output/v58/internal_mount_roof_report.json),
+[geometria e colisões](output/v58/clash_report.json),
+[gavetas e lâminas](output/v58/tray_retention_report.json) e
+[projeto Creality](output/v58/projeto_creality_verificacao.json).
 Não há fatiamento, ensaio de estanqueidade ou validação operacional.
