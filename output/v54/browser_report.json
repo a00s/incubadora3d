@@ -1,0 +1,14 @@
+{
+  "result": {
+    "test": "passed"
+  },
+  "page_errors": [],
+  "new_pod_and_two_m4_present": true,
+  "v_door_preserved": true,
+  "checks": [
+    "WebGL and nonempty canvas",
+    "door lock and tray interlock",
+    "rear view and pod isolation",
+    "new insulation horizontal section at Z60"
+  ]
+}

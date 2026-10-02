@@ -1,0 +1,256 @@
+{
+  "impressora": "Creality K1C",
+  "volume_mm": [
+    220,
+    220,
+    250
+  ],
+  "fonte": "https://www.creality.com/products/k1c-carbon-3d-printer",
+  "margem_por_lado_mm": 5,
+  "orientacao": "Mantida a orientação do CAD; peças centralizadas individualmente com Z mínimo zero. Suportes e orientação final pendentes.",
+  "pecas": [
+    {
+      "peca": "TPU_passagem_aquecedor.stl",
+      "dimensoes_mm": [
+        20.0,
+        17.5,
+        19.99
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "TPU_passagem_sensor.stl",
+      "dimensoes_mm": [
+        17.5,
+        16.0,
+        16.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_bucha_sensor_TPU_15.3.stl",
+      "dimensoes_mm": [
+        24.0,
+        23.99,
+        9.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_bucha_sensor_TPU_15.5.stl",
+      "dimensoes_mm": [
+        24.0,
+        23.99,
+        9.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_canal_rigido.stl",
+      "dimensoes_mm": [
+        20.0,
+        35.0,
+        8.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_encaixe_RJ45.stl",
+      "dimensoes_mm": [
+        31.0,
+        27.0,
+        1.6
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_entrada_CO2_mangueira_OD5p8.stl",
+      "dimensoes_mm": [
+        10.0,
+        10.0,
+        33.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_fechamento_CO2_45graus_PC.stl",
+      "dimensoes_mm": [
+        53.0,
+        8.0,
+        85.5
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_furo_sensor_integrado.stl",
+      "dimensoes_mm": [
+        32.0,
+        32.0,
+        6.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_junta_TPU.stl",
+      "dimensoes_mm": [
+        3.5,
+        35.0,
+        4.5
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "amostra_passagem_interna_CO2_OD5p8.stl",
+      "dimensoes_mm": [
+        14.0,
+        18.0,
+        18.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "bandeja_1.stl",
+      "dimensoes_mm": [
+        103.0,
+        72.0,
+        8.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "bandeja_2.stl",
+      "dimensoes_mm": [
+        103.0,
+        72.0,
+        8.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "bandeja_3.stl",
+      "dimensoes_mm": [
+        103.0,
+        72.0,
+        8.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "bucha_sensor_TPU.stl",
+      "dimensoes_mm": [
+        24.0,
+        23.99,
+        9.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "caixinha_encaixe_aquecedor.stl",
+      "dimensoes_mm": [
+        36.0,
+        23.0,
+        30.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "corpo_integrado.stl",
+      "dimensoes_mm": [
+        190.0,
+        141.0,
+        160.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "junta_porta.stl",
+      "dimensoes_mm": [
+        115.5,
+        4.5,
+        135.5
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "lingueta_fecho_70.stl",
+      "dimensoes_mm": [
+        30.0,
+        15.0,
+        20.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "manipulo_fecho_70.stl",
+      "dimensoes_mm": [
+        20.0,
+        34.0,
+        20.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "pino_dobradica_102.stl",
+      "dimensoes_mm": [
+        6.5,
+        5.63,
+        31.4
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "pino_dobradica_22.stl",
+      "dimensoes_mm": [
+        6.5,
+        5.63,
+        31.4
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "porca_pino_dobradica_102.stl",
+      "dimensoes_mm": [
+        7.5,
+        6.5,
+        3.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "porca_pino_dobradica_22.stl",
+      "dimensoes_mm": [
+        7.5,
+        6.5,
+        3.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "porta_articulada.stl",
+      "dimensoes_mm": [
+        131.0,
+        29.0,
+        140.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "reservatorio_agua.stl",
+      "dimensoes_mm": [
+        90.0,
+        70.0,
+        18.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "tampa_manutencao_CO2_eletronica.stl",
+      "dimensoes_mm": [
+        49.0,
+        114.0,
+        145.0
+      ],
+      "cabe_com_margem_5mm": true
+    }
+  ]
+}

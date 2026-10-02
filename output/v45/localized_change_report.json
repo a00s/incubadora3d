@@ -1,0 +1,69 @@
+{
+  "version": "v45",
+  "previous": "v44",
+  "unchanged_stls": [
+    "TPU_passagem_aquecedor.stl",
+    "TPU_passagem_sensor.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "amostra_canal_rigido.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_entrada_CO2_mangueira_OD5p8.stl",
+    "amostra_fechamento_CO2_45graus_PC.stl",
+    "amostra_furo_sensor_integrado.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_passagem_interna_CO2_OD5p8.stl",
+    "bandeja_1.stl",
+    "bandeja_2.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "reservatorio_agua.stl",
+    "tampa_manutencao_CO2_eletronica.stl"
+  ],
+  "changed_stls": [
+    "corpo_integrado.stl",
+    "junta_porta.stl",
+    "lingueta_fecho_70.stl",
+    "manipulo_fecho_70.stl",
+    "pino_dobradica_102.stl",
+    "pino_dobradica_22.stl",
+    "porca_pino_dobradica_102.stl",
+    "porca_pino_dobradica_22.stl",
+    "porta_articulada.stl"
+  ],
+  "added_stls": [
+    "molde_caixa_inox_referencia.stl",
+    "suporte_gavetas_removivel.stl"
+  ],
+  "removed_stls": [],
+  "rear_down_body_dimensions_mm": [
+    193.9993133544922,
+    160.0,
+    141.0
+  ],
+  "lining_thickness_mm": 0.05,
+  "front_clear_section_mm": [
+    112,
+    132
+  ],
+  "outer_lining_dimensions_mm": [
+    111,
+    131,
+    110
+  ],
+  "rigid_pairs_checked": 54,
+  "door_angles_checked": [
+    0,
+    30,
+    60,
+    90,
+    110
+  ],
+  "liner_insertion_continuous_envelope_clear": true,
+  "limitations": [
+    "Physical fit and sheet forming untested",
+    "Full slicing and support review pending",
+    "Viewer WebGL rendering unavailable in this environment"
+  ]
+}

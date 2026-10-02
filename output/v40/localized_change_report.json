@@ -1,0 +1,50 @@
+{
+  "baseline": "v39",
+  "version": "v40",
+  "modified_stls": [
+    "corpo_integrado.stl"
+  ],
+  "unchanged_stls": [
+    "bandeja_1.stl",
+    "TPU_passagem_aquecedor.stl",
+    "junta_porta.stl",
+    "lingueta_fecho_70.stl",
+    "tampa_manutencao_CO2_eletronica.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "reservatorio_agua.stl",
+    "pino_dobradica_22.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "porta_articulada.stl",
+    "porca_pino_dobradica_22.stl",
+    "manipulo_fecho_70.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_canal_rigido.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "bandeja_2.stl",
+    "amostra_furo_sensor_integrado.stl",
+    "porca_pino_dobradica_102.stl",
+    "pino_dobradica_102.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "TPU_passagem_sensor.stl"
+  ],
+  "removed_stls": [
+    "amostra_entrada_CO2_4p5mm.stl"
+  ],
+  "new_stls": [
+    "amostra_entrada_CO2_mangueira_OD5p8.stl"
+  ],
+  "hose_outer_diameter_mm": 5.8,
+  "socket_diameter_mm": 5.6,
+  "socket_depth_mm": 12,
+  "straight_bore_diameter_mm": 3.5,
+  "external_projection_mm": 12,
+  "external_width_mm": 202,
+  "sample_orientation": "Horizontal bore as in CAD body; sample rests on bed at Z0.",
+  "limitations": [
+    "Real hose interference, filament shrinkage and open printed bore require coupon testing.",
+    "Final body slicing/orientation and support-free printing remain deferred.",
+    "Browser rendering not repeated after previous environment WebGL limitation."
+  ]
+}

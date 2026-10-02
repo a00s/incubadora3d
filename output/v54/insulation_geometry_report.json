@@ -1,0 +1,45 @@
+{
+  "version": "v54",
+  "old_cavity_count": 396,
+  "new_cavity_count": 23,
+  "old_insulation_solid_mm3": 541957.9199999985,
+  "new_insulation_solid_mm3": 432006.23999999976,
+  "insulation_material_reduction_pct": 20.287862939616986,
+  "walls": [
+    {
+      "wall": "right",
+      "new_cells": 2,
+      "old_solid_mm3": 113980.15999999938,
+      "new_solid_mm3": 89403.36
+    },
+    {
+      "wall": "rear",
+      "new_cells": 15,
+      "old_solid_mm3": 121827.59999999969,
+      "new_solid_mm3": 127259.99999999972
+    },
+    {
+      "wall": "top",
+      "new_cells": 2,
+      "old_solid_mm3": 96084.99999999985,
+      "new_solid_mm3": 62969.76000000001
+    },
+    {
+      "wall": "bottom",
+      "new_cells": 2,
+      "old_solid_mm3": 96085.00000000001,
+      "new_solid_mm3": 62969.76000000004
+    },
+    {
+      "wall": "left",
+      "new_cells": 2,
+      "old_solid_mm3": 113980.15999999963,
+      "new_solid_mm3": 89403.35999999999
+    }
+  ],
+  "actual_void_roof_faces_checked": true,
+  "roof_angle_deg": 45,
+  "maximum_closure_bridge_mm": 0.4,
+  "skins_mm": 2,
+  "limitation": "CAD geometry check; no sliced support, filament or time estimate"
+}

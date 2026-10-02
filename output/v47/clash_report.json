@@ -1,0 +1,46 @@
+{
+  "version": "v47",
+  "changed_door_angles_deg": [
+    0,
+    0.5,
+    1,
+    2,
+    5,
+    15,
+    30,
+    60,
+    90,
+    110
+  ],
+  "liner_insertion": "continuous swept envelope; door at 110 degrees; cable seals installed afterwards",
+  "removable_rack_clearance_checked": true,
+  "rigid_pairs_checked": 59,
+  "rigid_clashes": 0,
+  "door_angles_deg": [],
+  "movement_tests": "deferred",
+  "service_cover_removal_lifts_mm": [
+    0,
+    0.5,
+    2,
+    5,
+    12,
+    25,
+    50,
+    90,
+    110
+  ],
+  "latch_count": 1,
+  "lateral_feet_count": 0,
+  "support_plane_z_mm": -10,
+  "closed_corner_channels": 4,
+  "gas_passage_diameter_mm": 5.6,
+  "thread_motion_checks": 0,
+  "limitations": [
+    "Discrete movement samples",
+    "Intentional TPU compression excluded",
+    "Conservative envelopes for threaded parts against surrounding components",
+    "Integral threaded receivers checked separately; cylindrical reliefs used only for diagnostic envelopes",
+    "Movement checks deferred unless explicitly enabled",
+    "Service M4 shaft is checked at thread-root diameter; actual thread crests intentionally engage plastic."
+  ]
+}

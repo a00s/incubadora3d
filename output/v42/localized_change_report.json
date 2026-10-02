@@ -1,0 +1,82 @@
+{
+  "baseline": "v41",
+  "version": "v42",
+  "modified_stls": [
+    "amostra_entrada_CO2_mangueira_OD5p8.stl",
+    "corpo_integrado.stl"
+  ],
+  "unchanged_stls": [
+    "bandeja_1.stl",
+    "TPU_passagem_aquecedor.stl",
+    "junta_porta.stl",
+    "lingueta_fecho_70.stl",
+    "tampa_manutencao_CO2_eletronica.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "reservatorio_agua.stl",
+    "pino_dobradica_22.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "porta_articulada.stl",
+    "porca_pino_dobradica_22.stl",
+    "manipulo_fecho_70.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_canal_rigido.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "bandeja_2.stl",
+    "amostra_furo_sensor_integrado.stl",
+    "porca_pino_dobradica_102.stl",
+    "pino_dobradica_102.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "TPU_passagem_sensor.stl"
+  ],
+  "gas_wall_count": 1,
+  "gas_curved_wall_mm": 4,
+  "gas_chamber_expanded": true,
+  "rear_inlet_plane_y_mm": 125,
+  "external_projection_mm": 0,
+  "internal_shoulder": "2 mm conical transition",
+  "rear_down_print_file": "output/v42/impressao_traseira_na_mesa/corpo_integrado.stl",
+  "rear_down_bounds_mm": {
+    "min": [
+      0.0,
+      0.0,
+      -1.1098779645782688e-15
+    ],
+    "max": [
+      189.9993133544922,
+      160.0,
+      141.0
+    ],
+    "size": [
+      189.9993133544922,
+      160.0,
+      141.0
+    ],
+    "nominal_envelope_tolerance_mm": 0.01
+  },
+  "material_comparison": {
+    "corpo_integrado.stl": {
+      "v41_volume_mm3": 1037916.1076877309,
+      "v42_volume_mm3": 998668.4118237566,
+      "reduction_percent": 3.78139384997216
+    },
+    "tampa_manutencao_CO2_eletronica.stl": {
+      "v41_volume_mm3": 52086.04518417019,
+      "v42_volume_mm3": 52086.04518417019,
+      "reduction_percent": 0.0
+    },
+    "total": {
+      "v41_volume_mm3": 1090002.1528719012,
+      "v42_volume_mm3": 1050754.457007927,
+      "reduction_percent": 3.600698930783372,
+      "method": "Signed triangle volumes of exported STL; slicer filament use depends on settings."
+    }
+  },
+  "limitations": [
+    "Full slicer overhang and support audit still required.",
+    "Gas chamber expanded; flow performance unvalidated.",
+    "STL volume comparison is not slicer filament consumption.",
+    "WebGL rendering not repeated after previous environment limitation."
+  ]
+}

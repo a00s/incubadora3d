@@ -1,0 +1,9 @@
+{
+  "version": "v54",
+  "application": "Creality Print 7.2.1.5476",
+  "command": "--info",
+  "exit_code": 0,
+  "manifold_meshes": 36,
+  "non_manifold_meshes": 0,
+  "sliced": false
+}

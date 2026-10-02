@@ -1,0 +1,12 @@
+{
+  "arquivo": "incubadora_v54_CrealityPrint_7.2.1.3mf",
+  "zip_valid": true,
+  "xml_valid": true,
+  "bandejas": 36,
+  "uma_peca_por_bandeja": true,
+  "escala_1para1": true,
+  "malhas_e_indices_validos": true,
+  "cabe_k1c_com_margem_5mm": true,
+  "gcode_incluido": false,
+  "verificacao": "Estrutura e geometria; leitura e renderizacao no Creality Print dependem do teste nativo separado"
+}

@@ -1,0 +1,69 @@
+{
+  "baseline": "v37",
+  "version": "v38",
+  "modified_stls": [
+    "tampa_manutencao_CO2_eletronica.stl",
+    "tampa_misturador.stl",
+    "parafuso_tampa_3.stl",
+    "corpo_integrado.stl"
+  ],
+  "unchanged_stls": [
+    "bandeja_1.stl",
+    "TPU_passagem_aquecedor.stl",
+    "junta_porta.stl",
+    "lingueta_fecho_70.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "reservatorio_agua.stl",
+    "pino_dobradica_22.stl",
+    "junta_tampa_TPU.stl",
+    "parafuso_tampa_1.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "porta_articulada.stl",
+    "porca_pino_dobradica_22.stl",
+    "manipulo_fecho_70.stl",
+    "amostra_tampa_sensor.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_canal_rigido.stl",
+    "amostra_entrada_CO2_4p5mm.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "bandeja_2.stl",
+    "parafuso_tampa_2.stl",
+    "porca_pino_dobradica_102.stl",
+    "pino_dobradica_102.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "TPU_passagem_sensor.stl"
+  ],
+  "pcb_and_service_screw_unchanged": true,
+  "pcb_z_mm": [
+    52,
+    95.12
+  ],
+  "connector_clearance_z_mm": [
+    [
+      42,
+      52
+    ],
+    [
+      95.12,
+      105.12
+    ]
+  ],
+  "connector_envelope_width_depth_mm": [
+    25.16,
+    10
+  ],
+  "wire_groove_width_mm": 7,
+  "assembled_cable_corridor_mm": [
+    7,
+    7
+  ],
+  "open_edge": "rear, with cover removed",
+  "outer_top_z_mm": 150,
+  "mixer_rear_screw_shift_x_mm": 2,
+  "limitations": [
+    "Connector depth and actual cable bend radii not measured; 10 mm provisional depth checked.",
+    "Browser render not rechecked; previous environment lacked WebGL."
+  ]
+}

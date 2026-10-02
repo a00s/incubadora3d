@@ -1,0 +1,39 @@
+{
+  "version": "v57",
+  "tray_count": 3,
+  "drawer_extraction_positions_mm": [
+    0,
+    5,
+    15,
+    30,
+    50,
+    72,
+    80
+  ],
+  "drawer_lateral_clearance_per_side_mm": 0.8,
+  "drawer_upper_guides": false,
+  "drawer_lateral_stops_checked": true,
+  "nominal_slide_sizes_mm": [
+    [
+      76,
+      26
+    ],
+    [
+      75,
+      25
+    ]
+  ],
+  "slide_thicknesses_checked_mm": [
+    0.9,
+    1,
+    1.2
+  ],
+  "slide_vertical_placement_envelope_mm": 40,
+  "slide_no_upper_overlap": true,
+  "slide_bottom_support_and_edge_stops_checked": true,
+  "limitations": [
+    "Rigid geometric checks",
+    "Printed fit and strength require physical test",
+    "Open pockets do not retain slides against lifting or inversion"
+  ]
+}

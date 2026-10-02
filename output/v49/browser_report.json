@@ -1,0 +1,14 @@
+{
+  "result": {
+    "test": "passed"
+  },
+  "page_errors": [],
+  "new_v_door_gasket_present": true,
+  "separate_hatch_absent": true,
+  "obsolete_u_gasket_absent": true,
+  "checks": [
+    "WebGL and nonempty canvas",
+    "door lock and tray interlock",
+    "open and cut controls"
+  ]
+}

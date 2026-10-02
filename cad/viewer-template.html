@@ -3,13 +3,13 @@
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-service"><span class="form-check-label">Retirar tampa de manutenção</span></label>
     <label class="form-label">Fecho<select class="form-select" id="inc-lock"><option value="locked">Travado</option><option value="free">Afrouxado e girado 90°</option></select></label>
     <label class="form-label">Abrir porta <output id="inc-door-value">0°</output><input class="form-range" id="inc-door" type="range" min="0" max="110" value="0"></label>
-    <label class="form-label">Retirar tampa do misturador <input class="form-range" id="inc-lid" type="range" min="0" max="40" value="0"></label>
+    <label class="form-label">Elevar sensor CO₂ <input class="form-range" id="inc-lid" type="range" min="0" max="40" value="0"></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-shell" checked><span class="form-check-label">Carcaça</span></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-cut"><span class="form-check-label">Corte das paredes e porta</span></label>
     <label class="form-label">Altura do corte <output id="inc-cut-value">70 mm</output><input class="form-range" id="inc-cut-height" type="range" min="-10" max="150" step="1" value="70" disabled><small>Move o corte horizontal das paredes e da porta.</small></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-dims" checked><span class="form-check-label">Dimensões</span></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-channel"><span class="form-check-label">Destacar furo interno (referência)</span></label>
-    <label class="form-label">Retirar bandejas <input class="form-range" id="inc-trays" type="range" min="0" max="70" value="0"></label>
+    <label class="form-label">Retirar gavetas <input class="form-range" id="inc-trays" type="range" min="0" max="80" value="0"><small>Apoie as gavetas nas guias abertas. Coloque e retire a lâmina por cima, no alojamento inferior.</small></label>
     <label class="form-label">Girar <input class="form-range" id="inc-angle" type="range" min="-180" max="180" value="35"></label>
     <label class="form-label">Zoom <input class="form-range" id="inc-zoom" type="range" min="0.2" max="8" step="0.05" value="1"></label>
   </div>
@@ -19,8 +19,8 @@
   </div>
   <details><summary>Encaixe da junta TPU — corte ampliado</summary>__SEAL_SECTION__</details>
   <details open><summary>Peças — seleção por conjunto</summary><button type="button" class="btn" id="inc-all">Mostrar todas</button><div id="inc-parts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px"></div></details>
-  <div id="inc-status" class="text-small" aria-live="polite">v0.32 · Fecho central e junta encaixada sem cola.</div>
-  <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 190 × 141 × 160 mm · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · espaço interno preservado · extensão de 10 mm · porta: painel completo de 15 mm · Entrada CO₂: mangueira Ø interno 4,5 mm · Misturador: R32 × 110 mm · flange R46 · tampa 6 mm · Lateral do misturador: parede dupla · Passagem: Ø4 mm · Raio interno principal: 6 mm</div>
+  <div id="inc-status" class="text-small" aria-live="polite">v0.57 · Fecho central e junta encaixada sem cola.</div>
+  <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 195 × 141 × 160 mm · traseira plana para impressão · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · entrada livre 112 × 132 mm · fundo plano · revestimento inox 0,3 mm · apoios removíveis · extensão de 10 mm · porta: painel de 15 mm · porta monolítica com ressalto inteiro em V e TPU labial · dobradiças com M4×20 e porca na porta · TPU 95A com dois lábios de 0,6 mm · Entrada CO₂: mangueira Ø externo 5,8 mm · alojamento Ø5,6 × 12 mm · canal reto Ø3,5 mm · CO₂: parede única · curva externa R49 · fechamento interno 45° para impressão traseira · flange R46 · teto integrado 6 mm · Lateral do misturador: parede única · Passagem: Ø5,6 mm · encaixe opcional de mangueira Ø externo 5,8 mm · Raio interno principal: 6 mm</div>
 </div>
 <script>
 (async()=>{
@@ -42,7 +42,7 @@ gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw
 const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
 for(const [name,offset] of [['position',0],['color',12]]){const loc=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,24,offset);}
 gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(0,0,0,0);
-const names={tampa_manutencao_CO2_eletronica:'Tampa de manutenção · quatro pinos',TPU_passagem_sensor:'Bucha TPU lateral · três fios do sensor',caixinha_encaixe_aquecedor:'Caixinha encaixada · plugue à direita',TPU_passagem_aquecedor:'Bucha TPU · dois fios do aquecedor',suporte_encaixe_conector_aquecedor:'Suporte de encaixe · alimentação',capsula_conector_aquecedor:'Cápsula removível · plugue lateral Ø8',tampo_encaixe_fios_CO2:'Cobertura dos fios CO₂ · revisão pendente',tampa_alimentacao_aquecedor_provisoria:'Tampa alimentação aquecedor · furo Ø8 provisório',sensor_temperatura_umidade_referencia:'Sensor temperatura/umidade · posição provisória',chapa_aquecedor_referencia:'Chapa metálica · referência',pelicula_aquecedora_90x33_referencia:'Aquecedor 90 × 33 mm · referência',bucha_sensor_TPU:'Bucha TPU de encaixe do sensor',caixa_eletronica:'Caixa traseira da eletrônica',tampa_eletronica:'Tampa da eletrônica · encaixe',placa_adaptadora_RJ45_provisoria:'Adaptador RJ45 keystone · teste',placa_eletronica_referencia:'Placa 43,12 × 25,16 · referência',corpo_integrado:'01 · Corpo + mistura + caixa eletrônica',junta_porta:'02 · Junta TPU de encaixe',porta_articulada:'03 · Porta com dobradiças',bandeja_1:'04 · Bandeja inferior (1)',bandeja_2:'05 · Bandeja (2)',bandeja_3:'06 · Bandeja superior (3)',reservatorio_agua:'07 · Reservatório de água',tampa_misturador:'08 · Tampa parafusada do misturador',junta_tampa_TPU:'09 · Junta TPU da tampa',sensor_referencia:'Sensor — referência',passagem_gas_referencia:'Furo interno Ø4 — referência, não é tubo'};
+const names={uslide_referencia_1:'Lâmina de microscópio 76 × 26 × 1 mm · inferior',uslide_referencia_2:'Lâmina de microscópio 76 × 26 × 1 mm · central',uslide_referencia_3:'Lâmina de microscópio 76 × 26 × 1 mm · superior',junta_V_porta_TPU:'Junta TPU labial no ressalto em V da porta',painel_interno_escotilha_encaixe:'Painel interno menor da escotilha · encaixe sem parafusos',bucha_dobradica_22:'Bucha de compressão da dobradiça inferior',bucha_dobradica_102:'Bucha de compressão da dobradiça superior',suporte_gavetas_removivel:'Suporte reforçado · guias abertas',revestimento_inox_referencia:'Caixa interna inox 304 · 0,3 mm · referência',tampa_manutencao_CO2_eletronica:'Tampa de manutenção · encaixe + M4×12 embutido',TPU_passagem_sensor:'Bucha TPU lateral · três fios do sensor',caixinha_encaixe_aquecedor:'Caixinha 70 × 60 × 21 mm · dois M4×12 · plugue à direita',TPU_passagem_aquecedor:'Bucha TPU · dois fios do aquecedor',suporte_encaixe_conector_aquecedor:'Suporte de encaixe · alimentação',capsula_conector_aquecedor:'Cápsula removível · plugue lateral Ø8',tampo_encaixe_fios_CO2:'Cobertura dos fios CO₂ · revisão pendente',tampa_alimentacao_aquecedor_provisoria:'Tampa alimentação aquecedor · furo Ø8 provisório',sensor_temperatura_umidade_referencia:'Sensor temperatura/umidade · posição provisória',chapa_aquecedor_referencia:'Chapa metálica · referência',pelicula_aquecedora_90x33_referencia:'Aquecedor 90 × 33 mm · referência',bucha_sensor_TPU:'Bucha TPU de encaixe do sensor',caixa_eletronica:'Caixa traseira da eletrônica',tampa_eletronica:'Tampa da eletrônica · encaixe',placa_adaptadora_RJ45_provisoria:'Adaptador RJ45 keystone · teste',placa_eletronica_referencia:'Placa 43,12 × 25,16 · referência',corpo_integrado:'01 · Corpo + mistura + caixa eletrônica',junta_porta:'02 · Junta TPU de encaixe',porta_articulada:'03 · Porta com dobradiças',bandeja_1:'04 · Bandeja inferior (1)',bandeja_2:'05 · Bandeja (2)',bandeja_3:'06 · Bandeja superior (3)',reservatorio_agua:'07 · Reservatório de água',tampa_misturador:'08 · Tampa parafusada do misturador',junta_tampa_TPU:'09 · Junta TPU da tampa',sensor_referencia:'Sensor — referência',passagem_gas_referencia:'Passagem interna Ø5,6 — referência · encaixe opcional de mangueira'};
 const visibility=new Map();
 const groups=new Map();
 for(const title of ['Carcaça','Porta e fechos','Gavetas e reservatório','CO₂','Eletrônica','Aquecimento','Temperatura e umidade']){
@@ -57,9 +57,10 @@ for(const title of ['Carcaça','Porta e fechos','Gavetas e reservatório','CO₂
  toggle.addEventListener('input',()=>{for(const name of group.members)visibility.get(name).checked=toggle.checked;if(toggle.checked)shell.checked=true;draw();});
 }
 function groupFor(part){const n=part.name;
+ if(n==='revestimento_inox_referencia')return 'Carcaça';
  if(n==='corpo_integrado')return 'Carcaça';
- if(/porta|fecho|dobradica/.test(n))return 'Porta e fechos';
- if(/bandeja|uslide|reservatorio/.test(n))return 'Gavetas e reservatório';
+ if(/porta|fecho|dobradica|escotilha/.test(n))return 'Porta e fechos';
+ if(/bandeja|uslide|reservatorio|suporte_gavetas/.test(n))return 'Gavetas e reservatório';
  if(/aquecedor|aquecedora/.test(n))return 'Aquecimento';
  if(/passagem_sensor|temperatura_umidade/.test(n))return 'Temperatura e umidade';
  if(/eletronica|RJ45/.test(n))return 'Eletrônica';
@@ -136,12 +137,12 @@ if(Number(door.value)<90&&Number(trays.value)>0){trays.value=0;}
 trays.disabled=Number(door.value)<90;
 function project(v,part={}){let [x,y,z]=v;
 if(['lid','sensor','sensor_seal'].includes(part.kind))z+=Number(lidLift.value);
-if(part.kind==='hood'&&(service.checked||Number(lidLift.value)>0))z+=180;
+if((part.kind==='hood'||/M4.*tampa_manutencao/.test(part.name))&&(service.checked||Number(lidLift.value)>0))z+=180;
 if(['lid_hardware','printed_lid_screw'].includes(part.kind)&&Number(lidLift.value)>0)z+=Number(lidLift.value)+22;
 if(part.kind==='tray'||(part.name||'').startsWith('uslide'))y-=Number(trays.value);
-if(part.kind==='latch'&&unlocked){const pivot=Number(part.name.split('_').pop()),dx=x+9,dz=z-pivot;x=-9+dz;z=pivot-dx;y-=0.8;}
-if(unlocked&&part.kind==='knob'){const pivot=Number(part.name.split('_').pop()),a=-0.8/2*2*Math.PI,dx=x+9,dz=z-pivot;x=-9+dx*Math.cos(a)+dz*Math.sin(a);z=pivot-dx*Math.sin(a)+dz*Math.cos(a);y-=0.8;}
-if(['door','section_door'].includes(part.kind)){const a=x-126,b=y+5;x=126+a*Math.cos(opening)-b*Math.sin(opening);y=-5+a*Math.sin(opening)+b*Math.cos(opening);}
+if(part.kind==='latch'&&unlocked){const pivot=Number(part.name.split('_').pop()),dx=x+13,dz=z-pivot;x=-13+dz;z=pivot-dx;y-=0.8;}
+if(unlocked&&part.kind==='knob'){const pivot=Number(part.name.split('_').pop()),a=-0.8/2*2*Math.PI,dx=x+13,dz=z-pivot;x=-13+dx*Math.cos(a)+dz*Math.sin(a);z=pivot-dx*Math.sin(a)+dz*Math.cos(a);y-=0.8;}
+if(['door','section_door','door_insert','door_seal','hinge_sleeve'].includes(part.kind)||(part.kind==='hardware'&&part.name.includes('dobradica'))){const a=x-130,b=y+6;x=130+a*Math.cos(opening)-b*Math.sin(opening);y=-6+a*Math.sin(opening)+b*Math.cos(opening);}
 x-=57;y-=35;z-=64;
 const a=x*Math.cos(yaw)-y*Math.sin(yaw),b=x*Math.sin(yaw)+y*Math.cos(yaw);
 return [width/2+a*scale,height/2+(-b*Math.sin(pitch)-z*Math.cos(pitch))*scale,b*Math.cos(pitch)-z*Math.sin(pitch)];}
@@ -150,7 +151,7 @@ for(const part of parts){
 if(part.kind.startsWith('section_'))continue;
 if(!visibility.get(part.name).checked)continue;
 if(part.kind==='fastener'&&Number(door.value)>0)continue;if(['shell','lid','seal','mixer_seal'].includes(part.kind)&&!shell.checked)continue;if(part.kind==='channel'&&!channel.checked)continue;
-const mesh=cut.checked&&['corpo_integrado','porta_articulada'].includes(part.name)?sectionAt(part,Number(cutHeight.value)):part;
+const mesh=cut.checked&&['corpo_integrado','porta_articulada','painel_interno_escotilha_encaixe'].includes(part.name)?sectionAt(part,Number(cutHeight.value)):part;
 const vs=mesh.vertices.map(v=>project(v,part)),rgb=part.color.match(/\w\w/g).map(c=>parseInt(c,16)/255);
 for(const f of mesh.faces){const [a,b,c]=f.map(i=>vs[i]);const nx=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]),ny=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]),nz=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const light=.58+.42*Math.abs((nx*.3+ny*.4+nz*.86)/(Math.hypot(nx,ny,nz)||1));
 for(const p of [a,b,c])data.push(p[0]/width*2-1,1-p[1]/height*2,p[2]/700,...rgb.map(x=>x*light));}}
@@ -158,9 +159,9 @@ gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.drawArr
 const fg=getComputedStyle(root).color;ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.font='13px sans-serif';ctx.lineWidth=1;
 function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,Math.min(width-tw/2-4,x));y=Math.max(16,Math.min(height-8,y));ctx.textAlign='center';ctx.fillText(text,x,y);}
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
-if(dims.checked){dim([-59,-48,-17],[131,-48,-17],'190 mm · corpo completo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · corpo');if(width>500){let p=project([-27,60,153]);label('Mistura · R32 × 110',p[0],p[1]);}}
-if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Furo interno Ø4 · referência',p[0],p[1]+24);}
-get('status').textContent=Number(lidLift.value)>0?'Retirar a tampa de manutenção para cima; depois soltar os três parafusos impressos da tampa. Roscas integradas à base.':unlocked?'v0.32 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.32 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+if(dims.checked){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
+if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Passagem interna Ø5,6 · referência',p[0],p[1]+24);}
+get('status').textContent=Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.57 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.57 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
 for(const el of [service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);

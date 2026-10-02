@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150mm" height="180mm" viewBox="0 0 150 180">
+<title>Seção externa nominal da caixa inox, escala 1:1</title>
+<rect width="150" height="180" fill="white"/>
+<g fill="none" stroke="black" stroke-width="0.2">
+<rect x="19.5" y="15" width="111" height="131" rx="5.5"/>
+<path d="M19.5 151h111m-111 -2v4m111 -4v4M10 15v131m-2 -131h4m-4 131h4"/>
+<path d="M20 170h50m-50 -2v4m50 -4v4"/>
+</g><g font-family="sans-serif" fill="black" font-size="3.2">
+<text x="75" y="153" text-anchor="middle">111 mm</text>
+<text x="7" y="82" text-anchor="middle" transform="rotate(-90 7 82)">131 mm</text>
+<text x="75" y="8" text-anchor="middle">Inox 304 · 0,05 mm · raio externo 5,5 mm</text>
+<text x="75" y="159" text-anchor="middle">Profundidade externa 110 mm · frente aberta</text>
+<text x="75" y="164" text-anchor="middle">Fundo plano · imprimir a 100%, sem ajuste à página</text>
+<text x="45" y="177" text-anchor="middle">Conferir: 50 mm</text>
+</g></svg>

@@ -1,0 +1,204 @@
+{
+  "baseline": "v32",
+  "version": "v36",
+  "modified_stls": [
+    "corpo_integrado.stl",
+    "tampa_manutencao_CO2_eletronica.stl"
+  ],
+  "unchanged_stls": [
+    "TPU_passagem_aquecedor.stl",
+    "TPU_passagem_sensor.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "amostra_canal_rigido.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_entrada_CO2_4p5mm.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_tampa_sensor.stl",
+    "bandeja_1.stl",
+    "bandeja_2.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "junta_porta.stl",
+    "junta_tampa_TPU.stl",
+    "lingueta_fecho_70.stl",
+    "manipulo_fecho_70.stl",
+    "parafuso_tampa_1.stl",
+    "parafuso_tampa_2.stl",
+    "parafuso_tampa_3.stl",
+    "pino_dobradica_102.stl",
+    "pino_dobradica_22.stl",
+    "porca_pino_dobradica_102.stl",
+    "porca_pino_dobradica_22.stl",
+    "porta_articulada.stl",
+    "reservatorio_agua.stl",
+    "tampa_misturador.stl"
+  ],
+  "outside_modified_regions": {
+    "body": {
+      "faces": 3657,
+      "matching_surface_types_areas_centers_and_bounds": true,
+      "rounding_decimal_places": 6,
+      "mass_properties": [
+        {
+          "volume": 1024231.9151064395,
+          "area": 503258.9559321846,
+          "center": [
+            44.20695228362887,
+            69.38278917684926,
+            67.00287844473965
+          ],
+          "faces": 3657
+        },
+        {
+          "volume": 1024231.91510644,
+          "area": 503258.95593218453,
+          "center": [
+            44.20695228362877,
+            69.38278917684926,
+            67.00287844473942
+          ],
+          "faces": 3657
+        }
+      ],
+      "method": "CAD outside approved local regions: matching face-property multisets, volume, area and center of mass"
+    },
+    "hood": {
+      "faces": 33,
+      "matching_surface_types_areas_centers_and_bounds": true,
+      "rounding_decimal_places": 6,
+      "mass_properties": [
+        {
+          "volume": 44034.71348508047,
+          "area": 33205.76930183854,
+          "center": [
+            -41.84807878798203,
+            69.0954420951656,
+            132.60642752735137
+          ],
+          "faces": 33
+        },
+        {
+          "volume": 44034.713485080385,
+          "area": 33205.76930183854,
+          "center": [
+            -41.84807878798221,
+            69.09544209516568,
+            132.60642752735166
+          ],
+          "faces": 33
+        }
+      ],
+      "method": "CAD outside approved local regions: matching face-property multisets, volume, area and center of mass"
+    }
+  },
+  "allowed_regions_mm": {
+    "body": [
+      [
+        "service-cover seat",
+        [
+          -60,
+          10,
+          97.4
+        ],
+        [
+          -9,
+          126,
+          102.6
+        ]
+      ],
+      [
+        "lower dry screw support and local floor seat",
+        [
+          -41.6,
+          107.9,
+          4.9
+        ],
+        [
+          -27.4,
+          125.3,
+          17.1
+        ]
+      ],
+      [
+        "removed lower sockets",
+        [
+          -50,
+          121.3,
+          2.4
+        ],
+        [
+          -19,
+          125.3,
+          5.6
+        ]
+      ]
+    ],
+    "hood": [
+      [
+        "rear panel, guides, lower recess and reinforcement",
+        [
+          -59.5,
+          118.5,
+          2.9
+        ],
+        [
+          -9.5,
+          125.5,
+          100.1
+        ]
+      ],
+      [
+        "removed upper pins",
+        [
+          -50,
+          112,
+          97.9
+        ],
+        [
+          -19,
+          117,
+          100.1
+        ]
+      ]
+    ]
+  },
+  "service_cover_removal_lifts_mm": [
+    0,
+    0.5,
+    2,
+    5,
+    12,
+    25,
+    50,
+    90,
+    110
+  ],
+  "service_screw": {
+    "type": "M4x12",
+    "center_z_mm": 10.5,
+    "head_recess_diameter_mm": 8.5,
+    "head_recess_depth_mm": 4.2,
+    "reference_head_ymax_mm": 123.3,
+    "rear_surface_y_mm": 125,
+    "upper_support_removed": true
+  },
+  "service_cover_tabs": {
+    "count": 2,
+    "dimensions_mm": [
+      8,
+      3.5,
+      1.5
+    ],
+    "side_clearance_mm": 0.4,
+    "bottom_clearance_mm": 0.2,
+    "socket_remaining_floor_mm": 0.8
+  },
+  "service_screw_unchanged_from_v35": true,
+  "limitations": [
+    "Geometric checks only; new filament fit, screw head dimensions and M4 retention require physical validation.",
+    "M4 shaft root envelope used for clash audit; actual thread crests engage plastic.",
+    "Outside-region face properties and mass properties were compared instead of a coincident-solid Boolean difference."
+  ]
+}

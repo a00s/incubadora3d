@@ -1,0 +1,74 @@
+Cannot create cache home directory: '/home/maia/.cache/ezdxf', cache files will not be saved.
+See also issue https://github.com/mozman/ezdxf/issues/923.
+Building chamber and sealing frame
+Building removable rack
+Checking lining insertion and changed door
+Creating integral thread 1/1
+Preparing thread clearance 1/1
+Checking body clearance: pino_dobradica_22
+Checking body clearance: porca_pino_dobradica_22
+Checking body clearance: pino_dobradica_102
+Checking body clearance: porca_pino_dobradica_102
+Checking body clearance: lingueta_fecho_70
+Checking body clearance: manipulo_fecho_70
+Checking body clearance: bandeja_1
+Checking body clearance: bandeja_2
+Checking body clearance: bandeja_3
+Checking rigid pair: pino_dobradica_22 porta_articulada
+Checking rigid pair: pino_dobradica_22 corpo_integrado
+Checking rigid pair: porca_pino_dobradica_22 porta_articulada
+Checking rigid pair: porca_pino_dobradica_22 corpo_integrado
+Checking rigid pair: pino_dobradica_102 porta_articulada
+Checking rigid pair: pino_dobradica_102 corpo_integrado
+Checking rigid pair: porca_pino_dobradica_102 porta_articulada
+Checking rigid pair: porca_pino_dobradica_102 corpo_integrado
+Checking rigid pair: lingueta_fecho_70 manipulo_fecho_70
+Checking rigid pair: lingueta_fecho_70 porta_articulada
+Checking rigid pair: manipulo_fecho_70 porta_articulada
+Checking rigid pair: manipulo_fecho_70 corpo_integrado
+Checking rigid pair: suporte_gavetas_removivel bandeja_1
+Checking rigid pair: suporte_gavetas_removivel uslide_referencia_1
+Checking rigid pair: suporte_gavetas_removivel bandeja_2
+Checking rigid pair: suporte_gavetas_removivel uslide_referencia_2
+Checking rigid pair: suporte_gavetas_removivel bandeja_3
+Checking rigid pair: suporte_gavetas_removivel uslide_referencia_3
+Checking rigid pair: suporte_gavetas_removivel reservatorio_agua
+Checking rigid pair: suporte_gavetas_removivel corpo_integrado
+Checking rigid pair: suporte_gavetas_removivel revestimento_inox_referencia
+Checking rigid pair: bandeja_1 uslide_referencia_1
+Checking rigid pair: bandeja_1 corpo_integrado
+Checking rigid pair: bandeja_1 revestimento_inox_referencia
+Checking rigid pair: uslide_referencia_1 corpo_integrado
+Checking rigid pair: uslide_referencia_1 revestimento_inox_referencia
+Checking rigid pair: bandeja_2 uslide_referencia_2
+Checking rigid pair: bandeja_2 corpo_integrado
+Checking rigid pair: bandeja_2 revestimento_inox_referencia
+Checking rigid pair: uslide_referencia_2 corpo_integrado
+Checking rigid pair: uslide_referencia_2 revestimento_inox_referencia
+Checking rigid pair: bandeja_3 uslide_referencia_3
+Checking rigid pair: bandeja_3 corpo_integrado
+Checking rigid pair: bandeja_3 revestimento_inox_referencia
+Checking rigid pair: uslide_referencia_3 corpo_integrado
+Checking rigid pair: uslide_referencia_3 revestimento_inox_referencia
+Checking rigid pair: reservatorio_agua corpo_integrado
+Checking rigid pair: reservatorio_agua revestimento_inox_referencia
+Checking rigid pair: sensor_temperatura_umidade_referencia corpo_integrado
+Checking rigid pair: sensor_temperatura_umidade_referencia revestimento_inox_referencia
+Checking rigid pair: chapa_aquecedor_referencia corpo_integrado
+Checking rigid pair: chapa_aquecedor_referencia revestimento_inox_referencia
+Checking rigid pair: pelicula_aquecedora_90x33_referencia corpo_integrado
+Checking rigid pair: pelicula_aquecedora_90x33_referencia revestimento_inox_referencia
+Checking rigid pair: placa_eletronica_referencia tampa_manutencao_CO2_eletronica
+Checking rigid pair: placa_eletronica_referencia corpo_integrado
+Checking rigid pair: caixinha_encaixe_aquecedor corpo_integrado
+Checking rigid pair: parafuso_M4x12_tampa_manutencao_eletronica tampa_manutencao_CO2_eletronica
+Checking rigid pair: parafuso_M4x12_tampa_manutencao_eletronica corpo_integrado
+Checking rigid pair: tampa_manutencao_CO2_eletronica corpo_integrado
+Checking rigid pair: tampa_manutencao_CO2_eletronica sensor_referencia
+Checking rigid pair: porta_articulada corpo_integrado
+Checking rigid pair: corpo_integrado sensor_referencia
+Checking rigid pair: corpo_integrado revestimento_inox_referencia
+Rigid-parts clash audit passed: 54 overlapping bounding-box pairs
+Exporting validated parts
+32 valid parts exported
+Static clearances checked; gasket feet fit; coupons valid

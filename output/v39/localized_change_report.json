@@ -1,0 +1,66 @@
+{
+  "baseline": "v38",
+  "version": "v39",
+  "modified_stls": [
+    "tampa_manutencao_CO2_eletronica.stl",
+    "corpo_integrado.stl"
+  ],
+  "unchanged_stls": [
+    "bandeja_1.stl",
+    "TPU_passagem_aquecedor.stl",
+    "junta_porta.stl",
+    "lingueta_fecho_70.stl",
+    "amostra_bucha_sensor_TPU_15.5.stl",
+    "reservatorio_agua.stl",
+    "pino_dobradica_22.stl",
+    "caixinha_encaixe_aquecedor.stl",
+    "porta_articulada.stl",
+    "porca_pino_dobradica_22.stl",
+    "manipulo_fecho_70.stl",
+    "amostra_encaixe_RJ45.stl",
+    "amostra_canal_rigido.stl",
+    "amostra_entrada_CO2_4p5mm.stl",
+    "bandeja_3.stl",
+    "bucha_sensor_TPU.stl",
+    "bandeja_2.stl",
+    "porca_pino_dobradica_102.stl",
+    "pino_dobradica_102.stl",
+    "amostra_junta_TPU.stl",
+    "amostra_bucha_sensor_TPU_15.3.stl",
+    "TPU_passagem_sensor.stl"
+  ],
+  "removed_stls": [
+    "junta_tampa_TPU.stl",
+    "parafuso_tampa_1.stl",
+    "tampa_misturador.stl",
+    "parafuso_tampa_3.stl",
+    "amostra_tampa_sensor.stl",
+    "parafuso_tampa_2.stl"
+  ],
+  "removed_assembly_parts": [
+    "arruela_tampa_1",
+    "arruela_tampa_2",
+    "arruela_tampa_3",
+    "junta_tampa_TPU",
+    "parafuso_tampa_1",
+    "parafuso_tampa_2",
+    "parafuso_tampa_3",
+    "tampa_misturador"
+  ],
+  "pcb_sensor_grommet_and_service_screw_unchanged": true,
+  "connector_aperture_mm": [
+    15,
+    10
+  ],
+  "connector_clearance_above_and_below_mm": 10,
+  "co2_roof_integrated": true,
+  "co2_roof_z_mm": [
+    111,
+    117
+  ],
+  "sensor_aperture_diameter_mm": 20.4,
+  "limitations": [
+    "Printing orientation and supports deferred by user; no support-free printing claim.",
+    "Viewer rendering not rechecked because Chromium WebGL was unavailable in the previous check."
+  ]
+}

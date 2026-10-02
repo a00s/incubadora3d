@@ -1,0 +1,18 @@
+{
+  "corpo_integrado.stl": {
+    "v41_volume_mm3": 1037916.1076877309,
+    "v42_volume_mm3": 998668.4118237566,
+    "reduction_percent": 3.78139384997216
+  },
+  "tampa_manutencao_CO2_eletronica.stl": {
+    "v41_volume_mm3": 52086.04518417019,
+    "v42_volume_mm3": 52086.04518417019,
+    "reduction_percent": 0.0
+  },
+  "total": {
+    "v41_volume_mm3": 1090002.1528719012,
+    "v42_volume_mm3": 1050754.457007927,
+    "reduction_percent": 3.600698930783372,
+    "method": "Signed triangle volumes of exported STL; slicer filament use depends on settings."
+  }
+}
