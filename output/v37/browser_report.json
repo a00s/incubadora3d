@@ -1,5 +1,0 @@
-{
-  "result": "blocked_by_environment",
-  "page_errors": [],
-  "reason": "Chromium launched but WebGL context unavailable with software rendering; viewer regenerated successfully. Browser rendering was not validated in v37."
-}

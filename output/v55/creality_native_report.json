@@ -1,8 +1,0 @@
-{
-  "version": "v55",
-  "application": "Creality Print 7.2.1.5476",
-  "command": "--info",
-  "exit_code": 0,
-  "manifold_meshes": 36,
-  "sliced": false
-}
