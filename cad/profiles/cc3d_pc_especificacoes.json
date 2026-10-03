@@ -1,0 +1,32 @@
+{
+  "marca": "CC3D",
+  "material": "PC",
+  "cor": "laranja",
+  "diametro_mm": 1.75,
+  "tolerancia_diametro_mm": 0.05,
+  "peso_liquido_g": 1000,
+  "temperatura_bico_recomendada_c": [
+    235,
+    255
+  ],
+  "velocidade_recomendada_mm_s": [
+    30,
+    90
+  ],
+  "temperatura_mesa_recomendada_c": [
+    90,
+    105
+  ],
+  "fonte": "Foto da etiqueta do rolo fornecida pelo usuario; temperatura da etiqueta prevalece sobre o anuncio",
+  "validacao_fisica": false,
+  "temperatura_bico_nominal_etiqueta_c": 245,
+  "tolerancia_temperatura_etiqueta_c": 10,
+  "lote": "PC17524081913B",
+  "codigo_cor": "Orange 111462",
+  "codigo_etiqueta": "C004532",
+  "temperatura_bico_anuncio_c": [
+    245,
+    265
+  ],
+  "fonte_mesa_e_velocidade": "Descricao do anuncio transcrita pelo usuario; etiqueta nao informa mesa ou velocidade"
+}

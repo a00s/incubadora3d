@@ -39,7 +39,8 @@ da auditoria rígida. As verificações não simulam deformação, resistência 
 
 ## Pendências
 
-- Fatiamento, parâmetros de PC/TPU e ausência de suporte preso nas cavidades fechadas.
+- Perfil inicial CC3D PC incorporado ao 3MF: 245 °C/100 °C (bico conforme etiqueta: 235–255 °C), vazão 4 mm³/s e velocidades PC reduzidas; sem validação física.
+- Fatiamento, calibração dos parâmetros de PC/TPU e ausência de suporte preso nas cavidades fechadas.
 - Orientação de impressão da porta e testes físicos dos encaixes, roscas e guias.
 - Estanqueidade da porta, passagens de fios, conexão de gás e superfícies impressas.
 - Ajuste e fabricação da caixa inox; o modelo de referência não é plano de corte de chapa.

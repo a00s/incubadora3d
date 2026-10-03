@@ -108,8 +108,32 @@ Os furos e as fixações mantêm reforços locais maciços.
 ![Corte da carcaça mostrando cavidades alongadas e canais na parede traseira](docs/imagens/corte-interno.png)
 
 Materiais previstos no desenho: PC para peças rígidas, TPU 95A para vedações e
-inox de 0,3 mm para o revestimento. Defina os perfis para seu filamento e sua máquina.
+inox de 0,3 mm para o revestimento. O 3MF inclui um perfil inicial para o CC3D PC
+laranja de 1,75 mm da imagem, na K1C com bico de 0,4 mm.
 O projeto não contém um processo de impressão validado.
+
+Configuração incorporada: bico **245 °C** (inclusive primeira camada), mesa
+**100 °C**, fluxo inicial **1,00**, vazão máxima **4 mm³/s**, ventilação da peça
+**0–15%** (desligada nas primeiras quatro camadas), ventilador auxiliar desligado
+e ventilação de pontes de **30%**. As peças PC têm paredes externas a **30 mm/s**,
+internas a **40 mm/s**, preenchimento a **45 mm/s** e primeira camada a **15 mm/s**.
+As juntas continuam atribuídas ao TPU genérico; imprima as bandejas separadamente
+com o material correspondente.
+
+O [perfil versionado](cad/profiles/cc3d_pc_k1c.json) usa como base os campos do
+Generic PC do Creality Print 7.2.1. A etiqueta do rolo (lote **PC17524081913B**) indica bico a
+**245 °C ± 10 °C**, faixa **235–255 °C**. Essa indicação prevalece sobre
+os 245–265 °C da descrição do anúncio. O anúncio informa velocidade de
+**30–90 mm/s** e mesa a **90–105 °C**
+([especificações registradas](cad/profiles/cc3d_pc_especificacoes.json)).
+Os 245 °C do bico seguem o valor nominal da etiqueta; a mesa permanece
+a 100 °C conforme a faixa do anúncio e o limite da K1C. A primeira camada é
+mais lenta para favorecer aderência. O perfil ainda requer validação física.
+A [especificação oficial da K1C](https://www.creality.com/ae/products/k1c-carbon-3d-printer)
+limita a mesa a 100 °C. Use a máquina fechada e uma superfície de impressão
+apropriada para PC; não selecione placa fria. Não foi ativado aquecimento de câmara.
+Confira o rótulo do rolo e calibre temperatura e fluxo nas amostras antes da carcaça.
+STL e STEP contêm geometria; as configurações ficam no projeto 3MF.
 
 Antes de imprimir, confira na prévia de camadas:
 

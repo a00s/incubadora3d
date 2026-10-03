@@ -800,6 +800,8 @@
   ],
   "fatiado": false,
   "gcode_incluido": false,
+  "perfil_pc": "CC3D PC laranja 1.75 mm - inicial",
+  "configuracao_filamento": "cad/profiles/cc3d_pc_k1c.json",
   "perfis_termicos_validados": false,
   "colunas": 6,
   "passo_bandejas_mm": 264
