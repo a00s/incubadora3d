@@ -22,8 +22,8 @@
         160.0,
         141.0
       ],
-      "vertices": 11919,
-      "triangulos": 23758,
+      "vertices": 11937,
+      "triangulos": 23794,
       "faces_de_area_zero_removidas": 0,
       "orientacao": "traseira na mesa"
     },
@@ -645,8 +645,8 @@
     },
     {
       "bandeja": 30,
-      "nome": "30 - PC - amostra_entrada_CO2_mangueira_OD5p8",
-      "arquivo": "amostra_entrada_CO2_mangueira_OD5p8.stl",
+      "nome": "30 - PC - amostra_entrada_CO2_mangueira_OD6",
+      "arquivo": "amostra_entrada_CO2_mangueira_OD6.stl",
       "material": "PC",
       "objeto_id": 60,
       "malha_id": 59,
@@ -755,8 +755,8 @@
     },
     {
       "bandeja": 35,
-      "nome": "35 - PC - amostra_passagem_interna_CO2_OD5p8",
-      "arquivo": "amostra_passagem_interna_CO2_OD5p8.stl",
+      "nome": "35 - PC - amostra_passagem_interna_CO2_OD6",
+      "arquivo": "amostra_passagem_interna_CO2_OD6.stl",
       "material": "PC",
       "objeto_id": 70,
       "malha_id": 69,
@@ -800,8 +800,8 @@
   ],
   "fatiado": false,
   "gcode_incluido": false,
-  "perfil_pc": "CC3D PC laranja 1.75 mm - inicial",
-  "configuracao_filamento": "cad/profiles/cc3d_pc_k1c.json",
+  "perfis_filamento": "Genericos PC/TPU; selecionar perfil padrao no fatiador",
+  "configuracoes_filamento_personalizadas": false,
   "perfis_termicos_validados": false,
   "colunas": 6,
   "passo_bandejas_mm": 264

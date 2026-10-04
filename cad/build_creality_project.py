@@ -1,5 +1,5 @@
 """Package existing STL meshes as a Creality Print 7.2.1 multi-plate project.
-An initial CC3D PC filament profile is supplied; no slicing or validated process.
+Generic filament presets only; no custom filament or process overrides.
 The model/plate schema and 1.2-bed-width plate grid follow the official
 CrealityPrint v7.2.1 bbs_3mf.cpp and PartPlate.cpp implementation.
 """
@@ -84,7 +84,7 @@ model = ET.Element(f'{{{CORE}}}model', unit='millimeter', **{'{http://www.w3.org
 for key, value in [('Application', 'Creality_Print V7.2.1.5476'),
                    ('BambuStudio:3mfVersion', '1'),
                    ('Title', f'Incubadora {args.version} - pecas e amostras por bandeja'),
-                   ('Description', 'Projeto organizado, nao fatiado. Perfil inicial CC3D PC/TPU; calibrar e revisar suportes antes de imprimir.')]:
+                   ('Description', 'Projeto organizado, nao fatiado. Perfis genericos PC/TPU; selecionar perfil padrao e ajustar temperatura no fatiador.')]:
     ET.SubElement(model, f'{{{CORE}}}metadata', name=key).text = value
 resources = ET.SubElement(model, f'{{{CORE}}}resources')
 build = ET.SubElement(model, f'{{{CORE}}}build')
@@ -134,7 +134,7 @@ for i, original in enumerate(paths):
                        orientacao='traseira na mesa' if name == 'corpo_integrado' else
                        'orientacao inicial; revisar no fatiador'))
 
-# Initial filament settings are versioned separately; TPU stays on its generic profile.
+# Reference standard presets without embedding custom filament settings.
 settings = dict(printer_settings_id='Creality K1C 0.4 nozzle', printer_model='Creality K1C',
                 print_settings_id='0.20mm Standard @Creality K1C 0.4 nozzle',
                 printer_variant='0.4', nozzle_diameter=['0.4'], printer_technology='FFF',
@@ -142,15 +142,6 @@ settings = dict(printer_settings_id='Creality K1C 0.4 nozzle', printer_model='Cr
                 filament_settings_id=['Generic PC @Creality K1C 0.4 nozzle', 'Generic TPU @Creality K1C 0.4 nozzle'],
                 filament_type=['PC', 'TPU'], filament_colour=['#F08A24', '#45AE89'])
 settings.update(filament_diameter=['1.75', '1.75'], filament_is_support=['0', '0'])
-settings.update(json.loads((ROOT / 'cad/profiles/cc3d_pc_k1c.json').read_text()))
-# Conservative speeds apply only to rigid PC objects, including calibration samples.
-for record, plate_info in zip(config.findall('object'), plates):
-    if plate_info['material'] == 'PC':
-        for key, value in [('outer_wall_speed', 30), ('inner_wall_speed', 40),
-                           ('sparse_infill_speed', 45), ('internal_solid_infill_speed', 40),
-                           ('top_surface_speed', 30), ('initial_layer_speed', 15),
-                           ('initial_layer_infill_speed', 20)]:
-            metadata(record, key, value)
 creality = ET.Element('config')
 for key, value in [('Company', 'Creality'), ('Application', 'Creality_Print'),
                    ('AppVersion', '7.2.1.5476'), ('AppStage', 'Release'),
@@ -173,8 +164,8 @@ with zipfile.ZipFile(DEST, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=
 manifest = dict(arquivo=DEST.name, versao_creality='7.2.1', impressora='K1C',
                 bico_inicial_mm=.4, bico_observacao='Confirmar o bico instalado no Creality Print',
                 bandejas=plates, fatiado=False, gcode_incluido=False,
-                perfil_pc='CC3D PC laranja 1.75 mm - inicial',
-                configuracao_filamento='cad/profiles/cc3d_pc_k1c.json',
+                perfis_filamento='Genericos PC/TPU; selecionar perfil padrao no fatiador',
+                configuracoes_filamento_personalizadas=False,
                 perfis_termicos_validados=False, colunas=columns, passo_bandejas_mm=264)
 (FOLDER / 'bandejas_creality.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
 print(f'{DEST}: {len(plates)} bandejas, {DEST.stat().st_size} bytes')

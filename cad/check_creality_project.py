@@ -21,6 +21,11 @@ with zipfile.ZipFile(path) as archive:
 assert model.attrib['unit']=='millimeter'
 assert settings['printer_model']=='Creality K1C'
 assert settings['filament_type']==['PC','TPU']
+assert settings['filament_settings_id']==[
+    'Generic PC @Creality K1C 0.4 nozzle', 'Generic TPU @Creality K1C 0.4 nozzle']
+assert not manifest['configuracoes_filamento_personalizadas']
+assert not any('temperature' in key or key.endswith('_temp') or key.endswith('_temp_initial_layer')
+               or 'speed' in key or 'fan' in key or 'flow' in key for key in settings)
 assert next(r for r in manifest['bandejas'] if r['arquivo']=='junta_porta.stl')['material']=='TPU'
 objects={int(o.attrib['id']):o for o in model.find('m:resources',ns)}
 build=list(model.find('m:build',ns));plates=config.findall('plate')
@@ -52,10 +57,11 @@ for record,plate,item in zip(manifest['bandejas'],plates,build):
     assert 5<=low[0]+dx-ox and high[0]+dx-ox<=215
     assert 5<=low[1]+dy-oy and high[1]+dy-oy<=215 and high[2]<=250
     om=values(config.find(f"object[@id='{objid}']"))
+    assert set(om)=={'name','extruder'}, 'Unexpected per-object process override'
     assert int(om['extruder'])==(2 if record['material']=='TPU' else 1)
 report=dict(arquivo=path.name,zip_valid=True,xml_valid=True,bandejas=len(plates),
             uma_peca_por_bandeja=True,escala_1para1=True,malhas_e_indices_validos=True,
-            cabe_k1c_com_margem_5mm=True,gcode_incluido=False,
+            cabe_k1c_com_margem_5mm=True,gcode_incluido=False,configuracoes_filamento_personalizadas=False,
             verificacao='Estrutura e geometria; leitura e renderizacao no Creality Print dependem do teste nativo separado')
 (folder/'projeto_creality_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False))
 print(json.dumps(report,indent=2,ensure_ascii=False))

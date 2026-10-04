@@ -87,7 +87,7 @@
   "lateral_feet_count": 0,
   "support_plane_z_mm": -10,
   "closed_corner_channels": 4,
-  "gas_passage_diameter_mm": 5.6,
+  "gas_passage_diameter_mm": 6.2,
   "thread_motion_checks": 0,
   "limitations": [
     "Discrete movement samples",

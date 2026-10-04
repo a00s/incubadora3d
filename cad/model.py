@@ -10,8 +10,8 @@ from OCP.TopAbs import TopAbs_IN
 OUT=Path(__file__).resolve().parents[1]/'output'/'v59'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
-P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=5.6,insulation_extension=10,air_cell_width=6,outer_skin=2)
-P.update(sensor_diameter=15.62, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=5.8, inlet_socket_diameter=5.6, inlet_socket_depth=12, inlet_bore_diameter=3.5)
+P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=6.2,insulation_extension=10,air_cell_width=6,outer_skin=2)
+P.update(sensor_diameter=15.62, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=6.0, inlet_socket_diameter=6.2, inlet_socket_depth=12, inlet_bore_diameter=3.5)
 P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.3, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
 P.update(tray_depth=72,tray_rear_y=80,heater_front_y=106,tray_heater_gap=26)
 parts=[]
@@ -90,16 +90,16 @@ inner=printable_gas_cavity(45,94,-6,103.5)
 inner=inner.union(printable_gas_cavity(43.3,94,97.5,4.5))
 gas_shell=mix.cut(inner)
 body=body.union(gas_shell)
-# Shared-wall passage accepts the silicone OD5.8 tube with nominal 0.2 mm interference.
-P.update(port_hose_outer_diameter=5.8,port_nominal_diametral_interference=.2,port_wall_path_length=14)
+# Shared-wall passage clears the measured silicone OD6 tube by 0.2 mm diametrally.
+P.update(port_hose_outer_diameter=6.0,port_nominal_diametral_clearance=.2,port_wall_path_length=14)
 # Continuous passage below slides and above the water pan.
 passage=cq.Workplane('YZ',origin=(-18,cy,34)).circle(P['port_diameter']/2).extrude(30)
 body=body.cut(passage)
-# External rear socket for silicone OD5.8; straight, accessible gas passage.
+# External rear socket for silicone OD6; straight, accessible gas passage.
 # Local +Z becomes global +Y, outward through the rear lower enclosure.
 P.update(inlet_internal_exit_height=10.5,inlet_axis='+Y',inlet_type='flush rear female socket',
          inlet_outer_diameter=10,inlet_total_length=33,inlet_external_projection=0,
-         inlet_socket_mouth_diameter=6.2,inlet_socket_chamfer_depth=1,
+         inlet_socket_mouth_diameter=6.8,inlet_socket_chamfer_depth=1,inlet_nominal_diametral_clearance=.2,
          inlet_root_center=[-23,92,10.5],inlet_tip_center=[-23,125,10.5],
          inlet_internal_channel_end=[-23,84,10.5])
 def inlet_socket():
@@ -851,7 +851,7 @@ print('Checking lining insertion and changed door',flush=True)
 liner_outer=box(111,110,131,4.5,0,4.5).edges('|Y').fillet(5.5)
 liner_inner=box(110.4,110.7,130.4,4.8,-1,4.8).edges('|Y').fillet(5.2)
 liner=liner_outer.cut(liner_inner)
-liner=liner.cut(cq.Workplane('YZ',origin=(3,60,34)).circle(2.9).extrude(4))
+liner=liner.cut(cq.Workplane('YZ',origin=(3,60,34)).circle(P['port_diameter']/2).extrude(4))
 liner=liner.cut(cq.Workplane('YZ',origin=(3,90,127.5)).circle(7).extrude(4))
 liner=liner.cut(yhole(60,110,116,7,2))
 add('revestimento_inox_referencia',liner,'#a6b2b6','reference')
@@ -885,7 +885,7 @@ assert independent(opened).intersect(insertion).val().Volume()<1e-5,'Door obstru
 P.update(liner_insertion_test='continuous swept envelope; door at 110 degrees; cable seals installed afterwards',
          changed_door_angles_checked=[0,.25,.5,1,2,3,5,7,10,12,15,18,20,25,30,45,60,75,90,110],
          liner_sensor_opening_diameter=14,liner_heater_opening_diameter=14,
-         liner_co2_opening_diameter=5.8)
+         liner_co2_opening_diameter=P['port_diameter'])
 # Validate open guides and unobstructed placement from above.
 print('Checking open drawer guides and lower-only slide pockets',flush=True)
 tray_pull_positions=[0,5,15,30,50,72,80]
@@ -1163,7 +1163,7 @@ coupon=inlet_socket()
 coupon=coupon.rotate((0,0,0),(1,0,0),180).translate((5,5,P['inlet_total_length']))
 assert coupon.val().isValid() and len(coupon.solids().vals())==1
 assert abs(coupon.val().BoundingBox().zmin)<1e-5
-cq.exporters.export(coupon,str(OUT/'amostra_entrada_CO2_mangueira_OD5p8.stl'))
+cq.exporters.export(coupon,str(OUT/'amostra_entrada_CO2_mangueira_OD6.stl'))
 
 # Closure coupon reproduces the actual curved exterior and 45-degree inside face.
 closure_coupon=gas_shell.intersect(box(60,100,8,-65,0,20))
@@ -1180,7 +1180,7 @@ port_coupon_hole=cq.Workplane('YZ',origin=(-1,9,9)).circle(P['port_diameter']/2)
 port_coupon=port_coupon.cut(port_coupon_hole)
 assert port_coupon.val().isValid() and len(port_coupon.solids().vals())==1
 assert independent(port_coupon).intersect(port_coupon_hole).val().Volume()<1e-6
-cq.exporters.export(port_coupon,str(OUT/'amostra_passagem_interna_CO2_OD5p8.stl'))
+cq.exporters.export(port_coupon,str(OUT/'amostra_passagem_interna_CO2_OD6.stl'))
 
 # Fit coupons, printed flat before committing to the full lid.
 sensor_test=box(32,32,6,-43,44,mh+1).cut(sensor_hole)

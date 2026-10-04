@@ -118,7 +118,7 @@
       "cabe_com_margem_5mm": true
     },
     {
-      "peca": "amostra_entrada_CO2_mangueira_OD5p8.stl",
+      "peca": "amostra_entrada_CO2_mangueira_OD6.stl",
       "dimensoes_mm": [
         10.0,
         10.0,
@@ -163,7 +163,7 @@
       "cabe_com_margem_5mm": true
     },
     {
-      "peca": "amostra_passagem_interna_CO2_OD5p8.stl",
+      "peca": "amostra_passagem_interna_CO2_OD6.stl",
       "dimensoes_mm": [
         14.0,
         18.0,

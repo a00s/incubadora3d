@@ -19,6 +19,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Gavetas com base de 3 mm e rebaixo de lâmina de 0,6 mm; nenhum elemento sobre a lâmina.
 - Lâminas conferidas: 76 × 26 e 75 × 25 mm, espessuras 0,9, 1 e 1,2 mm.
 - Caixinha traseira 70 × 60 × 21 mm, dois M4 × 12 com engate de 4 mm em apoios cegos maciços.
+- Mangueira CO₂ Ø6 mm: entrada e passagem interna Ø6,2 mm, boca Ø6,8 mm e furo do inox Ø6,2 mm; encaixe e vedação física pendentes.
 - Misturador CO₂ com teto integrado e abertura do sensor; eletrônica acessível pela tampa lateral.
 
 ## Validação
@@ -30,8 +31,8 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Extração das gavetas a 0, 5, 15, 30, 50, 72 e 80 mm com porta a 110°.
 - Apoio inferior e limites laterais das lâminas conferidos; envelope superior de 40 mm livre.
 - 36 STL compatíveis com a K1C e margem de 5 mm.
-- 3MF com 36 bandejas em escala 1:1, sem G-code; Creality Print 7.2.1: saída 0, 36 malhas manifold.
-- Visualizador WebGL e controles conferidos; imagens do manual correspondem à v59.
+- 3MF com 36 bandejas em escala 1:1, sem G-code; teste nativo anterior ao ajuste CO₂: Creality Print 7.2.1, saída 0, 36 malhas manifold.
+- Visualizador regenerado com passagem Ø6,2; teste WebGL e controles anterior ao ajuste CO₂. Imagens gerais do manual correspondem à v59.
 
 Relatórios em [output/v59](output/v59/). Os ensaios amplos de roscas/movimento continuam
 opcionais em `cad/model.py --check-movements`. TPU com compressão intencional é excluído
@@ -39,7 +40,7 @@ da auditoria rígida. As verificações não simulam deformação, resistência 
 
 ## Pendências
 
-- Perfil inicial CC3D PC incorporado ao 3MF: 245 °C/100 °C (bico conforme etiqueta: 235–255 °C), vazão 4 mm³/s e velocidades PC reduzidas; sem validação física.
+- 3MF com referências aos perfis genéricos PC/TPU e processo padrão; sem ajustes personalizados de filamento ou velocidades. Selecionar o perfil padrão e ajustar a temperatura no fatiador; sem validação física.
 - Fatiamento, calibração dos parâmetros de PC/TPU e ausência de suporte preso nas cavidades fechadas.
 - Orientação de impressão da porta e testes físicos dos encaixes, roscas e guias.
 - Estanqueidade da porta, passagens de fios, conexão de gás e superfícies impressas.

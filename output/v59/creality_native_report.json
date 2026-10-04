@@ -4,5 +4,6 @@
   "cli_exit_code": 0,
   "manifold_meshes": 36,
   "non_manifold_meshes": 0,
-  "gcode_generated": false
+  "gcode_generated": false,
+  "escopo": "Teste anterior ao ajuste CO2 para mangueira Ø6 mm; não repetido nesta alteração."
 }
