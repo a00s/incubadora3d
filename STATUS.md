@@ -10,6 +10,12 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Câmara 112 × 132 × 111 mm; parede quente de 4 mm; inox de referência 0,3 mm.
 - Isolamento com 23 cavidades alongadas, fechamentos a 45° e ponte nominal de 0,4 mm.
 - Porta monolítica com ressalto inteiro em V, junta TPU labial retida e junta secundária no corpo.
+- Pega externa em dupla hélice circular real, duas curvas, raio de 6 mm,
+  volta completa em 36 mm, hastes Ø3,2 mm e travessas Ø2,2 mm.
+  Envelope: altura 54 mm, profundidade 15,2 mm e projeção 18,6 mm além da placa.
+  Apoios curvos alargam de R1,8 para R4 junto à porta.
+  Face externa na mesa; hélice requer suportes. Nenhum corte na porta ou canal TPU.
+  O 3MF salvo pelo usuário foi mantido; validação física de gás pendente.
 - Fecho central; lingueta liberando a abertura quando girada 90° após afrouxar o manípulo.
 - Duas dobradiças M4 × 20 escareadas, porcas metálicas na porta e apoios externos a 45°.
 - Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta.
@@ -24,7 +30,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 
 ## Validação
 
-- Corpo único e peças válidas; 60 pares rígidos sem colisão.
+- Corpo único e peças válidas; 59 pares rígidos sem colisão após remover o puxador.
 - Faces finais dos tetos auditadas nas duas dobradiças e no fecho: rampas a 45°, pontes restantes ≤0,4 mm.
 - Amostra da dobradiça recortada da parede oca real, com ambas as rampas.
 - Porta, lingueta, inserção do inox e retirada da caixinha conferidas geometricamente.

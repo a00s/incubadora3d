@@ -49,6 +49,16 @@ fica encaixada nele; a junta TPU do corpo complementa a vedação.
 O manípulo central regula a compressão. A estanqueidade depende do ajuste e de ensaio físico.
 
 Para abrir, afrouxe o manípulo e gire a lingueta central 90° para baixo.
+A pega lateral é uma dupla hélice circular real, com duas curvas vistas de frente,
+hastes cilíndricas Ø3,2 mm e travessas Ø2,2 mm. Os apoios são curvos e se
+alargam gradualmente até a porta, com raio de 1,8 a 4 mm.
+A hélice tem raio de 6 mm e uma volta completa ao longo de 36 mm;
+o envelope com apoios tem altura de 54 mm, profundidade de 15,2 mm e
+projeção de 18,6 mm além da placa. Imprimir com a face externa da porta na mesa
+e suportes na hélice. Nenhum trecho ultrapassa o plano de apoio da porta.
+Os vazados pertencem somente à pega externa: nenhum corte atravessa a porta,
+as células de isolamento ou o perímetro de vedação. O canal e as juntas TPU
+foram preservados. Ergonomia e estanqueidade dependem de teste físico.
 As duas dobradiças usam M4 × 20 escareados, porcas metálicas na porta e buchas de compressão.
 Os apoios fixos têm rampas externas a 45° para impressão da carcaça com a traseira na mesa.
 Atrás das duas dobradiças e da base da lingueta, as rampas dentro da parede também

@@ -1,5 +1,6 @@
 """Preliminary mechanical layout; millimetres. Not validated for operation."""
 import json
+from io import BytesIO
 import math
 import sys
 from pathlib import Path
@@ -257,9 +258,7 @@ for z in [P['latch_height']]:
     latches.append((z,dog))
     clash_envelopes[f'manipulo_fecho_{z}']=cq.Workplane('XZ',origin=(-13,-20,z)).polygon(8,20).extrude(6).union(yhole(-13,-7.5,z,4,15.5))
     integral_threaded_names.add(f'manipulo_fecho_{z}')
-# Pull handle, open underneath.
-handle=box(8,13,42,7,-19,49).cut(box(10,10,26,6,-17,57))
-doorpart=doorpart.union(handle.translate((10,-10,0)))
+# Lateral pulling tab is added below, flush with the outer bed plane.
 
 # Free TPU shape: foot retained in channel; lip compressed by nominal 1.5 mm.
 def lip_ring(side,wall=LIP_WALL):
@@ -749,11 +748,37 @@ for probe in [(-58,70,-9.9),(-50,100,-9.9),(-20,118,-9.9)]:
 assert abs(body.val().BoundingBox().zmin+10)<1e-5, 'Support plane changed'
 P['heater_voltage']=12
 # Original cellular insulation retained behind the enlarged sealing panel.
-# The outer bulge leaves the handle and compression areas exposed.
+# The outer bulge leaves the compression areas exposed.
 door_outer=box(w,10,h,0,-16,0).edges('|Y').fillet(8)
 door_border=door_outer.cut(box(w-4,12,h-4,2,-17,2).edges('|Y').fillet(6))
 door_insulation=cellular_block(0,-16,0,w,10,h).intersect(door_outer).union(door_border)
-doorpart=doorpart.union(door_insulation)
+# DNA-shaped external grip. Additive geometry only: no hole enters the door.
+# Circular helical rods remain above Y-16; print with the outer face down and supports.
+door_without_grip=doorpart.union(door_insulation)
+from door_grip import dna_grip
+finger_tab=dna_grip()
+assert finger_tab.val().isValid() and len(finger_tab.solids().vals())==1, 'DNA grip disconnected'
+# Normalize OCCT topology before joining the coplanar lattice and shell.
+def normalized_grip_shape(obj):
+    stream=BytesIO()
+    obj.val().exportBrep(stream)
+    stream.seek(0)
+    return cq.Workplane(obj=cq.Shape.importBrep(stream))
+door_without_grip=normalized_grip_shape(door_without_grip)
+finger_tab=normalized_grip_shape(finger_tab)
+doorpart=door_without_grip.union(finger_tab,tol=1e-5)
+dna_preserved_volume=door_without_grip.intersect(doorpart).val().Volume()
+print('DNA grip preserved door volume:',dna_preserved_volume,flush=True)
+assert abs(dna_preserved_volume-door_without_grip.val().Volume())<1e-3, 'DNA grip removed door material'
+assert not finger_tab.val().isInside((-15,-8.4,98)), 'DNA opening blocked'
+assert abs(doorpart.val().BoundingBox().ymin+16)<1e-5, 'Outer bed plane changed'
+P.update(door_projecting_handle=False,door_finger_tab_side='latch, above tongue',
+         door_finger_tab_style='true circular double helix, two curves, curved flared roots',
+         door_finger_tab_projection_beyond_plate=18.6,door_finger_tab_height=54,
+         door_finger_tab_thickness=15.2,door_finger_tab_rail_width=3.2,
+         door_finger_tab_root_style='curved smooth loft, radius 1.8 to 4 mm',
+         door_finger_tab_rung_width=2.2,door_finger_tab_supports_required=True,door_finger_tab_openings_enter_door=False,
+         door_insulation_preserved_at_grip=True)
 assert len(doorpart.solids().vals())==1, 'Door must be one solid'
 for xprobe in [5,21,101,117]:
     assert not doorpart.val().isInside((xprobe,-11,70)), 'Door air layer missing near side'
