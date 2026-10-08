@@ -1,5 +1,7 @@
 <div id="incubator-view">
   <div class="viz-controls">
+    <label class="form-label">Visualizar<select class="form-select" id="inc-view"><option value="assembly">Incubadora</option><option value="forming">Molde e contraforma do inox</option></select></label>
+    <label class="form-label">Abrir contraforma <output id="inc-forming-value">40 mm</output><input class="form-range" id="inc-forming-gap" type="range" min="0" max="80" value="40" disabled><small>Afasta cada metade; 0 mm mostra o conjunto fechado.</small></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-service"><span class="form-check-label">Retirar tampa de manutenção</span></label>
     <label class="form-label">Fecho<select class="form-select" id="inc-lock"><option value="locked">Travado</option><option value="free">Afrouxado e girado 90°</option></select></label>
     <label class="form-label">Abrir porta <output id="inc-door-value">0°</output><input class="form-range" id="inc-door" type="range" min="0" max="110" value="0"></label>
@@ -29,7 +31,8 @@ const packed=Uint8Array.from(atob("__MESH_GZIP__"),c=>c.charCodeAt(0));
 const parts=JSON.parse(await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
 for(const part of parts){let previous=[0,0,0];part.vertices=part.vertices.map(v=>{previous=v.map((n,i)=>n+previous[i]);return previous.map(n=>n/10)});}
 const get=id=>root.querySelector('#inc-'+id);
-const service=get('service');
+const service=get('service'),view=get('view'),formingGap=get('forming-gap');
+const isTool=part=>part.kind.startsWith('forming_');
 const cutHeight=get('cut-height');
 const cut=get('cut'),lidLift=get('lid'),lock=get('lock'),door=get('door'),shell=get('shell'),dims=get('dims'),channel=get('channel'),trays=get('trays'),angle=get('angle'),zoom=get('zoom');
 const gl=canvas.getContext('webgl',{antialias:true,alpha:true,preserveDrawingBuffer:true});
@@ -42,10 +45,10 @@ gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw
 const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
 for(const [name,offset] of [['position',0],['color',12]]){const loc=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,24,offset);}
 gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(0,0,0,0);
-const names={uslide_referencia_1:'Lâmina de microscópio 76 × 26 × 1 mm · inferior',uslide_referencia_2:'Lâmina de microscópio 76 × 26 × 1 mm · central',uslide_referencia_3:'Lâmina de microscópio 76 × 26 × 1 mm · superior',junta_V_porta_TPU:'Junta TPU labial no ressalto em V da porta',painel_interno_escotilha_encaixe:'Painel interno menor da escotilha · encaixe sem parafusos',bucha_dobradica_22:'Bucha de compressão da dobradiça inferior',bucha_dobradica_102:'Bucha de compressão da dobradiça superior',suporte_gavetas_removivel:'Suporte reforçado · guias abertas',revestimento_inox_referencia:'Caixa interna inox 304 · 0,3 mm · referência',tampa_manutencao_CO2_eletronica:'Tampa de manutenção · encaixe + M4×12 embutido',TPU_passagem_sensor:'Bucha TPU lateral · três fios do sensor',caixinha_encaixe_aquecedor:'Caixinha 70 × 60 × 21 mm · dois M4×12 · plugue à direita',TPU_passagem_aquecedor:'Bucha TPU · dois fios do aquecedor',suporte_encaixe_conector_aquecedor:'Suporte de encaixe · alimentação',capsula_conector_aquecedor:'Cápsula removível · plugue lateral Ø8',tampo_encaixe_fios_CO2:'Cobertura dos fios CO₂ · revisão pendente',tampa_alimentacao_aquecedor_provisoria:'Tampa alimentação aquecedor · furo Ø8 provisório',sensor_temperatura_umidade_referencia:'Sensor temperatura/umidade · posição provisória',chapa_aquecedor_referencia:'Chapa metálica · referência',pelicula_aquecedora_90x33_referencia:'Aquecedor 90 × 33 mm · referência',bucha_sensor_TPU:'Bucha TPU de encaixe do sensor',caixa_eletronica:'Caixa traseira da eletrônica',tampa_eletronica:'Tampa da eletrônica · encaixe',placa_adaptadora_RJ45_provisoria:'Adaptador RJ45 keystone · teste',placa_eletronica_referencia:'Placa 43,12 × 25,16 · referência',corpo_integrado:'01 · Corpo + mistura + caixa eletrônica',junta_porta:'02 · Junta TPU de encaixe',porta_articulada:'03 · Porta com dobradiças',bandeja_1:'04 · Bandeja inferior (1)',bandeja_2:'05 · Bandeja (2)',bandeja_3:'06 · Bandeja superior (3)',reservatorio_agua:'07 · Reservatório de água',tampa_misturador:'08 · Tampa parafusada do misturador',junta_tampa_TPU:'09 · Junta TPU da tampa',sensor_referencia:'Sensor — referência',passagem_gas_referencia:'Passagem interna Ø6,2 — referência · encaixe opcional de mangueira'};
+const names={molde_caixa_inox_referencia:'Molde interno do inox · macho',contraforma_inox_inferior:'Contraforma inferior · apoio',contraforma_inox_superior:'Contraforma superior · prensa',uslide_referencia_1:'Lâmina de microscópio 76 × 26 × 1 mm · inferior',uslide_referencia_2:'Lâmina de microscópio 76 × 26 × 1 mm · central',uslide_referencia_3:'Lâmina de microscópio 76 × 26 × 1 mm · superior',junta_V_porta_TPU:'Junta TPU labial no ressalto em V da porta',painel_interno_escotilha_encaixe:'Painel interno menor da escotilha · encaixe sem parafusos',bucha_dobradica_22:'Bucha de compressão da dobradiça inferior',bucha_dobradica_102:'Bucha de compressão da dobradiça superior',suporte_gavetas_removivel:'Suporte reforçado · guias abertas',revestimento_inox_referencia:'Caixa interna inox 304 · 0,3 mm · referência',tampa_manutencao_CO2_eletronica:'Tampa de manutenção · encaixe + M4×12 embutido',TPU_passagem_sensor:'Bucha TPU lateral · três fios do sensor',caixinha_encaixe_aquecedor:'Caixinha 70 × 60 × 21 mm · dois M4×12 · plugue à direita',TPU_passagem_aquecedor:'Bucha TPU · dois fios do aquecedor',suporte_encaixe_conector_aquecedor:'Suporte de encaixe · alimentação',capsula_conector_aquecedor:'Cápsula removível · plugue lateral Ø8',tampo_encaixe_fios_CO2:'Cobertura dos fios CO₂ · revisão pendente',tampa_alimentacao_aquecedor_provisoria:'Tampa alimentação aquecedor · furo Ø8 provisório',sensor_temperatura_umidade_referencia:'Sensor temperatura/umidade · posição provisória',chapa_aquecedor_referencia:'Chapa metálica · referência',pelicula_aquecedora_90x33_referencia:'Aquecedor 90 × 33 mm · referência',bucha_sensor_TPU:'Bucha TPU de encaixe do sensor',caixa_eletronica:'Caixa traseira da eletrônica',tampa_eletronica:'Tampa da eletrônica · encaixe',placa_adaptadora_RJ45_provisoria:'Adaptador RJ45 keystone · teste',placa_eletronica_referencia:'Placa 43,12 × 25,16 · referência',corpo_integrado:'01 · Corpo + mistura + caixa eletrônica',junta_porta:'02 · Junta TPU de encaixe',porta_articulada:'03 · Porta com dobradiças',bandeja_1:'04 · Bandeja inferior (1)',bandeja_2:'05 · Bandeja (2)',bandeja_3:'06 · Bandeja superior (3)',reservatorio_agua:'07 · Reservatório de água',tampa_misturador:'08 · Tampa parafusada do misturador',junta_tampa_TPU:'09 · Junta TPU da tampa',sensor_referencia:'Sensor — referência',passagem_gas_referencia:'Passagem interna Ø6,2 — referência · encaixe opcional de mangueira'};
 const visibility=new Map();
 const groups=new Map();
-for(const title of ['Carcaça','Porta e fechos','Gavetas e reservatório','CO₂','Eletrônica','Aquecimento','Temperatura e umidade']){
+for(const title of ['Carcaça','Porta e fechos','Gavetas e reservatório','CO₂','Eletrônica','Aquecimento','Temperatura e umidade','Ferramental do inox']){
  const section=document.createElement('section');
  const label=document.createElement('label');label.className='form-check';
  const toggle=document.createElement('input');toggle.type='checkbox';toggle.className='form-check-input';toggle.checked=true;
@@ -57,6 +60,7 @@ for(const title of ['Carcaça','Porta e fechos','Gavetas e reservatório','CO₂
  toggle.addEventListener('input',()=>{for(const name of group.members)visibility.get(name).checked=toggle.checked;if(toggle.checked)shell.checked=true;draw();});
 }
 function groupFor(part){const n=part.name;
+ if(isTool(part))return 'Ferramental do inox';
  if(n==='revestimento_inox_referencia')return 'Carcaça';
  if(n==='corpo_integrado')return 'Carcaça';
  if(/porta|fecho|dobradica|escotilha/.test(n))return 'Porta e fechos';
@@ -75,7 +79,7 @@ function syncGroups(){for(const group of groups.values()){
 for(const part of parts){
  if(part.kind.startsWith('section_'))continue;
  const label=document.createElement('label');label.className='form-check';
- const input=document.createElement('input');input.type='checkbox';input.className='form-check-input';input.checked=true;input.id='piece-'+part.name;
+ const input=document.createElement('input');input.type='checkbox';input.className='form-check-input';input.checked=!isTool(part);input.id='piece-'+part.name;
  if(part.kind==='latch')names[part.name]='Lingueta central · aba para os dedos e contato chanfrado';
  if(part.kind==='knob')names[part.name]='Manípulo central · haste lisa e ponta roscada Ø8/passo2';
  if(part.kind==='printed_lid_screw')names[part.name]='Parafuso impresso da tampa CO₂ · ponta roscada Ø4/passo1';
@@ -89,7 +93,14 @@ for(const part of parts){
  label.append(input,text);row.append(label,isolate);const group=groups.get(groupFor(part));group.details.append(row);group.members.push(part.name);visibility.set(part.name,input);input.addEventListener('input',draw);
  isolate.addEventListener('click',()=>{for(const [name,check] of visibility)check.checked=name===part.name;shell.checked=true;channel.checked=part.kind==='channel';if(part.kind==='fastener')door.value=0;draw();});
 }
-get('all').addEventListener('click',()=>{for(const check of visibility.values())check.checked=true;shell.checked=true;draw();});
+function selectView(){
+ const forming=view.value==='forming';
+ for(const part of parts){const check=visibility.get(part.name);if(check)check.checked=forming?(isTool(part)||part.name==='revestimento_inox_referencia'):!isTool(part);}
+ formingGap.disabled=!forming;zoom.value=forming?.8:1;shell.checked=true;channel.checked=false;draw();
+}
+view.addEventListener('change',selectView);
+formingGap.addEventListener('input',draw);
+get('all').addEventListener('click',selectView);
 // Cache only the current height. Clip in model coordinates and cap using even-odd
 // scanline strips: inner contours remain hollow, including the double walls.
 const sectionCache=new Map();
@@ -125,6 +136,7 @@ function sectionAt(part,height){
 let pitch=.4,drag=null,yawDegrees=Number(angle.value);
 function draw(){
 syncGroups();
+get('forming-value').value=formingGap.value+' mm';
 cutHeight.disabled=!cut.checked;get('cut-value').value=cutHeight.value+' mm';
 const width=canvas.clientWidth,height=480,dpr=window.devicePixelRatio||1;
 for(const c of [canvas,labels]){c.width=width*dpr;c.height=height*dpr;}
@@ -136,6 +148,8 @@ get('door-value').value=door.value+'°';
 if(Number(door.value)<90&&Number(trays.value)>0){trays.value=0;}
 trays.disabled=Number(door.value)<90;
 function project(v,part={}){let [x,y,z]=v;
+if(part.kind==='forming_upper')z+=Number(formingGap.value);
+if(part.kind==='forming_lower')z-=Number(formingGap.value);
 if(['lid','sensor','sensor_seal'].includes(part.kind))z+=Number(lidLift.value);
 if((part.kind==='hood'||/M4.*tampa_manutencao/.test(part.name))&&(service.checked||Number(lidLift.value)>0))z+=180;
 if(['lid_hardware','printed_lid_screw'].includes(part.kind)&&Number(lidLift.value)>0)z+=Number(lidLift.value)+22;
@@ -159,9 +173,9 @@ gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.drawArr
 const fg=getComputedStyle(root).color;ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.font='13px sans-serif';ctx.lineWidth=1;
 function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,Math.min(width-tw/2-4,x));y=Math.max(16,Math.min(height-8,y));ctx.textAlign='center';ctx.fillText(text,x,y);}
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
-if(dims.checked){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
+if(dims.checked&&view.value!=='forming'){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
 if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Passagem interna Ø6,2 · referência',p[0],p[1]+24);}
-get('status').textContent=Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.59 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.59 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+get('status').textContent=view.value==='forming'?'Inox 0,3 mm · macho + contraforma em duas metades · folga adicional de 0,15 mm por face. Pré-dobrar a chapa e fechar gradualmente entre placas planas. Fundo e emendas separados; força e retorno elástico ainda por testar.':Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.59 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.59 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
 for(const el of [service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);

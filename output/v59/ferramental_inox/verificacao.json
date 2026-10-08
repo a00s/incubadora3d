@@ -1,0 +1,71 @@
+{
+  "chapa_inox_mm": 0.3,
+  "folga_adicional_por_face_mm": 0.15,
+  "distancia_macho_cavidade_mm": 0.45,
+  "raio_interno_mm": 5.2,
+  "raio_cavidade_mm": 5.65,
+  "comprimento_util_mm": 109.7,
+  "contraforma_dividida_em": "Z=70 mm",
+  "furos_alinhamento_mm": 6.6,
+  "centros_furos_xy_mm": [
+    [
+      -1.65,
+      20
+    ],
+    [
+      -1.65,
+      90
+    ],
+    [
+      121.65,
+      20
+    ],
+    [
+      121.65,
+      90
+    ]
+  ],
+  "sem_interferencia_com_macho_e_inox": true,
+  "abertura_z_conferida_mm": [
+    0,
+    0.1,
+    1,
+    10,
+    40,
+    80
+  ],
+  "pecas": [
+    {
+      "nome": "molde_caixa_inox_referencia",
+      "dimensoes_impressao_mm": [
+        110.40313248555955,
+        130.40313248555952,
+        109.70313248555955
+      ],
+      "solido_valido": true
+    },
+    {
+      "nome": "contraforma_inox_inferior",
+      "dimensoes_impressao_mm": [
+        135.3000002000001,
+        77.6520515987947,
+        109.70340354873291
+      ],
+      "solido_valido": true
+    },
+    {
+      "nome": "contraforma_inox_superior",
+      "dimensoes_impressao_mm": [
+        135.3000002000001,
+        77.65205159879469,
+        109.70340354873294
+      ],
+      "solido_valido": true
+    }
+  ],
+  "limites": [
+    "Acabamento de quatro dobras longitudinais preformadas",
+    "Nao forma o fundo nem define recortes ou emendas da chapa",
+    "Retorno elastico e forca de conformacao nao simulados; ensaio fisico pendente"
+  ]
+}

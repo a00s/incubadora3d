@@ -6,6 +6,9 @@ p=Path(__file__).resolve().parents[1]
 folder=p/'output/v59'
 # Compact display mesh only; CAD/STL export precision is unchanged.
 preview=json.loads((folder/'mesh.json').read_text())
+tool_mesh=folder/'ferramental_inox'/'mesh.json'
+if tool_mesh.exists():
+    preview.extend(json.loads(tool_mesh.read_text()))
 # Adjustable sections are computed in the viewer; omit obsolete fixed-cut meshes.
 preview=[part for part in preview if not part['kind'].startswith('section_')]
 for part in preview:

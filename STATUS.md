@@ -28,8 +28,11 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Mangueira CO₂ Ø6 mm: entrada e passagem interna Ø6,2 mm, boca Ø6,8 mm e furo do inox Ø6,2 mm; encaixe e vedação física pendentes.
 - Misturador CO₂ com teto integrado e abertura do sensor; eletrônica acessível pela tampa lateral.
 
+- Ferramental inox separado: macho existente e contraformas superior/inferior, chapa 0,3 mm + folga 0,15 mm por face; modo próprio no visualizador.
+
 ## Validação
 
+- Ferramental: três sólidos válidos, sem interseção com o inox; abertura em Z de 0 a 80 mm conferida e visualizador testado em WebGL. Força e retorno elástico pendentes de ensaio físico.
 - Corpo único e peças válidas; 59 pares rígidos sem colisão após remover o puxador.
 - Faces finais dos tetos auditadas nas duas dobradiças e no fecho: rampas a 45°, pontes restantes ≤0,4 mm.
 - Amostra da dobradiça recortada da parede oca real, com ambas as rampas.

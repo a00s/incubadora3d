@@ -948,14 +948,10 @@ P.update(tray_extraction_positions_checked_mm=tray_pull_positions,
     slide_no_upper_overlap=True,slide_bottom_support_and_edge_stops_checked=True,
     limitations=['Rigid geometric checks', 'Printed fit and strength require physical test',
                  'Open pockets do not retain slides against lifting or inversion']),indent=2))
-# Inner forming mould is exported separately, never as a component of the assembly.
-mould=box(110.4,109.7,130.4,4.8,0,4.8).edges('|Y').fillet(5.2)
-assert mould.val().isValid()
-cq.exporters.export(mould,str(OUT/'molde_caixa_inox_referencia.step'))
+# Forming tools are separate from the incubator assembly and its clash audit.
 cq.exporters.export(liner,str(OUT/'revestimento_inox_referencia.step'))
-# Reference STL for the mould, flat rear on bed.
-mould_print=mould.rotate((0,0,0),(1,0,0),-90).translate((-4.8,-4.8,109.7))
-cq.exporters.export(mould_print,str(OUT/'molde_caixa_inox_referencia.stl'))
+from forming_tools import export_tools
+export_tools(OUT)
 if CHECK_MOVEMENTS:
     # Door sweep with dogs parked 90 degrees and loosened by 0.8 mm.
     print('Checking door sweep',flush=True)
