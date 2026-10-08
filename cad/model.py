@@ -355,7 +355,7 @@ body=body.union(collar).union(mixer_roof)
 P.update(latch_integral_thread=True,mixer_integral_threads=0,mixer_roof_integrated=True,
          mixer_roof_bottom_z=111,mixer_roof_top_z=117,mixer_sensor_aperture_diameter=20.4)
 assert independent(body).intersect(sensor_hole).val().Volume()<1e-5, 'Integral sensor aperture blocked'
-# Legacy door insulation: orientation review remains deferred for the door.
+# Door insulation roofs close toward +Z: print the door upright, lower edge down.
 # Body insulation below uses a separate rear-down layout.
 air_cells=[]
 def cell(x,y,z,sx,sy,sz):
@@ -753,7 +753,7 @@ door_outer=box(w,10,h,0,-16,0).edges('|Y').fillet(8)
 door_border=door_outer.cut(box(w-4,12,h-4,2,-17,2).edges('|Y').fillet(6))
 door_insulation=cellular_block(0,-16,0,w,10,h).intersect(door_outer).union(door_border)
 # DNA-shaped external grip. Additive geometry only: no hole enters the door.
-# Circular helical rods remain above Y-16; print with the outer face down and supports.
+# Print upright to match the +Z insulation roofs; review external DNA supports.
 door_without_grip=doorpart.union(door_insulation)
 from door_grip import dna_grip
 finger_tab=dna_grip()
@@ -827,7 +827,8 @@ P.update(door_rigid_piece_count=1,door_hatch_insert_snap_fit=False,
          door_boss_side_angle_to_axis_deg=math.degrees(math.atan(.5)),
          door_receiver_profile=RECEIVER_PROFILE,door_receiver_wall=1,
          door_v_lip_wall=.6,door_v_tpu_retention='dovetail around tapered boss',
-         door_body_gasket_preserved=True,door_print_orientation='outer flat face down; inner V boss up; supports on DNA grip',
+         door_body_gasket_preserved=True,door_print_orientation='upright; lower Z=-4 edge on bed; build +Z; external supports and brim',
+         door_insulation_build_direction='+Z',
          door_hatch_extra_screws=0,door_v_seal_test='pending physical fit and leak test',
          rack_outer_width=109.8,rack_liner_side_clearance=.3)
 add('junta_V_porta_TPU',v_seal,'#45ae89','door_seal')

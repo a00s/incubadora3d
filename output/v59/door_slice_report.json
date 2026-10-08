@@ -1,0 +1,15 @@
+{
+  "arquivo": "incubadora_v59_CrealityPrint_7.2.1.3mf",
+  "bandeja": 2,
+  "orientacao": "em pe, crescimento +Z",
+  "creality_version": "7.2.1.5476",
+  "exit_code": 0,
+  "gcode_teste_bytes": 21900974,
+  "suportes_teste": "automaticos, somente a partir da mesa",
+  "brim_teste_mm": 10,
+  "configuracoes_do_teste_separadas_do_projeto": true,
+  "nota": "Fatiamento de teste; sem ensaio fisico, sem G-code de teste no projeto entregue.",
+  "altura_fatiada_mm": 148,
+  "camadas": 1143,
+  "avisos_do_fatiador": []
+}

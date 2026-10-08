@@ -1,0 +1,9 @@
+{
+  "orientacao": "Porta em pe, borda inferior Z=-4 na mesa",
+  "crescimento": "+Z",
+  "triangulos_de_rampa_conferidos": 350,
+  "angulo_maximo_rampas_graus": 45.00003902963645,
+  "triangulos_de_ponte_conferidos": 182,
+  "maior_largura_de_ponte_mm": 2.4000015258789062,
+  "nota": "Campo central das celulas (X=10 a 110); perimetro curvo e raizes da pega excluidos. Ultima fileira curta conserva pontes de ate 2,4 mm. Sem ensaio de impressao."
+}

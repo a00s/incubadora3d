@@ -69,10 +69,10 @@ def pack_tools(path, folder):
         config.remove(obj)
     next_id = max(int(o.get('id')) for o in resources) + 1
     updates, removed = {}, set()
-    # Keep the male pilots and the door's outer-face-down orientation current.
+    # Keep the male pilots and the door's upright orientation current.
     for part_name, stl, orient, plate_number in [
         ('molde_caixa_inox_referencia',folder/'molde_caixa_inox_referencia.stl',None,10),
-        ('porta_articulada',folder/'porta_articulada.stl',lambda p:(p[0],-p[2],p[1]),2)]:
+        ('porta_articulada',folder/'porta_articulada.stl',None,2)]:
         part_config = next(o for o in config.findall('object') if values(o).get('name')==part_name)
         part_id = part_config.get('id')
         wrapper = next(o for o in resources if o.get('id')==part_id)

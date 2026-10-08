@@ -11,6 +11,6 @@
     36
   ],
   "molde_na_bandeja": 10,
-  "porta_face_externa_para_baixo": true,
-  "porta_ressalto_v_para_cima": true
+  "porta_em_pe": true,
+  "porta_crescimento_eixo_z": true
 }
