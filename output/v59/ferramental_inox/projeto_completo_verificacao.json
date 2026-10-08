@@ -11,7 +11,6 @@
     36
   ],
   "molde_na_bandeja": 10,
-  "configuracoes_usuario_preservadas": true,
-  "porta_dna_preservada": true,
-  "demais_malhas_preservadas": true
+  "porta_face_externa_para_baixo": true,
+  "porta_ressalto_v_para_cima": true
 }

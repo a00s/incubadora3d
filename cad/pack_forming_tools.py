@@ -1,4 +1,4 @@
-"""Add the split dies to the last two PC sample plates, preserving saved settings."""
+"""Update male/door meshes and pack split dies on PC sample plates, preserving saved settings."""
 from pathlib import Path
 import json
 import struct
@@ -22,7 +22,7 @@ def meta(parent, key, value):
     ET.SubElement(parent, 'metadata', key=key, value=str(value))
 
 
-def load_mesh(path):
+def load_mesh(path, orient=None):
     data = path.read_bytes()
     assert len(data) == 84 + struct.unpack_from('<I', data, 80)[0] * 50
     points, faces, ids = [], [], {}
@@ -30,6 +30,7 @@ def load_mesh(path):
         face = []
         for start in (3, 6, 9):
             point = tuple(record[start:start+3])
+            if orient:point=orient(point)
             if point not in ids:
                 ids[point] = len(points)
                 points.append(point)
@@ -68,33 +69,36 @@ def pack_tools(path, folder):
         config.remove(obj)
     next_id = max(int(o.get('id')) for o in resources) + 1
     updates, removed = {}, set()
-    # Update the existing male too: its three blind pilot marks are new geometry.
-    male_config = next(o for o in config.findall('object') if values(o).get('name')=='molde_caixa_inox_referencia')
-    male_id = male_config.get('id')
-    wrapper = next(o for o in resources if o.get('id')==male_id)
-    component = wrapper.find('m:components/m:component',NS)
-    mesh_path = component.get(f'{{{PROD}}}path')
-    owner = ET.fromstring(entries[mesh_path.lstrip('/')][1]) if mesh_path else model
-    mesh_owner = next(o for o in owner.find('m:resources',NS) if o.get('id')==component.get('objectid'))
-    old_mesh = mesh_owner.find('m:mesh',NS)
-    mesh_owner.remove(old_mesh)
-    new_mesh = ET.SubElement(mesh_owner,f'{{{CORE}}}mesh')
-    vv = ET.SubElement(new_mesh,f'{{{CORE}}}vertices')
-    points,triangles,_ = load_mesh(folder/'molde_caixa_inox_referencia.stl')
-    item = next(i for i in build if i.get('objectid')==male_id)
-    dz=float(item.get('transform').split()[11])
-    for point in points:
-        point=(point[0],point[1],point[2]-dz)
-        ET.SubElement(vv,f'{{{CORE}}}vertex',**{a:format(point[j],'.9g') for j,a in enumerate('xyz')})
-    tt=ET.SubElement(new_mesh,f'{{{CORE}}}triangles')
-    for face in triangles:
-        ET.SubElement(tt,f'{{{CORE}}}triangle',**{f'v{j+1}':str(v) for j,v in enumerate(face)})
-    if mesh_path:updates[mesh_path.lstrip('/')]=ET.tostring(owner,encoding='utf-8',xml_declaration=True)
-    male_plate = next(p for p in config.findall('plate') if any(values(i).get('object_id')==male_id for i in p.findall('model_instance')))
-    for m in list(male_plate.findall('metadata')):
-        if m.get('key') in ('thumbnail_file','thumbnail_no_light_file','top_file','pick_file'):
-            removed.add(m.get('value'));male_plate.remove(m)
-    removed.add('Metadata/plate_10_small.png')
+    # Keep the male pilots and the door's outer-face-down orientation current.
+    for part_name, stl, orient, plate_number in [
+        ('molde_caixa_inox_referencia',folder/'molde_caixa_inox_referencia.stl',None,10),
+        ('porta_articulada',folder/'porta_articulada.stl',lambda p:(p[0],-p[2],p[1]),2)]:
+        part_config = next(o for o in config.findall('object') if values(o).get('name')==part_name)
+        part_id = part_config.get('id')
+        wrapper = next(o for o in resources if o.get('id')==part_id)
+        component = wrapper.find('m:components/m:component',NS)
+        mesh_path = component.get(f'{{{PROD}}}path')
+        owner = ET.fromstring(entries[mesh_path.lstrip('/')][1]) if mesh_path else model
+        mesh_owner = next(o for o in owner.find('m:resources',NS) if o.get('id')==component.get('objectid'))
+        old_mesh = mesh_owner.find('m:mesh',NS)
+        mesh_owner.remove(old_mesh)
+        new_mesh = ET.SubElement(mesh_owner,f'{{{CORE}}}mesh')
+        vv = ET.SubElement(new_mesh,f'{{{CORE}}}vertices')
+        points,triangles,_ = load_mesh(stl,orient)
+        item = next(i for i in build if i.get('objectid')==part_id)
+        dz=float(item.get('transform').split()[11])
+        for point in points:
+            point=(point[0],point[1],point[2]-dz)
+            ET.SubElement(vv,f'{{{CORE}}}vertex',**{a:format(point[j],'.9g') for j,a in enumerate('xyz')})
+        tt=ET.SubElement(new_mesh,f'{{{CORE}}}triangles')
+        for face in triangles:
+            ET.SubElement(tt,f'{{{CORE}}}triangle',**{f'v{j+1}':str(v) for j,v in enumerate(face)})
+        if mesh_path:updates[mesh_path.lstrip('/')]=ET.tostring(owner,encoding='utf-8',xml_declaration=True)
+        part_plate = next(p for p in config.findall('plate') if any(values(i).get('object_id')==part_id for i in p.findall('model_instance')))
+        for m in list(part_plate.findall('metadata')):
+            if m.get('key') in ('thumbnail_file','thumbnail_no_light_file','top_file','pick_file'):
+                removed.add(m.get('value'));part_plate.remove(m)
+        removed.add(f'Metadata/plate_{plate_number}_small.png')
     records = []
     for plate_index, name in ((35, 'contraforma_inox_inferior'), (36, 'contraforma_inox_superior')):
         plate = next(p for p in config.findall('plate') if values(p).get('plater_id') == str(plate_index))

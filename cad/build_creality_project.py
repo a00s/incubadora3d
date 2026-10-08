@@ -33,8 +33,11 @@ def xml_bytes(node):
 
 def orient(name, point):
     x, y, z = point
+    # Outer Y=-16 face on the bed; inner V boss and DNA grip above it.
+    if name == 'porta_articulada':
+        return x, -z, y
     # The body uses its dedicated rear-down STL, and the mould is already flat.
-    if name in ('porta_articulada', 'painel_interno_escotilha_encaixe', 'tampa_manutencao_CO2_eletronica',
+    if name in ('painel_interno_escotilha_encaixe', 'tampa_manutencao_CO2_eletronica',
                 'suporte_gavetas_removivel', 'caixinha_encaixe_aquecedor', 'junta_porta', 'junta_V_porta_TPU',
                 'TPU_passagem_aquecedor') or name.startswith('lingueta_fecho'):
         return x, z, -y
@@ -132,6 +135,7 @@ for i, original in enumerate(paths):
                        vertices=len(vertices), triangulos=len(triangles),
                        faces_de_area_zero_removidas=struct.unpack_from('<I',path.read_bytes(),80)[0]-len(triangles),
                        orientacao='traseira na mesa' if name == 'corpo_integrado' else
+                       'face externa plana na mesa; ressalto V para cima; suportes na helice DNA' if name == 'porta_articulada' else
                        'orientacao inicial; revisar no fatiador'))
 
 # Reference standard presets without embedding custom filament settings.

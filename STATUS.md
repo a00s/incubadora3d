@@ -14,7 +14,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
   volta completa em 36 mm, hastes Ø3,2 mm e travessas Ø2,2 mm.
   Envelope: altura 54 mm, profundidade 15,2 mm e projeção 18,6 mm além da placa.
   Apoios curvos alargam de R1,8 para R4 junto à porta.
-  Face externa na mesa; hélice requer suportes. Nenhum corte na porta ou canal TPU.
+  Face externa plana na mesa, ressalto V para cima; orientação corrigida nos dois 3MF. Hélice requer suportes. Nenhum corte na porta ou canal TPU.
   O 3MF salvo pelo usuário recebeu a porta DNA, preservando configurações e demais malhas; validação física de gás pendente.
 - Fecho central; lingueta liberando a abertura quando girada 90° após afrouxar o manípulo.
 - Duas dobradiças M4 × 20 escareadas, porcas metálicas na porta e apoios externos a 45°.

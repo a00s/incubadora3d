@@ -827,7 +827,7 @@ P.update(door_rigid_piece_count=1,door_hatch_insert_snap_fit=False,
          door_boss_side_angle_to_axis_deg=math.degrees(math.atan(.5)),
          door_receiver_profile=RECEIVER_PROFILE,door_receiver_wall=1,
          door_v_lip_wall=.6,door_v_tpu_retention='dovetail around tapered boss',
-         door_body_gasket_preserved=True,door_print_orientation='deferred by user',
+         door_body_gasket_preserved=True,door_print_orientation='outer flat face down; inner V boss up; supports on DNA grip',
          door_hatch_extra_screws=0,door_v_seal_test='pending physical fit and leak test',
          rack_outer_width=109.8,rack_liner_side_clearance=.3)
 add('junta_V_porta_TPU',v_seal,'#45ae89','door_seal')

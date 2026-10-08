@@ -47,7 +47,7 @@
       "vertices": 33967,
       "triangulos": 67546,
       "faces_de_area_zero_removidas": 0,
-      "orientacao": "orientacao inicial; revisar no fatiador"
+      "orientacao": "face externa plana na mesa; ressalto V para cima; suportes na helice DNA"
     },
     {
       "bandeja": 3,
