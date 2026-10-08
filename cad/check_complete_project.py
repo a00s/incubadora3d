@@ -33,17 +33,17 @@ with zipfile.ZipFile(path) as z:
             faces=[tuple(int(t.get(f'v{i}')) for i in (1,2,3)) for t in mesh.find('m:triangles',NS)]
             assert all(len(set(f))==3 and min(f)>=0 and max(f)<len(vertices) for f in faces)
             edge=Counter(tuple(sorted((a,b))) for f in faces for a,b in zip(f,f[1:]+f[:1]))
-            if labels[oid] in ('molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior'):
+            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior'):
                 assert all(n==2 for n in edge.values()),labels[oid]
             transform=[float(v) for v in items[oid].get('transform').split()]
             assert transform[:9]==[1,0,0,0,1,0,0,0,1]
             if labels[oid]=='porta_articulada':
-                expected,_,_=load_mesh(ROOT/'output/v59/porta_articulada.stl',None)
+                expected,_,_=load_mesh(ROOT/'output/v59/porta_articulada.stl',lambda p:(p[0],-p[2],p[1]))
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
-                # CAD bottom Z=-4 maps to print Z=0; door top Z=144 maps to Z=148.
+                # CAD outer Y=-16 maps to print Z=0; inner Y=3 maps to print Z=19.
                 assert abs(min(v[2]+transform[11] for v in vertices))<1e-5
-                assert abs(max(v[2]+transform[11] for v in vertices)-148)<1e-5
+                assert abs(max(v[2]+transform[11] for v in vertices)-19)<1e-5
             low=[min(v[a] for v in vertices)+transform[9+a] for a in range(3)]
             high=[max(v[a] for v in vertices)+transform[9+a] for a in range(3)]
             assert 5<=low[0]-ox and high[0]-ox<=215,labels[oid]
@@ -57,6 +57,6 @@ with zipfile.ZipFile(path) as z:
     assert len(config.findall('plate'))==36
 report=dict(arquivo=path.name,bandejas=36,pecas=38,zip_xml_validos=True,malhas_ferramental_fechadas=True,
             limites_k1c_com_margem_5mm=True,espaco_minimo_entre_pecas_mm=5,
-            contraformas_nas_bandejas=[35,36],molde_na_bandeja=10,porta_em_pe=True,porta_crescimento_eixo_z=True)
+            contraformas_nas_bandejas=[35,36],molde_na_bandeja=10,porta_malha_fechada=True,porta_face_externa_para_baixo=True,porta_crescimento_eixo_y=True)
 (ROOT/'output/v59/ferramental_inox/projeto_completo_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
 print(json.dumps(report,indent=2,ensure_ascii=False))

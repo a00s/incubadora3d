@@ -355,26 +355,8 @@ body=body.union(collar).union(mixer_roof)
 P.update(latch_integral_thread=True,mixer_integral_threads=0,mixer_roof_integrated=True,
          mixer_roof_bottom_z=111,mixer_roof_top_z=117,mixer_sensor_aperture_diameter=20.4)
 assert independent(body).intersect(sensor_hole).val().Volume()<1e-5, 'Integral sensor aperture blocked'
-# Door insulation roofs close toward +Z: print the door upright, lower edge down.
-# Body insulation below uses a separate rear-down layout.
-air_cells=[]
-def cell(x,y,z,sx,sy,sz):
-    c=box(sx,sy,sz,x,y,z)
-    bevel=min(sx/2-0.2,sz/2-0.2,2.8)
-    return c.edges('|Y and >Z').chamfer(bevel)
-def cellular_block(x,y,z,sx,sy,sz,orientation='wall'):
-    outer=box(sx,sy,sz,x,y,z)
-    holes=[]
-    # Cells have at least 2 mm skins and 2 mm separating ribs.
-    for ax in range(2,int(sx)-3,8):
-        for ay in range(2,int(sy)-3,20):
-            for az in range(2,int(sz)-3,22):
-                dx=min(6,sx-ax-2);dy=min(18,sy-ay-2);dz=min(20,sz-az-2)
-                if min(dx,dy,dz)<2:continue
-                holes.append(cell(x+ax,y+ay,z+az,dx,dy,dz).val())
-    void=cq.Workplane(obj=cq.Compound.makeCompound(holes))
-    air_cells.extend(holes)
-    return outer.cut(void)
+# Door insulation uses its own +Y roof layout, outer face flat on the bed.
+from door_insulation import build_door_insulation
 # Rear-down insulation: long cavities, 2 mm skins/ribs and 45-degree roofs.
 # Build direction is -Y. Each void closes across its 6 mm THIN dimension,
 # never across its long dimension. The final nominal bridge is only 0.4 mm.
@@ -747,13 +729,16 @@ for probe in [(-58,70,-9.9),(-50,100,-9.9),(-20,118,-9.9)]:
     assert body.val().isInside(probe), 'Continuous lateral support missing'
 assert abs(body.val().BoundingBox().zmin+10)<1e-5, 'Support plane changed'
 P['heater_voltage']=12
-# Original cellular insulation retained behind the enlarged sealing panel.
-# The outer bulge leaves the compression areas exposed.
-door_outer=box(w,10,h,0,-16,0).edges('|Y').fillet(8)
-door_border=door_outer.cut(box(w-4,12,h-4,2,-17,2).edges('|Y').fillet(6))
-door_insulation=cellular_block(0,-16,0,w,10,h).intersect(door_outer).union(door_border)
+# Outer face Y=-16 on the bed: long channels close toward +Y across X.
+door_insulation,door_air_cells,door_insulation_layout=build_door_insulation(w,h)
+P.update(door_insulation_build_direction='+Y',door_insulation_cavity_count=len(door_air_cells),
+         door_insulation_skin_mm=2,door_insulation_partition_mm=2,
+         door_insulation_roof_angle_deg=45,door_insulation_closure_bridge_mm=.4,
+         door_insulation_layout='two rows of long X-narrow channels; roofs toward +Y')
+(OUT/'door_insulation_layout.json').write_text(json.dumps(dict(
+    outer_bed_plane_y=-16,build_direction='+Y',cavities=door_insulation_layout),indent=2))
 # DNA-shaped external grip. Additive geometry only: no hole enters the door.
-# Print upright to match the +Z insulation roofs; review external DNA supports.
+# Outer face down: channel roofs close toward +Y; review external DNA supports.
 door_without_grip=doorpart.union(door_insulation)
 from door_grip import dna_grip
 finger_tab=dna_grip()
@@ -781,7 +766,9 @@ P.update(door_projecting_handle=False,door_finger_tab_side='latch, above tongue'
          door_insulation_preserved_at_grip=True)
 assert len(doorpart.solids().vals())==1, 'Door must be one solid'
 for xprobe in [5,21,101,117]:
-    assert not doorpart.val().isInside((xprobe,-11,70)), 'Door air layer missing near side'
+    for zprobe in [35,105]:
+        assert not doorpart.val().isInside((xprobe,-11,zprobe)), 'Door air channel missing'
+assert doorpart.val().isInside((53,-11,70)), 'Central door insulation rib missing'
 for zprobe in [4,135]:
     assert not doorpart.val().isInside((53,-11,zprobe)), 'Door air layer missing near top/bottom'
 # Entire monolithic inner boss is tapered: flat tip, inclined perimeter on all sides.
@@ -827,8 +814,8 @@ P.update(door_rigid_piece_count=1,door_hatch_insert_snap_fit=False,
          door_boss_side_angle_to_axis_deg=math.degrees(math.atan(.5)),
          door_receiver_profile=RECEIVER_PROFILE,door_receiver_wall=1,
          door_v_lip_wall=.6,door_v_tpu_retention='dovetail around tapered boss',
-         door_body_gasket_preserved=True,door_print_orientation='upright; lower Z=-4 edge on bed; build +Z; external supports and brim',
-         door_insulation_build_direction='+Z',
+         door_body_gasket_preserved=True,door_print_orientation='outer Y=-16 flat face down; inner V boss up; build +Y; external DNA supports',
+         door_insulation_build_direction='+Y',
          door_hatch_extra_screws=0,door_v_seal_test='pending physical fit and leak test',
          rack_outer_width=109.8,rack_liner_side_clearance=.3)
 add('junta_V_porta_TPU',v_seal,'#45ae89','door_seal')

@@ -33,9 +33,9 @@ def xml_bytes(node):
 
 def orient(name, point):
     x, y, z = point
-    # Cellular door roofs close toward CAD +Z: stand on its lower Z=-4 edge.
+    # New channel roofs close toward +Y: outer Y=-16 flat face on the bed.
     if name == 'porta_articulada':
-        return point
+        return x, -z, y
     # The body uses its dedicated rear-down STL, and the mould is already flat.
     if name in ('painel_interno_escotilha_encaixe', 'tampa_manutencao_CO2_eletronica',
                 'suporte_gavetas_removivel', 'caixinha_encaixe_aquecedor', 'junta_porta', 'junta_V_porta_TPU',
@@ -135,7 +135,7 @@ for i, original in enumerate(paths):
                        vertices=len(vertices), triangulos=len(triangles),
                        faces_de_area_zero_removidas=struct.unpack_from('<I',path.read_bytes(),80)[0]-len(triangles),
                        orientacao='traseira na mesa' if name == 'corpo_integrado' else
-                       'em pe, borda inferior Z=-4 na mesa; crescimento +Z; brim e suportes externos a revisar' if name == 'porta_articulada' else
+                       'face externa Y=-16 na mesa; canais fecham em +Y; ressalto V para cima; suportes externos na helice' if name == 'porta_articulada' else
                        'orientacao inicial; revisar no fatiador'))
 
 # Reference standard presets without embedding custom filament settings.

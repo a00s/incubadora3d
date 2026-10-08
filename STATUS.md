@@ -14,7 +14,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
   volta completa em 36 mm, hastes Ø3,2 mm e travessas Ø2,2 mm.
   Envelope: altura 54 mm, profundidade 15,2 mm e projeção 18,6 mm além da placa.
   Apoios curvos alargam de R1,8 para R4 junto à porta.
-  Porta em pé sobre a borda inferior Z=-4, crescimento +Z, conforme as rampas das células; orientação corrigida nos dois 3MF. Revisar brim e suportes externos na hélice. Nenhum corte na porta ou canal TPU.
+  Frente externa plana Y=-16 na mesa, ressalto V para cima. Isolamento redesenhado: 30 canais em duas fileiras, paredes e nervura central de 2 mm, tetos de 45° fechando em +Y com ponte final de 0,4 mm. Revisar suportes externos na hélice. Nenhum corte na porta ou canal TPU.
   O 3MF salvo pelo usuário recebeu a porta DNA, preservando configurações e demais malhas; validação física de gás pendente.
 - Fecho central; lingueta liberando a abertura quando girada 90° após afrouxar o manípulo.
 - Duas dobradiças M4 × 20 escareadas, porcas metálicas na porta e apoios externos a 45°.
@@ -32,7 +32,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 
 ## Validação
 
-- Porta em pé: tetos da região central auditados no STL, rampas de 45° e pontes até 2,4 mm na última fileira. Fatiamento da bandeja 2 no Creality Print 7.2.1 concluiu com saída 0 e sem avisos, usando brim de 10 mm e suporte a partir da mesa em configurações de teste separadas; sem ensaio físico.
+- Porta deitada: todas as cavidades CAD e tetos centrais do STL auditados para +Y; rampas de 45°, ponte final ≤0,4 mm e fechamento transversal conferidos. Fatiamento da bandeja 2 no Creality Print 7.2.1: saída 0, sem avisos, altura 19 mm e 99 camadas. Teste separado com brim de 5 mm e suporte a partir da mesa; 18.745 pontos médios de segmentos de suporte conferidos, nenhum dentro das cavidades. Sem ensaio físico.
 
 - Ferramental: três sólidos válidos, sem interseção com o inox; abertura em Z de 0 a 80 mm conferida e visualizador testado em WebGL. Força e retorno elástico pendentes de ensaio físico.
 - Corpo único e peças válidas; 59 pares rígidos sem colisão após remover o puxador.
@@ -54,7 +54,7 @@ da auditoria rígida. As verificações não simulam deformação, resistência 
 
 - 3MF com referências aos perfis genéricos PC/TPU e processo padrão; sem ajustes personalizados de filamento ou velocidades. Selecionar o perfil padrão e ajustar a temperatura no fatiador; sem validação física.
 - Fatiamento, calibração dos parâmetros de PC/TPU e ausência de suporte preso nas cavidades fechadas.
-- Adesão da porta em pé, suportes externos e testes físicos dos encaixes, roscas e guias.
+- Impressão física da porta com a frente na mesa, suportes externos e testes dos encaixes, roscas e guias.
 - Estanqueidade da porta, passagens de fios, conexão de gás e superfícies impressas.
 - Ajuste e fabricação da caixa inox; o modelo de referência não é plano de corte de chapa.
 - Medidas finais dos conectores, posicionamento do aquecedor, fios e suporte do sensor.

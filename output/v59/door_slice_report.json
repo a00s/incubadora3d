@@ -1,15 +1,18 @@
 {
   "arquivo": "incubadora_v59_CrealityPrint_7.2.1.3mf",
   "bandeja": 2,
-  "orientacao": "em pe, crescimento +Z",
+  "orientacao": "frente plana na mesa, crescimento +Y",
   "creality_version": "7.2.1.5476",
   "exit_code": 0,
-  "gcode_teste_bytes": 21900974,
+  "gcode_teste_bytes": 8008192,
   "suportes_teste": "automaticos, somente a partir da mesa",
-  "brim_teste_mm": 10,
+  "brim_teste_mm": 5,
   "configuracoes_do_teste_separadas_do_projeto": true,
   "nota": "Fatiamento de teste; sem ensaio fisico, sem G-code de teste no projeto entregue.",
-  "altura_fatiada_mm": 148,
-  "camadas": 1143,
-  "avisos_do_fatiador": []
+  "altura_fatiada_mm": 19,
+  "camadas": 99,
+  "avisos_do_fatiador": [],
+  "segmentos_suporte_conferidos": 18745,
+  "segmentos_suporte_nas_cavidades": 0,
+  "metodo_suportes": "Pontos medios de segmentos de extrusao de suporte comparados com as cavidades CAD"
 }

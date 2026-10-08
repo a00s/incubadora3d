@@ -1,6 +1,7 @@
 <div id="incubator-view">
   <div class="viz-controls">
-    <label class="form-label">Visualizar<select class="form-select" id="inc-view"><option value="assembly">Incubadora</option><option value="forming">Molde e contraforma do inox</option></select></label>
+    <label class="form-label">Visualizar<select class="form-select" id="inc-view"><option value="assembly">Incubadora</option><option value="forming">Molde e contraforma do inox</option><option value="door-print">Impressão da porta · frente para baixo</option></select></label>
+    <label class="form-label">Camada da porta <output id="inc-door-layer-value">6,6 mm</output><input class="form-range" id="inc-door-layer" type="range" min="0" max="19" step="0.2" value="6.6" disabled><small>Na vista de impressão, observe as rampas fechando os canais entre 5,2 e 8 mm.</small></label>
     <label class="form-label">Abrir contraforma <output id="inc-forming-value">40 mm</output><input class="form-range" id="inc-forming-gap" type="range" min="0" max="80" value="40" disabled><small>Afasta cada metade; 0 mm mostra o conjunto fechado.</small></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-forming-holes" checked><span class="form-check-label">Destacar centros dos furos no ferramental</span></label>
     <label class="form-check"><input class="form-check-input" type="checkbox" id="inc-service"><span class="form-check-label">Retirar tampa de manutenção</span></label>
@@ -23,7 +24,7 @@
   <details><summary>Encaixe da junta TPU — corte ampliado</summary>__SEAL_SECTION__</details>
   <details open><summary>Peças — seleção por conjunto</summary><button type="button" class="btn" id="inc-all">Mostrar todas</button><div id="inc-parts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px"></div></details>
   <div id="inc-status" class="text-small" aria-live="polite">v0.59 · Fecho central e junta encaixada sem cola.</div>
-  <div class="text-small">Impressão da porta: em pé, apoiada na borda inferior. As rampas das células fecham no sentido +Z da porta. Revisar brim e suportes externos no fatiador.</div>
+  <div class="text-small">Impressão da porta: frente plana para baixo, ressalto interno em V para cima. Canais internos redesenhados para fechar em +Y, com rampas de 45° e ponte final de 0,4 mm. Revisar suportes externos no fatiador.</div>
   <div class="text-small">K1C: 220 × 220 × 250 mm · corpo: 195 × 141 × 160 mm · traseira plana para impressão · eletrônica integrada ao corpo · gavetas: 72 mm · folga até chapa: 26 mm · entrada livre 112 × 132 mm · fundo plano · revestimento inox 0,3 mm · apoios removíveis · extensão de 10 mm · porta: painel de 15 mm · porta monolítica com ressalto inteiro em V e TPU labial · dobradiças com M4×20 e porca na porta · TPU 95A com dois lábios de 0,6 mm · Entrada CO₂: mangueira Ø externo 6,0 mm · alojamento Ø6,2 × 12 mm · canal reto Ø3,5 mm · CO₂: parede única · curva externa R49 · fechamento interno 45° para impressão traseira · flange R46 · teto integrado 6 mm · Lateral do misturador: parede única · Passagem: Ø6,2 mm · encaixe opcional de mangueira Ø externo 6,0 mm · Raio interno principal: 6 mm</div>
 </div>
 <script>
@@ -35,7 +36,7 @@ for(const part of parts){let previous=[0,0,0];part.vertices=part.vertices.map(v=
 const get=id=>root.querySelector('#inc-'+id);
 const service=get('service'),view=get('view'),formingGap=get('forming-gap');
 const isTool=part=>part.kind.startsWith('forming_');
-const formingHoles=get('forming-holes');
+const formingHoles=get('forming-holes'),doorLayer=get('door-layer');
 const cutHeight=get('cut-height');
 const cut=get('cut'),lidLift=get('lid'),lock=get('lock'),door=get('door'),shell=get('shell'),dims=get('dims'),channel=get('channel'),trays=get('trays'),angle=get('angle'),zoom=get('zoom');
 const gl=canvas.getContext('webgl',{antialias:true,alpha:true,preserveDrawingBuffer:true});
@@ -98,16 +99,22 @@ for(const part of parts){
 }
 function selectView(){
  const forming=view.value==='forming';
- for(const part of parts){const check=visibility.get(part.name);if(check)check.checked=forming?(isTool(part)||part.name==='revestimento_inox_referencia'):!isTool(part);}
- formingGap.disabled=!forming;zoom.value=forming?.8:1;shell.checked=true;channel.checked=false;draw();
+ for(const part of parts){const check=visibility.get(part.name);if(check)check.checked=forming?(isTool(part)||part.name==='revestimento_inox_referencia'):view.value==='door-print'?part.name==='porta_articulada':!isTool(part);}
+ formingGap.disabled=!forming;doorLayer.disabled=view.value!=='door-print';zoom.value=forming?.8:view.value==='door-print'?1.3:1;pitch=view.value==='door-print'?.95:.4;shell.checked=true;channel.checked=false;draw();
 }
 view.addEventListener('change',selectView);
 formingGap.addEventListener('input',draw);
+doorLayer.addEventListener('input',draw);
 get('all').addEventListener('click',selectView);
 // Cache only the current height. Clip in model coordinates and cap using even-odd
 // scanline strips: inner contours remain hollow, including the double walls.
 const sectionCache=new Map();
-function sectionAt(part,height){
+function sectionAt(part,height,axis=2){
+ if(axis===1){
+  const rotated={...part,name:part.name+'-Y',vertices:part.vertices.map(([x,y,z])=>[x,z,y])};
+  const mesh=sectionAt(rotated,height);
+  return {vertices:mesh.vertices.map(([x,z,y])=>[x,y,z]),faces:mesh.faces};
+ }
  const cached=sectionCache.get(part.name);if(cached?.height===height)return cached.mesh;
  const z=height+0.00001,vertices=[],faces=[],segments=[];
  function triangle(a,b,c){const n=vertices.length;vertices.push(a,b,c);faces.push([n,n+1,n+2]);}
@@ -140,13 +147,14 @@ let pitch=.4,drag=null,yawDegrees=Number(angle.value);
 function draw(){
 syncGroups();
 get('forming-value').value=formingGap.value+' mm';
+get('door-layer-value').value=Number(doorLayer.value).toLocaleString('pt-BR')+' mm';
 cutHeight.disabled=!cut.checked;get('cut-value').value=cutHeight.value+' mm';
 const width=canvas.clientWidth,height=480,dpr=window.devicePixelRatio||1;
 for(const c of [canvas,labels]){c.width=width*dpr;c.height=height*dpr;}
 gl.viewport(0,0,canvas.width,canvas.height);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
 const unlocked=lock.value==='free';if(!unlocked)door.value=0;door.disabled=!unlocked;
-const yaw=yawDegrees*Math.PI/180,scale=Math.min(width/330,height/280)*Number(zoom.value),opening=Number(door.value)*Math.PI/180;
+const yaw=yawDegrees*Math.PI/180,scale=Math.min(width/330,height/280)*Number(zoom.value),opening=(view.value==='door-print'?0:Number(door.value))*Math.PI/180;
 get('door-value').value=door.value+'°';
 if(Number(door.value)<90&&Number(trays.value)>0){trays.value=0;}
 trays.disabled=Number(door.value)<90;
@@ -160,7 +168,7 @@ if(part.kind==='tray'||(part.name||'').startsWith('uslide'))y-=Number(trays.valu
 if(part.kind==='latch'&&unlocked){const pivot=Number(part.name.split('_').pop()),dx=x+13,dz=z-pivot;x=-13+dz;z=pivot-dx;y-=0.8;}
 if(unlocked&&part.kind==='knob'){const pivot=Number(part.name.split('_').pop()),a=-0.8/2*2*Math.PI,dx=x+13,dz=z-pivot;x=-13+dx*Math.cos(a)+dz*Math.sin(a);z=pivot-dx*Math.sin(a)+dz*Math.cos(a);y-=0.8;}
 if(['door','section_door','door_insert','door_seal','hinge_sleeve'].includes(part.kind)||(part.kind==='hardware'&&part.name.includes('dobradica'))){const a=x-130,b=y+6;x=130+a*Math.cos(opening)-b*Math.sin(opening);y=-6+a*Math.sin(opening)+b*Math.cos(opening);}
-x-=57;y-=35;z-=64;
+if(view.value==='door-print'){const originalY=y;y=-z;z=originalY+16;x-=57;y+=70;z-=9;}else{x-=57;y-=35;z-=64;}
 const a=x*Math.cos(yaw)-y*Math.sin(yaw),b=x*Math.sin(yaw)+y*Math.cos(yaw);
 return [width/2+a*scale,height/2+(-b*Math.sin(pitch)-z*Math.cos(pitch))*scale,b*Math.cos(pitch)-z*Math.sin(pitch)];}
 let data=[];
@@ -168,7 +176,7 @@ for(const part of parts){
 if(part.kind.startsWith('section_'))continue;
 if(!visibility.get(part.name).checked)continue;
 if(part.kind==='fastener'&&Number(door.value)>0)continue;if(['shell','lid','seal','mixer_seal'].includes(part.kind)&&!shell.checked)continue;if(part.kind==='channel'&&!channel.checked)continue;
-const mesh=cut.checked&&['corpo_integrado','porta_articulada','painel_interno_escotilha_encaixe'].includes(part.name)?sectionAt(part,Number(cutHeight.value)):part;
+const mesh=view.value==='door-print'&&part.name==='porta_articulada'?sectionAt(part,-16+Number(doorLayer.value),1):cut.checked&&['corpo_integrado','porta_articulada','painel_interno_escotilha_encaixe'].includes(part.name)?sectionAt(part,Number(cutHeight.value)):part;
 const vs=mesh.vertices.map(v=>project(v,part)),rgb=part.color.match(/\w\w/g).map(c=>parseInt(c,16)/255);
 for(const f of mesh.faces){const [a,b,c]=f.map(i=>vs[i]);const nx=(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1]),ny=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2]),nz=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);const light=.58+.42*Math.abs((nx*.3+ny*.4+nz*.86)/(Math.hypot(nx,ny,nz)||1));
 for(const p of [a,b,c])data.push(p[0]/width*2-1,1-p[1]/height*2,p[2]/700,...rgb.map(x=>x*light));}}
@@ -176,7 +184,7 @@ gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.drawArr
 const fg=getComputedStyle(root).color;ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.font='13px sans-serif';ctx.lineWidth=1;
 function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,Math.min(width-tw/2-4,x));y=Math.max(16,Math.min(height-8,y));ctx.textAlign='center';ctx.fillText(text,x,y);}
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
-if(dims.checked&&view.value!=='forming'){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
+if(dims.checked&&view.value==='assembly'){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
 if(view.value==='forming'&&formingHoles.checked){
  const guides=[{name:'entrada CO₂ · final Ø6,2',male:[4.8,60,34],outer:[-31.65,60,34],kind:'forming_lower',part:'contraforma_inox_inferior'},
  {name:'acesso lateral · final Ø14',male:[4.8,90,127.5],outer:[-31.65,90,127.5],kind:'forming_upper',part:'contraforma_inox_superior'},
@@ -187,7 +195,7 @@ if(view.value==='forming'&&formingHoles.checked){
  }
 }
 if(channel.checked){let p=project([2,60,34]);ctx.beginPath();ctx.arc(p[0],p[1],8,0,Math.PI*2);ctx.stroke();label('Passagem interna Ø6,2 · referência',p[0],p[1]+24);}
-get('status').textContent=view.value==='forming'?'Inox 0,3 mm · macho + contraforma em duas metades · folga adicional de 0,15 mm por face. Paredes de 24 mm, nervuras e apoio traseiro. Guias Ø2,5 alinhadas ao macho; ampliar os furos depois de retirar a chapa. Pré-dobrar e apertar entre placas rígidas. Força e retorno elástico ainda por testar.':Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.59 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.59 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
+get('status').textContent=view.value==='door-print'?'Porta com frente plana na mesa · 30 canais, paredes de 2 mm e tetos a 45° no sentido da impressão. O teto fecha transversalmente sobre 0,4 mm. Esta vista mostra a geometria por camada; revisar suportes externos na hélice no fatiador.':view.value==='forming'?'Inox 0,3 mm · macho + contraforma em duas metades · folga adicional de 0,15 mm por face. Paredes de 24 mm, nervuras e apoio traseiro. Guias Ø2,5 alinhadas ao macho; ampliar os furos depois de retirar a chapa. Pré-dobrar e apertar entre placas rígidas. Força e retorno elástico ainda por testar.':Number(lidLift.value)>0?'Soltar o M4×12 inferior traseiro e retirar a tampa de manutenção para cima; o teto do CO₂ é integrado ao corpo, com abertura para o sensor.':unlocked?'v0.59 · Afrouxar o manípulo, girar a lingueta central e abrir. Haste impressa permanece montada.':'v0.59 · Lingueta central sobre a porta; apertar o manípulo para comprimir o TPU. Encaixe sem cola, ainda por testar.';
 }
 angle.addEventListener('input',()=>{yawDegrees=Number(angle.value);draw();});
 for(const el of [formingHoles,service,cut,cutHeight,lidLift,lock,door,shell,dims,channel,trays,zoom])el.addEventListener('input',draw);

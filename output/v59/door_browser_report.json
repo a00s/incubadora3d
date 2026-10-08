@@ -1,0 +1,14 @@
+{
+  "servidor_local": true,
+  "webgl": true,
+  "modo_porta_deitada": true,
+  "cortes_por_camada_mm": [
+    4,
+    7.6,
+    19
+  ],
+  "imagens_distintas": true,
+  "modo_incubadora": true,
+  "modo_ferramental": true,
+  "erros": []
+}

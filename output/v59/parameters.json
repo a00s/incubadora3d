@@ -360,6 +360,13 @@
   ],
   "lateral_feet_base_z": -10,
   "heater_voltage": 12,
+  "door_insulation_build_direction": "+Y",
+  "door_insulation_cavity_count": 30,
+  "door_insulation_skin_mm": 2,
+  "door_insulation_partition_mm": 2,
+  "door_insulation_roof_angle_deg": 45,
+  "door_insulation_closure_bridge_mm": 0.4,
+  "door_insulation_layout": "two rows of long X-narrow channels; roofs toward +Y",
   "door_projecting_handle": false,
   "door_finger_tab_side": "latch, above tongue",
   "door_finger_tab_style": "true circular double helix, two curves, curved flared roots",
@@ -404,7 +411,7 @@
   "door_v_lip_wall": 0.6,
   "door_v_tpu_retention": "dovetail around tapered boss",
   "door_body_gasket_preserved": true,
-  "door_print_orientation": "upright; lower Z=-4 edge on bed; build +Z; external supports and brim",
+  "door_print_orientation": "outer Y=-16 flat face down; inner V boss up; build +Y; external DNA supports",
   "door_hatch_extra_screws": 0,
   "door_v_seal_test": "pending physical fit and leak test",
   "rack_outer_width": 109.8,
@@ -523,6 +530,5 @@
     90,
     110
   ],
-  "rear_plane_y": 125,
-  "door_insulation_build_direction": "+Z"
+  "rear_plane_y": 125
 }

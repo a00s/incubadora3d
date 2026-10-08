@@ -41,13 +41,13 @@
       ],
       "dimensoes_mm": [
         158.5997,
-        19.0,
-        148.0
+        148.0,
+        19.0
       ],
-      "vertices": 33967,
-      "triangulos": 67546,
+      "vertices": 33166,
+      "triangulos": 66244,
       "faces_de_area_zero_removidas": 0,
-      "orientacao": "em pe, borda inferior Z=-4 na mesa; crescimento +Z; brim e suportes externos a revisar"
+      "orientacao": "face externa Y=-16 na mesa; canais fecham em +Y; ressalto V para cima; suportes externos na helice"
     },
     {
       "bandeja": 3,

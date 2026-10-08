@@ -1,0 +1,426 @@
+{
+  "outer_bed_plane_y": -16,
+  "build_direction": "+Y",
+  "cavities": [
+    {
+      "bounds_mm": [
+        2,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        2,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        10,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        10,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        18,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        18,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        26,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        26,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        34,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        34,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        42,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        42,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        50,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        50,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        58,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        58,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        66,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        66,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        74,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        74,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        82,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        82,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        90,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        90,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        98,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        98,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        106,
+        -14,
+        2,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        106,
+        -14,
+        71.0,
+        6,
+        6,
+        67.0
+      ],
+      "roof_start_y": -10.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        114,
+        -14,
+        2,
+        4,
+        6,
+        67.0
+      ],
+      "roof_start_y": -9.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    },
+    {
+      "bounds_mm": [
+        114,
+        -14,
+        71.0,
+        4,
+        6,
+        67.0
+      ],
+      "roof_start_y": -9.8,
+      "roof_end_y": -8,
+      "roof_angle_deg": 45,
+      "closure_width_mm": 0.4
+    }
+  ]
+}

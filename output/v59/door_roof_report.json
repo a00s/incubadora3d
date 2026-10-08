@@ -1,9 +1,14 @@
 {
-  "orientacao": "Porta em pe, borda inferior Z=-4 na mesa",
-  "crescimento": "+Z",
-  "triangulos_de_rampa_conferidos": 350,
-  "angulo_maximo_rampas_graus": 45.00003902963645,
-  "triangulos_de_ponte_conferidos": 182,
-  "maior_largura_de_ponte_mm": 2.4000015258789062,
-  "nota": "Campo central das celulas (X=10 a 110); perimetro curvo e raizes da pega excluidos. Ultima fileira curta conserva pontes de ate 2,4 mm. Sem ensaio de impressao."
+  "orientacao": "Frente plana Y=-16 na mesa; ressalto V para cima",
+  "crescimento": "+Y",
+  "canais": 30,
+  "paredes_mm": 2,
+  "nervura_central_mm": 2,
+  "todas_cavidades_cad_auditadas": true,
+  "triangulos_de_rampa_stl_conferidos": 100,
+  "angulo_maximo_rampas_graus": 45.000029272222356,
+  "triangulos_de_ponte_stl_conferidos": 52,
+  "maior_largura_de_ponte_mm": 0.40000152587890625,
+  "fechamento_transversal_conferido": true,
+  "nota": "Geometria CAD de todas as cavidades e STL central conferidos; sem ensaio fisico."
 }

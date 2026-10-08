@@ -55,13 +55,15 @@ hastes cilíndricas Ø3,2 mm e travessas Ø2,2 mm. Os apoios são curvos e se
 alargam gradualmente até a porta, com raio de 1,8 a 4 mm.
 A hélice tem raio de 6 mm e uma volta completa ao longo de 36 mm;
 o envelope com apoios tem altura de 54 mm, profundidade de 15,2 mm e
-projeção de 18,6 mm além da placa. Imprimir a porta **em pé, sobre a borda inferior**, crescendo no sentido +Z
-do CAD: os tetos das células foram desenhados para essa direção. Revisar brim
-e suportes externos na hélice e nas saliências; evitar suporte preso nas células.
-A porta deitada não corresponde às rampas internas existentes. A
-[conferência das rampas](output/v59/door_roof_report.json) e o
-[fatiamento de teste em pé](output/v59/door_slice_report.json) estão registrados;
-o brim de 10 mm e os suportes do teste não substituem a revisão do seu perfil.
+projeção de 18,6 mm além da placa. Imprimir com a **frente externa plana na mesa**
+e o ressalto interno em V para cima, com suportes externos para a hélice.
+O isolamento da porta foi redesenhado para essa posição: 30 canais alongados,
+em duas fileiras, com paredes de 2 mm. Os tetos avançam a 45° no sentido +Y
+do CAD e fecham pela largura curta de cada canal, com ponte final de 0,4 mm.
+A [conferência das rampas](output/v59/door_roof_report.json) e o
+[fatiamento de teste deitada](output/v59/door_slice_report.json) estão registrados.
+No visualizador, escolha **Impressão da porta · frente para baixo** e mova
+**Camada da porta** entre 5,2 e 8 mm para ver os canais fechando.
 Os vazados pertencem somente à pega externa: nenhum corte atravessa a porta,
 as células de isolamento ou o perímetro de vedação. O canal e as juntas TPU
 foram preservados. Ergonomia e estanqueidade dependem de teste físico.
