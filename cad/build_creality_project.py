@@ -169,3 +169,17 @@ manifest = dict(arquivo=DEST.name, versao_creality='7.2.1', impressora='K1C',
                 perfis_termicos_validados=False, colunas=columns, passo_bandejas_mm=264)
 (FOLDER / 'bandejas_creality.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
 print(f'{DEST}: {len(plates)} bandejas, {DEST.stat().st_size} bytes')
+
+# Keep both split dies in the complete project without exceeding 36 plates.
+from pack_forming_tools import pack_tools
+if (FOLDER/'ferramental_inox'/'contraforma_inox_superior.stl').exists():
+    extra = pack_tools(DEST, FOLDER)
+    manifest['pecas_adicionais'] = extra
+    for plate in manifest['bandejas']:
+        if plate['bandeja'] in (35, 36):
+            record = next(r for r in extra if r['bandeja'] == plate['bandeja'])
+            name = Path(record['arquivo']).stem
+            plate['nome'] = f"{plate['bandeja']:02d} - PC - {name} + amostra"
+            plate['centro_local_mm'] = [110, 175, 0]
+    (FOLDER/'bandejas_creality.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    print(f'{DEST}: {len(plates)} bandejas, {len(plates)+len(extra)} pecas')

@@ -220,8 +220,8 @@
         130.4,
         109.7
       ],
-      "vertices": 264,
-      "triangulos": 524,
+      "vertices": 1020,
+      "triangulos": 2036,
       "faces_de_area_zero_removidas": 0,
       "orientacao": "orientacao inicial; revisar no fatiador"
     },
@@ -755,7 +755,7 @@
     },
     {
       "bandeja": 35,
-      "nome": "35 - PC - amostra_passagem_interna_CO2_OD6",
+      "nome": "35 - PC - contraforma_inox_inferior + amostra",
       "arquivo": "amostra_passagem_interna_CO2_OD6.stl",
       "material": "PC",
       "objeto_id": 70,
@@ -773,11 +773,16 @@
       "vertices": 260,
       "triangulos": 520,
       "faces_de_area_zero_removidas": 0,
-      "orientacao": "orientacao inicial; revisar no fatiador"
+      "orientacao": "orientacao inicial; revisar no fatiador",
+      "centro_local_mm": [
+        110,
+        175,
+        0
+      ]
     },
     {
       "bandeja": 36,
-      "nome": "36 - PC - amostra_pressao_junta",
+      "nome": "36 - PC - contraforma_inox_superior + amostra",
       "arquivo": "amostra_pressao_junta.stl",
       "material": "PC",
       "objeto_id": 72,
@@ -795,7 +800,12 @@
       "vertices": 16,
       "triangulos": 28,
       "faces_de_area_zero_removidas": 0,
-      "orientacao": "orientacao inicial; revisar no fatiador"
+      "orientacao": "orientacao inicial; revisar no fatiador",
+      "centro_local_mm": [
+        110,
+        175,
+        0
+      ]
     }
   ],
   "fatiado": false,
@@ -804,5 +814,55 @@
   "configuracoes_filamento_personalizadas": false,
   "perfis_termicos_validados": false,
   "colunas": 6,
-  "passo_bandejas_mm": 264
+  "passo_bandejas_mm": 264,
+  "pecas_adicionais": [
+    {
+      "bandeja": 35,
+      "arquivo": "ferramental_inox/contraforma_inox_inferior.stl",
+      "material": "PC",
+      "objeto_id": 74,
+      "malha_id": 73,
+      "origem_mm": [
+        1056,
+        -1320,
+        0
+      ],
+      "centro_local_mm": [
+        110,
+        75,
+        0
+      ],
+      "dimensoes_mm": [
+        183.3,
+        89.65,
+        122.15
+      ],
+      "vertices": 2220,
+      "triangulos": 4456
+    },
+    {
+      "bandeja": 36,
+      "arquivo": "ferramental_inox/contraforma_inox_superior.stl",
+      "material": "PC",
+      "objeto_id": 76,
+      "malha_id": 75,
+      "origem_mm": [
+        1320,
+        -1320,
+        0
+      ],
+      "centro_local_mm": [
+        110,
+        75,
+        0
+      ],
+      "dimensoes_mm": [
+        183.3,
+        89.65,
+        122.15
+      ],
+      "vertices": 2835,
+      "triangulos": 5694
+    }
+  ]
 }

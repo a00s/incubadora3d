@@ -7,23 +7,67 @@
   "comprimento_util_mm": 109.7,
   "contraforma_dividida_em": "Z=70 mm",
   "furos_alinhamento_mm": 6.6,
+  "parede_contraforma_mm": 24,
+  "nervuras_externas_mm": 12,
+  "parede_traseira_mm": 12,
+  "diametro_guias_marcacao_mm": 2.5,
+  "profundidade_pilotos_cegos_no_macho_mm": 3,
+  "posicoes_furos_inox": [
+    {
+      "nome": "entrada_CO2",
+      "eixo": "X",
+      "centro_mm": [
+        4.5,
+        60,
+        34
+      ],
+      "diametro_final_mm": 6.2
+    },
+    {
+      "nome": "acesso_lateral",
+      "eixo": "X",
+      "centro_mm": [
+        4.5,
+        90,
+        127.5
+      ],
+      "diametro_final_mm": 14
+    },
+    {
+      "nome": "acesso_traseiro",
+      "eixo": "Y",
+      "centro_mm": [
+        60,
+        110,
+        116
+      ],
+      "diametro_final_mm": 14
+    }
+  ],
   "centros_furos_xy_mm": [
     [
-      -1.65,
+      -7.65,
       20
     ],
     [
-      -1.65,
+      -7.65,
       90
     ],
     [
-      121.65,
+      127.65,
       20
     ],
     [
-      121.65,
+      127.65,
       90
     ]
+  ],
+  "guias_alinhadas_e_desobstruidas": true,
+  "extracao_macho_pela_frente_conferida_mm": [
+    1,
+    10,
+    40,
+    110
   ],
   "sem_interferencia_com_macho_e_inox": true,
   "abertura_z_conferida_mm": [
@@ -47,18 +91,18 @@
     {
       "nome": "contraforma_inox_inferior",
       "dimensoes_impressao_mm": [
-        135.3000002000001,
-        77.6520515987947,
-        109.70340354873291
+        183.30180728782284,
+        89.65205159879469,
+        122.15170187436654
       ],
       "solido_valido": true
     },
     {
       "nome": "contraforma_inox_superior",
       "dimensoes_impressao_mm": [
-        135.3000002000001,
-        77.65205159879469,
-        109.70340354873294
+        183.30243218309738,
+        89.6530570783719,
+        122.15209039686546
       ],
       "solido_valido": true
     }

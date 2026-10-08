@@ -11,7 +11,7 @@ Vedação, resistência e funcionamento térmico ainda precisam de validação f
 ## Arquivos para visualizar e imprimir
 
 - [Visualizador interativo offline](output/visualizador.html): baixe e abra no navegador.
-- [Projeto Creality Print 7.2.1](output/incubadora_CrealityPrint_7.2.1.3mf): 36 bandejas, escala 1:1, sem fatiamento ou G-code.
+- [Projeto Creality Print 7.2.1](output/incubadora_CrealityPrint_7.2.1.3mf): 38 peças em 36 bandejas, incluindo molde e contraformas, escala 1:1, sem fatiamento ou G-code.
 - [Molde e contraforma do inox](output/v59/ferramental_inox/LEIA_ME.md): macho e duas metades de fechamento, com STL e STEP.
 - [STL da carcaça com a traseira na mesa](output/v59/impressao_traseira_na_mesa/corpo_integrado.stl).
 - [STL, STEP, amostras e relatórios da v59](output/v59/).

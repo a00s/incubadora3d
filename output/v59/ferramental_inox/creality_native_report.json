@@ -1,0 +1,20 @@
+[
+  {
+    "arquivo": "output/incubadora_CrealityPrint_7.2.1.3mf",
+    "creality_exit": 0,
+    "creality_version": "7.2.1.5476",
+    "allow_newer_file": true,
+    "pecas_lidas": 38,
+    "malhas_nao_manifold": 0,
+    "fatiamento_executado": false
+  },
+  {
+    "arquivo": "output/v59/incubadora_v59_CrealityPrint_7.2.1.3mf",
+    "creality_exit": 0,
+    "creality_version": "7.2.1.5476",
+    "allow_newer_file": true,
+    "pecas_lidas": 38,
+    "malhas_nao_manifold": 0,
+    "fatiamento_executado": false
+  }
+]

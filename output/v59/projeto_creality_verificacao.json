@@ -1,9 +1,11 @@
 {
+  "espaco_entre_pecas_minimo_mm": 5,
   "arquivo": "incubadora_v59_CrealityPrint_7.2.1.3mf",
   "zip_valid": true,
   "xml_valid": true,
   "bandejas": 36,
-  "uma_peca_por_bandeja": true,
+  "pecas": 38,
+  "uma_peca_por_bandeja": false,
   "escala_1para1": true,
   "malhas_e_indices_validos": true,
   "cabe_k1c_com_margem_5mm": true,

@@ -1,5 +1,7 @@
 {
   "webgl": true,
+  "servidor_local_verificado": true,
+  "guias_marcacao": true,
   "erros": [],
   "modo_ferramental": true,
   "abertura_altera_renderizacao": true,

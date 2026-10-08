@@ -29,16 +29,22 @@ assert not any('temperature' in key or key.endswith('_temp') or key.endswith('_t
 assert next(r for r in manifest['bandejas'] if r['arquivo']=='junta_porta.stl')['material']=='TPU'
 objects={int(o.attrib['id']):o for o in model.find('m:resources',ns)}
 build=list(model.find('m:build',ns));plates=config.findall('plate')
-assert len(build)==len(plates)==len(manifest['bandejas'])
+records=manifest['bandejas']+manifest.get('pecas_adicionais',[])
+assert len(build)==len(records)
+assert len(plates)==len(manifest['bandejas'])
 assert len(plates)<=36
 seen=set()
-for record,plate,item in zip(manifest['bandejas'],plates,build):
+plate_bounds={}
+for record in records:
+    plate=next(p for p in plates if any(m.get('key')=='plater_id' and int(m.get('value'))==record['bandeja'] for m in p.findall('metadata')))
+    item=next(i for i in build if int(i.get('objectid'))==record['objeto_id'])
     def values(node):return {n.attrib['key']:n.attrib['value'] for n in node.findall('metadata')}
-    pm=values(plate);im=values(plate.find('model_instance'))
+    pm=values(plate);im=next(values(i) for i in plate.findall('model_instance') if int(values(i)['object_id'])==record['objeto_id'])
     objid=int(im['object_id']);assert objid not in seen;seen.add(objid)
     assert objid==record['objeto_id']==int(item.attrib['objectid'])
     assert int(pm['plater_id'])==record['bandeja']
-    assert pm['plater_name']==record['nome'] and im['instance_id']=='0'
+    if 'nome' in record:assert pm['plater_name']==record['nome']
+    assert im['instance_id']=='0'
     component=objects[objid].find('m:components/m:component',ns)
     meshid=int(component.attrib['objectid']);assert meshid==record['malha_id']
     mesh=objects[meshid].find('m:mesh',ns)
@@ -53,14 +59,20 @@ for record,plate,item in zip(manifest['bandejas'],plates,build):
     transform=[float(n) for n in item.attrib['transform'].split()]
     assert transform[:9]==[1,0,0,0,1,0,0,0,1], 'Scaling/rotation in instance unexpectedly added'
     ox,oy,_=record['origem_mm'];dx,dy,dz=transform[9:]
-    assert dx==ox+110 and dy==oy+110 and dz==0
+    cx,cy,cz=record.get('centro_local_mm',[110,110,0])
+    assert dx==ox+cx and dy==oy+cy and dz==cz
     assert 5<=low[0]+dx-ox and high[0]+dx-ox<=215
     assert 5<=low[1]+dy-oy and high[1]+dy-oy<=215 and high[2]<=250
+    plate_bounds.setdefault(record['bandeja'],[]).append(([low[a]+transform[9+a] for a in range(3)],[high[a]+transform[9+a] for a in range(3)]))
     om=values(config.find(f"object[@id='{objid}']"))
     assert set(om)=={'name','extruder'}, 'Unexpected per-object process override'
     assert int(om['extruder'])==(2 if record['material']=='TPU' else 1)
-report=dict(arquivo=path.name,zip_valid=True,xml_valid=True,bandejas=len(plates),
-            uma_peca_por_bandeja=True,escala_1para1=True,malhas_e_indices_validos=True,
+for bounds in plate_bounds.values():
+    for i,(lo,hi) in enumerate(bounds):
+        for other_lo,other_hi in bounds[i+1:]:
+            assert any(hi[a]+5<=other_lo[a] or other_hi[a]+5<=lo[a] for a in (0,1)), 'Pieces on a shared plate need at least 5 mm separation'
+report=dict(espaco_entre_pecas_minimo_mm=5,arquivo=path.name,zip_valid=True,xml_valid=True,bandejas=len(plates),
+            pecas=len(records),uma_peca_por_bandeja=len(records)==len(plates),escala_1para1=True,malhas_e_indices_validos=True,
             cabe_k1c_com_margem_5mm=True,gcode_incluido=False,configuracoes_filamento_personalizadas=False,
             verificacao='Estrutura e geometria; leitura e renderizacao no Creality Print dependem do teste nativo separado')
 (folder/'projeto_creality_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False))

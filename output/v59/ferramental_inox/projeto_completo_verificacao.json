@@ -1,0 +1,17 @@
+{
+  "arquivo": "incubadora_CrealityPrint_7.2.1.3mf",
+  "bandejas": 36,
+  "pecas": 38,
+  "zip_xml_validos": true,
+  "malhas_ferramental_fechadas": true,
+  "limites_k1c_com_margem_5mm": true,
+  "espaco_minimo_entre_pecas_mm": 5,
+  "contraformas_nas_bandejas": [
+    35,
+    36
+  ],
+  "molde_na_bandeja": 10,
+  "configuracoes_usuario_preservadas": true,
+  "porta_dna_preservada": true,
+  "demais_malhas_preservadas": true
+}

@@ -28,7 +28,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Mangueira CO₂ Ø6 mm: entrada e passagem interna Ø6,2 mm, boca Ø6,8 mm e furo do inox Ø6,2 mm; encaixe e vedação física pendentes.
 - Misturador CO₂ com teto integrado e abertura do sensor; eletrônica acessível pela tampa lateral.
 
-- Ferramental inox separado: macho existente e contraformas superior/inferior, chapa 0,3 mm + folga 0,15 mm por face; modo próprio no visualizador.
+- Ferramental inox: macho maciço com pilotos cegos e contraformas superior/inferior de 24 mm, nervuras de 12 mm e apoio traseiro. Guias Ø2,5 mm para os três furos do inox; chapa 0,3 mm + folga 0,15 mm por face. Modo próprio no visualizador.
 
 ## Validação
 
@@ -39,9 +39,9 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Porta, lingueta, inserção do inox e retirada da caixinha conferidas geometricamente.
 - Extração das gavetas a 0, 5, 15, 30, 50, 72 e 80 mm com porta a 110°.
 - Apoio inferior e limites laterais das lâminas conferidos; envelope superior de 40 mm livre.
-- 36 STL compatíveis com a K1C e margem de 5 mm.
+- 38 peças no 3MF completo, compatíveis com a K1C e margem de 5 mm. Macho na bandeja 10 e contraformas nas 35/36, compartilhadas com amostras PC; pelo menos 5 mm entre peças.
 - 3MF principal e da v59 atualizados com a porta DNA; ZIP/XML, malha fechada, escala 1:1 e limites K1C conferidos. Abertura nativa e fatiamento da atualização pendentes.
-- 3MF com 36 bandejas em escala 1:1, sem G-code; teste nativo anterior ao ajuste CO₂: Creality Print 7.2.1, saída 0, 36 malhas manifold.
+- 3MF com 38 peças em 36 bandejas em escala 1:1, sem G-code; leitura atual das 38 malhas manifold no CLI Creality Print 7.2.1, saída 0, com `--allow-newer-file` para preservar o projeto principal salvo pelo usuário em 7.3. Sem fatiamento.
 - Visualizador regenerado com passagem Ø6,2; teste WebGL e controles anterior ao ajuste CO₂. Imagens gerais do manual correspondem à v59.
 
 Relatórios em [output/v59](output/v59/). Os ensaios amplos de roscas/movimento continuam
