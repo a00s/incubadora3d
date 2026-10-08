@@ -1,0 +1,27 @@
+{
+  "arquivo": "incubadora_CrealityPrint_7.2.1.3mf",
+  "porta": "Dupla helice de DNA",
+  "vertices": 33967,
+  "triangulos": 67546,
+  "malha_fechada": true,
+  "arestas_orientadas": true,
+  "escala_1para1": true,
+  "configuracoes_usuario_preservadas": true,
+  "outras_malhas_preservadas": true,
+  "previews_antigos_da_porta_removidos": true,
+  "limites_locais_mm": [
+    [
+      -79.29986,
+      79.29986
+    ],
+    [
+      -74.0,
+      74.0
+    ],
+    [
+      -16.0,
+      3.0
+    ]
+  ],
+  "verificacao": "ZIP, XML, equivalencia com STL via projeto gerado, topologia e limites K1C; abertura nativa e fatiamento pendentes"
+}

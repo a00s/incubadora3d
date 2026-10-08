@@ -15,7 +15,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
   Envelope: altura 54 mm, profundidade 15,2 mm e projeção 18,6 mm além da placa.
   Apoios curvos alargam de R1,8 para R4 junto à porta.
   Face externa na mesa; hélice requer suportes. Nenhum corte na porta ou canal TPU.
-  O 3MF salvo pelo usuário foi mantido; validação física de gás pendente.
+  O 3MF salvo pelo usuário recebeu a porta DNA, preservando configurações e demais malhas; validação física de gás pendente.
 - Fecho central; lingueta liberando a abertura quando girada 90° após afrouxar o manípulo.
 - Duas dobradiças M4 × 20 escareadas, porcas metálicas na porta e apoios externos a 45°.
 - Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta.
@@ -37,6 +37,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Extração das gavetas a 0, 5, 15, 30, 50, 72 e 80 mm com porta a 110°.
 - Apoio inferior e limites laterais das lâminas conferidos; envelope superior de 40 mm livre.
 - 36 STL compatíveis com a K1C e margem de 5 mm.
+- 3MF principal e da v59 atualizados com a porta DNA; ZIP/XML, malha fechada, escala 1:1 e limites K1C conferidos. Abertura nativa e fatiamento da atualização pendentes.
 - 3MF com 36 bandejas em escala 1:1, sem G-code; teste nativo anterior ao ajuste CO₂: Creality Print 7.2.1, saída 0, 36 malhas manifold.
 - Visualizador regenerado com passagem Ø6,2; teste WebGL e controles anterior ao ajuste CO₂. Imagens gerais do manual correspondem à v59.
 
