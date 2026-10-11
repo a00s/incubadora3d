@@ -15,8 +15,8 @@ with zipfile.ZipFile(path) as z:
     objects={o.get('id'):o for o in model.find('m:resources',NS)}
     items={o.get('objectid'):o for o in model.find('m:build',NS)}
     labels={o.get('id'):values(o)['name'] for o in config.findall('object')}
-    assert len(items)==len(labels)==38
-    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior'))
+    assert len(items)==len(labels)==39
+    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm'))
     seen=set()
     for plate in config.findall('plate'):
         pid=int(values(plate)['plater_id']);ox,oy=264*((pid-1)%6),-264*((pid-1)//6)
@@ -33,10 +33,10 @@ with zipfile.ZipFile(path) as z:
             faces=[tuple(int(t.get(f'v{i}')) for i in (1,2,3)) for t in mesh.find('m:triangles',NS)]
             assert all(len(set(f))==3 and min(f)>=0 and max(f)<len(vertices) for f in faces)
             edge=Counter(tuple(sorted((a,b))) for f in faces for a,b in zip(f,f[1:]+f[:1]))
-            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior'):
+            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm'):
                 assert all(n==2 for n in edge.values()),labels[oid]
             transform=[float(v) for v in items[oid].get('transform').split()]
-            assert transform[:9]==[1,0,0,0,1,0,0,0,1]
+            world=[tuple(sum(v[j]*transform[j*3+a] for j in range(3))+transform[9+a] for a in range(3)) for v in vertices]
             if labels[oid]=='porta_articulada':
                 expected,_,_=load_mesh(ROOT/'output/v59/porta_articulada.stl',lambda p:(p[0],-p[2],p[1]))
                 assert len(expected)==len(vertices)
@@ -44,8 +44,8 @@ with zipfile.ZipFile(path) as z:
                 # CAD outer Y=-16 maps to print Z=0; inner Y=3 maps to print Z=19.
                 assert abs(min(v[2]+transform[11] for v in vertices))<1e-5
                 assert abs(max(v[2]+transform[11] for v in vertices)-19)<1e-5
-            low=[min(v[a] for v in vertices)+transform[9+a] for a in range(3)]
-            high=[max(v[a] for v in vertices)+transform[9+a] for a in range(3)]
+            low=[min(v[a] for v in world) for a in range(3)]
+            high=[max(v[a] for v in world) for a in range(3)]
             assert 5<=low[0]-ox and high[0]-ox<=215,labels[oid]
             assert 5<=low[1]-oy and high[1]-oy<=215,labels[oid]
             assert abs(low[2])<.001 and high[2]<=250,labels[oid]
@@ -54,8 +54,8 @@ with zipfile.ZipFile(path) as z:
             for other_lo,other_hi in boxes[i+1:]:
                 assert any(hi[a]+5<=other_lo[a] or other_hi[a]+5<=lo[a] for a in (0,1))
     assert seen==set(items)
-    assert len(config.findall('plate'))==36
-report=dict(arquivo=path.name,bandejas=36,pecas=38,zip_xml_validos=True,malhas_ferramental_fechadas=True,
+    assert len(config.findall('plate'))==37
+report=dict(arquivo=path.name,bandejas=37,pecas=39,zip_xml_validos=True,malhas_ferramental_fechadas=True,
             limites_k1c_com_margem_5mm=True,espaco_minimo_entre_pecas_mm=5,
             contraformas_nas_bandejas=[35,36],molde_na_bandeja=10,porta_malha_fechada=True,porta_face_externa_para_baixo=True,porta_crescimento_eixo_y=True)
 (ROOT/'output/v59/ferramental_inox/projeto_completo_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')

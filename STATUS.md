@@ -62,3 +62,13 @@ da auditoria rígida. As verificações não simulam deformação, resistência 
 
 O alojamento das lâminas é aberto: limita deslizamento enquanto assentadas, mas permite
 retirada vertical e não as segura em uma gaveta invertida. Sem validação física ou operacional.
+
+## Fundo interno para conter o inox já dobrado
+
+Nova placa `fundo_interno_inox_5mm`: 109,2 × 129,2 × 5 mm, cantos R4,6.
+Contorno 0,6 mm menor por borda que o macho; folga nominal, sem medição da chapa real.
+Instalar dentro das laterais, encostada ao fundo traseiro, e colocar a chapa de inox
+sobre sua face voltada à câmara. Ocupa Y104,7–109,7; furo Ø14 em X60/Z116.
+Não substitui o fundo de inox. Imprimir deitada, preenchimento 100%, bandeja 37.
+STL/STEP na v59 e inclusão nos dois projetos completos. Encaixe físico pendente.
+Regenerar com `python cad/rear_insert.py` (exportação e inclusão inicial no 3MF).

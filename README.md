@@ -203,3 +203,13 @@ Relatórios: [tetos dos apoios](output/v59/internal_mount_roof_report.json),
 [gavetas e lâminas](output/v59/tray_retention_report.json) e
 [projeto Creality](output/v59/projeto_creality_verificacao.json).
 Não há fatiamento, ensaio de estanqueidade ou validação operacional.
+
+### Fundo interno para o inox já impresso
+
+[STL da placa de 5 mm](output/v59/fundo_interno_inox_5mm.stl) ·
+[STEP](output/v59/fundo_interno_inox_5mm.step).
+A placa entra dentro das laterais de inox, na traseira; depois se coloca o fundo
+metálico sobre ela. Mede 109,2 × 129,2 mm, com cantos arredondados e passagem
+traseira Ø14 mm alinhada ao acesso existente. É 1,2 mm menor em largura e altura
+que o molde. Bandeja 37 do projeto completo, deitada e com preenchimento 100%.
+A folga precisa ser confirmada na chapa dobrada real.

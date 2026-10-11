@@ -1,0 +1,32 @@
+{
+  "dimensoes_mm": [
+    109.2,
+    129.2,
+    5
+  ],
+  "reducao_por_borda_mm": 0.6,
+  "raio_mm": 4.6,
+  "furo_diametro_mm": 14,
+  "furo_centro_cad_mm": [
+    60,
+    110,
+    116
+  ],
+  "posicao_y_mm": [
+    104.7,
+    109.7
+  ],
+  "sem_interferencia_inox": true,
+  "pecas_conferidas": [
+    "suporte_gavetas_removivel",
+    "bandeja_1",
+    "bandeja_2",
+    "bandeja_3"
+  ],
+  "solido_valido": true,
+  "limites_k1c": true,
+  "encaixe_fisico_pendente": true,
+  "bandeja": 37,
+  "preenchimento": "100%",
+  "configuracoes_anteriores_preservadas": true
+}

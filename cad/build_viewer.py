@@ -9,6 +9,9 @@ preview=json.loads((folder/'mesh.json').read_text())
 tool_mesh=folder/'ferramental_inox'/'mesh.json'
 if tool_mesh.exists():
     preview.extend(json.loads(tool_mesh.read_text()))
+insert_mesh=folder/'rear_insert_mesh.json'
+if insert_mesh.exists():
+    preview.extend(json.loads(insert_mesh.read_text()))
 # Adjustable sections are computed in the viewer; omit obsolete fixed-cut meshes.
 preview=[part for part in preview if not part['kind'].startswith('section_')]
 for part in preview:
