@@ -209,12 +209,17 @@
   "rack_side_frame_windowed": false,
   "rack_side_panels": false,
   "rack_front_h_crossbar_z_mm": [
-    29,
-    35
+    65,
+    71
+  ],
+  "rack_mid_depth_h_y_mm": [
+    37.55,
+    49.55
   ],
   "rack_front_y_mm": 3.6,
   "rack_front_h_height_mm": 129.72894218814466,
   "rack_rear_transverse_braces": false,
+  "rack_h_frame_count": 2,
   "rack_independent_of_broken_entry_lip": true,
   "slide_reference_thickness_mm": 1,
   "slide_dimensions_status": "standard 76x26; also checked for 75x25, thickness 0.9 to 1.2 mm",
@@ -524,7 +529,6 @@
     1,
     1.2
   ],
-  "slide_upper_clearance_continuous_sweep_mm": 40,
   "slide_retention_geometry_checked": true,
   "tray_open_clearance_geometry_checked": true,
   "body_solid_volume_mm3": 930755.8573668667,
@@ -539,5 +543,7 @@
     90,
     110
   ],
-  "rear_plane_y": 125
+  "rear_plane_y": 125,
+  "slide_self_pocket_upper_clearance_mm": 40,
+  "rack_lower_tray_payload_clearance_mm": 18
 }

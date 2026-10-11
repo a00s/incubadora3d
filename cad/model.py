@@ -271,7 +271,7 @@ assert len(seal.solids().vals())==1,'Double-lip gasket disconnected'
 add('junta_porta',seal,'#45ae89','seal')
 
 print('Building removable rack',flush=True)
-# Open side beams and a front H brace; no side panels or rear crossbars.
+# Open side beams and front and mid-depth H braces; no side panels or rear crossbars.
 # No upper rail: trays rest freely and enter without threading a narrow slot.
 RACK_LEVELS=[40,69,98]
 TRAY_THICKNESS=3
@@ -288,8 +288,8 @@ P.update(tray_base_thickness_mm=TRAY_THICKNESS,tray_captive_guide_type='open L r
          tray_upper_guide_removed=True,tray_entry_chamfer_mm=2,
          rack_side_frame_thickness_mm=3.15,rack_side_frame_front_post_depth_mm=12,rack_side_frame_rear_post_depth_mm=7,
          rack_side_frame_windowed=False,rack_side_panels=False,
-         rack_front_h_crossbar_z_mm=[29,35],rack_front_y_mm=3.6,
-         rack_front_h_height_mm=rack.val().BoundingBox().zlen,rack_rear_transverse_braces=False,
+         rack_front_h_crossbar_z_mm=[65,71],rack_mid_depth_h_y_mm=[37.55,49.55],rack_front_y_mm=3.6,
+         rack_front_h_height_mm=rack.val().BoundingBox().zlen,rack_rear_transverse_braces=False,rack_h_frame_count=2,
          rack_independent_of_broken_entry_lip=True)
 add('suporte_gavetas_removivel',rack,'#b5a78c','rack')
 
@@ -901,6 +901,10 @@ for i,tray,slide in tray_slides:
         moved=tray.translate((0,-pull,0))
         for obstacle in [rack,body,liner,opened]:
             assert independent(obstacle).intersect(moved).val().Volume()<1e-5, f'Drawer {i} extraction clash at {pull}'
+    if i==1:
+        # Continuous swept clearance for a payload up to 18 mm above a 1.2 mm slide.
+        payload=box(76,176,19.2,22,-112,slide.val().BoundingBox().zmin)
+        assert independent(rack).intersect(payload).val().Volume()<1e-5, 'Central H blocks lower drawer payload'
     top=slide.val().BoundingBox().zmin
     for length,width in [(76,26),(75,25)]:
         for thickness in [.9,1,1.2]:
@@ -915,13 +919,13 @@ for i,tray,slide in tray_slides:
 P.update(tray_extraction_positions_checked_mm=tray_pull_positions,
          slide_supported_nominal_sizes_mm=[[76,26],[75,25]],
          slide_supported_thicknesses_checked_mm=[.9,1,1.2],
-         slide_upper_clearance_continuous_sweep_mm=40,
+         slide_self_pocket_upper_clearance_mm=40,rack_lower_tray_payload_clearance_mm=18,
          slide_retention_geometry_checked=True,tray_open_clearance_geometry_checked=True)
 (OUT/'tray_retention_report.json').write_text(json.dumps(dict(
     version='v59',tray_count=3,drawer_extraction_positions_mm=tray_pull_positions,
     drawer_lateral_clearance_per_side_mm=.8,drawer_upper_guides=False,
     drawer_lateral_stops_checked=True,nominal_slide_sizes_mm=[[76,26],[75,25]],
-    slide_thicknesses_checked_mm=[.9,1,1.2],slide_vertical_placement_envelope_mm=40,
+    slide_thicknesses_checked_mm=[.9,1,1.2],slide_self_pocket_vertical_placement_envelope_mm=40,lower_tray_payload_clearance_mm=18,
     slide_no_upper_overlap=True,slide_bottom_support_and_edge_stops_checked=True,
     limitations=['Rigid geometric checks', 'Printed fit and strength require physical test',
                  'Open pockets do not retain slides against lifting or inversion']),indent=2))

@@ -40,7 +40,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Amostra da dobradiça recortada da parede oca real, com ambas as rampas.
 - Porta, lingueta, inserção do inox e retirada da caixinha conferidas geometricamente.
 - Extração das gavetas a 0, 5, 15, 30, 50, 72 e 80 mm com porta a 110°.
-- Apoio inferior e limites laterais das lâminas conferidos; envelope superior de 40 mm livre.
+- Apoio inferior e limites laterais das lâminas conferidos; folga própria do rebaixo conferida; travessas limitam a carga da gaveta inferior a 18 mm sobre a lâmina.
 - 38 peças no 3MF completo, compatíveis com a K1C e margem de 5 mm. Macho na bandeja 10 e contraformas nas 35/36, compartilhadas com amostras PC; pelo menos 5 mm entre peças.
 - 3MF principal e da v59 atualizados com a porta DNA; ZIP/XML, malha fechada, escala 1:1 e limites K1C conferidos. Abertura nativa e fatiamento da atualização pendentes.
 - 3MF com 38 peças em 36 bandejas em escala 1:1, sem G-code; leitura atual das 38 malhas manifold no CLI Creality Print 7.2.1, saída 0, com `--allow-newer-file` para preservar o projeto principal salvo pelo usuário em 7.3. Sem fatiamento.
@@ -84,8 +84,8 @@ A foto não define o contorno exato da fratura; o CAD ainda contém a geometria 
 ## Suporte aberto com H frontal — substitui o suporte com painéis
 
 - Frente H: 110,1 × 129,7 mm, profundidade 12 mm; colunas de 3,15 mm.
-- Travessa frontal em Z29–35, com cantos R0,8 e reforços locais nas uniões inferiores.
-- Seis guias abertas; colunas traseiras locais e pés apoiados no piso de inox.
+- Travessas frontal e intermediária em Z65–71, com cantos R0,8 e reforços locais nas uniões inferiores.
+- Seis guias abertas; colunas intermediárias e traseiras locais e seis pés apoiados no piso de inox.
   Sem painéis laterais e sem travessas transversais atrás.
 - Frente em Y3,6, sem depender da borda quebrada da entrada; folga nominal do inox
   de 0,15 mm por lado. Gavetas e níveis originais preservados.
@@ -105,3 +105,13 @@ Os seis apoios passaram de 6 para 10 mm de largura útil, com sobreposição mí
 nominal de 8,4 mm sob as gavetas no limite da folga lateral de 0,8 mm.
 Gavetas, altura dos apoios e H frontal preservados. Batentes traseiros acompanham
 a nova largura. A colocação e o deslizamento precisam ser confirmados na impressão.
+
+## Travessas na altura central, na frente e no meio da profundidade
+
+Dois H com travessas em Z65–71 mm (1 mm abaixo da segunda gaveta), um frontal
+em Y3,6–15,6 e outro intermediário em Y37,55–49,55. Colunas de altura integral
+no meio também apoiam as laterais do inox. Apoios de 10 mm das gavetas preservados.
+A travessa interna limita a altura de carga sobre a lâmina inferior: 18 mm livres
+para lâminas de até 1,2 mm, com envelope contínuo de retirada conferido.
+As verificações anteriores de 40 mm referiam-se à própria gaveta e seu rebaixo,
+e não representam espaço de carga disponível no conjunto montado.

@@ -16,17 +16,23 @@
     15.6
   ],
   "travessa_frontal_z_mm": [
-    29,
-    35
+    65,
+    71
   ],
+  "travessa_intermediaria_y_mm": [
+    37.55,
+    49.55
+  ],
+  "numero_frames_H": 2,
+  "altura_carga_livre_gaveta_inferior_mm": 18,
   "colunas_largura_mm": 3.15,
   "folga_lateral_nominal_inox_mm": 0.15,
   "paineis_laterais": false,
   "travessas_transversais_traseiras": false,
-  "apoios_piso": "quatro pes locais",
+  "apoios_piso": "seis pes locais",
   "borda_quebrada_nao_utilizada": true,
   "solido_valido": true,
-  "volume_mm3": 40229.70501379624,
+  "volume_mm3": 56649.73610485351,
   "geometria_gavetas_e_porta_auditada": true,
   "limites": [
     "Peso admissivel nao ensaiado",

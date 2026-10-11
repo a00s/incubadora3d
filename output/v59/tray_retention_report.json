@@ -28,12 +28,13 @@
     1,
     1.2
   ],
-  "slide_vertical_placement_envelope_mm": 40,
   "slide_no_upper_overlap": true,
   "slide_bottom_support_and_edge_stops_checked": true,
   "limitations": [
     "Rigid geometric checks",
     "Printed fit and strength require physical test",
     "Open pockets do not retain slides against lifting or inversion"
-  ]
+  ],
+  "slide_self_pocket_vertical_placement_envelope_mm": 40,
+  "lower_tray_payload_clearance_mm": 18
 }
