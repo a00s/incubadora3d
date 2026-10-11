@@ -72,3 +72,18 @@ sobre sua face voltada à câmara. Ocupa Y104,7–109,7; furo Ø14 em X60/Z116.
 Não substitui o fundo de inox. Imprimir deitada, preenchimento 100%, bandeja 37.
 STL/STEP na v59 e inclusão nos dois projetos completos. Encaixe físico pendente.
 Regenerar com `python cad/rear_insert.py` (exportação e inclusão inicial no 3MF).
+
+## Moldura frontal removível para apoio do inox
+
+- Base: projeto salvo pelo usuário no commit e5bfc24, configurações anteriores preservadas.
+- Peça nova independente, sem reimprimir o suporte das gavetas: 110,1 × 130,1 × 4 mm,
+  aro 2,8 mm, abertura 104,5 × 124,5, bordas R0,6, cantos externos R5,05.
+- Folga nominal de 0,15 mm por borda; posição Y3,6–7,6, antes do suporte em Y8.
+- Aro removível à mão pela abertura frontal, porta a 110°; sem canais ou retenções cegas.
+  Retirar para expor a junção e limpar o inox atrás dele. Encaixe/retirada físicos pendentes.
+- CAD: sólido válido, sem interferência com inox, suporte, reservatório ou envelopes
+  contínuos de retirada das três gavetas. Envelope conservador da porta conferido
+  em 21 ângulos de 0 a 110°. Retirada frontal conferida com porta a 110°.
+- Projeto completo e cópia v59: 40 peças, 37 bandejas, moldura na 37, preenchimento 100%.
+  ZIP/XML, fechamento das malhas, limites K1C e referências das bandejas conferidos.
+- STL, STEP e relatório em `output/v59`; visualizador inclui a moldura na montagem.

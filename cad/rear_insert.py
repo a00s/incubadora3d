@@ -37,31 +37,32 @@ def export():
     return dict(dimensoes_mm=[109.2,129.2,5],reducao_por_borda_mm=.6,raio_mm=4.6,furo_diametro_mm=14,furo_centro_cad_mm=[60,110,116],posicao_y_mm=[104.7,109.7],sem_interferencia_inox=True,pecas_conferidas=checked,solido_valido=True,limites_k1c=True,encaixe_fisico_pendente=True)
 
 
-def pack():
+def pack(name=NAME, label="Fundo interno inox 5 mm"):
+    part_name=name
     path=ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf'
     with zipfile.ZipFile(path) as z: entries={i.filename:(i,z.read(i)) for i in z.infolist()}
     model=ET.fromstring(entries['3D/3dmodel.model'][1]);config=ET.fromstring(entries['Metadata/model_settings.config'][1])
     resources=model.find('m:resources',NS);build=model.find('m:build',NS)
-    assert not any(values(o).get('name')==NAME for o in config.findall('object')), 'Already packed'
+    assert not any(values(o).get('name')==part_name for o in config.findall('object')), 'Already packed'
     mid=max(int(o.get('id')) for o in resources)+1;oid=mid+1
-    points,faces,size=load_mesh(FOLDER/f'{NAME}.stl')
-    obj=ET.SubElement(resources,f'{{{CORE}}}object',id=str(mid),type='model',name=NAME)
+    points,faces,size=load_mesh(FOLDER/f'{part_name}.stl')
+    obj=ET.SubElement(resources,f'{{{CORE}}}object',id=str(mid),type='model',name=part_name)
     mesh=ET.SubElement(obj,f'{{{CORE}}}mesh');vv=ET.SubElement(mesh,f'{{{CORE}}}vertices');tt=ET.SubElement(mesh,f'{{{CORE}}}triangles')
     for p in points: ET.SubElement(vv,f'{{{CORE}}}vertex',**{a:format(p[i],'.9g') for i,a in enumerate('xyz')})
     for face in faces: ET.SubElement(tt,f'{{{CORE}}}triangle',**{f'v{i+1}':str(v) for i,v in enumerate(face)})
-    wrapper=ET.SubElement(resources,f'{{{CORE}}}object',id=str(oid),type='model',name=NAME)
+    wrapper=ET.SubElement(resources,f'{{{CORE}}}object',id=str(oid),type='model',name=part_name)
     components=ET.SubElement(wrapper,f'{{{CORE}}}components')
     ET.SubElement(components,f'{{{CORE}}}component',objectid=str(mid),transform=IDENTITY+' 0 0 0')
     pid=max(int(values(p)['plater_id']) for p in config.findall('plate'))+1
     ox,oy=264*((pid-1)%6),-264*((pid-1)//6)
     ET.SubElement(build,f'{{{CORE}}}item',objectid=str(oid),transform=IDENTITY+f' {ox+110} {oy+110} 0',printable='1')
-    cfg=ET.SubElement(config,'object',id=str(oid));meta(cfg,'name',NAME);meta(cfg,'extruder',1)
+    cfg=ET.SubElement(config,'object',id=str(oid));meta(cfg,'name',part_name);meta(cfg,'extruder',1)
     # Explicit solid infill for this thin spreader, keeping all prior settings intact.
     meta(cfg,'sparse_infill_density','100%')
     sub=ET.SubElement(cfg,'part',id=str(mid),subtype='normal_part')
-    for k,v in [('name',NAME),('matrix','1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1'),('source_file',NAME+'.stl'),('source_object_id',0),('source_volume_id',0)]:meta(sub,k,v)
+    for k,v in [('name',part_name),('matrix','1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1'),('source_file',part_name+'.stl'),('source_object_id',0),('source_volume_id',0)]:meta(sub,k,v)
     plate=ET.SubElement(config,'plate')
-    for k,v in [('plater_id',pid),('plater_name',f'{pid:02d} - PC - Fundo interno inox 5 mm'),('locked','false')]:meta(plate,k,v)
+    for k,v in [('plater_id',pid),('plater_name',f'{pid:02d} - PC - {label}'),('locked','false')]:meta(plate,k,v)
     inst=ET.SubElement(plate,'model_instance')
     for k,v in [('object_id',oid),('instance_id',0),('identify_id',oid)]:meta(inst,k,v)
     changed={'3D/3dmodel.model':ET.tostring(model,encoding='utf-8',xml_declaration=True),'Metadata/model_settings.config':ET.tostring(config,encoding='utf-8',xml_declaration=True)}

@@ -213,3 +213,28 @@ metálico sobre ela. Mede 109,2 × 129,2 mm, com cantos arredondados e passagem
 traseira Ø14 mm alinhada ao acesso existente. É 1,2 mm menor em largura e altura
 que o molde. Bandeja 37 do projeto completo, deitada e com preenchimento 100%.
 A folga precisa ser confirmada na chapa dobrada real.
+
+### Moldura frontal removível do inox
+
+[STL da moldura](output/v59/moldura_frontal_inox_removivel.stl) ·
+[STEP](output/v59/moldura_frontal_inox_removivel.step).
+Aro contínuo de 110,1 × 130,1 mm, profundidade 4 mm e largura 2,8 mm;
+abertura livre de 104,5 × 124,5 mm. As bordas têm arredondamento de 0,6 mm.
+A folga nominal é de 0,15 mm por borda em relação ao inox: limita o fechamento
+das laterais sem depender do suporte de gavetas. Não é encaixe sob pressão;
+o contato com a carcaça depende da chapa real.
+
+Com a porta aberta a 110°, inserir pela frente, dentro do inox, até ficar
+imediatamente à frente do suporte das gavetas. Posição de referência Y3,6–7,6;
+a porta fechada termina em Y3 e o suporte começa em Y8. A passagem das gavetas,
+o reservatório e o movimento da porta foram conferidos geometricamente.
+
+Para limpar, abrir a porta e puxar a moldura pela borda interna, sem ferramentas.
+A moldura não tem cola, parafusos, canais, furos cegos ou travas. Retirá-la expõe
+o inox por trás do aro, permitindo limpar separadamente todas as superfícies.
+A interface aro/inox continua sendo uma junção que deve ser exposta na limpeza.
+A facilidade de retirada e o apoio das paredes precisam ser confirmados na chapa real.
+Imprimir deitada, com preenchimento 100%, na bandeja 37 do projeto atualizado.
+
+Regeneração: `python cad/front_frame.py` exporta e faz a inclusão inicial no 3MF;
+para regenerar somente a geometria, chamar `front_frame.export()` no ambiente CAD.

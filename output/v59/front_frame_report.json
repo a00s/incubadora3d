@@ -1,0 +1,60 @@
+{
+  "dimensoes_mm": [
+    110.1,
+    130.1,
+    4
+  ],
+  "abertura_mm": [
+    104.5,
+    124.5
+  ],
+  "largura_aro_mm": 2.8,
+  "arredondamento_bordas_mm": 0.6,
+  "folga_inox_por_borda_mm": 0.15,
+  "posicao_y_mm": [
+    3.6,
+    7.6
+  ],
+  "folga_porta_fechada_mm": 0.6,
+  "folga_suporte_gavetas_mm": 0.4,
+  "pecas_conferidas": [
+    "suporte_gavetas_removivel",
+    "bandeja_1",
+    "bandeja_2",
+    "bandeja_3",
+    "reservatorio_agua"
+  ],
+  "extracao_gavetas_continua_conferida": true,
+  "angulos_porta_conferidos": [
+    0,
+    0.1,
+    0.25,
+    0.5,
+    1,
+    2,
+    3,
+    5,
+    7,
+    10,
+    12,
+    15,
+    18,
+    20,
+    25,
+    30,
+    45,
+    60,
+    75,
+    90,
+    110
+  ],
+  "insercao_retirada_com_porta_110": true,
+  "sem_interferencia_inox": true,
+  "solido_valido": true,
+  "limites_k1c": true,
+  "limpeza": "Remover a mao; sem cola, parafusos, canais ou furos cegos; bordas arredondadas",
+  "encaixe_e_retirada_fisicos_pendentes": true,
+  "bandeja": 37,
+  "preenchimento": "100%",
+  "configuracoes_anteriores_preservadas": true
+}
