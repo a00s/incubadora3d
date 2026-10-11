@@ -1,0 +1,32 @@
+{
+  "configuracoes_salvas_preservadas": true,
+  "pecas": [
+    {
+      "peca": "bucha_sensor_TPU",
+      "bandeja": 15,
+      "dimensoes_impressao_mm": [
+        24.0,
+        23.992538452148438,
+        9.0
+      ]
+    },
+    {
+      "peca": "amostra_bucha_sensor_TPU_15.3",
+      "bandeja": 23,
+      "dimensoes_impressao_mm": [
+        24.0,
+        23.99254035949707,
+        9.0
+      ]
+    },
+    {
+      "peca": "amostra_bucha_sensor_TPU_15.5",
+      "bandeja": 24,
+      "dimensoes_impressao_mm": [
+        24.0,
+        23.99254035949707,
+        9.0
+      ]
+    }
+  ]
+}

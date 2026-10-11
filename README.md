@@ -220,12 +220,15 @@ A folga precisa ser confirmada na chapa dobrada real.
 [STL do suporte](output/v59/suporte_gavetas_removivel.stl) ·
 [STEP](output/v59/suporte_gavetas_removivel.step).
 As duas travessas de afastamento ficam na região central da altura da câmara
-(Z65–71): uma na frente e outra no meio da profundidade. Elas têm seção de
-8 × 6 mm e bordas arredondadas. A segunda gaveta passa 1 mm acima das travessas.
+(Z65–69): uma na frente e outra no meio da profundidade. Elas têm seção de
+6 × 4 mm e bordas arredondadas. A segunda gaveta passa 3 mm acima das travessas.
 
 O restante é somente a estrutura para as gavetas: seis trilhos de 10 mm, colunas
-estreitas e seis pés pequenos. As colunas terminam em Z104, na altura da base da
-gaveta superior; não há prolongamentos até o teto. A profundidade das colunas é
+estreitas e quatro pés pequenos, somente na frente e atrás. A coluna intermediária
+existe apenas de Z40 a Z101, terminando rente ao trilho superior: sem pé central,
+ponta superior ou reforços diagonais. As colunas dianteiras e traseiras chegam a
+Z101; uma borda lateral contínua de 1,5 mm limita a gaveta superior sem pontas
+isoladas. A profundidade das colunas é
 6 mm na frente e no meio, e 4 mm atrás. Não há painéis sobre as paredes de inox,
 fundo plástico ou travessa transversal traseira. Cantos das colunas e pés têm R0,6.
 A largura externa é 110,1 mm; a folga nominal do inox é 0,15 mm por lado.
@@ -245,3 +248,14 @@ O STL principal mantém as coordenadas de montagem. No 3MF, o suporte fica com a
 frente para a mesa; revisar suportes removíveis sob o H central e as colunas
 traseiras. As configurações salvas foram preservadas. Para uma peça mais maciça,
 conferir preenchimento de 100% para este suporte.
+
+### Bucha redonda do sensor de CO₂ com lábios
+
+[STL da bucha TPU](output/v59/bucha_sensor_TPU.stl) ·
+[STEP](output/v59/bucha_sensor_TPU.step). A manga tem parede de 0,6 mm e
+corpo Ø19,8 mm para o furo existente Ø20,4 mm. Dois lábios internos finos
+seguram o sensor Ø15,62 mm; dois externos acomodam o encaixe no teto.
+A entrada é chanfrada e o apoio do sensor mantém a posição original.
+O diâmetro livre dos lábios internos é 15,4 mm, com amostras de 15,3 e 15,5 mm
+para conferir a resposta do TPU usado. Bucha na bandeja 15; amostras nas
+bandejas 23 e 24. Encaixe e vedação precisam ser confirmados na peça impressa.

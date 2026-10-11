@@ -130,3 +130,24 @@ e não representam espaço de carga disponível no conjunto montado.
   110,1 × 79,9 × 99,05 mm. Cotas do visualizador isolado corrigidas para a peça,
   sem exibir as medidas globais do corpo.
 - Auditoria CAD atual: 59 pares rígidos sem colisão, apoios e passagem conferidos.
+
+## Centro sem sobras ou pontos de engate na entrada
+
+- Pé intermediário removido; quatro pés locais somente na frente e atrás.
+- Colunas intermediárias limitadas a Z40–101, entre os trilhos inferior e superior,
+  sem prolongamentos acima ou abaixo. Reforços diagonais removidos.
+- Travessas de afastamento em Z65–69, seção 6 × 4 mm, com a mesma profundidade
+  das colunas: sem degraus salientes nas junções. Folga de 3 mm sob a segunda gaveta.
+- Apoios de 10 mm e folga lateral das gavetas preservados; carga útil de 18 mm
+  sobre a lâmina inferior mantida. Facilidade de colocação física ainda por testar.
+
+## Bucha redonda do sensor CO₂
+
+- Substituído o anel espesso por manga de parede 0,6 mm, dois lábios internos
+  de 0,55 mm e dois externos de 0,5 mm, com entrada chanfrada.
+- Furo impresso Ø20,4 mm e posição de apoio do sensor preservados. Corpo
+  Ø19,8 mm; lábios internos livres Ø15,4 mm; externos Ø20,6 mm.
+- Atualizados STL, STEP, bucha e duas amostras no 3MF completo, preservando
+  configurações salvas. Conferência física de encaixe e vedação pendente.
+- Suporte sem pés intermediários, pontas ou reforços diagonais. Borda superior
+  lateral contínua de 1,5 mm mantém a retenção da gaveta superior.

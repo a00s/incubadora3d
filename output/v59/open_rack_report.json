@@ -1,13 +1,28 @@
 {
-  "colunas_z_max_mm": 104,
+  "colocacao_inclinada_auditada": {
+    "angulos_graus": [
+      -3,
+      3
+    ],
+    "elevacao_mm": 3,
+    "verificacoes": 42
+  },
+  "colunas_intermediarias_z_mm": [
+    40,
+    101
+  ],
+  "pes_intermediarios": false,
+  "reforcos_diagonais": false,
+  "folga_travessa_segunda_gaveta_mm": 3,
+  "colunas_z_max_mm": 101,
   "profundidades_colunas_mm": [
     6,
     6,
     4
   ],
   "secao_travessas_mm": [
-    8,
-    6
+    6,
+    4
   ],
   "arredondamento_colunas_pes_mm": 0.6,
   "sobreposicao_minima_cad_medida_mm": 8.399999999999512,
@@ -16,7 +31,7 @@
   "dimensoes_montagem_mm": [
     110.1000002,
     79.90000020000001,
-    99.0500002
+    99.0500001
   ],
   "envelope_xz_mm": [
     110.1,
@@ -24,15 +39,15 @@
   ],
   "frente_y_mm": [
     3.6,
-    11.6
+    9.6
   ],
   "travessa_frontal_z_mm": [
     65,
-    71
+    69
   ],
   "travessa_intermediaria_y_mm": [
     40.55,
-    48.55
+    46.55
   ],
   "numero_frames_H": 2,
   "altura_carga_livre_gaveta_inferior_mm": 18,
@@ -40,16 +55,14 @@
   "folga_lateral_nominal_inox_mm": 0.15,
   "paineis_laterais": false,
   "travessas_transversais_traseiras": false,
-  "apoios_piso": "seis pes locais",
+  "apoios_piso": "quatro pes locais",
   "borda_quebrada_nao_utilizada": true,
   "solido_valido": true,
-  "volume_mm3": 37945.04344522931,
+  "volume_mm3": 31641.804643263833,
   "geometria_gavetas_e_porta_auditada": true,
   "limites": [
     "Peso admissivel nao ensaiado",
     "Pressao e contato na chapa real dependem do encaixe",
     "Limpar retirando o conjunto"
-  ],
-  "volume_anterior_mm3": 56649.73610485351,
-  "reducao_volume_percent": 33.02
+  ]
 }

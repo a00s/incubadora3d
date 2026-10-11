@@ -1,0 +1,20 @@
+{
+  "tipo": "manga fina com labios flexiveis",
+  "furo_impresso_preservado_mm": 20.4,
+  "sensor_mm": 15.62,
+  "diametro_corpo_tpu_mm": 19.8,
+  "diametro_interno_corpo_mm": 18.6,
+  "diametro_livres_labios_internos_mm": 15.4,
+  "parede_mm": 0.6,
+  "labios_internos": 2,
+  "espessura_labios_internos_mm": 0.55,
+  "labios_externos": 2,
+  "espessura_labios_externos_mm": 0.5,
+  "diametro_maximo_labios_externos_mm": 20.6,
+  "entrada_chanfrada_mm": 17.2,
+  "apoio_sensor_z_local_mm": 8.5,
+  "solido_valido": true,
+  "interferencia_sensor_apenas_nos_labios": true,
+  "interferencia_no_furo_apenas_nos_labios": true,
+  "validacao_fisica_pendente": true
+}

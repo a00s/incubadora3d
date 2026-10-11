@@ -13,7 +13,7 @@ OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=6.2,insulation_extension=10,air_cell_width=6,outer_skin=2)
 P.update(sensor_diameter=15.62, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=6.0, inlet_socket_diameter=6.2, inlet_socket_depth=12, inlet_bore_diameter=3.5)
-P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.3, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
+P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.4, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
 P.update(tray_depth=72,tray_rear_y=80,heater_front_y=106,tray_heater_gap=26)
 parts=[]
 clash_envelopes={}
@@ -278,9 +278,10 @@ TRAY_THICKNESS=3
 TRAY_LATERAL_CLEARANCE=.8
 TRAY_WIDTH=109.8-6-2*TRAY_LATERAL_CLEARANCE
 TRAY_X=(120-TRAY_WIDTH)/2
-from open_rack import build_rack, check_drawer_support
+from open_rack import build_rack, check_drawer_support, check_entry_clearance
 rack=build_rack()
 assert check_drawer_support(rack)>=8.4-1e-4
+check_entry_clearance(rack)
 assert len(rack.solids().vals())==1,'Removable rack disconnected'
 P.update(tray_base_thickness_mm=TRAY_THICKNESS,tray_captive_guide_type='open L rails',
          tray_lateral_clearance_per_side_mm=.8,tray_vertical_guide_clearance_mm=None,
@@ -288,7 +289,7 @@ P.update(tray_base_thickness_mm=TRAY_THICKNESS,tray_captive_guide_type='open L r
          tray_upper_guide_removed=True,tray_entry_chamfer_mm=2,
          rack_side_frame_thickness_mm=3.15,rack_side_frame_front_post_depth_mm=6,rack_side_frame_rear_post_depth_mm=4,
          rack_side_frame_windowed=False,rack_side_panels=False,
-         rack_front_h_crossbar_z_mm=[65,71],rack_mid_depth_h_y_mm=[40.55,48.55],rack_front_y_mm=3.6,
+         rack_front_h_crossbar_z_mm=[65,69],rack_mid_depth_h_y_mm=[40.55,46.55],rack_mid_posts_z_mm=[40,101],rack_mid_feet=False,rack_front_y_mm=3.6,
          rack_front_h_height_mm=rack.val().BoundingBox().zlen,rack_rear_transverse_braces=False,rack_h_frame_count=2,
          rack_independent_of_broken_entry_lip=True)
 add('suporte_gavetas_removivel',rack,'#b5a78c','rack')
@@ -816,16 +817,14 @@ door_section=doorpart.cut(box(220,180,90,-60,-30,70))
 add('corte_corpo_referencia',body_section,'#c5d4df','section_body')
 add('corte_porta_referencia',door_section,'#729daf','section_door')
 add('corpo_integrado',body,'#c5d4df','shell')
-# Free-shape TPU dimensions: 0.2 mm diametral interference against rigid hole.
-# Lower tapered flange snaps below the 6 mm lid; upper flange supports collar.
+# Thin sleeve with flexible inner/outer lips, preserving the printed roof hole.
+from sensor_grommet import build_sensor_grommet
 def sensor_grommet(bore):
-    q=cq.Workplane('XY',origin=(-27,cy,mh+1)).circle(10.3).extrude(6)
-    q=q.union(cq.Workplane('XY',origin=(-27,cy,mh+7)).circle(12).extrude(1.5))
-    q=q.union(cq.Solid.makeCone(10.3,11,1.5,cq.Vector(-27,cy,mh-0.5)))
-    q=q.cut(cq.Workplane('XY',origin=(-27,cy,mh-1)).circle(bore/2).extrude(11))
-    for zz,r1,r2 in [(mh-0.5,bore/2+0.5,bore/2),(mh+7.5,bore/2,bore/2+0.5)]:
-        q=q.cut(cq.Solid.makeCone(r1,r2,1,cq.Vector(-27,cy,zz)))
-    return q
+    return build_sensor_grommet(bore,(-27,cy,mh))
+P.update(sensor_tpu_wall_mm=.6,sensor_tpu_inner_lip_mm=.55,
+         sensor_tpu_outer_lip_mm=.5,sensor_tpu_inner_lip_count=2,
+         sensor_tpu_outer_lip_count=2,sensor_tpu_sleeve_od_mm=19.8,
+         sensor_tpu_core_id_mm=18.6,sensor_tpu_fit_test='pending physical insertion and seal test')
 sensor_seal=sensor_grommet(P['sensor_seal_bore'])
 add('bucha_sensor_TPU',sensor_seal,'#45ae89','sensor_seal')
 assert len(sensor_seal.solids().vals())==1
@@ -1093,6 +1092,7 @@ for name,obj,color,kind in parts:
     mesh.append(dict(name=name,color=color,kind=kind,vertices=vertices,faces=[[remap[i] for i in tri] for tri in f]))
 cq.exporters.export(assembly.toCompound(),str(OUT/'conjunto.step'))
 cq.exporters.export(rack,str(OUT/'suporte_gavetas_removivel.step'))
+cq.exporters.export(sensor_seal,str(OUT/'bucha_sensor_TPU.step'))
 # Body orientation requested by the user: rear Y125 flat on the bed, build toward -Y.
 print_folder=OUT/'impressao_traseira_na_mesa';print_folder.mkdir(exist_ok=True)
 rear_down=body.rotate((0,0,0),(1,0,0),-90).translate((59,10,125))
@@ -1191,4 +1191,5 @@ cq.exporters.export(sensor_test.translate((43,-44,-mh-1)),str(OUT/'amostra_furo_
 for bore in [15.3,15.5]:
     obj=sensor_grommet(bore).translate((27,-cy,-mh+0.5))
     cq.exporters.export(obj,str(OUT/f'amostra_bucha_sensor_TPU_{bore:.1f}.stl'))
+    cq.exporters.export(obj,str(OUT/f'amostra_bucha_sensor_TPU_{bore:.1f}.step'))
 cq.exporters.export(rjplate.rotate((0,0,0),(0,1,0),-90).translate((P['rj_center_z']+15.5,-95,56)),str(OUT/'amostra_encaixe_RJ45.stl'))

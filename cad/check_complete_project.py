@@ -16,7 +16,7 @@ with zipfile.ZipFile(path) as z:
     items={o.get('objectid'):o for o in model.find('m:build',NS)}
     labels={o.get('id'):values(o)['name'] for o in config.findall('object')}
     assert len(items)==len(labels)==39
-    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel'))
+    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'))
     seen=set()
     plate_by_name={}
     for plate in config.findall('plate'):
@@ -35,12 +35,16 @@ with zipfile.ZipFile(path) as z:
             faces=[tuple(int(t.get(f'v{i}')) for i in (1,2,3)) for t in mesh.find('m:triangles',NS)]
             assert all(len(set(f))==3 and min(f)>=0 and max(f)<len(vertices) for f in faces)
             edge=Counter(tuple(sorted((a,b))) for f in faces for a,b in zip(f,f[1:]+f[:1]))
-            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel'):
+            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'):
                 assert all(n==2 for n in edge.values()),labels[oid]
             transform=[float(v) for v in items[oid].get('transform').split()]
             world=[tuple(sum(v[j]*transform[j*3+a] for j in range(3))+transform[9+a] for a in range(3)) for v in vertices]
             if labels[oid]=='suporte_gavetas_removivel':
                 expected,_,size=load_mesh(ROOT/'output/v59/suporte_gavetas_removivel.stl',lambda p:(p[0],-p[2],p[1]))
+                assert len(expected)==len(vertices)
+                assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
+            if labels[oid] in ('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'):
+                expected,_,_=load_mesh(ROOT/'output/v59'/f'{labels[oid]}.stl')
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
             if labels[oid]=='porta_articulada':

@@ -23,7 +23,7 @@
   "inlet_bore_diameter": 3.5,
   "sensor_collar_diameter": 18.31,
   "sensor_head_width": 20.55,
-  "sensor_seal_bore": 15.3,
+  "sensor_seal_bore": 15.4,
   "rj_cutout_width": 14.79,
   "rj_cutout_height": 19.31,
   "rj_panel_thickness": 1.6,
@@ -210,14 +210,19 @@
   "rack_side_panels": false,
   "rack_front_h_crossbar_z_mm": [
     65,
-    71
+    69
   ],
   "rack_mid_depth_h_y_mm": [
     40.55,
-    48.55
+    46.55
   ],
+  "rack_mid_posts_z_mm": [
+    40,
+    101
+  ],
+  "rack_mid_feet": false,
   "rack_front_y_mm": 3.6,
-  "rack_front_h_height_mm": 99.0500002,
+  "rack_front_h_height_mm": 99.0500001,
   "rack_rear_transverse_braces": false,
   "rack_h_frame_count": 2,
   "rack_independent_of_broken_entry_lip": true,
@@ -430,6 +435,14 @@
   "door_v_seal_test": "pending physical fit and leak test",
   "rack_outer_width": 110.1,
   "rack_liner_side_clearance": 0.15,
+  "sensor_tpu_wall_mm": 0.6,
+  "sensor_tpu_inner_lip_mm": 0.55,
+  "sensor_tpu_outer_lip_mm": 0.5,
+  "sensor_tpu_inner_lip_count": 2,
+  "sensor_tpu_outer_lip_count": 2,
+  "sensor_tpu_sleeve_od_mm": 19.8,
+  "sensor_tpu_core_id_mm": 18.6,
+  "sensor_tpu_fit_test": "pending physical insertion and seal test",
   "latch_parked_angle": 90,
   "latch_parked_rightmost_x": -5,
   "latch_closed_door_leftmost_x": -4,
