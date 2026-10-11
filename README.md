@@ -215,35 +215,33 @@ traseira Ø14 mm alinhada ao acesso existente. É 1,2 mm menor em largura e altu
 que o molde. Bandeja 37 do projeto completo, deitada e com preenchimento 100%.
 A folga precisa ser confirmada na chapa dobrada real.
 
-### Suporte aberto com H frontal e central
+### Suporte mínimo com travessas centrais
 
 [STL do suporte](output/v59/suporte_gavetas_removivel.stl) ·
 [STEP](output/v59/suporte_gavetas_removivel.step).
-O suporte tem dois frames em H: na frente e no meio da profundidade.
-As duas travessas ficam na região central da altura, em Z65–71 mm, com 1 mm
-de folga sob a segunda gaveta. O frame intermediário ocupa Y37,55–49,55 mm,
-centrado na profundidade útil do suporte. A frente mede
-110,1 × 129,7 mm, com 12 mm de profundidade; as colunas têm 3,15 mm de largura.
-A folga nominal do inox é 0,15 mm por lado. O apoio limita o fechamento das
-laterais; a pressão e o contato efetivos dependem da chapa dobrada real.
+As duas travessas de afastamento ficam na região central da altura da câmara
+(Z65–71): uma na frente e outra no meio da profundidade. Elas têm seção de
+8 × 6 mm e bordas arredondadas. A segunda gaveta passa 1 mm acima das travessas.
 
-As laterais são abertas, com seis guias estreitas e colunas traseiras locais.
-Não há painéis cobrindo o inox nem travessas ligando esquerda e direita atrás.
-O H frontal substitui a moldura separada anterior. O suporte apoia o peso das
-gavetas nos seis pés dianteiros, intermediários e traseiros; a carga admissível não foi ensaiada.
+O restante é somente a estrutura para as gavetas: seis trilhos de 10 mm, colunas
+estreitas e seis pés pequenos. As colunas terminam em Z104, na altura da base da
+gaveta superior; não há prolongamentos até o teto. A profundidade das colunas é
+6 mm na frente e no meio, e 4 mm atrás. Não há painéis sobre as paredes de inox,
+fundo plástico ou travessa transversal traseira. Cantos das colunas e pés têm R0,6.
+A largura externa é 110,1 mm; a folga nominal do inox é 0,15 mm por lado.
 
-A pequena borda quebrada da entrada não participa da fixação ou posicionamento.
-Para limpar, abrir a porta a 110°, retirar gavetas e reservatório e puxar o
-suporte inteiro pela frente. Sem cola, parafusos ou encaixes cegos; o inox fica
-exposto e as guias podem ser limpas separadamente. Encaixe, retirada e resistência
-precisam de teste físico. Não prender o suporte com cola.
+O suporte inteiro é removível à mão, depois de retirar gavetas e reservatório e
+abrir a porta a 110°. Sem cola, parafusos ou cavidades cegas. A retirada expõe as
+superfícies de inox e permite limpar as guias por todos os lados. O desenho reduz
+a área de plástico e as junções, mas a limpeza depende da retirada do conjunto.
+A borda quebrada da entrada não participa da fixação ou posicionamento.
 
-O STL principal mantém as coordenadas de montagem; no 3MF ele está orientado com
-a frente do H para a mesa. Conferir os suportes removíveis sob o H central e as colunas traseiras
-no fatiador. O projeto mantém as configurações salvas anteriormente.
-Para uma peça mais maciça, conferir preenchimento de 100% para este suporte.
+Os trilhos mantêm pelo menos 8,4 mm de apoio sob cada lado da gaveta no limite
+da folga lateral. As travessas deixam 18 mm livres acima de uma lâmina de até
+1,2 mm na gaveta inferior, inclusive durante a retirada; objetos mais altos podem
+atingir as travessas. A carga admissível e o encaixe real precisam de teste físico.
 
-As travessas centrais deixam 18 mm livres acima de uma lâmina de até 1,2 mm
-na gaveta inferior, inclusive no percurso de retirada. Objetos mais altos nessa
-gaveta podem atingir as travessas. Esse limite substitui a ideia de manter toda
-a altura entre gavetas livre de obstáculos. A passagem das três gavetas é preservada.
+O STL principal mantém as coordenadas de montagem. No 3MF, o suporte fica com a
+frente para a mesa; revisar suportes removíveis sob o H central e as colunas
+traseiras. As configurações salvas foram preservadas. Para uma peça mais maciça,
+conferir preenchimento de 100% para este suporte.

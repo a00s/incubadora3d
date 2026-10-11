@@ -185,7 +185,19 @@ gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.drawArr
 const fg=getComputedStyle(root).color;ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.font='13px sans-serif';ctx.lineWidth=1;
 function label(text,x,y){const tw=ctx.measureText(text).width;x=Math.max(tw/2+4,Math.min(width-tw/2-4,x));y=Math.max(16,Math.min(height-8,y));ctx.textAlign='center';ctx.fillText(text,x,y);}
 function dim(a,b,text){a=project(a);b=project(b);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;for(const p of [a,b]){ctx.moveTo(p[0]-dy/len*4,p[1]+dx/len*4);ctx.lineTo(p[0]+dy/len*4,p[1]-dx/len*4);}ctx.stroke();label(text,(a[0]+b[0])/2,(a[1]+b[1])/2-7);}
-if(dims.checked&&view.value==='assembly'){dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}}
+if(dims.checked&&view.value==='assembly'){
+ const shown=parts.filter(p=>!p.kind.startsWith('section_')&&visibility.get(p.name).checked);
+ if(shown.length===1&&shown[0].kind==='rack'){
+  const bounds=shown[0].bounds_mm,vertices=shown[0].vertices,lo=bounds?bounds.map(b=>b[0]):[0,1,2].map(a=>Math.min(...vertices.map(v=>v[a]))),hi=bounds?bounds.map(b=>b[1]):[0,1,2].map(a=>Math.max(...vertices.map(v=>v[a])));
+  const measure=a=>(Math.round((hi[a]-lo[a]+1e-6)*10)/10).toFixed(1).replace('.',',')+' mm';
+  dim([lo[0],lo[1]-8,lo[2]-8],[hi[0],lo[1]-8,lo[2]-8],measure(0)+' · suporte');
+  dim([lo[0]-8,lo[1],lo[2]],[lo[0]-8,lo[1],hi[2]],measure(2));
+  dim([hi[0]+8,lo[1],hi[2]+8],[hi[0]+8,hi[1],hi[2]+8],measure(1));
+ }else if(visibility.get('corpo_integrado').checked&&shell.checked){
+  dim([-59,-48,-17],[136,-48,-17],'195 mm · corpo');dim([-60,-5,-10],[-60,-5,150],'160 mm');dim([147,-16,156],[147,125,156],'141 mm · traseira plana');
+  if(width>500){let p=project([-27,60,153]);label('CO₂ · parede única',p[0],p[1]);}
+ }
+}
 if(view.value==='forming'&&formingHoles.checked){
  const guides=[{name:'entrada CO₂ · final Ø6,2',male:[4.8,60,34],outer:[-31.65,60,34],kind:'forming_lower',part:'contraforma_inox_inferior'},
  {name:'acesso lateral · final Ø14',male:[4.8,90,127.5],outer:[-31.65,90,127.5],kind:'forming_upper',part:'contraforma_inox_superior'},

@@ -15,6 +15,8 @@ if insert_mesh.exists():
 # Adjustable sections are computed in the viewer; omit obsolete fixed-cut meshes.
 preview=[part for part in preview if not part['kind'].startswith('section_')]
 for part in preview:
+    if part['kind']=='rack':
+        part['bounds_mm']=[[min(v[a] for v in part['vertices']),max(v[a] for v in part['vertices'])] for a in range(3)]
     unique={}; vertices=[]; mapping=[]
     for vertex in part['vertices']:
         key=tuple(round(v*10) for v in vertex)

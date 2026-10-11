@@ -68,7 +68,7 @@
     85,
     90
   ],
-  "rigid_pairs_checked": 60,
+  "rigid_pairs_checked": 59,
   "rigid_clashes": 0,
   "door_angles_deg": [],
   "movement_tests": "deferred",

@@ -1,27 +1,38 @@
 {
+  "colunas_z_max_mm": 104,
+  "profundidades_colunas_mm": [
+    6,
+    6,
+    4
+  ],
+  "secao_travessas_mm": [
+    8,
+    6
+  ],
+  "arredondamento_colunas_pes_mm": 0.6,
   "sobreposicao_minima_cad_medida_mm": 8.399999999999512,
   "largura_util_apoios_mm": 10,
   "sobreposicao_minima_nominal_mm": 8.4,
   "dimensoes_montagem_mm": [
-    110.1,
-    79.9,
-    129.72894218814403
+    110.1000002,
+    79.90000020000001,
+    99.0500002
   ],
   "envelope_xz_mm": [
     110.1,
-    130.1
+    99.05
   ],
   "frente_y_mm": [
     3.6,
-    15.6
+    11.6
   ],
   "travessa_frontal_z_mm": [
     65,
     71
   ],
   "travessa_intermediaria_y_mm": [
-    37.55,
-    49.55
+    40.55,
+    48.55
   ],
   "numero_frames_H": 2,
   "altura_carga_livre_gaveta_inferior_mm": 18,
@@ -32,11 +43,13 @@
   "apoios_piso": "seis pes locais",
   "borda_quebrada_nao_utilizada": true,
   "solido_valido": true,
-  "volume_mm3": 56649.73610485351,
+  "volume_mm3": 37945.04344522931,
   "geometria_gavetas_e_porta_auditada": true,
   "limites": [
     "Peso admissivel nao ensaiado",
     "Pressao e contato na chapa real dependem do encaixe",
     "Limpar retirando o conjunto"
-  ]
+  ],
+  "volume_anterior_mm3": 56649.73610485351,
+  "reducao_volume_percent": 33.02
 }

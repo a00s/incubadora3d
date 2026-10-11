@@ -115,3 +115,18 @@ A travessa interna limita a altura de carga sobre a lâmina inferior: 18 mm livr
 para lâminas de até 1,2 mm, com envelope contínuo de retirada conferido.
 As verificações anteriores de 40 mm referiam-se à própria gaveta e seu rebaixo,
 e não representam espaço de carga disponível no conjunto montado.
+
+## Redução do suporte para expor mais inox
+
+- Travessas de afastamento preservadas em Z65–71, na frente e no meio; seção 8 × 6 mm.
+- Colunas encurtadas até Z104 (base da gaveta superior), profundidade 6 mm na frente
+  e no meio e 4 mm atrás, largura 3,15 mm. Sem prolongamentos até o teto.
+- Seis trilhos de 10 mm preservados; colunas e pés com cantos R0,6.
+- Sem painéis, fundo plástico ou novas cavidades; remover o conjunto para expor e
+  limpar o inox atrás dos apoios.
+- Passagem das gavetas, apoios mínimos de 8,4 mm e limite de carga de 18 mm sobre
+  a lâmina inferior mantidos. Peso admissível e encaixe dependem de teste físico.
+- Volume CAD reduzido de 56.649,7 para 37.945,0 mm³ (33%); envelope do suporte
+  110,1 × 79,9 × 99,05 mm. Cotas do visualizador isolado corrigidas para a peça,
+  sem exibir as medidas globais do corpo.
+- Auditoria CAD atual: 59 pares rígidos sem colisão, apoios e passagem conferidos.
