@@ -14,11 +14,11 @@ def build_rack():
         rack=rack.union(box(3.15,7,107.05,x,76.5,4.95))
     # Six open guide beams, with no side panels or rear transverse braces.
     for z in (40,69,98):
-        for x in (4.95,105.9):
-            rail=box(9.15,75.5,3,x,8,z).edges('|X and <Y and >Z').chamfer(2)
+        for x in (4.95,101.9):
+            rail=box(13.15,75.5,3,x,8,z).edges('|X and <Y and >Z').chamfer(2)
             rack=rack.union(rail)
-        for x in (8.1,105.9):
-            rack=rack.union(box(6,3,3,x,80.5,z+3))
+        for x in (8.1,101.9):
+            rack=rack.union(box(10,3,3,x,80.5,z+3))
     # Local feet transfer vertical load into the liner floor, without a bottom panel.
     for x in (4.95,105.9):
         for y,depth in ((3.6,12),(76.5,7)):
@@ -34,3 +34,17 @@ def build_rack():
     rack=rack.intersect(envelope)
     assert rack.val().isValid() and len(rack.solids().vals())==1
     return rack
+
+
+def check_drawer_support(rack):
+    """Measure actual contact under each drawer at both lateral clearance limits."""
+    overlaps=[]
+    for z in (43,72,101):
+        for dx in (-.8,0,.8):
+            for lo,hi in ((8.9+dx,60),(60,111.1+dx)):
+                probe=box(hi-lo,50,.05,lo,20,z-.05)
+                contact=rack.intersect(probe).val().Volume()
+                width=contact/(50*.05)
+                assert width>=8.4-1e-4,(z,dx,width)
+                overlaps.append(width)
+    return min(overlaps)

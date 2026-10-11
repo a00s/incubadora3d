@@ -21,7 +21,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta.
 - Rampa externa da lingueta elimina a face plana remanescente; cavidade CO₂ preservada.
 - Auditoria final dos apoios inclui ambos os lados da base da lingueta e das dobradiças.
-- Suporte removível aberto com H frontal, guias de 6 mm e folga das gavetas de 0,8 mm por lado.
+- Suporte removível aberto com H frontal, guias de 10 mm e folga das gavetas de 0,8 mm por lado.
 - Gavetas com base de 3 mm e rebaixo de lâmina de 0,6 mm; nenhum elemento sobre a lâmina.
 - Lâminas conferidas: 76 × 26 e 75 × 25 mm, espessuras 0,9, 1 e 1,2 mm.
 - Caixinha traseira 70 × 60 × 21 mm, dois M4 × 12 com engate de 4 mm em apoios cegos maciços.
@@ -98,3 +98,10 @@ A foto não define o contorno exato da fratura; o CAD ainda contém a geometria 
   encaixes originais conferidos. Projeto principal e cópia v59 com 39 peças em
   36 bandejas; suporte na 4, fundo traseiro na 13 conforme disposição salva pelo usuário.
 - STL/STEP individuais, conjunto STEP, visualizador e cópia servida na porta 8081 atualizados.
+
+## Apoios das gavetas alargados
+
+Os seis apoios passaram de 6 para 10 mm de largura útil, com sobreposição mínima
+nominal de 8,4 mm sob as gavetas no limite da folga lateral de 0,8 mm.
+Gavetas, altura dos apoios e H frontal preservados. Batentes traseiros acompanham
+a nova largura. A colocação e o deslizamento precisam ser confirmados na impressão.

@@ -86,7 +86,8 @@ O canal não bloqueia retorno de umidade.
 
 ## Gavetas e lâminas
 
-O suporte removível tem laterais abertas, um H de travamento na frente e apoios de 6 mm de largura.
+O suporte removível tem laterais abertas, um H de travamento na frente e apoios de 10 mm de largura.
+Cada apoio avança 10 mm para dentro, com sobreposição mínima nominal de 8,4 mm sob a gaveta.
 As gavetas entram pela frente em guias abertas, com chanfro de entrada de 2 mm
 e folga lateral de 0,8 mm por lado. Apoie a gaveta nos dois trilhos e deslize até o batente traseiro.
 Não há tampa superior do trilho nem encaixe estreito para alinhar.

@@ -278,12 +278,13 @@ TRAY_THICKNESS=3
 TRAY_LATERAL_CLEARANCE=.8
 TRAY_WIDTH=109.8-6-2*TRAY_LATERAL_CLEARANCE
 TRAY_X=(120-TRAY_WIDTH)/2
-from open_rack import build_rack
+from open_rack import build_rack, check_drawer_support
 rack=build_rack()
+assert check_drawer_support(rack)>=8.4-1e-4
 assert len(rack.solids().vals())==1,'Removable rack disconnected'
 P.update(tray_base_thickness_mm=TRAY_THICKNESS,tray_captive_guide_type='open L rails',
          tray_lateral_clearance_per_side_mm=.8,tray_vertical_guide_clearance_mm=None,
-         tray_guide_support_width_mm=6,tray_minimum_lateral_overlap_mm=4.4,
+         tray_guide_support_width_mm=10,tray_minimum_lateral_overlap_mm=8.4,
          tray_upper_guide_removed=True,tray_entry_chamfer_mm=2,
          rack_side_frame_thickness_mm=3.15,rack_side_frame_front_post_depth_mm=12,rack_side_frame_rear_post_depth_mm=7,
          rack_side_frame_windowed=False,rack_side_panels=False,

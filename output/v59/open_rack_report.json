@@ -1,8 +1,11 @@
 {
+  "sobreposicao_minima_cad_medida_mm": 8.399999999999512,
+  "largura_util_apoios_mm": 10,
+  "sobreposicao_minima_nominal_mm": 8.4,
   "dimensoes_montagem_mm": [
-    110.10000000000001,
+    110.1,
     79.9,
-    129.72894218814466
+    129.72894218814403
   ],
   "envelope_xz_mm": [
     110.1,
@@ -23,7 +26,7 @@
   "apoios_piso": "quatro pes locais",
   "borda_quebrada_nao_utilizada": true,
   "solido_valido": true,
-  "volume_mm3": 34625.70501379927,
+  "volume_mm3": 40229.70501379624,
   "geometria_gavetas_e_porta_auditada": true,
   "limites": [
     "Peso admissivel nao ensaiado",
