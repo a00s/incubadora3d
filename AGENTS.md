@@ -5,3 +5,4 @@
 - Atualizar o visualizador gerado e a cópia servida em `/tmp/incubadora3d-viewer/index.html`; conferir a resposta do servidor local na porta 8081.
 - Conferir geometria, limites da impressora e referências das bandejas antes de enviar os arquivos. Não adicionar arquivos temporários alheios à alteração.
 - Porta: imprimir com a frente externa plana na mesa. O layout interno deve ser desenhado para essa posição (+Y do CAD); não resolver problemas das células colocando a porta em pé.
+- Montagem física: a pequena borda fina na entrada da porta quebrou. Considerar essa borda ausente em alterações futuras; não depender dela para apoio, fixação ou posicionamento de peças novas.

@@ -271,37 +271,25 @@ assert len(seal.solids().vals())==1,'Double-lip gasket disconnected'
 add('junta_porta',seal,'#45ae89','seal')
 
 print('Building removable rack',flush=True)
-# Windowed side frames with broad, open L rails.
+# Open side beams and a front H brace; no side panels or rear crossbars.
 # No upper rail: trays rest freely and enter without threading a narrow slot.
 RACK_LEVELS=[40,69,98]
 TRAY_THICKNESS=3
 TRAY_LATERAL_CLEARANCE=.8
 TRAY_WIDTH=109.8-6-2*TRAY_LATERAL_CLEARANCE
 TRAY_X=(120-TRAY_WIDTH)/2
-rack=None
-for xx in [5.1,111.9]:
-    side=box(3,75.5,107.2,xx,8,4.8)
-    for lo,hi in [(12,38),(51.6,67),(80.6,96)]:
-        side_window=box(5,62.5,hi-lo,xx-1,14,lo).edges('|X and <Y').chamfer((hi-lo-.4)/2)
-        side=side.cut(side_window)
-    rack=side if rack is None else rack.union(side)
-for zz in RACK_LEVELS:
-    for xx in [8.1,105.9]:
-        # Entry grows from a thin nose to full thickness at 45 degrees.
-        rail=box(6,75.5,3,xx,8,zz).edges('|X and <Y and >Z').chamfer(2)
-        rack=rack.union(rail)
-        rack=rack.union(box(6,3,3,xx,80.5,zz+3))
-for zz in [4.8,109]:
-    rack=rack.union(box(109.8,3,2.5 if zz<10 else 3,5.1,80.5,zz))
-# Trim the feet to the lining's rounded floor/side corners.
-rack=rack.intersect(box(110.4,109.7,130.4,4.8,0,4.8).edges('|Y').fillet(5.2))
+from open_rack import build_rack
+rack=build_rack()
 assert len(rack.solids().vals())==1,'Removable rack disconnected'
 P.update(tray_base_thickness_mm=TRAY_THICKNESS,tray_captive_guide_type='open L rails',
          tray_lateral_clearance_per_side_mm=.8,tray_vertical_guide_clearance_mm=None,
          tray_guide_support_width_mm=6,tray_minimum_lateral_overlap_mm=4.4,
          tray_upper_guide_removed=True,tray_entry_chamfer_mm=2,
-         rack_side_frame_thickness_mm=3,rack_side_frame_front_post_depth_mm=6,rack_side_frame_rear_post_depth_mm=7,
-         rack_side_frame_windowed=True)
+         rack_side_frame_thickness_mm=3.15,rack_side_frame_front_post_depth_mm=12,rack_side_frame_rear_post_depth_mm=7,
+         rack_side_frame_windowed=False,rack_side_panels=False,
+         rack_front_h_crossbar_z_mm=[29,35],rack_front_y_mm=3.6,
+         rack_front_h_height_mm=rack.val().BoundingBox().zlen,rack_rear_transverse_braces=False,
+         rack_independent_of_broken_entry_lip=True)
 add('suporte_gavetas_removivel',rack,'#b5a78c','rack')
 
 # Nominal slide reference; adjust these three dimensions to the measured item.
@@ -817,7 +805,7 @@ P.update(door_rigid_piece_count=1,door_hatch_insert_snap_fit=False,
          door_body_gasket_preserved=True,door_print_orientation='outer Y=-16 flat face down; inner V boss up; build +Y; external DNA supports',
          door_insulation_build_direction='+Y',
          door_hatch_extra_screws=0,door_v_seal_test='pending physical fit and leak test',
-         rack_outer_width=109.8,rack_liner_side_clearance=.3)
+         rack_outer_width=110.1,rack_liner_side_clearance=.15)
 add('junta_V_porta_TPU',v_seal,'#45ae89','door_seal')
 add('porta_articulada',doorpart,'#729daf','door')
 # Display-only cuts show actual cavities without exporting a second physical body.
@@ -1099,6 +1087,7 @@ for name,obj,color,kind in parts:
         remap.append(unique[key])
     mesh.append(dict(name=name,color=color,kind=kind,vertices=vertices,faces=[[remap[i] for i in tri] for tri in f]))
 cq.exporters.export(assembly.toCompound(),str(OUT/'conjunto.step'))
+cq.exporters.export(rack,str(OUT/'suporte_gavetas_removivel.step'))
 # Body orientation requested by the user: rear Y125 flat on the bed, build toward -Y.
 print_folder=OUT/'impressao_traseira_na_mesa';print_folder.mkdir(exist_ok=True)
 rear_down=body.rotate((0,0,0),(1,0,0),-90).translate((59,10,125))

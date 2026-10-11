@@ -1,0 +1,14 @@
+{
+  "peca": "suporte_gavetas_removivel",
+  "bandeja": 4,
+  "dimensoes_impressao_mm": [
+    110.10000324249268,
+    129.7289400100708,
+    79.90000009536743
+  ],
+  "configuracoes_anteriores_preservadas": true,
+  "moldura_separada_substituida_por_H_integrado": true,
+  "bandejas": 36,
+  "pecas": 39,
+  "face_de_impressao": "H frontal na mesa"
+}

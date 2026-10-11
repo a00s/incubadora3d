@@ -21,7 +21,7 @@ estão no histórico do Git. O [manual ilustrado](README.md) descreve o desenho 
 - Rampas internas a 45° nas cavidades atrás das dobradiças e da base da lingueta.
 - Rampa externa da lingueta elimina a face plana remanescente; cavidade CO₂ preservada.
 - Auditoria final dos apoios inclui ambos os lados da base da lingueta e das dobradiças.
-- Suporte removível reforçado, guias abertas, apoio de 6 mm e folga lateral de 0,8 mm por lado.
+- Suporte removível aberto com H frontal, guias de 6 mm e folga das gavetas de 0,8 mm por lado.
 - Gavetas com base de 3 mm e rebaixo de lâmina de 0,6 mm; nenhum elemento sobre a lâmina.
 - Lâminas conferidas: 76 × 26 e 75 × 25 mm, espessuras 0,9, 1 e 1,2 mm.
 - Caixinha traseira 70 × 60 × 21 mm, dois M4 × 12 com engate de 4 mm em apoios cegos maciços.
@@ -73,17 +73,28 @@ Não substitui o fundo de inox. Imprimir deitada, preenchimento 100%, bandeja 37
 STL/STEP na v59 e inclusão nos dois projetos completos. Encaixe físico pendente.
 Regenerar com `python cad/rear_insert.py` (exportação e inclusão inicial no 3MF).
 
-## Moldura frontal removível para apoio do inox
+## Restrição física — borda fina da entrada quebrada
 
-- Base: projeto salvo pelo usuário no commit e5bfc24, configurações anteriores preservadas.
-- Peça nova independente, sem reimprimir o suporte das gavetas: 110,1 × 130,1 × 4 mm,
-  aro 2,8 mm, abertura 104,5 × 124,5, bordas R0,6, cantos externos R5,05.
-- Folga nominal de 0,15 mm por borda; posição Y3,6–7,6, antes do suporte em Y8.
-- Aro removível à mão pela abertura frontal, porta a 110°; sem canais ou retenções cegas.
-  Retirar para expor a junção e limpar o inox atrás dele. Encaixe/retirada físicos pendentes.
-- CAD: sólido válido, sem interferência com inox, suporte, reservatório ou envelopes
-  contínuos de retirada das três gavetas. Envelope conservador da porta conferido
-  em 21 ângulos de 0 a 110°. Retirada frontal conferida com porta a 110°.
-- Projeto completo e cópia v59: 40 peças, 37 bandejas, moldura na 37, preenchimento 100%.
-  ZIP/XML, fechamento das malhas, limites K1C e referências das bandejas conferidos.
-- STL, STEP e relatório em `output/v59`; visualizador inclui a moldura na montagem.
+Na montagem física, o usuário informou que a pequena borda da entrada da porta
+quebrou por fragilidade. Para alterações futuras, considerar essa borda ausente:
+nenhum novo encaixe, apoio, retenção ou posicionamento pode depender dela.
+O apoio frontal do inox deve manter sua largura de forma independente dessa borda.
+A foto não define o contorno exato da fratura; o CAD ainda contém a geometria nominal.
+
+## Suporte aberto com H frontal — substitui o suporte com painéis
+
+- Frente H: 110,1 × 129,7 mm, profundidade 12 mm; colunas de 3,15 mm.
+- Travessa frontal em Z29–35, com cantos R0,8 e reforços locais nas uniões inferiores.
+- Seis guias abertas; colunas traseiras locais e pés apoiados no piso de inox.
+  Sem painéis laterais e sem travessas transversais atrás.
+- Frente em Y3,6, sem depender da borda quebrada da entrada; folga nominal do inox
+  de 0,15 mm por lado. Gavetas e níveis originais preservados.
+- A moldura frontal separada anterior foi substituída pelo H integrado e removida
+  do projeto de impressão. Fundo traseiro de 5 mm preservado.
+- Limpeza: conjunto removível pela frente, sem ferramentas ou cola; retirar para
+  expor o inox e limpar separadamente as guias abertas.
+- Peso admissível, pressão real no inox e facilidade de retirada ainda não ensaiados.
+- Auditoria CAD completa: 60 pares rígidos sem colisão; extração das gavetas e
+  encaixes originais conferidos. Projeto principal e cópia v59 com 39 peças em
+  36 bandejas; suporte na 4, fundo traseiro na 13 conforme disposição salva pelo usuário.
+- STL/STEP individuais, conjunto STEP, visualizador e cópia servida na porta 8081 atualizados.

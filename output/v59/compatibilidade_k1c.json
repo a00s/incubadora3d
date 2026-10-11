@@ -253,6 +253,15 @@
       "cabe_com_margem_5mm": true
     },
     {
+      "peca": "fundo_interno_inox_5mm.stl",
+      "dimensoes_mm": [
+        109.2,
+        129.2,
+        5.0
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
       "peca": "junta_V_porta_TPU.stl",
       "dimensoes_mm": [
         116.25,
@@ -300,8 +309,8 @@
     {
       "peca": "porta_articulada.stl",
       "dimensoes_mm": [
-        140.0,
-        32.0,
+        158.6,
+        19.0,
         148.0
       ],
       "cabe_com_margem_5mm": true
@@ -318,9 +327,9 @@
     {
       "peca": "suporte_gavetas_removivel.stl",
       "dimensoes_mm": [
-        109.8,
-        75.5,
-        107.2
+        110.1,
+        79.9,
+        129.73
       ],
       "cabe_com_margem_5mm": true
     },

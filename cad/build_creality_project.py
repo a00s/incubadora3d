@@ -34,11 +34,11 @@ def xml_bytes(node):
 def orient(name, point):
     x, y, z = point
     # New channel roofs close toward +Y: outer Y=-16 flat face on the bed.
-    if name == 'porta_articulada':
+    if name in ('porta_articulada','suporte_gavetas_removivel'):
         return x, -z, y
     # The body uses its dedicated rear-down STL, and the mould is already flat.
     if name in ('painel_interno_escotilha_encaixe', 'tampa_manutencao_CO2_eletronica',
-                'suporte_gavetas_removivel', 'caixinha_encaixe_aquecedor', 'junta_porta', 'junta_V_porta_TPU',
+                'caixinha_encaixe_aquecedor', 'junta_porta', 'junta_V_porta_TPU',
                 'TPU_passagem_aquecedor') or name.startswith('lingueta_fecho'):
         return x, z, -y
     if name == 'TPU_passagem_sensor':
