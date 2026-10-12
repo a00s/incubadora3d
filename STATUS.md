@@ -151,3 +151,20 @@ e não representam espaço de carga disponível no conjunto montado.
   configurações salvas. Conferência física de encaixe e vedação pendente.
 - Suporte sem pés intermediários, pontas ou reforços diagonais. Borda superior
   lateral contínua de 1,5 mm mantém a retenção da gaveta superior.
+
+## Passagens dos fios com rolhas labiais bipartidas
+
+- Aquecedor atualizado para dois fios Ø1,42 mm e sensor lateral de umidade/
+  temperatura para três fios Ø1,40 mm.
+- Duas metades por rolha, divisão pelos eixos dos fios, dois lábios finos
+  de 0,4 mm por fio e dois lábios externos para o furo existente Ø12 mm.
+- Inserção de 13,7 mm na parede de 14 mm; face interna recuada 0,3 mm, flange
+  somente externa Ø16 × 1,5 mm. Corpo impresso preservado.
+- STL/STEP pareados com metades separadas por 4 mm e flange na mesa.
+  Montagem no STEP completo e no visualizador mantém as posições físicas.
+- Encaixe, compressão da junta entre metades e vedação dependem de ensaio físico.
+- Projeto completo: pares nas bandejas 11 (aquecedor) e 12 (sensor), com
+  configurações anteriores preservadas. Duas malhas fechadas separadas por 4 mm
+  em cada par; limites e referências das 36 bandejas conferidos.
+- Auditoria do conjunto: 59 pares rígidos sem colisão. STL do corpo permanece
+  idêntico ao anterior; visualizador servido na porta 8081 atualizado.

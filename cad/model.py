@@ -412,9 +412,13 @@ body=body.union(sleeve).cut(passage)
 # Sample the air layer at bottom, middle and top opposite the mixer.
 for zprobe in [20,60,135]:
     assert not body.val().isInside((-5,30,zprobe)), 'Left air layer obstructed'
-# Split TPU seals: heater wires measured 1.68 mm; sensor wires measured 1.36 mm.
-# Heater channels 1.60 mm are an initial interference fit, requiring TPU testing.
-P.update(sensor_wire_diameter=1.36,sensor_seal_channel_diameter=1.30,heater_wire_diameter=1.68,heater_seal_channel_diameter=1.6)
+# Split labial plugs for the measured wires; retain the already printed passages.
+from wire_plugs import build_wire_plug, compound, print_pair, check_wire_plug
+wire_plug_halves={}
+wire_plug_reports={}
+P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.30,
+         heater_wire_diameter=1.42,heater_seal_channel_diameter=1.32,
+         wire_plug_inner_recess_mm=.3,wire_plug_split_plane='through all wire axes')
 def cable_port(name,origin,rear,wire_diameter,positions):
     global body
     def place(obj):
@@ -424,14 +428,17 @@ def cable_port(name,origin,rear,wire_diameter,positions):
     sleeve=cq.Workplane('XY').circle(8).extrude(14)
     aperture=cq.Workplane('XY',origin=(0,0,-2)).circle(6).extrude(24)
     body=body.union(place(sleeve)).cut(place(aperture))
+    if rear:
+        halves=build_wire_plug(name)
+        wire_plug_halves[name]=halves
+        wire_plug_reports[name]=check_wire_plug(name,halves)
+        add(f'TPU_passagem_{name}',place(compound(halves)),'#45ae89')
+        return
     rubber=cq.Workplane('XY').circle(6.1).extrude(14)
     rubber=rubber.union(cq.Workplane('XY',origin=(0,0,14)).circle(8 if name=='sensor' else 10).extrude(2))
     rubber=rubber.union(cq.Solid.makeCone(6.1,7,1.5,cq.Vector(0,0,-1.5)))
     for yy in positions:
         rubber=rubber.cut(cq.Workplane('XY',origin=(0,yy,-2)).circle(wire_diameter/2).extrude(20))
-    if rear:
-        add(f'TPU_passagem_{name}',place(rubber),'#45ae89')
-        return
     keeper=box(34,26,3,-17,-13,15.6).cut(box(4,10,5,-2,-5,15))
     for xx in [-13,13]:
         for yy in [-8,8]:
@@ -1093,6 +1100,13 @@ for name,obj,color,kind in parts:
 cq.exporters.export(assembly.toCompound(),str(OUT/'conjunto.step'))
 cq.exporters.export(rack,str(OUT/'suporte_gavetas_removivel.step'))
 cq.exporters.export(sensor_seal,str(OUT/'bucha_sensor_TPU.step'))
+# The paired STL/STEP files contain the two separated halves, flanges on the bed.
+# conjunto.step and the viewer retain the assembled positions in the wall.
+for name,halves in wire_plug_halves.items():
+    for ext in ('stl','step'):
+        cq.exporters.export(print_pair(halves),str(OUT/f'TPU_passagem_{name}.{ext}'))
+(OUT/'wire_plugs_report.json').write_text(json.dumps(wire_plug_reports,indent=2,ensure_ascii=False)+'\n')
+
 # Body orientation requested by the user: rear Y125 flat on the bed, build toward -Y.
 print_folder=OUT/'impressao_traseira_na_mesa';print_folder.mkdir(exist_ok=True)
 rear_down=body.rotate((0,0,0),(1,0,0),-90).translate((59,10,125))

@@ -10,13 +10,14 @@ FOLDER=ROOT/'output/v59'
 NAMES=('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5')
 
 
-def pack():
+def pack(names=NAMES, report_name='sensor_grommet_project_report.json'):
+    """Replace paired or single STL meshes without changing saved object settings."""
     path=ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf'
     with zipfile.ZipFile(path) as z:entries={i.filename:(i,z.read(i)) for i in z.infolist()}
     model=ET.fromstring(entries['3D/3dmodel.model'][1]);config=ET.fromstring(entries['Metadata/model_settings.config'][1])
     resources=model.find('m:resources',NS);build=model.find('m:build',NS)
     updates={};removed=set();records=[]
-    for name in NAMES:
+    for name in names:
         saved=next(o for o in config.findall('object') if values(o).get('name')==name)
         oid=saved.get('id');wrapper=next(o for o in resources if o.get('id')==oid)
         component=wrapper.find('m:components/m:component',NS)
@@ -53,7 +54,7 @@ def pack():
     assert all(ET.tostring(a)==ET.tostring(b) for a,b in zip(old.findall('object'),config.findall('object')))
     tmp.replace(path);shutil.copy2(path,FOLDER/'incubadora_v59_CrealityPrint_7.2.1.3mf')
     report=dict(configuracoes_salvas_preservadas=True,pecas=records)
-    (FOLDER/'sensor_grommet_project_report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
+    (FOLDER/report_name).write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps(report,indent=2,ensure_ascii=False))
 
 if __name__=='__main__':pack()

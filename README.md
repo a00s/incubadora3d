@@ -259,3 +259,24 @@ A entrada é chanfrada e o apoio do sensor mantém a posição original.
 O diâmetro livre dos lábios internos é 15,4 mm, com amostras de 15,3 e 15,5 mm
 para conferir a resposta do TPU usado. Bucha na bandeja 15; amostras nas
 bandejas 23 e 24. Encaixe e vedação precisam ser confirmados na peça impressa.
+
+### Passagens labiais dos fios, divididas ao meio
+
+[TPU do aquecedor — STL](output/v59/TPU_passagem_aquecedor.stl) ·
+[STEP](output/v59/TPU_passagem_aquecedor.step) ·
+[TPU do sensor lateral — STL](output/v59/TPU_passagem_sensor.stl) ·
+[STEP](output/v59/TPU_passagem_sensor.step).
+Cada arquivo contém duas metades separadas por 4 mm, com a borda externa plana
+na mesa. A divisão passa pelo eixo de todos os fios: acomodar os fios nas
+canaletas abertas, juntar as metades e inserir a rolha pelo lado externo.
+Aquecedor: dois fios Ø1,42 mm. Sensor lateral de umidade/temperatura: três fios
+Ø1,40 mm. Dois lábios de 0,4 mm por fio fazem o contato; o canal no corpo é
+Ø2,6 mm para evitar aperto ao longo de toda a espessura.
+
+Os furos existentes Ø12 mm e a parede de 14 mm são preservados. O corpo da
+rolha é Ø11,6 mm, com dois lábios externos Ø12,3 mm. A extremidade interna
+fica recuada 0,3 mm, sem flange ou prolongamento para dentro; a flange externa
+mede Ø16 × 1,5 mm. No conjunto STEP e no visualizador, aparecem montadas na
+parede. No 3MF, cada par substitui a rolha anterior na mesma bandeja e conserva
+as configurações salvas: aquecedor na bandeja 11 e sensor na 12.
+Conferir compressão e vedação na impressão real.

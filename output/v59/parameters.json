@@ -252,10 +252,10 @@
   "body_insulation_rear_transverse_partitions": 0,
   "front_corner_cap_depth": 3,
   "closed_corner_channels": 4,
-  "sensor_wire_diameter": 1.36,
+  "sensor_wire_diameter": 1.4,
   "sensor_seal_channel_diameter": 1.3,
-  "heater_wire_diameter": 1.68,
-  "heater_seal_channel_diameter": 1.6,
+  "heater_wire_diameter": 1.42,
+  "heater_seal_channel_diameter": 1.32,
   "pcb_length": 43.12,
   "pcb_width": 25.16,
   "electronics_internal_width": 41,
@@ -558,5 +558,7 @@
     90,
     110
   ],
-  "rear_plane_y": 125
+  "rear_plane_y": 125,
+  "wire_plug_inner_recess_mm": 0.3,
+  "wire_plug_split_plane": "through all wire axes"
 }

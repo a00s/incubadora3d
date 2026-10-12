@@ -1,0 +1,40 @@
+{
+  "sensor": {
+    "fios": 3,
+    "diametro_fios_mm": 1.4,
+    "furo_existente_mm": 12,
+    "parede_existente_mm": 14,
+    "recuo_interno_mm": 0.3,
+    "profundidade_inserida_mm": 13.7,
+    "flange_externa_mm": 1.5,
+    "diametro_flange_mm": 16,
+    "diametro_corpo_mm": 11.6,
+    "diametro_labios_externos_mm": 12.3,
+    "diametro_livre_labios_fios_mm": 1.2999999999999998,
+    "espessura_labios_fios_mm": 0.4,
+    "labios_por_fio": 2,
+    "metades": 2,
+    "distancia_metades_impressao_mm": 4,
+    "interferencia_fios_apenas_labios": true,
+    "encaixe_e_vedacao_fisicos_pendentes": true
+  },
+  "aquecedor": {
+    "fios": 2,
+    "diametro_fios_mm": 1.42,
+    "furo_existente_mm": 12,
+    "parede_existente_mm": 14,
+    "recuo_interno_mm": 0.3,
+    "profundidade_inserida_mm": 13.7,
+    "flange_externa_mm": 1.5,
+    "diametro_flange_mm": 16,
+    "diametro_corpo_mm": 11.6,
+    "diametro_labios_externos_mm": 12.3,
+    "diametro_livre_labios_fios_mm": 1.3199999999999998,
+    "espessura_labios_fios_mm": 0.4,
+    "labios_por_fio": 2,
+    "metades": 2,
+    "distancia_metades_impressao_mm": 4,
+    "interferencia_fios_apenas_labios": true,
+    "encaixe_e_vedacao_fisicos_pendentes": true
+  }
+}

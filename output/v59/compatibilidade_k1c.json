@@ -13,17 +13,17 @@
       "peca": "TPU_passagem_aquecedor.stl",
       "dimensoes_mm": [
         20.0,
-        17.5,
-        19.99
+        16.0,
+        15.2
       ],
       "cabe_com_margem_5mm": true
     },
     {
       "peca": "TPU_passagem_sensor.stl",
       "dimensoes_mm": [
-        17.5,
+        20.0,
         16.0,
-        16.0
+        15.2
       ],
       "cabe_com_margem_5mm": true
     },

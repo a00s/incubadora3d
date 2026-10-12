@@ -16,7 +16,7 @@ with zipfile.ZipFile(path) as z:
     items={o.get('objectid'):o for o in model.find('m:build',NS)}
     labels={o.get('id'):values(o)['name'] for o in config.findall('object')}
     assert len(items)==len(labels)==39
-    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'))
+    assert all(n in labels.values() for n in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor'))
     seen=set()
     plate_by_name={}
     for plate in config.findall('plate'):
@@ -35,7 +35,7 @@ with zipfile.ZipFile(path) as z:
             faces=[tuple(int(t.get(f'v{i}')) for i in (1,2,3)) for t in mesh.find('m:triangles',NS)]
             assert all(len(set(f))==3 and min(f)>=0 and max(f)<len(vertices) for f in faces)
             edge=Counter(tuple(sorted((a,b))) for f in faces for a,b in zip(f,f[1:]+f[:1]))
-            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'):
+            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor'):
                 assert all(n==2 for n in edge.values()),labels[oid]
             transform=[float(v) for v in items[oid].get('transform').split()]
             world=[tuple(sum(v[j]*transform[j*3+a] for j in range(3))+transform[9+a] for a in range(3)) for v in vertices]
@@ -43,10 +43,26 @@ with zipfile.ZipFile(path) as z:
                 expected,_,size=load_mesh(ROOT/'output/v59/suporte_gavetas_removivel.stl',lambda p:(p[0],-p[2],p[1]))
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
-            if labels[oid] in ('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5'):
+            if labels[oid] in ('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor'):
                 expected,_,_=load_mesh(ROOT/'output/v59'/f'{labels[oid]}.stl')
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
+            if labels[oid] in ('TPU_passagem_aquecedor','TPU_passagem_sensor'):
+                adjacency={i:set() for i in range(len(vertices))}
+                for a,b in edge:
+                    adjacency[a].add(b);adjacency[b].add(a)
+                remaining=set(adjacency);groups=[]
+                while remaining:
+                    group=set();pending=[next(iter(remaining))]
+                    while pending:
+                        i=pending.pop()
+                        if i in group:continue
+                        group.add(i);pending.extend(adjacency[i]-group)
+                    remaining-=group;groups.append(group)
+                assert len(groups)==2,labels[oid]
+                groups.sort(key=lambda g:min(vertices[i][0] for i in g))
+                gap=min(vertices[i][0] for i in groups[1])-max(vertices[i][0] for i in groups[0])
+                assert abs(gap-4)<1e-4,labels[oid]
             if labels[oid]=='porta_articulada':
                 expected,_,_=load_mesh(ROOT/'output/v59/porta_articulada.stl',lambda p:(p[0],-p[2],p[1]))
                 assert len(expected)==len(vertices)
@@ -67,6 +83,6 @@ with zipfile.ZipFile(path) as z:
     assert len(config.findall('plate'))==36
 report=dict(arquivo=path.name,bandejas=36,pecas=39,zip_xml_validos=True,malhas_ferramental_fechadas=True,
             limites_k1c_com_margem_5mm=True,espaco_minimo_entre_pecas_mm=5,
-            contraformas_nas_bandejas=[plate_by_name[n] for n in ('contraforma_inox_inferior','contraforma_inox_superior')],molde_na_bandeja=plate_by_name['molde_caixa_inox_referencia'],suporte_na_bandeja=plate_by_name['suporte_gavetas_removivel'],fundo_na_bandeja=plate_by_name['fundo_interno_inox_5mm'],porta_malha_fechada=True,porta_face_externa_para_baixo=True,porta_crescimento_eixo_y=True,suporte_H_frontal_na_mesa=True)
+            contraformas_nas_bandejas=[plate_by_name[n] for n in ('contraforma_inox_inferior','contraforma_inox_superior')],molde_na_bandeja=plate_by_name['molde_caixa_inox_referencia'],suporte_na_bandeja=plate_by_name['suporte_gavetas_removivel'],fundo_na_bandeja=plate_by_name['fundo_interno_inox_5mm'],porta_malha_fechada=True,porta_face_externa_para_baixo=True,porta_crescimento_eixo_y=True,suporte_H_frontal_na_mesa=True,rolhas_bipartidas_bandejas=[plate_by_name[n] for n in ('TPU_passagem_aquecedor','TPU_passagem_sensor')],rolhas_duas_metades_fechadas_por_par=True,rolhas_separacao_metades_mm=4)
 (ROOT/'output/v59/ferramental_inox/projeto_completo_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
 print(json.dumps(report,indent=2,ensure_ascii=False))

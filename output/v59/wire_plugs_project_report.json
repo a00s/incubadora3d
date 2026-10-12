@@ -1,0 +1,23 @@
+{
+  "configuracoes_salvas_preservadas": true,
+  "pecas": [
+    {
+      "peca": "TPU_passagem_aquecedor",
+      "bandeja": 11,
+      "dimensoes_impressao_mm": [
+        19.995027542114258,
+        16.0,
+        15.199999809265138
+      ]
+    },
+    {
+      "peca": "TPU_passagem_sensor",
+      "bandeja": 12,
+      "dimensoes_impressao_mm": [
+        19.995027542114258,
+        16.0,
+        15.199999809265138
+      ]
+    }
+  ]
+}
