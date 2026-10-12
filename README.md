@@ -256,7 +256,7 @@ conferir preenchimento de 100% para este suporte.
 corpo Ø19,8 mm para o furo existente Ø20,4 mm. Dois lábios internos finos
 seguram o sensor Ø15,62 mm; dois externos acomodam o encaixe no teto.
 A entrada é chanfrada e o apoio do sensor mantém a posição original.
-O diâmetro livre dos lábios internos é 15,4 mm, com amostras de 15,3 e 15,5 mm
+O diâmetro livre dos lábios internos é 15,2 mm, com amostras de 15,3 e 15,5 mm
 para conferir a resposta do TPU usado. Bucha na bandeja 15; amostras nas
 bandejas 23 e 24. Encaixe e vedação precisam ser confirmados na peça impressa.
 
@@ -280,3 +280,15 @@ mede Ø16 × 1,5 mm. No conjunto STEP e no visualizador, aparecem montadas na
 parede. No 3MF, cada par substitui a rolha anterior na mesma bandeja e conserva
 as configurações salvas: aquecedor na bandeja 11 e sensor na 12.
 Conferir compressão e vedação na impressão real.
+
+### Revisão da bucha redonda para TPU 85A
+
+Após a impressão com pequena folga no sensor, os lábios passaram de Ø15,4 para
+Ø15,2 mm. A união com a flange superior recebeu um reforço interno gradual,
+com parede de até 1,7 mm e sobreposição axial de 1,6 mm. O furo do teto Ø20,4 mm
+e a altura de apoio do sensor foram preservados. Os lábios foram invertidos
+para crescerem a partir do corpo com a flange maior para baixo, eliminando as
+pontas que começavam suspensas nessa orientação. STL e STEP individuais estão
+nessa posição; o conjunto STEP e o visualizador mostram a posição montada.
+Suportes desativados somente para a bucha e suas duas amostras no 3MF. As outras
+configurações salvas foram preservadas. Conferir novamente o encaixe no TPU 85A.

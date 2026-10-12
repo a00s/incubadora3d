@@ -4,21 +4,26 @@ import shutil
 from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
-from pack_forming_tools import CORE, PROD, NS, values, load_mesh
+from pack_forming_tools import CORE, PROD, NS, values, meta, load_mesh
 ROOT=Path(__file__).resolve().parents[1]
 FOLDER=ROOT/'output/v59'
 NAMES=('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5')
 
 
-def pack(names=NAMES, report_name='sensor_grommet_project_report.json'):
+def pack(names=NAMES, report_name='sensor_grommet_project_report.json', object_settings=None):
     """Replace paired or single STL meshes without changing saved object settings."""
     path=ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf'
     with zipfile.ZipFile(path) as z:entries={i.filename:(i,z.read(i)) for i in z.infolist()}
     model=ET.fromstring(entries['3D/3dmodel.model'][1]);config=ET.fromstring(entries['Metadata/model_settings.config'][1])
     resources=model.find('m:resources',NS);build=model.find('m:build',NS)
+    object_settings=object_settings or {}
     updates={};removed=set();records=[]
     for name in names:
         saved=next(o for o in config.findall('object') if values(o).get('name')==name)
+        for key,value in object_settings.items():
+            setting=next((m for m in saved.findall('metadata') if m.get('key')==key),None)
+            if setting is None:meta(saved,key,value)
+            else:setting.set('value',str(value))
         oid=saved.get('id');wrapper=next(o for o in resources if o.get('id')==oid)
         component=wrapper.find('m:components/m:component',NS)
         target=component.get(f'{{{PROD}}}path').lstrip('/')
@@ -51,10 +56,17 @@ def pack(names=NAMES, report_name='sensor_grommet_project_report.json'):
         for n,(_,data) in entries.items():
             if n not in updates and n not in removed:assert z.read(n)==data,n
     old=ET.fromstring(entries['Metadata/model_settings.config'][1])
-    assert all(ET.tostring(a)==ET.tostring(b) for a,b in zip(old.findall('object'),config.findall('object')))
+    for a,b in zip(old.findall('object'),config.findall('object')):
+        if values(a).get('name') in names:
+            for key,value in object_settings.items():
+                setting=next((m for m in a.findall('metadata') if m.get('key')==key),None)
+                if setting is None:meta(a,key,value)
+                else:setting.set('value',str(value))
+        assert ET.tostring(a)==ET.tostring(b)
     tmp.replace(path);shutil.copy2(path,FOLDER/'incubadora_v59_CrealityPrint_7.2.1.3mf')
     report=dict(configuracoes_salvas_preservadas=True,pecas=records)
+    if object_settings:report['ajustes_locais_autorizados']=object_settings
     (FOLDER/report_name).write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps(report,indent=2,ensure_ascii=False))
 
-if __name__=='__main__':pack()
+if __name__=='__main__':pack(object_settings={'enable_support':'0'})

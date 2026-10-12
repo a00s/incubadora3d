@@ -13,7 +13,7 @@ OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=6.2,insulation_extension=10,air_cell_width=6,outer_skin=2)
 P.update(sensor_diameter=15.62, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=6.0, inlet_socket_diameter=6.2, inlet_socket_depth=12, inlet_bore_diameter=3.5)
-P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.4, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
+P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.2, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
 P.update(tray_depth=72,tray_rear_y=80,heater_front_y=106,tray_heater_gap=26)
 parts=[]
 clash_envelopes={}
@@ -826,13 +826,15 @@ add('corte_corpo_referencia',body_section,'#c5d4df','section_body')
 add('corte_porta_referencia',door_section,'#729daf','section_door')
 add('corpo_integrado',body,'#c5d4df','shell')
 # Thin sleeve with flexible inner/outer lips, preserving the printed roof hole.
-from sensor_grommet import build_sensor_grommet
+from sensor_grommet import build_sensor_grommet, sensor_grommet_print
 def sensor_grommet(bore):
     return build_sensor_grommet(bore,(-27,cy,mh))
 P.update(sensor_tpu_wall_mm=.6,sensor_tpu_inner_lip_mm=.55,
          sensor_tpu_outer_lip_mm=.5,sensor_tpu_inner_lip_count=2,
          sensor_tpu_outer_lip_count=2,sensor_tpu_sleeve_od_mm=19.8,
-         sensor_tpu_core_id_mm=18.6,sensor_tpu_fit_test='pending physical insertion and seal test')
+         sensor_tpu_core_id_mm=18.6,sensor_tpu_neck_wall_mm=1.7,
+         sensor_tpu_flange_overlap_mm=1.6,sensor_tpu_material='TPU 85A',
+         sensor_tpu_print_face='outer collar on bed',sensor_tpu_fit_test='pending physical insertion and seal test')
 sensor_seal=sensor_grommet(P['sensor_seal_bore'])
 add('bucha_sensor_TPU',sensor_seal,'#45ae89','sensor_seal')
 assert len(sensor_seal.solids().vals())==1
@@ -1100,7 +1102,8 @@ for name,obj,color,kind in parts:
     mesh.append(dict(name=name,color=color,kind=kind,vertices=vertices,faces=[[remap[i] for i in tri] for tri in f]))
 cq.exporters.export(assembly.toCompound(),str(OUT/'conjunto.step'))
 cq.exporters.export(rack,str(OUT/'suporte_gavetas_removivel.step'))
-cq.exporters.export(sensor_seal,str(OUT/'bucha_sensor_TPU.step'))
+cq.exporters.export(sensor_grommet_print(sensor_seal),str(OUT/'bucha_sensor_TPU.step'))
+cq.exporters.export(sensor_grommet_print(sensor_seal),str(OUT/'bucha_sensor_TPU.stl'))
 cq.exporters.export(power_box,str(OUT/'caixinha_encaixe_aquecedor.step'))
 # The paired STL/STEP files contain the two separated halves, flanges on the bed.
 # conjunto.step and the viewer retain the assembled positions in the wall.
@@ -1205,7 +1208,7 @@ cq.exporters.export(port_coupon,str(OUT/'amostra_passagem_interna_CO2_OD6.stl'))
 sensor_test=box(32,32,6,-43,44,mh+1).cut(sensor_hole)
 cq.exporters.export(sensor_test.translate((43,-44,-mh-1)),str(OUT/'amostra_furo_sensor_integrado.stl'))
 for bore in [15.3,15.5]:
-    obj=sensor_grommet(bore).translate((27,-cy,-mh+0.5))
+    obj=sensor_grommet_print(sensor_grommet(bore))
     cq.exporters.export(obj,str(OUT/f'amostra_bucha_sensor_TPU_{bore:.1f}.stl'))
     cq.exporters.export(obj,str(OUT/f'amostra_bucha_sensor_TPU_{bore:.1f}.step'))
 cq.exporters.export(rjplate.rotate((0,0,0),(0,1,0),-90).translate((P['rj_center_z']+15.5,-95,56)),str(OUT/'amostra_encaixe_RJ45.stl'))

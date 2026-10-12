@@ -23,7 +23,7 @@
   "inlet_bore_diameter": 3.5,
   "sensor_collar_diameter": 18.31,
   "sensor_head_width": 20.55,
-  "sensor_seal_bore": 15.4,
+  "sensor_seal_bore": 15.2,
   "rj_cutout_width": 14.79,
   "rj_cutout_height": 19.31,
   "rj_panel_thickness": 1.6,
@@ -560,5 +560,9 @@
   ],
   "rear_plane_y": 125,
   "wire_plug_inner_recess_mm": 0.3,
-  "wire_plug_split_plane": "through all wire axes"
+  "wire_plug_split_plane": "through all wire axes",
+  "sensor_tpu_neck_wall_mm": 1.7,
+  "sensor_tpu_flange_overlap_mm": 1.6,
+  "sensor_tpu_material": "TPU 85A",
+  "sensor_tpu_print_face": "outer collar on bed"
 }

@@ -178,3 +178,18 @@ e não representam espaço de carga disponível no conjunto montado.
 - Conferir o encaixe do plugue real na peça impressa.
 - Furo medido nas duas faces do STEP: Ø10,68 mm; caixinha válida com um sólido.
   Bandeja 9 preservada; limites K1C e 59 pares rígidos sem colisão conferidos.
+
+## Bucha redonda: ajuste para TPU 85A e união superior reforçada
+
+- Feedback físico: pequena folga no sensor; flange superior se separou ao
+  retirar suportes, mesmo impressa com a flange maior apoiada na mesa.
+- Lábios internos Ø15,4 → Ø15,2 mm. União superior reforçada internamente,
+  parede de até 1,7 mm e sobreposição axial de 1,6 mm, com transição gradual.
+- Inclinação dos lábios internos e externos invertida: nascem apoiados no
+  corpo durante a impressão com a flange na mesa.
+- STL/STEP individuais nessa orientação; 3MF atualizado nas bandejas 15, 23 e
+  24. Suportes desativados somente nesses três objetos; demais ajustes preservados.
+- Furo do teto e posição montada do sensor preservados. Novo ensaio físico pendente.
+- Conferidos 45 cortes CAD a cada 0,2 mm: crescimento radial de até 45°, sem
+  início suspenso dos lábios. Fatiamento geométrico da bandeja 15 no Creality
+  Print 7.2.1: 44 camadas, 9 mm de altura, nenhum suporte no G-code de teste.

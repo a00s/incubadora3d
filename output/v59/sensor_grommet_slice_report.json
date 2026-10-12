@@ -1,0 +1,11 @@
+{
+  "bandeja": 15,
+  "creality_version": "7.2.1.5476",
+  "fatiamento_concluido": true,
+  "suportes_no_gcode": false,
+  "altura_maxima_mm": 9.0,
+  "camadas": 44,
+  "gcode_apenas_temporario": true,
+  "teste_geometrico_com_configuracoes_separadas": true,
+  "ensaio_fisico_pendente": true
+}
