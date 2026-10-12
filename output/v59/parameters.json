@@ -293,7 +293,7 @@
     97.5,
     102
   ],
-  "power_connector_hole_diameter": 8,
+  "power_connector_hole_diameter": 10.68,
   "power_connector_axis": "-X, right when viewed from rear",
   "power_pod_outer_size": [
     70,

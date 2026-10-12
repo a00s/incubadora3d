@@ -1,0 +1,24 @@
+{
+  "peca": "caixinha_encaixe_aquecedor",
+  "diametro_furo_lateral_mm": 10.68,
+  "diametro_medido_step_mm": [
+    10.68,
+    10.68
+  ],
+  "centro_yz_mm": [
+    135.5,
+    116
+  ],
+  "faces_da_parede_x_mm": [
+    25,
+    27.5
+  ],
+  "solido_valido": true,
+  "numero_solidos": 1,
+  "dimensoes_externas_mm": [
+    70,
+    21,
+    60
+  ],
+  "encaixe_real_pendente": true
+}

@@ -556,6 +556,7 @@ assert independent(body).intersect(cover).val().Volume()<1e-5,'Electronics lid i
 # Enlarged dry wiring pod: depth unchanged, pins replaced by two blind M4 mounts.
 POD_WIDTH,POD_HEIGHT,POD_DEPTH=70,60,21
 POD_SCREW_LENGTH=12
+P['power_connector_hole_diameter']=10.68
 pod_x=60-POD_WIDTH/2;pod_z=116-POD_HEIGHT/2
 # Short 4 mm engagement: the tall pod floor limits screw penetration.
 pod_web=POD_SCREW_LENGTH-4
@@ -566,7 +567,7 @@ power_box=box(POD_WIDTH,POD_DEPTH,POD_HEIGHT,pod_x,125,pod_z).edges('|X and >Y')
 pod_cavity=box(POD_WIDTH-5,21,POD_HEIGHT-5,pod_x+2.5,122.5,pod_z+2.5).edges('|X').fillet(1.5)
 power_box=power_box.cut(pod_cavity)
 # Preserve the connector height, depth and side facing right from behind.
-power_hole=cq.Workplane('YZ',origin=(pod_x-1,135.5,116)).circle(4).extrude(6)
+power_hole=cq.Workplane('YZ',origin=(pod_x-1,135.5,116)).circle(P['power_connector_hole_diameter']/2).extrude(6)
 power_box=power_box.cut(power_hole)
 pod_mounts=[(pod_x+7,pod_z+7),(pod_x+POD_WIDTH-7,pod_z+POD_HEIGHT-7)]
 pod_pilots=[];pod_pads=[];pod_screws=[]
@@ -607,7 +608,7 @@ assert independent(warm_wall_before_pod).cut(body).val().Volume()<1e-5,'Blind po
 for name,obj,_,_ in parts:
     if name=='TPU_passagem_aquecedor':
         assert independent(power_box).intersect(obj).val().Volume()<1e-5,'Pod touches heater TPU seal'
-P.update(power_connector_hole_diameter=8,power_connector_axis='-X, right when viewed from rear',
+P.update(power_connector_axis='-X, right when viewed from rear',
          power_pod_outer_size=[POD_WIDTH,POD_HEIGHT,POD_DEPTH],
          power_pod_inner_envelope=[POD_WIDTH-5,POD_HEIGHT-5,18.5],
          power_pod_contact_edge_radius=0,power_pod_exposed_rear_edge_radius=4,
@@ -1100,6 +1101,7 @@ for name,obj,color,kind in parts:
 cq.exporters.export(assembly.toCompound(),str(OUT/'conjunto.step'))
 cq.exporters.export(rack,str(OUT/'suporte_gavetas_removivel.step'))
 cq.exporters.export(sensor_seal,str(OUT/'bucha_sensor_TPU.step'))
+cq.exporters.export(power_box,str(OUT/'caixinha_encaixe_aquecedor.step'))
 # The paired STL/STEP files contain the two separated halves, flanges on the bed.
 # conjunto.step and the viewer retain the assembled positions in the wall.
 for name,halves in wire_plug_halves.items():

@@ -168,3 +168,13 @@ e não representam espaço de carga disponível no conjunto montado.
   em cada par; limites e referências das 36 bandejas conferidos.
 - Auditoria do conjunto: 59 pares rígidos sem colisão. STL do corpo permanece
   idêntico ao anterior; visualizador servido na porta 8081 atualizado.
+
+## Furo lateral do plugue do aquecedor Ø10,68 mm
+
+- Ampliado de Ø8 para Ø10,68 mm o furo lateral da caixinha externa parafusada
+  do aquecedor, mantendo centro, dimensões externas e fixações M4×12.
+- Atualizados STL, STEP individual, conjunto STEP, projeto 3MF completo e
+  cópia versionada, com configurações salvas preservadas.
+- Conferir o encaixe do plugue real na peça impressa.
+- Furo medido nas duas faces do STEP: Ø10,68 mm; caixinha válida com um sólido.
+  Bandeja 9 preservada; limites K1C e 59 pares rígidos sem colisão conferidos.

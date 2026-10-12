@@ -107,7 +107,7 @@ A referência visual mede 76 × 26 × 1. A área central da gaveta permanece vaz
 
 ## Caixinha traseira e passagens
 
-A caixinha de 70 × 60 × 21 acomoda a sobra dos fios e tem conector lateral Ø8.
+A caixinha de 70 × 60 × 21 acomoda a sobra dos fios e tem furo do conector lateral Ø10,68 mm.
 As bordas superior e inferior que tocam a incubadora são retas.
 A fixação usa dois M4 × 12, com aproximadamente 4 mm de engate no corpo.
 Os pilotos são cegos, dentro de apoios maciços Ø16: há 5,6 mm de material atrás

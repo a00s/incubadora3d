@@ -1,0 +1,14 @@
+{
+  "configuracoes_salvas_preservadas": true,
+  "pecas": [
+    {
+      "peca": "caixinha_encaixe_aquecedor",
+      "bandeja": 9,
+      "dimensoes_impressao_mm": [
+        70.0,
+        21.0,
+        60.0
+      ]
+    }
+  ]
+}
