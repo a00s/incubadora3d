@@ -107,3 +107,11 @@ umidade e tempo, verificando porta e cabos separadamente. A ficha eSUN não
 especifica permeabilidade ao CO₂ nem garante estanqueidade da espuma impressa.
 Redução de vazamento, força, recuperação elástica, fluxo e compressão finais
 permanecem pendentes de ensaio físico.
+
+## Arquivos corrigidos: small_perimeter_speed
+
+Se o Creality Print mostrar `DynamicConfig::opt_float()` para
+`small_perimeter_speed`, fechar o projeto antigo e reabrir o 3MF corrigido.
+A sobrescrita individual de 100% foi removida; no arquivo separado, a velocidade
+passa a ser herdada do valor global absoluto de 25 mm/s. A geometria e os demais
+ajustes permanecem iguais. Não salvar o projeto antigo sobre o arquivo corrigido.

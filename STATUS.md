@@ -241,3 +241,13 @@ fatiadas: retração zero, extrusão a 25 mm/s, aviso anterior de regiões suspe
 mantido somente na junta e na amostra. Projetos completos lidos no Creality
 Print 7.2.1, limites e 36 bandejas conferidos. Visualizador: HTTP 200 e controles
 sem erros. 39 STL e 37 objetos do projeto completo permanecem idênticos.
+
+## Correção de small_perimeter_speed na interface do Creality Print
+
+- Removida a sobrescrita escalar `small_perimeter_speed=100%` dos quatro objetos
+  TPU-LW no projeto completo e dos seis objetos do projeto separado.
+- No projeto separado, o valor global passa a `25` mm/s em vetor numérico.
+  O valor global salvo no projeto completo permanece preservado.
+- Geometria, bandejas, filamentos e demais configurações não foram alterados.
+- `cad/check_lw_config.py` impede que essa sobrescrita seja reintroduzida nos arquivos.
+  Leitura nativa e fatiamento das seis bandejas novamente conferidos.

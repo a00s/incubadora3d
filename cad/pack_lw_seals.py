@@ -24,7 +24,7 @@ SETTINGS={k:'25' for k in SPEED_KEYS}
 SETTINGS.update(enable_support='0',layer_height='0.2',initial_layer_print_height='0.2',
                 wall_loops='3',sparse_infill_density='100%',top_shell_layers='4',
                 bottom_shell_layers='4',seam_position='aligned',
-                enable_overhang_speed='0',small_perimeter_speed='100%',
+                enable_overhang_speed='0',
                 internal_bridge_speed='100%',extruder='4',
                 avoid_crossing_wall='1',ironing_type='no ironing')
 
@@ -69,6 +69,10 @@ def patch(names=None):
         plate=next(p for p in config.findall('plate') if any(values(i).get('object_id')==saved.get('id') for i in p.findall('model_instance')))
         jobs=[(saved,wrapper,item,meshobj,plate,None)]
         for record,wrap,bi,mo,pl,half in jobs:
+            # GUI expects the global/vector setting here. A scalar object
+            # override causes DynamicConfig::opt_float() to reject its type.
+            for m in list(record.findall('metadata')):
+                if m.get('key')=='small_perimeter_speed':record.remove(m)
             for key,value in SETTINGS.items():setmeta(record,key,value)
             for part in record.findall('part'):
                 for m in list(part.findall('metadata')):
@@ -177,14 +181,17 @@ def make_print_project(path):
     for node in ordered:newconfig.append(node)
     model.remove(resources);model.remove(build);model.append(newresources);model.append(newbuild)
     for key in SPEED_KEYS:project[key]=['25'] if isinstance(project.get(key),list) else '25'
-    project.update(layer_height='0.2',initial_layer_print_height='0.2',enable_support='0',brim_type='no_brim',skirt_loops='0',wall_loops='3',sparse_infill_density='100%',top_shell_layers='4',bottom_shell_layers='4',small_perimeter_speed=['100%'],internal_bridge_speed=['100%'],enable_overhang_speed=['0'],seam_position='aligned',print_sequence='by layer',avoid_crossing_wall='1',outer_wall_acceleration='500',inner_wall_acceleration='500',default_acceleration='500',initial_layer_acceleration='500')
+    project.update(layer_height='0.2',initial_layer_print_height='0.2',enable_support='0',brim_type='no_brim',skirt_loops='0',wall_loops='3',sparse_infill_density='100%',top_shell_layers='4',bottom_shell_layers='4',small_perimeter_speed=['25'],internal_bridge_speed=['100%'],enable_overhang_speed=['0'],seam_position='aligned',print_sequence='by layer',avoid_crossing_wall='1',outer_wall_acceleration='500',inner_wall_acceleration='500',default_acceleration='500',initial_layer_acceleration='500')
     written={'3D/3dmodel.model':ET.tostring(model,encoding='utf-8',xml_declaration=True),'Metadata/model_settings.config':ET.tostring(newconfig,encoding='utf-8',xml_declaration=True),'Metadata/project_settings.config':json.dumps(project,indent=2,ensure_ascii=False).encode()}
     written.update({n:ET.tostring(o,encoding='utf-8',xml_declaration=True) for n,o in updates.items()})
     # Keep material arrays together exactly as in the validated full project;
     # the TPU-LW slot is moved first for the only physical K1C nozzle.
     for key,value in project.items():
         if isinstance(value,list) and len(value)==4:project[key]=[value[3]]+value[:3]
-    for record in newconfig.findall('object'):setmeta(record,'extruder','1')
+    for record in newconfig.findall('object'):
+        setmeta(record,'extruder','1')
+        for m in list(record.findall('metadata')):
+            if m.get('key')=='small_perimeter_speed':record.remove(m)
     project['enable_prime_tower']='0'
     project['ironing_type']='no ironing'
     project['printable_area']=['0x0','220x0','220x220','0x220']

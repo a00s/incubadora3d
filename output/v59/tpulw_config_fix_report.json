@@ -1,0 +1,26 @@
+[
+  {
+    "arquivo": "output/incubadora_CrealityPrint_7.2.1.3mf",
+    "override_removido": [
+      "TPU_passagem_aquecedor",
+      "TPU_passagem_sensor",
+      "junta_V_porta_TPU",
+      "amostra_V_porta_TPU"
+    ],
+    "velocidade_global_mm_s": "configuracao salva preservada",
+    "malhas_e_demais_entradas_zip_preservadas": true
+  },
+  {
+    "arquivo": "output/v59/vedacoes_eSUN_TPU_LW.3mf",
+    "override_removido": [
+      "amostra_V_porta_TPU",
+      "junta_V_porta_TPU",
+      "TPU_passagem_aquecedor_metade_A",
+      "TPU_passagem_aquecedor_metade_B",
+      "TPU_passagem_sensor_metade_A",
+      "TPU_passagem_sensor_metade_B"
+    ],
+    "velocidade_global_mm_s": 25,
+    "malhas_e_demais_entradas_zip_preservadas": true
+  }
+]
