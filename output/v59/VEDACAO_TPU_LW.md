@@ -8,15 +8,23 @@ Porta, corpo, dobradiças, fecho, gavetas e bucha redonda do sensor são preserv
 ## Junta da porta
 
 Mantém a retenção no canal em V existente da porta, com pé de entrada gradual. Uma ligação recuada sustenta um
-bulbo contínuo com cavidade interna fechada para ceder à pressão. A vedação
+tubo oco alongado, com cavidade interna mais alta e paredes finas para
+dobrar sob pressão. A vedação
 encosta na face frontal remanescente e robusta do corpo em Y=0, entre o canal
 da junta da caixa e a abertura. Não usa a pequena borda fina quebrada como
 apoio ou batente; também não precisa extrair a junta da caixa.
 
 O bulbo tem menor projeção no lado das dobradiças (X120): ponta livre em
-Y=0,25 mm, contra Y=0,65 mm no lado do fecho. Assim, a interferência nominal
-contra o plano frontal é 0,25–0,65 mm, com variação contínua entre as laterais.
-São valores geométricos iniciais, não uma previsão de força de fechamento.
+Y=1,8 mm, contra Y=3,0 mm no lado do fecho. Assim, a interferência nominal
+contra o plano frontal é 1,8–3,0 mm, com variação contínua entre as laterais.
+A altura total nominal, medida desde a base traseira, passa a **7,25 mm no
+fecho e 6,05 mm na dobradiça**, contra cerca de 4,90 / 4,50 mm anteriormente.
+A cavidade axial passa de aproximadamente 3,15 para 5,60 mm no fecho, com
+paredes laterais nominais de 0,55 mm no trecho paralelo. A redução no lado da
+dobradiça é contínua, sem degrau. A cavidade alta permite dobramento das paredes;
+a espuma e o vazio trabalham juntos. Não é uma previsão de força ou deformação.
+Como a caixa mantém a mesma posição de fechamento, a junta mais alta precisará
+ceder mais; testar a amostra e fechar sem forçar o PC.
 A peça precisa ser montada com a lateral menor junto às dobradiças.
 
 Imprimir deitada, com a ligação traseira plana na mesa e o bulbo para cima
@@ -46,7 +54,7 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 | 5 / 6 | Sensor lateral, metades A / B |
 
 O fatiador emite aviso de possíveis regiões suspensas na junta e na amostra.
-Os 24 cortes CAD da seção reta passam no limite de crescimento de 45°; o G-code
+Os cortes CAD da seção reta passam na conferência de crescimento das camadas; o G-code
 não contém suportes. O aviso permanece registrado: imprimir primeiro a amostra
 e conferir a união do pé e o fechamento da cavidade antes do anel completo.
 As rolhas não apresentam esse aviso.

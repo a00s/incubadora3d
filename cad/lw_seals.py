@@ -8,8 +8,14 @@ import math
 import cadquery as cq
 
 # (Y, outer inset, inner inset); inset grows toward the chamber centre.
-BULB=[(-3.85,.15,1.0),(-3.0,.15,1.35),(-1.0,.7,2.0),(0,1.2,2.5),(.65,1.85,2.2)]
-VOID=[(-3.3,.65,.85),(-2.5,.75,1.25),(-.8,1.2,1.6),(-.15,1.6,1.8)]
+BULB=[(-4.05,.2,1.05),(-3.0,.15,1.35),(-1.0,.6,2.0),
+      (0,.8,2.65),(1.8,.8,2.65),(3.0,1.5,1.95)]
+VOID=[(-3.3,.65,.85),(-2.5,.75,1.25),(-1.0,1.15,1.45),
+      (0,1.35,2.1),(1.7,1.35,2.1),(2.3,1.65,1.8)]
+LATCH_PROJECTION=3.0
+HINGE_PROJECTION=1.8
+HINGE_REDUCTION=LATCH_PROJECTION-HINGE_PROJECTION
+
 
 
 def build_door_seal(inset_ring,inset_loft,boss_inset,foot):
@@ -23,7 +29,7 @@ def build_door_seal(inset_ring,inset_loft,boss_inset,foot):
     def ring(stations):
         def wire(inset,y):
             wire=inset_loft([(y,inset),(y+.01,inset)]).faces('<Y').val().outerWire()
-            reduction=.4*max(0,y+3.85)/4.5
+            reduction=HINGE_REDUCTION*max(0,y+4.05)/(LATCH_PROJECTION+4.05)
             return wire.rotate((0,y,0),(0,y,1),-math.degrees(math.atan(reduction/120)))
         outer=cq.Solid.makeLoft([wire(a,y) for y,a,b in stations],ruled=True)
         inner=cq.Solid.makeLoft([wire(b,y) for y,a,b in stations],ruled=True)

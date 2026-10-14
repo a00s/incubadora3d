@@ -35,7 +35,7 @@ def setmeta(node,key,value):
     else:item.set('value',str(value))
 
 
-def patch():
+def patch(names=None):
     path=ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf'
     with zipfile.ZipFile(path) as z:entries={i.filename:(i,z.read(i)) for i in z.infolist()}
     model=ET.fromstring(entries['3D/3dmodel.model'][1])
@@ -57,7 +57,7 @@ def patch():
     for key,value in previous.items():
         assert project[key][:3]==value[:3] if isinstance(value,list) and len(value)==material_count else project[key]==value,key
     updates={};removed=set();records=[]
-    names=['junta_V_porta_TPU','amostra_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor']
+    names=names or ['junta_V_porta_TPU','amostra_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor']
     for name in names:
         saved=next(o for o in config.findall('object') if values(o).get('name')==name)
         wrapper=next(o for o in resources if o.get('id')==saved.get('id'))
@@ -205,4 +205,6 @@ def make_print_project(path):
         for name,data in written.items():z.writestr(name,data)
     (OUT/'tpulw_print_plates.json').write_text(json.dumps(jobs,indent=2,ensure_ascii=False)+'\n')
 
-if __name__=='__main__':patch()
+if __name__=='__main__':
+    import sys
+    patch(('junta_V_porta_TPU','amostra_V_porta_TPU') if '--door-only' in sys.argv else None)

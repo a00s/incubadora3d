@@ -221,3 +221,23 @@ retrações nem suportes no G-code de teste. Aviso de possíveis regiões suspen
 permanece na junta e na amostra: testar a amostra antes do anel inteiro.
 Rolhas sem avisos. Projeto completo: 39 peças/36 bandejas, malhas e limites
 K1C conferidos. Visualizador atualizado, HTTP 200 e controles verificados.
+
+## Junta da porta com tubo oco mais alto
+
+- Somente a junta removível da porta e sua amostra são modificadas nesta revisão.
+  Junta da caixa, peças rígidas, rolhas dos cabos e perfis de impressão preservados.
+- Altura total nominal: 7,25 mm no fecho e 6,05 mm na dobradiça (X120).
+  Projeção contra a face Y=0: 3,0 / 1,8 mm, com redução contínua de 1,2 mm.
+- Cavidade axial de 5,60 mm no fecho; trecho paralelo com paredes nominais
+  de 0,55 mm. Mais espaço interno para o tubo dobrar durante a compressão.
+- Retenção, ligação recuada e orientação de impressão anteriores preservadas.
+- Calibrar o material e testar a amostra antes do anel inteiro. Força de
+  fechamento, recuperação elástica e estanqueidade pendem de ensaio físico.
+
+Validação do tubo alto: STL fechado e STEP válido após reimportação; 36 cortes
+CAD da amostra a 0,2 mm passaram no crescimento máximo de 45°. Menor projeção
+na dobradiça conferida; sem interseção com o receptor fino. Seis bandejas
+fatiadas: retração zero, extrusão a 25 mm/s, aviso anterior de regiões suspensas
+mantido somente na junta e na amostra. Projetos completos lidos no Creality
+Print 7.2.1, limites e 36 bandejas conferidos. Visualizador: HTTP 200 e controles
+sem erros. 39 STL e 37 objetos do projeto completo permanecem idênticos.

@@ -566,10 +566,10 @@
   "sensor_tpu_material": "TPU 85A",
   "sensor_tpu_print_face": "outer collar on bed",
   "door_seal_material": "eSUN TPU-LW",
-  "door_seal_profile": "hollow bellows with retained V foot",
+  "door_seal_profile": "tall hollow tube with retained V foot",
   "door_seal_contact": "intact body front land; existing body gasket untouched",
-  "door_seal_latch_projection_mm": 0.65,
-  "door_seal_hinge_projection_mm": 0.25,
+  "door_seal_latch_projection_mm": 3.0,
+  "door_seal_hinge_projection_mm": 1.8,
   "door_seal_broken_receiver_required": false,
   "door_seal_leak_test": "pending physical test"
 }

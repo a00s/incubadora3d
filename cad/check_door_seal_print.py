@@ -6,6 +6,7 @@ check growth along the printed section; they do not simulate deformation.
 import json
 import math
 from pathlib import Path
+from lw_seals import LATCH_PROJECTION,HINGE_PROJECTION
 import cadquery as cq
 
 OUT=Path(__file__).resolve().parents[1]/'output/v59'
@@ -34,10 +35,17 @@ def loft(stations):
 receiver=loft([(y,i-1) for y,i in profile['receiver']]).cut(loft(profile['receiver']),clean=False)
 assert seal.intersect(receiver).val().Volume()<1e-5
 assert seal.intersect(box(150,1,170,-10,0,-10)).val().Volume()>0
+latch=seal.intersect(box(8,12,35,0,-5,50)).val().BoundingBox()
+hinge=seal.intersect(box(8,12,35,112,-5,50)).val().BoundingBox()
+assert abs(latch.ymax-LATCH_PROJECTION)<.05
+assert abs(hinge.ymax-HINGE_PROJECTION)<.05
+assert latch.ymax-hinge.ymax>1.1
 report=dict(junta_da_caixa_preservada=True,solido_step_valido=True,pecas_junta_porta=1,
             intersecao_receptor_fino_mm3=0,contato_face_frontal_y0=True,
             amostra_cortes=checks,camada_mm=step,crescimento_secao_maximo_graus=45,
-            projecao_nominal_fecho_mm=.65,projecao_nominal_dobradica_mm=.25,
+            projecao_nominal_fecho_mm=LATCH_PROJECTION,projecao_nominal_dobradica_mm=HINGE_PROJECTION,
+            altura_nominal_total_fecho_mm=LATCH_PROJECTION+4.25,
+            altura_nominal_total_dobradica_mm=HINGE_PROJECTION+4.25,
             limite='Secao reta CAD, nao simula deformacao, forca ou estanqueidade')
 (OUT/'tpulw_door_seal_report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
 print(json.dumps(report,indent=2,ensure_ascii=False))

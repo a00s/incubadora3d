@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="480" height="440" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
 <title>Vedação removível da porta · eSUN TPU-LW</title>
-<defs><mask id="door-lw-void"><rect width="480" height="440" fill="white"/><polygon points="112.8,134.5 116.2,162.5 132.0,222.0 146.0,244.8 153.0,244.8 146.0,222.0 133.8,162.5 119.8,134.5" fill="black"/></mask></defs>
-<polygon points="141.6,120.5 195.0,250.0 195.0,257.0 230.0,257.0 230.0,250.0 176.6,120.5" fill="#c5d4df" opacity=".25"/>
-<polygon points="188.0,117.0 202.0,145.0 203.8,148.5 218.8,148.5 222.7,145.0 195.0,117.0" fill="#45ae89"/>
-<polygon points="95.2,101.2 95.2,117.0 195.0,117.0 187.1,101.2" fill="#45ae89"/>
-<polygon points="167.9,101.2 181.9,129.2 201.1,129.2 187.1,101.2" fill="#45ae89"/>
-<polygon points="95.2,115.2 95.2,145.0 114.5,215.0 132.0,250.0 154.8,272.8 167.0,272.8 177.5,250.0 160.0,215.0 137.2,145.0 125.0,115.2" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
+<defs><mask id="door-lw-void"><rect width="480" height="440" fill="white"/><polygon points="169.6,99.7 174.4,120.5 193.6,159.5 203.2,185.5 203.2,229.7 217.6,245.3 224.8,245.3 239.2,229.7 239.2,185.5 208.0,159.5 198.4,120.5 179.2,99.7" fill="black"/></mask></defs>
+<polygon points="209.1,89.3 282.4,185.5 282.4,190.7 330.4,190.7 330.4,185.5 257.1,89.3" fill="#c5d4df" opacity=".25"/>
+<polygon points="272.8,86.7 292.0,107.5 294.4,110.1 315.0,110.1 320.3,107.5 282.4,86.7" fill="#45ae89"/>
+<polygon points="145.6,75.0 145.6,86.7 282.4,86.7 271.6,75.0" fill="#45ae89"/>
+<polygon points="245.2,75.0 264.4,95.8 290.8,95.8 271.6,75.0" fill="#45ae89"/>
+<polygon points="148.0,80.2 145.6,107.5 167.2,159.5 176.8,185.5 176.8,232.3 210.4,263.5 232.0,263.5 265.6,232.3 265.6,185.5 234.4,159.5 203.2,107.5 188.8,80.2" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
 <g fill="currentColor" font-size="16" text-anchor="middle" font-family="sans-serif">
 <text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>
-<text x="240" y="310">Cavidade fechada para compressão</text>
+<text x="240" y="310">Tubo oco alongado · maior curso de compressão</text>
 <text x="240" y="345">Contato na face robusta do corpo, em Y=0</text>
-<text x="240" y="380">Projeção livre: fecho 0,65 · dobradiça 0,25 mm</text>
+<text x="240" y="380">Altura total: fecho 7,25 · dobradiça 6,05 mm</text>
 <text x="240" y="415">Retenção original · não depende da borda quebrada</text></g></svg>

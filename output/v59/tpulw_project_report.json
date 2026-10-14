@@ -5,9 +5,9 @@
       "stl": "junta_V_porta_TPU.stl",
       "bandeja": 16,
       "dimensoes_mm": [
-        119.69999849796295,
+        119.69999864697456,
         139.70000609755516,
-        4.893833339214325
+        7.235000848770142
       ]
     },
     {
@@ -17,27 +17,7 @@
       "dimensoes_mm": [
         3.640000104904175,
         35.0,
-        4.893833160400391
-      ]
-    },
-    {
-      "peca": "TPU_passagem_aquecedor",
-      "stl": "TPU_passagem_aquecedor.stl",
-      "bandeja": 11,
-      "dimensoes_mm": [
-        19.995027542114258,
-        16.0,
-        15.199999809265138
-      ]
-    },
-    {
-      "peca": "TPU_passagem_sensor",
-      "stl": "TPU_passagem_sensor.stl",
-      "bandeja": 12,
-      "dimensoes_mm": [
-        19.995027542114258,
-        16.0,
-        15.199999809265138
+        7.2350006103515625
       ]
     }
   ],

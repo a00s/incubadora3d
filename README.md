@@ -45,7 +45,7 @@ conferidos na fabricação. Os furos de referência do inox alinham as passagens
 ## Vedações eSUN TPU-LW
 
 Para imprimir somente as novas vedações, abrir [vedacoes_eSUN_TPU_LW.3mf](output/v59/vedacoes_eSUN_TPU_LW.3mf).
-Seis bandejas: amostra, junta removível da porta oca com lateral menor junto às
+Seis bandejas: amostra, junta removível da porta em tubo oco mais alto (7,25 / 6,05 mm), menor junto às
 dobradiças, e quatro metades das rolhas, uma peça por impressão.
 **Manter a junta da caixa instalada, sem removê-la ou forçar o PC.**
 Consultar o [guia de montagem e calibração](output/v59/VEDACAO_TPU_LW.md):
