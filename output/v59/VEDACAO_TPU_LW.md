@@ -53,11 +53,12 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 | 3 / 4 | Aquecedor, metades A / B |
 | 5 / 6 | Sensor lateral, metades A / B |
 
-O fatiador emite aviso de possíveis regiões suspensas na junta e na amostra.
-Os cortes CAD da seção reta passam na conferência de crescimento das camadas; o G-code
-não contém suportes. O aviso permanece registrado: imprimir primeiro a amostra
-e conferir a união do pé e o fechamento da cavidade antes do anel completo.
-As rolhas não apresentam esse aviso.
+O perfil foi revisado para manter material contínuo entre a base, o pé e o
+tubo: o apoio do pé foi prolongado e a parede interna próxima à raiz foi
+reforçada. O trecho flexível alto e as alturas de 7,25 / 6,05 mm permanecem.
+O fatiamento das seis bandejas passa sem avisos de regiões suspensas e sem
+suportes, com a detecção do fatiador ativa. Imprimir primeiro a amostra para
+conferir encaixe, compressão e calibração do material.
 
 Cada bandeja contém uma peça. Os STL/STEP `*_metade_A` e `*_metade_B` já têm
 a flange na mesa. No projeto completo, as peças atualizadas ficam nas bandejas

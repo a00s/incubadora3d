@@ -10,7 +10,8 @@
       ],
       "retracoes": 0,
       "suportes": false,
-      "aviso_fatiador": "It seems object amostra_V_porta_TPU has floating regions. Please re-orient the object or enable support generation.",
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     },
     {
@@ -21,7 +22,8 @@
       ],
       "retracoes": 0,
       "suportes": false,
-      "aviso_fatiador": "It seems object junta_V_porta_TPU has floating regions. Please re-orient the object or enable support generation.",
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     },
     {
@@ -32,6 +34,7 @@
       ],
       "retracoes": 0,
       "suportes": false,
+      "detector_suportes_ativo": true,
       "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     },
@@ -43,6 +46,7 @@
       ],
       "retracoes": 0,
       "suportes": false,
+      "detector_suportes_ativo": true,
       "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     },
@@ -54,6 +58,7 @@
       ],
       "retracoes": 0,
       "suportes": false,
+      "detector_suportes_ativo": true,
       "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     },
@@ -65,6 +70,7 @@
       ],
       "retracoes": 0,
       "suportes": false,
+      "detector_suportes_ativo": true,
       "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
     }

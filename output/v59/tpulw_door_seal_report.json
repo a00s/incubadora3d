@@ -6,6 +6,7 @@
   "contato_face_frontal_y0": true,
   "amostra_cortes": 36,
   "camada_mm": 0.2,
+  "paredes_sem_reinicio_flutuante_largura_0p42": true,
   "crescimento_secao_maximo_graus": 45,
   "projecao_nominal_fecho_mm": 3.0,
   "projecao_nominal_dobradica_mm": 1.8,

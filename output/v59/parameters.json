@@ -571,5 +571,6 @@
   "door_seal_latch_projection_mm": 3.0,
   "door_seal_hinge_projection_mm": 1.8,
   "door_seal_broken_receiver_required": false,
-  "door_seal_leak_test": "pending physical test"
+  "door_seal_leak_test": "pending physical test",
+  "door_seal_print_stem_top_y": -3.0
 }

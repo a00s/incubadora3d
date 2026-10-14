@@ -91,6 +91,7 @@ if 'lw_bulb' in v_profile:
     foot=v_points([(y,boss_at(y)-.25) for y,depth in v_profile['foot']]+
                   [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['foot'])])
     receiver=v_points([(y,inset-1) for y,inset in v_profile['receiver']]+list(reversed(v_profile['receiver'])))
+    stem_top=v_profile.get('lw_stem_top',-3.45)
     def contour(stations):
         return v_points([(y,a) for y,a,b in stations]+[(y,b) for y,a,b in reversed(stations)])
     v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="480" height="440" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
@@ -99,7 +100,7 @@ if 'lw_bulb' in v_profile:
 <polygon points="{receiver}" fill="#c5d4df" opacity=".25"/>
 <polygon points="{foot}" fill="#45ae89"/>
 <polygon points="{v_points([(-4.25,.15),(-3.8,.15),(-3.8,boss_at(-3.8)-.05),(-4.25,boss_at(-4.25)-.05)])}" fill="#45ae89"/>
-<polygon points="{v_points([(y,boss_at(y)-.6) for y in (-4.25,-3.45)]+[(y,boss_at(y)-.05) for y in (-3.45,-4.25)])}" fill="#45ae89"/>
+<polygon points="{v_points([(y,boss_at(y)-.6) for y in (-4.25,stem_top)]+[(y,boss_at(y)-.05) for y in (stem_top,-4.25)])}" fill="#45ae89"/>
 <polygon points="{contour(v_profile['lw_bulb'])}" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
 <g fill="currentColor" font-size="16" text-anchor="middle" font-family="sans-serif">
 <text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>

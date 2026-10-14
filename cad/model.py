@@ -796,12 +796,12 @@ V_FOOT=[(-3.8,-.05),(-3.0,.34),(-2.9,.18)]
 v_channel=inset_ring([(y,boss_inset(y)-.8) for y,depth in V_GROOVE],
                      [(y,boss_inset(y)+depth) for y,depth in V_GROOVE])
 doorpart=doorpart.cut(v_channel,clean=False)
-from lw_seals import build_door_seal, BULB, VOID, LATCH_PROJECTION, HINGE_PROJECTION, HINGE_REDUCTION
+from lw_seals import build_door_seal, BULB, VOID, LATCH_PROJECTION, HINGE_PROJECTION, HINGE_REDUCTION, STEM_TOP
 v_seal=build_door_seal(inset_ring,inset_loft,boss_inset,V_FOOT)
 P.update(door_v_lip_wall=.5,door_seal_material='eSUN TPU-LW',door_seal_profile='tall hollow tube with retained V foot',
          door_seal_contact='intact body front land; existing body gasket untouched',
          door_seal_latch_projection_mm=LATCH_PROJECTION,door_seal_hinge_projection_mm=HINGE_PROJECTION,
-         door_seal_broken_receiver_required=False,door_seal_leak_test='pending physical test')
+         door_seal_broken_receiver_required=False,door_seal_print_stem_top_y=STEM_TOP,door_seal_leak_test='pending physical test')
 assert len(doorpart.solids().vals())==1 and doorpart.val().isValid(),'Tapered monolithic door invalid'
 assert independent(v_seal).intersect(receiver).val().Volume()<1e-5,'Door seal relies on broken receiver'
 assert len(v_seal.solids().vals())==1 and v_seal.val().isValid(),'V gasket disconnected'
@@ -1147,7 +1147,7 @@ for name,obj in [('amostra_canal_rigido',rigid),('amostra_junta_TPU',flex),('amo
     flat=obj.rotate((0,0,0),(1,0,0),-90)
     flat=flat.translate((0,0,-flat.val().BoundingBox().zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
-(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=[],lip_wall=.5,lw_bulb=BULB,lw_void=VOID,hinge_projection_reduction_mm=HINGE_REDUCTION),indent=2))
+(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=[],lip_wall=.5,lw_bulb=BULB,lw_void=VOID,hinge_projection_reduction_mm=HINGE_REDUCTION,lw_stem_top=STEM_TOP),indent=2))
 (OUT/'seal_profile.json').write_text(json.dumps(dict(groove=GROOVE,foot=FOOT,lip_centers=LIP_CENTERS,inner_lip_centers=BODY_INNER_LIP_CENTERS,lip_wall=LIP_WALL,nominal_compression=1.5),indent=2))
 assert independent(body).intersect(seal).val().Volume()<1e-5,'Seal retention foot collides with body'
 pressure_coupon=box(20,3,35,0,-4,0)

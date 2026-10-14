@@ -251,3 +251,21 @@ sem erros. 39 STL e 37 objetos do projeto completo permanecem idênticos.
 - Geometria, bandejas, filamentos e demais configurações não foram alterados.
 - `cad/check_lw_config.py` impede que essa sobrescrita seja reintroduzida nos arquivos.
   Leitura nativa e fatiamento das seis bandejas novamente conferidos.
+
+## Junta sem floating regions
+
+- Apoio do pé prolongado até Y=-3,0; parede interna da cavidade reforçada somente
+  junto à raiz, mantendo uma transição contínua imprimível.
+- Alturas 7,25 / 6,05 mm, tubo flexível alto, encaixe rígido e junta da caixa
+  preservados. Cabos e perfis de impressão permanecem iguais.
+- Detector de suportes ativo: junta inteira e amostra fatiadas sem floating
+  regions, sem outros avisos e sem gerar suportes. Verificação de regressão
+  passa a rejeitar qualquer aviso nas seis bandejas.
+- Amostra ainda necessária para conferir o material real, o encaixe e a vedação.
+
+Validação final desta correção: seis bandejas do arquivo separado e bandejas
+16/21 do projeto completo sem qualquer aviso de regiões suspensas; detecção de
+suportes ativa. G-code do arquivo separado: 25 mm/s, retração zero, sem suportes.
+STEP reimportado válido, STL fechado, 36 cortes CAD e limites K1C conferidos.
+Visualizador atualizado, HTTP 200 e controles sem erros. Configurações de
+filamento/processo e 39 STL das demais peças preservados.

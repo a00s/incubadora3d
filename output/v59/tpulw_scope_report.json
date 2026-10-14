@@ -1,5 +1,5 @@
 {
-  "escopo": "somente altura e cavidade da junta removivel da porta e sua amostra",
+  "escopo": "somente transicao de apoio e parede da raiz da junta removivel da porta e sua amostra",
   "stl_inalterados": [
     "bandeja_1.stl",
     "amostra_dobradica_porta_M4x20.stl",

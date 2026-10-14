@@ -54,8 +54,11 @@ with zipfile.ZipFile(OUT/'vedacoes_eSUN_TPU_LW.3mf') as z:
         assert 'M106 S255' in data
         result=json.loads((path.parent/'result.json').read_text());assert result['return_code']==0
         warning=result['sliced_plates'][0]['warning_message']
-        if warning:assert pid in (1,2) and 'floating regions' in warning,(pid,warning)
-        records.append(dict(bandeja=pid,camadas=layers,velocidades_extrusao_mm_s=sorted(speeds),retracoes=0,suportes=False,aviso_fatiador=warning or None,limites_k1c_com_margem_5mm=True))
+        assert not warning,(pid,warning)
+        log=(folder/f'tpulw-native-{pid}.log').read_text()
+        assert 'set no_check to 0' in log,(pid,'support detection bypassed')
+        assert 'is_support_necessary takes' in log,(pid,'support detection not run')
+        records.append(dict(bandeja=pid,camadas=layers,velocidades_extrusao_mm_s=sorted(speeds),retracoes=0,suportes=False,detector_suportes_ativo=True,aviso_fatiador=warning or None,limites_k1c_com_margem_5mm=True))
 report=dict(creality_version='7.2.1.5476',arquivo='vedacoes_eSUN_TPU_LW.3mf',bandejas=records,gcode_apenas_temporario=True,ensaio_fisico_pendente=True)
 (OUT/'tpulw_slice_report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
 print(json.dumps(report,indent=2,ensure_ascii=False))

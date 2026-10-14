@@ -1,0 +1,20 @@
+{
+  "arquivo": "incubadora_CrealityPrint_7.2.1.3mf",
+  "bandejas": [
+    {
+      "bandeja": 16,
+      "creality_exit": 0,
+      "avisos": [],
+      "detector_suportes_ativo": true
+    },
+    {
+      "bandeja": 21,
+      "creality_exit": 0,
+      "avisos": [],
+      "detector_suportes_ativo": true
+    }
+  ],
+  "perfil_maquina_cli": "K1C 0.4 oficial em arquivo temporario, para normalizar o contorno da mesa; processo dos objetos mantido",
+  "geometria_arquivo_final": true,
+  "gcode_apenas_temporario": true
+}

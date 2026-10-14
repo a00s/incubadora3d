@@ -11,7 +11,7 @@ import cadquery as cq
 
 OUT=Path(__file__).resolve().parents[1]/'output/v59'
 q=cq.importers.importStep(str(OUT/'amostra_V_porta_TPU.step'))
-previous=[];checks=0;step=.2;bb=q.val().BoundingBox()
+previous=[];previous_printable=[];checks=0;step=.2;bb=q.val().BoundingBox()
 for layer in range(math.ceil(bb.zlen/step)):
     z=(layer+.5)*step
     if z>bb.zmax:break
@@ -24,6 +24,13 @@ for layer in range(math.ceil(bb.zlen/step)):
         else:support.append((a,b))
     if layer:
         for a,b in intervals:assert any(a>=lo and b<=hi for lo,hi in support),(layer,z,intervals,previous)
+    # A wall below the extrusion width can disappear from the slicer's support
+    # analysis and then reappear as a floating island when it gets wider.
+    printable=[(a,b) for a,b in intervals if b-a>.42]
+    if layer:
+        for a,b in printable:
+            assert any(b>=lo-.21 and a<=hi+.21 for lo,hi in previous_printable),('floating section',layer,z,(a,b),previous_printable)
+    previous_printable=printable
     previous=intervals;checks+=1
 seal=cq.importers.importStep(str(OUT/'junta_V_porta_TPU.step'))
 assert seal.val().isValid() and len(seal.solids().vals())==1
@@ -42,7 +49,7 @@ assert abs(hinge.ymax-HINGE_PROJECTION)<.05
 assert latch.ymax-hinge.ymax>1.1
 report=dict(junta_da_caixa_preservada=True,solido_step_valido=True,pecas_junta_porta=1,
             intersecao_receptor_fino_mm3=0,contato_face_frontal_y0=True,
-            amostra_cortes=checks,camada_mm=step,crescimento_secao_maximo_graus=45,
+            amostra_cortes=checks,camada_mm=step,paredes_sem_reinicio_flutuante_largura_0p42=True,crescimento_secao_maximo_graus=45,
             projecao_nominal_fecho_mm=LATCH_PROJECTION,projecao_nominal_dobradica_mm=HINGE_PROJECTION,
             altura_nominal_total_fecho_mm=LATCH_PROJECTION+4.25,
             altura_nominal_total_dobradica_mm=HINGE_PROJECTION+4.25,
