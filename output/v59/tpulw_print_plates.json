@@ -1,0 +1,26 @@
+[
+  {
+    "peca": "amostra_V_porta_TPU",
+    "bandeja": 1
+  },
+  {
+    "peca": "junta_V_porta_TPU",
+    "bandeja": 2
+  },
+  {
+    "peca": "TPU_passagem_aquecedor_metade_A",
+    "bandeja": 3
+  },
+  {
+    "peca": "TPU_passagem_aquecedor_metade_B",
+    "bandeja": 4
+  },
+  {
+    "peca": "TPU_passagem_sensor_metade_A",
+    "bandeja": 5
+  },
+  {
+    "peca": "TPU_passagem_sensor_metade_B",
+    "bandeja": 6
+  }
+]

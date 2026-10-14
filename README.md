@@ -11,7 +11,7 @@ Vedação, resistência e funcionamento térmico ainda precisam de validação f
 ## Arquivos para visualizar e imprimir
 
 - [Visualizador interativo offline](output/visualizador.html): baixe e abra no navegador.
-- [Projeto Creality Print 7.2.1](output/incubadora_CrealityPrint_7.2.1.3mf): 38 peças em 36 bandejas, incluindo molde e contraformas, escala 1:1, sem fatiamento ou G-code.
+- [Projeto Creality Print 7.2.1](output/incubadora_CrealityPrint_7.2.1.3mf): 39 peças em 36 bandejas, incluindo molde e contraformas, escala 1:1, sem fatiamento ou G-code.
 - [Molde e contraforma do inox](output/v59/ferramental_inox/LEIA_ME.md): macho e duas metades de fechamento, com STL e STEP.
 - [STL da carcaça com a traseira na mesa](output/v59/impressao_traseira_na_mesa/corpo_integrado.stl).
 - [STL, STEP, amostras e relatórios da v59](output/v59/).
@@ -42,12 +42,24 @@ A caixa inox e o [molde de referência](output/v59/molde_caixa_inox_referencia.s
 não constituem um plano de corte de chapa: dobras, raios e acabamento precisam ser
 conferidos na fabricação. Os furos de referência do inox alinham as passagens de CO₂ e fios.
 
+## Vedações eSUN TPU-LW
+
+Para imprimir somente as novas vedações, abrir [vedacoes_eSUN_TPU_LW.3mf](output/v59/vedacoes_eSUN_TPU_LW.3mf).
+Seis bandejas: amostra, junta removível da porta oca com lateral menor junto às
+dobradiças, e quatro metades das rolhas, uma peça por impressão.
+**Manter a junta da caixa instalada, sem removê-la ou forçar o PC.**
+Consultar o [guia de montagem e calibração](output/v59/VEDACAO_TPU_LW.md):
+retração zero; fluxo inicial 0,70 a 230 °C ainda depende de calibração física.
+O projeto completo contém as peças atualizadas, preservando as demais configurações.
+
 ## Porta, vedação e acesso
 
 A porta é uma peça rígida, com todo o ressalto interno em V de ponta plana.
-O ressalto entra no perfil correspondente do corpo. Uma junta TPU labial
-fica encaixada nele; a junta TPU do corpo complementa a vedação.
-O manípulo central regula a compressão. A estanqueidade depende do ajuste e de ensaio físico.
+O ressalto entra no perfil correspondente do corpo. A nova junta oca TPU-LW
+fica no canal da porta; a junta TPU já instalada no corpo permanece intacta.
+A junta removível da porta agora usa TPU-LW com cavidade fechada e projeção
+reduzida na dobradiça, sem depender da borda quebrada; a junta do corpo é preservada. O manípulo central regula a compressão.
+A estanqueidade depende do ajuste e de ensaio físico.
 
 Para abrir, afrouxe o manípulo e gire a lingueta central 90° para baixo.
 A pega lateral é uma dupla hélice circular real, com duas curvas vistas de frente,

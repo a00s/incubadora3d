@@ -1,0 +1,50 @@
+{
+  "pecas": [
+    {
+      "peca": "junta_V_porta_TPU",
+      "stl": "junta_V_porta_TPU.stl",
+      "bandeja": 16,
+      "dimensoes_mm": [
+        119.69999849796295,
+        139.70000609755516,
+        4.893833339214325
+      ]
+    },
+    {
+      "peca": "amostra_V_porta_TPU",
+      "stl": "amostra_V_porta_TPU.stl",
+      "bandeja": 21,
+      "dimensoes_mm": [
+        3.640000104904175,
+        35.0,
+        4.893833160400391
+      ]
+    },
+    {
+      "peca": "TPU_passagem_aquecedor",
+      "stl": "TPU_passagem_aquecedor.stl",
+      "bandeja": 11,
+      "dimensoes_mm": [
+        19.995027542114258,
+        16.0,
+        15.199999809265138
+      ]
+    },
+    {
+      "peca": "TPU_passagem_sensor",
+      "stl": "TPU_passagem_sensor.stl",
+      "bandeja": 12,
+      "dimensoes_mm": [
+        19.995027542114258,
+        16.0,
+        15.199999809265138
+      ]
+    }
+  ],
+  "perfis_anteriores_preservados": true,
+  "demais_objetos_preservados": true,
+  "bandejas": 36,
+  "pecas_total": 39,
+  "perfil_novo": 4,
+  "perfil_experimental_fluxo": true
+}

@@ -1,0 +1,74 @@
+{
+  "creality_version": "7.2.1.5476",
+  "arquivo": "vedacoes_eSUN_TPU_LW.3mf",
+  "bandejas": [
+    {
+      "bandeja": 1,
+      "camadas": 24,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": "It seems object amostra_V_porta_TPU has floating regions. Please re-orient the object or enable support generation.",
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 2,
+      "camadas": 24,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": "It seems object junta_V_porta_TPU has floating regions. Please re-orient the object or enable support generation.",
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 3,
+      "camadas": 76,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 4,
+      "camadas": 76,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 5,
+      "camadas": 76,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 6,
+      "camadas": 76,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    }
+  ],
+  "gcode_apenas_temporario": true,
+  "ensaio_fisico_pendente": true
+}

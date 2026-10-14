@@ -789,29 +789,28 @@ doorpart=doorpart.union(centering)
 RECEIVER_PROFILE=[(-3.7,receiver_inset(-3.7)),(0,receiver_inset(0)),(.2,4)]
 receiver=inset_ring([(y,inset-1) for y,inset in RECEIVER_PROFILE],RECEIVER_PROFILE)
 body=body.union(receiver)
-# Dovetail retention follows the conical surface; two axial annular lips
-# contact the inclined receiver. Free TPU shape intentionally overlaps receiver.
+# Retain the door gasket in the existing V groove. The hollow TPU-LW bulb
+# contacts the intact front land and clears the thin broken receiver.
 V_GROOVE=[(-3.7,.25),(-3.5,.85),(-3.0,.85),(-2.8,.25)]
-V_FOOT=[(-3.6,.20),(-3.45,.7),(-3.05,.7),(-2.9,.2)]
+V_FOOT=[(-3.8,-.05),(-3.0,.34),(-2.9,.18)]
 v_channel=inset_ring([(y,boss_inset(y)-.8) for y,depth in V_GROOVE],
                      [(y,boss_inset(y)+depth) for y,depth in V_GROOVE])
 doorpart=doorpart.cut(v_channel,clean=False)
-v_seal=inset_ring([(y,boss_inset(y)-.25) for y,depth in V_FOOT],
-                  [(y,boss_inset(y)+depth) for y,depth in V_FOOT])
-V_LIPS=[ [(-3.4,.35),(-3.5,.75),(-3.65,.95)],
-         [(-3.2,.35),(-2.6,.75),(-1.6,1.15)] ]
-for stations in V_LIPS:
-    lip=inset_ring([(y,boss_inset(y)-extension-.3) for y,extension in stations],
-                   [(y,boss_inset(y)-extension+.3) for y,extension in stations])
-    v_seal=v_seal.union(lip,clean=False)
+from lw_seals import build_door_seal, BULB, VOID
+v_seal=build_door_seal(inset_ring,inset_loft,boss_inset,V_FOOT)
+P.update(door_v_lip_wall=.5,door_seal_material='eSUN TPU-LW',door_seal_profile='hollow bellows with retained V foot',
+         door_seal_contact='intact body front land; existing body gasket untouched',
+         door_seal_latch_projection_mm=.65,door_seal_hinge_projection_mm=.25,
+         door_seal_broken_receiver_required=False,door_seal_leak_test='pending physical test')
 assert len(doorpart.solids().vals())==1 and doorpart.val().isValid(),'Tapered monolithic door invalid'
+assert independent(v_seal).intersect(receiver).val().Volume()<1e-5,'Door seal relies on broken receiver'
 assert len(v_seal.solids().vals())==1 and v_seal.val().isValid(),'V gasket disconnected'
 assert independent(v_seal).intersect(doorpart).val().Volume()<1e-5,'V gasket foot collides with door'
 P.update(door_rigid_piece_count=1,door_hatch_insert_snap_fit=False,
          door_hatch_inner_projection=3,door_boss_profile=BOSS_PROFILE,
          door_boss_side_angle_to_axis_deg=math.degrees(math.atan(.5)),
          door_receiver_profile=RECEIVER_PROFILE,door_receiver_wall=1,
-         door_v_lip_wall=.6,door_v_tpu_retention='dovetail around tapered boss',
+         door_v_lip_wall=.5,door_v_tpu_retention='dovetail around tapered boss',
          door_body_gasket_preserved=True,door_print_orientation='outer Y=-16 flat face down; inner V boss up; build +Y; external DNA supports',
          door_insulation_build_direction='+Y',
          door_hatch_extra_screws=0,door_v_seal_test='pending physical fit and leak test',
@@ -1112,6 +1111,11 @@ for name,halves in wire_plug_halves.items():
         cq.exporters.export(print_pair(halves),str(OUT/f'TPU_passagem_{name}.{ext}'))
 (OUT/'wire_plugs_report.json').write_text(json.dumps(wire_plug_reports,indent=2,ensure_ascii=False)+'\n')
 
+for name,halves in wire_plug_halves.items():
+    for label,half in zip(('A','B'),halves):
+        flat=half.rotate((0,0,0),(1,0,0),180).translate((0,0,15.5))
+        for ext in ('stl','step'):cq.exporters.export(flat,str(OUT/f'TPU_passagem_{name}_metade_{label}.{ext}'))
+
 # Body orientation requested by the user: rear Y125 flat on the bed, build toward -Y.
 print_folder=OUT/'impressao_traseira_na_mesa';print_folder.mkdir(exist_ok=True)
 rear_down=body.rotate((0,0,0),(1,0,0),-90).translate((59,10,125))
@@ -1143,7 +1147,7 @@ for name,obj in [('amostra_canal_rigido',rigid),('amostra_junta_TPU',flex),('amo
     flat=obj.rotate((0,0,0),(1,0,0),-90)
     flat=flat.translate((0,0,-flat.val().BoundingBox().zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
-(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=V_LIPS,lip_wall=.6),indent=2))
+(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=[],lip_wall=.5,lw_bulb=BULB,lw_void=VOID,hinge_projection_reduction_mm=.4),indent=2))
 (OUT/'seal_profile.json').write_text(json.dumps(dict(groove=GROOVE,foot=FOOT,lip_centers=LIP_CENTERS,inner_lip_centers=BODY_INNER_LIP_CENTERS,lip_wall=LIP_WALL,nominal_compression=1.5),indent=2))
 assert independent(body).intersect(seal).val().Volume()<1e-5,'Seal retention foot collides with body'
 pressure_coupon=box(20,3,35,0,-4,0)
@@ -1160,10 +1164,14 @@ for name,obj in [('amostra_V_porta_rigida',doorpart.intersect(v_clip)),
                  ('amostra_V_porta_TPU',v_seal.intersect(v_clip)),
                  ('amostra_V_assento_corpo',receiver.intersect(v_clip).union(box(18,3,35,-4,.1,50)))]:
     assert obj.val().isValid() and len(obj.solids().vals())==1,name
-    flat=obj.rotate((0,0,0),(1,0,0),-90)
+    flat=obj.rotate((0,0,0),(1,0,0),90 if name=='amostra_V_porta_TPU' else -90)
     bb=flat.val().BoundingBox()
     flat=flat.translate((-bb.xmin,-bb.ymin,-bb.zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
+cq.exporters.export(v_seal,str(OUT/'junta_V_porta_TPU.step'))
+flat=v_seal.intersect(v_clip).rotate((0,0,0),(1,0,0),90)
+bb=flat.val().BoundingBox();flat=flat.translate((-bb.xmin,-bb.ymin,-bb.zmin))
+cq.exporters.export(flat,str(OUT/'amostra_V_porta_TPU.step'))
 # A single sample STL holds the actual pod corner and its blind base side by side.
 cx,cz=pod_mounts[0]
 pod_clip=box(20,30,20,cx-10,120,cz-10)

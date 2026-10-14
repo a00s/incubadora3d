@@ -19,9 +19,45 @@
       "cabe_com_margem_5mm": true
     },
     {
+      "peca": "TPU_passagem_aquecedor_metade_A.stl",
+      "dimensoes_mm": [
+        8.0,
+        16.0,
+        15.2
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "TPU_passagem_aquecedor_metade_B.stl",
+      "dimensoes_mm": [
+        8.0,
+        16.0,
+        15.2
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
       "peca": "TPU_passagem_sensor.stl",
       "dimensoes_mm": [
         20.0,
+        16.0,
+        15.2
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "TPU_passagem_sensor_metade_A.stl",
+      "dimensoes_mm": [
+        8.0,
+        16.0,
+        15.2
+      ],
+      "cabe_com_margem_5mm": true
+    },
+    {
+      "peca": "TPU_passagem_sensor_metade_B.stl",
+      "dimensoes_mm": [
+        8.0,
         16.0,
         15.2
       ],
@@ -39,9 +75,9 @@
     {
       "peca": "amostra_V_porta_TPU.stl",
       "dimensoes_mm": [
-        2.25,
+        3.64,
         35.0,
-        2.05
+        4.89
       ],
       "cabe_com_margem_5mm": true
     },
@@ -264,9 +300,9 @@
     {
       "peca": "junta_V_porta_TPU.stl",
       "dimensoes_mm": [
-        116.25,
-        2.05,
-        136.25
+        119.7,
+        4.89,
+        139.7
       ],
       "cabe_com_margem_5mm": true
     },

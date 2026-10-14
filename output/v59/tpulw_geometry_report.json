@@ -1,0 +1,26 @@
+{
+  "arquivo": "incubadora_CrealityPrint_7.2.1.3mf",
+  "bandejas": 36,
+  "pecas": 39,
+  "zip_xml_validos": true,
+  "malhas_ferramental_fechadas": true,
+  "limites_k1c_com_margem_5mm": true,
+  "espaco_minimo_entre_pecas_mm": 5,
+  "contraformas_nas_bandejas": [
+    35,
+    36
+  ],
+  "molde_na_bandeja": 10,
+  "suporte_na_bandeja": 4,
+  "fundo_na_bandeja": 13,
+  "porta_malha_fechada": true,
+  "porta_face_externa_para_baixo": true,
+  "porta_crescimento_eixo_y": true,
+  "suporte_H_frontal_na_mesa": true,
+  "rolhas_bipartidas_bandejas": [
+    11,
+    12
+  ],
+  "rolhas_duas_metades_fechadas_por_par": true,
+  "rolhas_separacao_metades_mm": 4
+}

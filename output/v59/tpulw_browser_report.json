@@ -1,0 +1,10 @@
+{
+  "http": 200,
+  "sem_erros_javascript": true,
+  "junta_porta_selecionavel": true,
+  "abertura_porta_graus": [
+    0,
+    45,
+    110
+  ]
+}

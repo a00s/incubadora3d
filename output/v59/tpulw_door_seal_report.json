@@ -1,0 +1,13 @@
+{
+  "junta_da_caixa_preservada": true,
+  "solido_step_valido": true,
+  "pecas_junta_porta": 1,
+  "intersecao_receptor_fino_mm3": 0,
+  "contato_face_frontal_y0": true,
+  "amostra_cortes": 24,
+  "camada_mm": 0.2,
+  "crescimento_secao_maximo_graus": 45,
+  "projecao_nominal_fecho_mm": 0.65,
+  "projecao_nominal_dobradica_mm": 0.25,
+  "limite": "Secao reta CAD, nao simula deformacao, forca ou estanqueidade"
+}

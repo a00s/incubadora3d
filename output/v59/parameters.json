@@ -427,7 +427,7 @@
     ]
   ],
   "door_receiver_wall": 1,
-  "door_v_lip_wall": 0.6,
+  "door_v_lip_wall": 0.5,
   "door_v_tpu_retention": "dovetail around tapered boss",
   "door_body_gasket_preserved": true,
   "door_print_orientation": "outer Y=-16 flat face down; inner V boss up; build +Y; external DNA supports",
@@ -564,5 +564,12 @@
   "sensor_tpu_neck_wall_mm": 1.7,
   "sensor_tpu_flange_overlap_mm": 1.6,
   "sensor_tpu_material": "TPU 85A",
-  "sensor_tpu_print_face": "outer collar on bed"
+  "sensor_tpu_print_face": "outer collar on bed",
+  "door_seal_material": "eSUN TPU-LW",
+  "door_seal_profile": "hollow bellows with retained V foot",
+  "door_seal_contact": "intact body front land; existing body gasket untouched",
+  "door_seal_latch_projection_mm": 0.65,
+  "door_seal_hinge_projection_mm": 0.25,
+  "door_seal_broken_receiver_required": false,
+  "door_seal_leak_test": "pending physical test"
 }

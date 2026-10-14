@@ -35,7 +35,7 @@ with zipfile.ZipFile(path) as z:
             faces=[tuple(int(t.get(f'v{i}')) for i in (1,2,3)) for t in mesh.find('m:triangles',NS)]
             assert all(len(set(f))==3 and min(f)>=0 and max(f)<len(vertices) for f in faces)
             edge=Counter(tuple(sorted((a,b))) for f in faces for a,b in zip(f,f[1:]+f[:1]))
-            if labels[oid] in ('porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor','caixinha_encaixe_aquecedor'):
+            if labels[oid] in ('junta_V_porta_TPU','amostra_V_porta_TPU','porta_articulada','molde_caixa_inox_referencia','contraforma_inox_inferior','contraforma_inox_superior','fundo_interno_inox_5mm','suporte_gavetas_removivel','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor','caixinha_encaixe_aquecedor'):
                 assert all(n==2 for n in edge.values()),labels[oid]
             transform=[float(v) for v in items[oid].get('transform').split()]
             world=[tuple(sum(v[j]*transform[j*3+a] for j in range(3))+transform[9+a] for a in range(3)) for v in vertices]
@@ -43,8 +43,9 @@ with zipfile.ZipFile(path) as z:
                 expected,_,size=load_mesh(ROOT/'output/v59/suporte_gavetas_removivel.stl',lambda p:(p[0],-p[2],p[1]))
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
-            if labels[oid] in ('bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor','caixinha_encaixe_aquecedor'):
-                expected,_,_=load_mesh(ROOT/'output/v59'/f'{labels[oid]}.stl')
+            if labels[oid] in ('junta_V_porta_TPU','amostra_V_porta_TPU','bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5','TPU_passagem_aquecedor','TPU_passagem_sensor','caixinha_encaixe_aquecedor'):
+                orient=(lambda p:(p[0],-p[2],p[1])) if labels[oid]=='junta_V_porta_TPU' else None
+                expected,_,_=load_mesh(ROOT/'output/v59'/f'{labels[oid]}.stl',orient)
                 assert len(expected)==len(vertices)
                 assert all(abs(p[a]-(v[a]+(transform[11] if a==2 else 0)))<1e-5 for p,v in zip(expected,vertices) for a in range(3))
             if labels[oid] in ('TPU_passagem_aquecedor','TPU_passagem_sensor'):
@@ -84,5 +85,5 @@ with zipfile.ZipFile(path) as z:
 report=dict(arquivo=path.name,bandejas=36,pecas=39,zip_xml_validos=True,malhas_ferramental_fechadas=True,
             limites_k1c_com_margem_5mm=True,espaco_minimo_entre_pecas_mm=5,
             contraformas_nas_bandejas=[plate_by_name[n] for n in ('contraforma_inox_inferior','contraforma_inox_superior')],molde_na_bandeja=plate_by_name['molde_caixa_inox_referencia'],suporte_na_bandeja=plate_by_name['suporte_gavetas_removivel'],fundo_na_bandeja=plate_by_name['fundo_interno_inox_5mm'],porta_malha_fechada=True,porta_face_externa_para_baixo=True,porta_crescimento_eixo_y=True,suporte_H_frontal_na_mesa=True,rolhas_bipartidas_bandejas=[plate_by_name[n] for n in ('TPU_passagem_aquecedor','TPU_passagem_sensor')],rolhas_duas_metades_fechadas_por_par=True,rolhas_separacao_metades_mm=4)
-(ROOT/'output/v59/ferramental_inox/projeto_completo_verificacao.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
+(ROOT/'output/v59/tpulw_geometry_report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
 print(json.dumps(report,indent=2,ensure_ascii=False))

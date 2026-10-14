@@ -193,3 +193,31 @@ e não representam espaço de carga disponível no conjunto montado.
 - Conferidos 45 cortes CAD a cada 0,2 mm: crescimento radial de até 45°, sem
   início suspenso dos lábios. Fatiamento geométrico da bandeja 15 no Creality
   Print 7.2.1: 44 camadas, 9 mm de altura, nenhum suporte no G-code de teste.
+
+## Vedação removível da porta e rolhas em eSUN TPU-LW
+
+- Fotos da montagem: manter a junta da caixa instalada, sem removê-la ou forçar
+  o PC quebradiço. Alterar somente a junta removível da porta e as rolhas dos fios.
+- Retenção no canal em V existente, pé flexível com entrada gradual; ligação
+  recuada e bulbo com cavidade fechada.
+  Contato na face frontal robusta em Y=0, sem depender da borda fina quebrada.
+- Projeção nominal: 0,65 mm no fecho, 0,25 mm na dobradiça (X120).
+- Rolhas para os fios existentes: corpo Ø12,24 no furo Ø12; canais 0,16 mm menores
+  que os fios. Contato contínuo comprimido e metades bipartidas.
+- Os dois projetos completos preservam as demais peças, os três perfis e o
+  processo global salvos; perfil exclusivo eSUN TPU-LW acrescentado.
+- Imprimir por `output/v59/vedacoes_eSUN_TPU_LW.3mf`: seis bandejas individuais,
+  amostra 1, junta da porta 2, aquecedor A/B 3/4, sensor lateral A/B 5/6.
+- Perfil inicial: 230 °C, mesa 50 °C, 25 mm/s, retração/wipe/Z-hop zero;
+  ventilador 100% após a primeira camada, sem suportes. Fluxo 0,70 experimental:
+  calibrar na amostra antes da junta inteira. Secar 55 °C por mais de 4 h.
+- Guia: [VEDACAO_TPU_LW.md](output/v59/VEDACAO_TPU_LW.md).
+- Compressão, força de fechamento e redução de vazamento de CO₂ pendem de ensaio.
+
+Validação desta revisão: 59 pares rígidos sem colisão; 24 cortes da amostra a
+0,2 mm com crescimento máximo de 45°; nenhum contato com o receptor fino.
+Seis bandejas fatiadas no Creality Print 7.2.1 com extrusão a 25 mm/s, sem
+retrações nem suportes no G-code de teste. Aviso de possíveis regiões suspensas
+permanece na junta e na amostra: testar a amostra antes do anel inteiro.
+Rolhas sem avisos. Projeto completo: 39 peças/36 bandejas, malhas e limites
+K1C conferidos. Visualizador atualizado, HTTP 200 e controles verificados.

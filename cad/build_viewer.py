@@ -85,6 +85,23 @@ v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="4
 <text x="130" y="285">Corpo</text><text x="352" y="365">Porta</text>
 <text x="240" y="395">Laterais da porta: 26,6° em relação ao eixo</text>
 <text x="240" y="422">Aperto comprime TPU · forma livre mostrada</text></g></svg>'''
+if 'lw_bulb' in v_profile:
+    def contour(stations):
+        return v_points([(y,a) for y,a,b in stations]+[(y,b) for y,a,b in reversed(stations)])
+    v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="480" height="440" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
+<title>Vedação removível da porta · eSUN TPU-LW</title>
+<defs><mask id="door-lw-void"><rect width="480" height="440" fill="white"/><polygon points="{contour(v_profile['lw_void'])}" fill="black"/></mask></defs>
+<polygon points="{receiver}" fill="#c5d4df" opacity=".25"/>
+<polygon points="{foot}" fill="#45ae89"/>
+<polygon points="{v_points([(-4.25,.15),(-3.8,.15),(-3.8,boss_at(-3.8)-.05),(-4.25,boss_at(-4.25)-.05)])}" fill="#45ae89"/>
+<polygon points="{v_points([(y,boss_at(y)-.6) for y in (-4.25,-3.45)]+[(y,boss_at(y)-.05) for y in (-3.45,-4.25)])}" fill="#45ae89"/>
+<polygon points="{contour(v_profile['lw_bulb'])}" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
+<g fill="currentColor" font-size="16" text-anchor="middle" font-family="sans-serif">
+<text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>
+<text x="240" y="310">Cavidade fechada para compressão</text>
+<text x="240" y="345">Contato na face robusta do corpo, em Y=0</text>
+<text x="240" y="380">Projeção livre: fecho 0,65 · dobradiça 0,25 mm</text>
+<text x="240" y="415">Retenção original · não depende da borda quebrada</text></g></svg>'''
 (folder/'corte_vedacao_V.svg').write_text(v_svg)
 svg += v_svg
 s=(p/'cad/viewer-template.html').read_text().replace('__MESH_GZIP__',mesh).replace('__SEAL_SECTION__',svg)
