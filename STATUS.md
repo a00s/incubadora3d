@@ -1420,6 +1420,10 @@ filamento/processo e 39 STL das demais peças preservados.
   Temperatura principal ~23,0–23,1 °C, sonda interna ~29,6–29,7 °C e RH ~57,3–58,0%; trava
   ativa e atuadores OFF. A inclinação quase constante durante essa janela longa não distingue
   deriva do sensor de mudança real no gás sem uma referência independente.
+- Continuação até 1.204,3 s: leitura UART bruta em 12.762 ppm; de 13.726 ppm em 756,3 s, média
+  ~−129 ppm/min ao longo de ~7,5 min. O contador de `millis()` avançou continuamente, sem boot
+  ou falha de leitura aparente; `co2_valid=0`, trava ativa e todos os atuadores OFF. Isso confirma
+  comunicação contínua, não a exatidão do valor recebido.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
