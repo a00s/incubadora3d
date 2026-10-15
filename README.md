@@ -234,7 +234,7 @@ O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
 estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líquida de CO₂
-normalizada para ppm/min numa janela válida de aproximadamente 60 segundos; o campo
+normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; o campo
 `rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
 tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
 A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
@@ -246,7 +246,8 @@ ambos ficam fora do controle automático.
 
 As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
 temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
-ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,5–37,5 °C. O valor
+ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,9–37,1 °C. O aquecedor
+liga em 36,9 °C e desliga em 37,0 °C, com corte de segurança em 37,1 °C. O valor
 medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
 (até 65.535 ppm). Uma queda de faixa compatível com rollover acima de 60.000 ppm trava
 a injeção e gera um evento, para não interpretar o valor baixo subsequente como falta de
@@ -267,12 +268,13 @@ ALL OFF
 
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
-físicos. O termostato experimental atual liga até 36,8 °C e desliga a partir de 37,0 °C,
-com intervalo mínimo de 20 s entre mudanças do relé e limite de 20 s por acionamento.
-O corte de segurança permanece em 37,2 °C. A faixa visual esperada continua sendo
-36,5–37,5 °C; esses limites ainda precisam de validação térmica prolongada. Enquanto o CO₂ estiver
+físicos. O termostato liga em 36,9 °C e desliga a partir de 37,0 °C,
+com intervalo mínimo de 10 s entre mudanças do relé e limite de 10 s por acionamento.
+O corte de segurança fica em 37,1 °C. A faixa visual esperada é 36,9–37,1 °C;
+esse controle ainda precisa de validação térmica prolongada. Enquanto o CO₂ estiver
 abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
-rapidamente. A dose automática inicial atual é 90 ms. Depois de cada dose, o controle espera
+rapidamente. Após reinício, a primeira dose é escalada pela distância à meta, com
+referência inicial conservadora de 12 ppm por ms e teto de 60 ms. Depois de cada dose, o controle espera
 ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
 300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
 esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
@@ -280,8 +282,10 @@ leitura em queda não bloqueia a correção.
 O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
-o cálculo usa metade do tempo proporcional estimado, limita cada aumento a 1,5 vez o
-pulso anterior e limita cada pulso a 1.000 ms. O piso é 5 ms para evitar pulsos abaixo
+o cálculo usa a proporção completa entre o ganho observado e o tempo de abertura, sem
+limitar artificialmente o aumento entre doses; cada pulso continua limitado a 1.000 ms.
+Se não houver aumento detectável após a janela de observação, a rampa dobra a dose anterior.
+O piso é 5 ms para evitar pulsos abaixo
 da resolução prática da válvula. Não há um teto menor fixo perto da meta; o cálculo
 proporcional reduz a dose com base na resposta observada, e o bloqueio de tendência
 evita empilhar pulsos durante a subida atrasada.

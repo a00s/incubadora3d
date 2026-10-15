@@ -881,3 +881,35 @@ filamento/processo e 39 STL das demais peças preservados.
   habilitados; válvula fechada durante a amostra. A taxa ppm/min ainda não estava válida.
 - O painel deve ser conferido visualmente no display pelo usuário; a sessão serial foi
   encerrada após confirmação de boot e telemetria.
+
+## Ajuste proporcional, faixa térmica e anomalia de leitura após dose longa
+
+- 2026-10-15. A telemetria mostrou que o cálculo anterior dividia a dose estimada por
+  dois e depois ainda a limitava a 1,5× a dose anterior. Em ensaio, um pulso de 72 ms
+  elevou a leitura em até 669 ppm; a dose calculada seguinte caiu para 50 ms e o ganho
+  máximo observado foi 149 ppm. Após a leitura voltar a cair, a rampa liberou 75 ms.
+  Removidos o fator 1/2 e o teto de 1,5×; o cálculo agora usa a proporção integral do
+  ganho medido, com limite absoluto de 1.000 ms e espera por estabilização antes da dose.
+- A primeira dose pós-reinício agora é escalada pela distância à meta usando 12 ppm/ms,
+  baseada no maior ganho por milissegundo observado (~11,8), com teto inicial de 60 ms.
+  Em ensaio, uma dose de 60 ms gerou ganho máximo de 99 ppm em cerca de 130 s; o
+  cálculo proporcional seguinte solicitou 419 ms e foi aplicado em 49.308 ppm.
+- Após dois resets para upload/monitor, a leitura começou em 13.439 ppm, subiu a
+  19.036 ppm e depois caiu para 15.945 ppm em cerca de cinco minutos. O salto ocorreu
+  entre boots, então o detector em RAM não o classificou. Como o protocolo UART usado
+  no firmware transmite a concentração em dois bytes, uma volta de faixa é possível,
+  mas a deriva de aquecimento do sensor também é uma hipótese; não se conclui que o gás
+  real estivesse acima de 65.535 ppm. O usuário confirmou por telemetria `CO2 OFF`; a
+  válvula permaneceu fechada e o estado desligado foi gravado na EEPROM.
+- Temperatura pós-ajuste de acionamento máximo de 10 s oscilou de 36,7 a 37,2 °C, com
+  maior parte das amostras entre 36,9 e 37,1 °C. Nesta revisão, a faixa de controle foi
+  movida para ligar em 36,9 °C e desligar em 37,0 °C, com intervalo mínimo de 10 s e
+  corte de segurança em 37,1 °C, buscando manter a leitura dentro de ±0,1 °C do alvo.
+- A trava de saltos de pelo menos 15.000 ppm foi compilada e gravada junto com as
+  alterações acima. Compilação: 32.082 bytes de Flash (99%) e 950 bytes de RAM global.
+- Em seguida, atendendo ao pedido de faixa térmica de 0,1 °C, o termostato foi movido
+  para ligar em 36,9 °C e desligar em 37,0 °C; o corte rígido ficou em 37,1 °C.
+  Compilação e gravação concluídas. O CO₂ estava gravado como desligado na EEPROM antes
+  do upload; não reabri a serial após gravar, para não reiniciar a placa e invalidar a
+  leitura térmica em andamento. A resposta da temperatura à nova janela ainda precisa
+  ser observada ao longo do tempo.
