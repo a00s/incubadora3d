@@ -1362,6 +1362,11 @@ filamento/processo e 39 STL das demais peças preservados.
   a câmara e o cilindro, mas não permitem ler a etiqueta. Não usar 400 ppm como referência até
   confirmar a faixa mínima dessa variante. A leitura bruta de ~18k está acima de 1%, porém
   continua inválida pelo bloqueio e não pode orientar dosagem.
+- O CSV elétrico local nomeia a peça como `Sensor CO2 10k` e liga VCC a 5V, GND a GND,
+  RX ao Arduino D5 e TX ao D12, compatível com `SoftwareSerial(12,5)` no firmware. Isso confirma
+  a intenção do mapeamento, mas o nome `10k` diverge da etiqueta `1–10% VOL`; não prova a
+  variante nem a escala UART. As leituras brutas desta sessão (~14.000 ppm) também não resolvem
+  a divergência porque continuam bloqueadas e não foram comparadas com uma referência.
 - O manual oficial v2.6 lista faixa selecionável até 50.000 ppm, extensão máxima de 150.000 ppm,
   T90 <30 s e fonte de 5,0±0,1 V com pelo menos 150 mA. Ele não documenta a codificação UART
   acima de 65.535 ppm; o manual v2.4 citado acima documenta dois bytes em ppm e opções de faixa
