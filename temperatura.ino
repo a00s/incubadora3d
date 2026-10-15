@@ -315,7 +315,8 @@ void loop()
         if (deltaTime > 0) {
           co2Rate = co2Delta * 1000.0f / deltaTime;
           if (co2Rate > maxRate) maxRate = co2Rate;
-          if (co2Rate <= CO2_STABLE_RATE_PPM_PER_SEC) {
+          if (co2Rate >= -CO2_STABLE_RATE_PPM_PER_SEC &&
+              co2Rate <= CO2_STABLE_RATE_PPM_PER_SEC) {
             if (co2StableSince == 0) co2StableSince = currentTime;
             co2TrendReady = currentTime - co2StableSince >= CO2_STABLE_TIME_MS;
           } else {

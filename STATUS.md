@@ -639,3 +639,18 @@ filamento/processo e 39 STL das demais peças preservados.
   janela de assentamento; qualquer componente integral precisa congelar durante a
   resposta pós-pulso. Não foram alterados nem gravados parâmetros de controle nesta
   sessão.
+
+## Corrigir estabilidade falsa durante queda de CO₂
+
+- 2026-10-15. A serial mostrou `rate_ppm_s=-11,47` e `trend_ready=1` enquanto o CO₂
+  caía rapidamente. A condição antiga só limitava o lado positivo (`co2Rate <= 5`),
+  classificando qualquer queda como estável. Isso podia liberar uma nova dose durante
+  uma queda acentuada, em vez de esperar a taxa desacelerar.
+- A condição agora exige `-5 <= co2Rate <= +5 ppm/s` continuamente por 30 s antes de
+  marcar a tendência estável. A taxa de janela continua assinada para monitorar ganho
+  ou perda.
+- Compilação para Uno passou: 32.136/32.256 bytes de Flash e 825/2.048 bytes de RAM.
+  `scripts/arduino.sh upload` terminou sem erro com verificação habilitada. CO₂ e
+  aquecimento estavam desligados, válvula fechada antes do flash. Confirmar o contador
+  de boot e o novo `trend_ready` na próxima conexão serial; não reabrimos o monitor
+  nesta sessão para evitar reset adicional.
