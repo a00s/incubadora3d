@@ -35,7 +35,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_GOOD_MIN_PPM 48000L
 #define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
 #define CO2_STABLE_TIME_MS 30000UL
-#define TEMPERATURE_LIMIT 37
+#define HEATER_ON_TEMPERATURE 36.5
+#define HEATER_OFF_TEMPERATURE 36.7
 #define TEMPERATURE_GOOD_MIN 36.5
 #define TEMPERATURE_GOOD_MAX 37.5
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
@@ -180,20 +181,19 @@ void setup()
     
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
-    playIntroDna();
     contador_pomp = POMP_WAITING_TIME;
     Serial.println(F("Wait 10 seconds for the sensor to start up"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
 //    }
-    delay(10000);   
+    playLoadingDots();
     // Disable auto-calibration
   disableAutoCalibration();
 
   // Verify if auto-calibration is disabled
   verifyAutoCalibration();
-  // Keep the DNA intro visible while the CO2 sensor warms up.
+  // Reveal live readings only after sensor warm-up and configuration.
   drawDisplayFrame();
   //   mySerialCO2.listen();
   //  // Disable auto-calibration
@@ -360,8 +360,12 @@ void loop()
         co2RateWindowStartPpm = CO2i;
         lastMinuteTime = currentTime;
     }
+    // The pump wait already gives the sensor a full response interval. Do not
+    // require a perfectly steady instantaneous slope to size the next pulse:
+    // noisy readings otherwise force repeated 5 ms doses while CO2 is far low.
+    bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 && contador_pomp == 0;
     int32_t delayProporcional = validCo2
-      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, co2TrendReady && contador_pomp == 0)
+      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, doseResponseReady)
       : DELAY_MINIMO;
 
     
@@ -452,15 +456,10 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    if(t < TEMPERATURE_LIMIT){ 
-      if(botao_aquecedor_onoff == 1){
-        digitalWrite(HEATER,LOW);
-      } else {
-        digitalWrite(HEATER,HIGH);
-      }
-    } else {
-      digitalWrite(HEATER,HIGH);
-    }
+    // Use separate switching thresholds; NaN compares false and turns heat off.
+    float heaterThreshold = digitalRead(HEATER) == LOW
+      ? HEATER_OFF_TEMPERATURE : HEATER_ON_TEMPERATURE;
+    digitalWrite(HEATER, botao_aquecedor_onoff == 1 && t <= heaterThreshold ? LOW : HIGH);
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
@@ -489,38 +488,6 @@ void reinitializeScreen() {
     drawDisplayFrame();
 }
 
-void drawDnaStroke(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                   uint8_t r, uint8_t g, uint8_t b) {
-  ucg.setColor(0, r, g, b);
-  ucg.drawLine(x1, y1, x2, y2);
-  ucg.drawLine(x1 + 1, y1, x2 + 1, y2);
-  ucg.drawLine(x1 - 1, y1, x2 - 1, y2);
-}
-
-void playIntroDna() {
-  ucg.setColor(0, 8, 18, 30);
-  ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
-  static const int8_t strandA[] PROGMEM = {64, 82, 94, 96, 87, 70, 50, 36, 32, 40, 57, 77, 92, 96, 88, 70, 50};
-  static const int8_t strandB[] PROGMEM = {64, 46, 34, 32, 41, 58, 78, 92, 96, 88, 71, 51, 36, 32, 40, 58, 78};
-
-  // Large double helix with base pairs visible across the full display.
-  for (uint8_t i = 0; i < 16; i++) {
-    int16_t y = 14 + i * 8;
-    int16_t ax = pgm_read_byte(&strandA[i]);
-    int16_t bx = pgm_read_byte(&strandB[i]);
-    int16_t nextY = y + 8;
-    int16_t nextAx = pgm_read_byte(&strandA[i + 1]);
-    int16_t nextBx = pgm_read_byte(&strandB[i + 1]);
-    drawDnaStroke(ax, y, nextAx, nextY, 93, 89, 255);
-    drawDnaStroke(bx, y, nextBx, nextY, 156, 104, 255);
-    if ((i & 1) == 0) {
-      ucg.setColor(0, 115, 205, 250);
-      ucg.drawLine(ax, y, bx, y);
-    }
-  }
-  delay(350);
-}
-
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 2, y - 1, 25, 17);
@@ -533,14 +500,22 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
     ucg.drawLine(x + 8, y + 7, x + 15, y + 10);
     return;
   }
-
-  // Bubble columns rise in staggered steps while the CO2 valve is open.
   for (uint8_t bubble = 0; bubble < 3; bubble++) {
     uint8_t phase = (frame + bubble * 2) & 3;
     uint8_t bx = x + 3 + bubble * 7 + ((phase == 1 || phase == 2) ? 1 : 0);
     uint8_t by = y + 13 - phase * 3;
     ucg.drawCircle(bx, by, bubble == 1 ? 2 : 1, UCG_DRAW_ALL);
   }
+}
+
+void playLoadingDots() {
+  ucg.setColor(0, 8, 18, 30);
+  ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
+  for (uint8_t frame = 0; frame < 60; frame++) {
+    drawCo2Icon(52, 72, true, true, frame & 3);
+    delay(160);
+  }
+  delay(400);
 }
 
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
@@ -594,7 +569,6 @@ void updateActivityIcons() {
   uint8_t co2Frame = activityIconFrame & 3;
   uint8_t heaterFrame = activityIconFrame & 3;
   uint8_t fanFrame = activityIconFrame % 12;
-
   if (co2Flowing || displayCo2Active != co2Flowing) {
     drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, co2Frame);
     displayCo2Active = co2Flowing;

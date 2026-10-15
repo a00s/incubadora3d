@@ -215,15 +215,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 31.896 bytes de Flash
-(98%) e 917 bytes de RAM global (44%), deixando 1.131 bytes para pilha e chamadas.
+serial antes de compilar/gravar. A última compilação para Uno usa 32.068 bytes de Flash
+(99%) e 923 bytes de RAM global (45%), deixando 1.125 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
 sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
 energizado e o rotor gira enquanto o ventilador funciona. A animação redesenha somente
 a pequena área do ícone ativo; leituras sem alteração não redesenham os campos de texto.
-As cores de fundo indicam falha, espera ou operação normal, e a inicialização mostra
-uma breve animação de DNA.
+As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
+sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
+de DNA foi retirado para reservar espaço de firmware às animações dos controles.
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
@@ -262,12 +263,14 @@ ALL OFF
 
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
-físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
+físicos. O aquecedor liga abaixo de 36,5 °C e corta em 36,7 °C para compensar a inércia
+térmica; a faixa visual esperada continua sendo 36,5–37,5 °C. Enquanto o CO₂ estiver
 abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
 automática inicial é 45 ms. Depois de cada dose, o controle espera ao menos cerca de um
-minuto e também exige que a taxa de subida medida não passe de 5 ppm/s por 30 segundos
-contínuos antes de injetar novamente; se a leitura continuar subindo mais rápido, ele
-espera mais. Uma leitura em queda não bloqueia a correção.
+minuto para observar a resposta do sensor. Ao fim da espera, usa o ganho observado para
+dimensionar o próximo pulso mesmo que a taxa instantânea ainda oscile; uma taxa instável
+não deve prender a dose no mínimo de 5 ms. Uma leitura em queda também não bloqueia a
+correção.
 O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
@@ -433,5 +436,5 @@ saem da faixa. As bolhas permanecem animadas por 3 s após um pulso, mesmo quand
 válvula ficou aberta por poucos milissegundos.
 
 Visual atual: o fundo voltou ao azul-marinho (`RGB 8,18,30`), que dá ao display
-o tom futurista desejado. A intro com DNA permanece visível durante os 10 s de
+o tom futurista desejado. A animação de pontos permanece visível durante os 10 s de
 aquecimento do sensor de CO₂; depois, a interface de leituras aparece.

@@ -319,12 +319,13 @@ filamento/processo e 39 STL das demais peças preservados.
   visíveis os pulsos curtos. Compilado e gravado para Uno: 32.214 bytes Flash (99%),
   923 bytes RAM (45%). O reset de gravação incrementa o contador persistente uma vez.
 
-## Retorno ao azul-marinho e intro durante aquecimento
+## Retorno ao azul-marinho e animação durante aquecimento
 
 - O teste de fundo preto foi revertido após a preferência pelo azul-marinho
   `RGB 8,18,30`, aplicado à intro, tela, leituras e áreas apagadas dos ícones.
-- A intro de DNA agora continua na tela durante os 10 s de aquecimento do sensor;
-  os dados e indicadores aparecem depois da configuração do sensor.
+- A intro de DNA ficou na tela durante os 10 s de aquecimento; revisão posterior
+  substitui a hélice grande por pontos animados de CO₂ durante a espera, mantendo as
+  animações dos três ícones principais.
 - A última gravação testada ocupava 32.132/32.256 bytes de Flash e 923/2.048 bytes
   de RAM. Esta revisão compilou e foi gravada com `--verify`: 32.208/32.256 bytes
   de Flash (48 bytes livres) e 923/2.048 bytes de RAM. A gravação reinicia a placa
@@ -332,3 +333,30 @@ filamento/processo e 39 STL das demais peças preservados.
 - Antes desta revisão, a leitura perto de 26.000 ppm caiu a cerca de −362 ppm/min;
   após os ciclos de espera, o controle automático abriu um pulso de 45 ms. A demora
   para atingir 5% continua como ponto de investigação, separado desta revisão visual.
+
+## Dose automática ajustada pela resposta observada
+
+- Monitor sem DTR, sem reiniciar a placa: perto de 26.000 ppm, a primeira janela
+  registrou −313 ppm/min. Após um pulso de 45 ms, a janela seguinte ficou em
+  −7 ppm/min. Com pulsos seguintes de 5 e 7 ms, a taxa voltou a −21 ppm/min; a
+  concentração caiu cerca de 400 ppm ao longo de pouco mais de 3 minutos.
+- O log mostrou que a taxa instantânea ruidosa fazia o cálculo voltar a 5 ms,
+  mesmo após esperar o ciclo de resposta. O critério de estabilidade de 30 s não
+  deve bloquear o cálculo do tamanho da dose: a espera de aproximadamente 60 s já
+  permite observar a resposta do sensor.
+- Revisão atual: dimensionar o próximo pulso usando a resposta observada após o
+  intervalo, sem exigir que a inclinação instantânea esteja estável. A rampa continua
+  limitada a 1,5× por ciclo e os limites por proximidade ao alvo são preservados.
+  No teste anterior à troca da revisão, a resposta observada levou o próximo pulso de
+  45 para 67 ms e depois 100 ms; o pulso de 100 ms provocou subida rápida. Isso confirma
+  a adaptação à vazão, mas exige acompanhar o atraso do sensor para evitar excesso.
+- A temperatura chegou a 37,7 °C enquanto o relé já estava desligado; depois caiu
+  gradualmente para 37,0 °C. Alterei o termostato para ligar abaixo de 36,5 °C e cortar
+  em 36,7 °C para compensar o calor residual. A histerese foi compilada e gravada nesta
+  revisão; ainda precisa ser acompanhada com o aquecedor ligado para validar os picos.
+- A intro de DNA grande foi removida. Os três pontos de espera reutilizam o ícone vetorial
+  de CO₂, desenhado por coordenadas em 25×17 px; as animações compactas dos três controles
+  permanecem. Não há bitmap de ícone no firmware.
+- Firmware compilado e gravado para Uno com `--verify`: 32.068/32.256 bytes de Flash
+  (188 bytes livres) e 923/2.048 bytes de RAM. O upload reiniciou a placa uma vez; o
+  contador persistente de inicializações registra esse reset.
