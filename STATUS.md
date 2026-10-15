@@ -782,3 +782,11 @@ filamento/processo e 39 STL das demais peças preservados.
   atrasada do sensor estão variando.
 - No último estado consultado: `co2_enabled=1`, `heater_enabled=1`, `heater_on=1`,
   `valve_open=0`, `boot_count=75`; leituras 49.260 ppm, 26,6 °C e 65,4% RH.
+- Continuação da telemetria: a leitura caiu para ~48.730 ppm e o automático aplicou
+  um pulso de rampa de 30 ms. As duas janelas móveis de um minuto seguintes foram
+  `−313` e `−22 ppm/min`, comparadas à janela anterior de `−379 ppm/min`; ao final,
+  o CO₂ estava ~48.550 ppm. A queda portanto desacelerou muito nesse trecho, embora
+  o pulso, a mudança de temperatura, a mistura e outras condições impeçam atribuir
+  a diferença à vedação isoladamente. O DHT permaneceu válido: temperatura subiu de
+  ~27,5 para ~30,7 °C e RH caiu de ~64,7 para ~60,5% durante o aquecimento. Estado
+  consultado: `co2_enabled=1`, `heater_enabled=1`, válvula fechada, `boot_count=75`.
