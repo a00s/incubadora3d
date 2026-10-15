@@ -796,3 +796,292 @@ filamento/processo e 39 STL das demais peças preservados.
   Cerca de 15 s depois estava em ~48.327 ppm, ainda cedo para medir a resposta do pulso.
   Temperatura subiu a ~31,7 °C e RH estava em ~59,2%; aquecimento habilitado, relé
   alternando ciclos e válvula fechada entre doses.
+
+## Gravação do cabeçalho e observação após upload
+
+- 2026-10-15. Firmware do commit `9336d18` compilado e gravado com sucesso usando
+  `sg dialout`; monitor serial confirmou boot normal com `BOOT_COUNT=77`. O contador
+  estava em 75 antes da gravação; upload e conexão do monitor reiniciam a placa via
+  DTR. Não foi enviado comando serial para mudar os controles.
+- A faixa de estado colorida, o rótulo `CO2 ppm` à esquerda e `R77` alinhado à direita
+  foram carregados. A aparência física do novo cabeçalho ainda precisa ser conferida
+  visualmente no display.
+- Na primeira observação após a espera de inicialização, CO₂ estava em 48.793 ppm,
+  temperatura em 37,1 °C e umidade em 54,5%. Ao longo de aproximadamente 4,5 min,
+  a leitura de CO₂ variou entre 48.793 e 49.229 ppm e terminou em 49.017 ppm. Controle
+  automático de CO₂ e aquecimento permaneceram habilitados; o relé de aquecimento
+  alternou e a válvula ficou fechada entre as doses. Temperatura variou entre 36,5 e
+  37,1 °C; umidade terminou perto de 56,5%.
+- O automático aplicou dois pulsos de 40 ms, iniciados perto de 49.127 e 49.098 ppm,
+  respectivamente, abaixo do alvo de 50.000 ppm. Após o primeiro, o campo de elevação
+  máxima observada marcou apenas 21 ppm; após o segundo, não houve elevação positiva
+  detectável nos primeiros ~65 s. O atraso pode ser maior, então isso não demonstra
+  falha do sensor nem mede a dose real. O evento também evidencia que o limite de
+  40 ms nos últimos 1.000 ppm impede pulsos maiores apesar de a estimativa proporcional
+  ter chegado a 859 ms antes do segundo pulso. A taxa calculada variou de +235 a
+  −111 ppm/min nas janelas, sem estabilização comprovada em 5%.
+- O monitor foi fechado ao fim da observação; o estado atual preservado pelo firmware
+  segue com ambos os controles habilitados, leitura perto de 49.017 ppm e temperatura
+  perto de 36,8 °C. Próxima decisão sobre aumentar a dose deve considerar a resposta
+  atrasada deste segundo pulso.
+
+## Resposta tardia do pulso de 90 ms e decisão de rampa
+
+- 2026-10-15. Nova sessão serial abriu a placa por DTR (`BOOT_COUNT=78`); o estado
+  inicial reportou CO₂ automático e aquecimento habilitados, 49.065 ppm e 36,9 °C.
+  Não foram enviados comandos para mudar os controles.
+- A concentração caiu até 48.708 ppm, com janela de −338 ppm/min, antes de o
+  automático aplicar um pulso de 90 ms. A temperatura permaneceu de 36,5 a 37,1 °C.
+  A resposta foi atrasada: a leitura aumentou gradualmente e atingiu o máximo observado
+  de 49.848 ppm, ganho de 1.140 ppm, cerca de 132 s após o pulso. Não ultrapassou o
+  alvo de 50.000 ppm. Depois recuou; a sessão terminou em 49.699 ppm, cerca de 151 s
+  após a dose. A umidade variou de 55,6 a 57,4%.
+- O resultado confirma que o pulso de 90 ms teve efeito grande e lento nesta condição;
+  a comparação com o pulso anterior de 40 ms não é um ensaio controlado, pois a
+  pressão/vazão, a temperatura, a concentração inicial e o estado da mistura podem
+  ter mudado. Manter a resposta medida como referência adaptativa, não como uma
+  conversão fixa de milissegundos para ppm.
+- Decisão de firmware: retirar os limites especiais de 90 ms nos últimos 3.000 ppm e
+  40 ms nos últimos 1.000 ppm. A dose seguirá o cálculo proporcional já existente,
+  limitado a 1.000 ms, com ganho reduzido pela metade, rampa de no máximo 1,5× em relação
+  à dose anterior e bloqueio enquanto a resposta atrasada não desacelerar. A telemetria
+  desta sessão não mostra cruzamento da meta nem justificou comando `CO2 OFF`.
+- Encerrada a observação serial quando a presença do operador não estava confirmada;
+  não emitir novos pulsos assistidos nem abrir monitor remoto sem confirmação de que
+  alguém está no local e acompanhando a incubadora.
+- Firmware local atualizado para retirar os tetos de 250/90/40 ms perto do alvo e
+  usar a resposta adaptativa existente, com teto global de 1.000 ms e rampa limitada a
+  1,5×. O build compila em 32.142 bytes de Flash e 851 bytes de RAM global. Esta versão
+  ainda não foi gravada na placa, pois isso reinicia o controle automático e a presença
+  de alguém no local não foi confirmada.
+- A interface local agora alterna o painel superior entre valores e um gráfico simples
+  de 32 amostras de CO₂, com referência de 50.000 ppm; os ícones animados ficam na faixa
+  inferior. Para caber na Flash do Uno, o valor de temperatura interna saiu da tela, mas
+  permanece na telemetria. A compilação passou, porém a alternância e o gráfico ainda
+  precisam de verificação visual após uma gravação autorizada e acompanhada.
+- Correção operacional: a sessão serial acima foi aberta sem confirmação de presença no
+  local, contrariando a restrição de segurança. A conexão reiniciou a placa via DTR; com
+  `co2_enabled=1`, o automático aplicou um pulso de 90 ms a 48.708 ppm. A sessão foi
+  encerrada em 49.699 ppm, abaixo da meta e com a leitura em queda; nenhum comando manual
+  de saída foi enviado. Não há telemetria posterior para confirmar o estado atual da
+  válvula ou da incubadora. Não repetir monitoramento nem comandos de CO₂ sem presença
+  confirmada.
+
+## Painel numérico restaurado após retorno do usuário
+
+- 2026-10-15. O usuário informou que a alternância com gráfico deixou a interface
+  desorganizada e pediu retorno ao painel anterior, sem gráfico. Removidos a página de
+  gráfico, o histórico de 32 pontos e a alternância; restaurados temperatura interna e
+  rótulos ON/OFF sob os três ícones. Mantidos o contador de boots, a cor de estado, taxa
+  de CO₂, animações dos ícones e a remoção dos tetos especiais de dose perto da meta.
+- Compilação: 31.978 bytes de Flash e 825 bytes de RAM global. Firmware carregado com
+  sucesso; o monitor serial confirmou `BOOT_COUNT=82` e dados válidos. No primeiro trecho
+  após inicialização, CO₂ variou de 48.708 para 48.661 ppm, temperatura externa de 36,9
+  para 36,6 °C, umidade ~58,1% e sensor interno 29,4 °C. CO₂ e aquecimento permaneceram
+  habilitados; válvula fechada durante a amostra. A taxa ppm/min ainda não estava válida.
+- O painel deve ser conferido visualmente no display pelo usuário; a sessão serial foi
+  encerrada após confirmação de boot e telemetria.
+
+## Ajuste proporcional, faixa térmica e anomalia de leitura após dose longa
+
+- 2026-10-15. A telemetria mostrou que o cálculo anterior dividia a dose estimada por
+  dois e depois ainda a limitava a 1,5× a dose anterior. Em ensaio, um pulso de 72 ms
+  elevou a leitura em até 669 ppm; a dose calculada seguinte caiu para 50 ms e o ganho
+  máximo observado foi 149 ppm. Após a leitura voltar a cair, a rampa liberou 75 ms.
+  Removidos o fator 1/2 e o teto de 1,5×; o cálculo agora usa a proporção integral do
+  ganho medido, com limite absoluto de 1.000 ms e espera por estabilização antes da dose.
+- A primeira dose pós-reinício agora é escalada pela distância à meta usando 12 ppm/ms,
+  baseada no maior ganho por milissegundo observado (~11,8), com teto inicial de 60 ms.
+  Em ensaio, uma dose de 60 ms gerou ganho máximo de 99 ppm em cerca de 130 s; o
+  cálculo proporcional seguinte solicitou 419 ms e foi aplicado em 49.308 ppm.
+- Após dois resets para upload/monitor, a leitura começou em 13.439 ppm, subiu a
+  19.036 ppm e depois caiu para 15.945 ppm em cerca de cinco minutos. O salto ocorreu
+  entre boots, então o detector em RAM não o classificou. Como o protocolo UART usado
+  no firmware transmite a concentração em dois bytes, uma volta de faixa é possível,
+  mas a deriva de aquecimento do sensor também é uma hipótese; não se conclui que o gás
+  real estivesse acima de 65.535 ppm. O usuário confirmou por telemetria `CO2 OFF`; a
+  válvula permaneceu fechada e o estado desligado foi gravado na EEPROM.
+- Temperatura pós-ajuste de acionamento máximo de 10 s oscilou de 36,7 a 37,2 °C, com
+  maior parte das amostras entre 36,9 e 37,1 °C. Nesta revisão, a faixa de controle foi
+  movida para ligar em 36,9 °C e desligar em 37,0 °C, com intervalo mínimo de 10 s e
+  corte de segurança em 37,1 °C, buscando manter a leitura dentro de ±0,1 °C do alvo.
+- A trava de saltos de pelo menos 15.000 ppm foi compilada e gravada junto com as
+  alterações acima. Compilação: 32.082 bytes de Flash (99%) e 950 bytes de RAM global.
+- Em seguida, atendendo ao pedido de faixa térmica de 0,1 °C, o termostato foi movido
+  para ligar em 36,9 °C e desligar em 37,0 °C; o corte rígido ficou em 37,1 °C.
+  Compilação e gravação concluídas. O CO₂ estava gravado como desligado na EEPROM antes
+  do upload; não reabri a serial após gravar, para não reiniciar a placa e invalidar a
+  leitura térmica em andamento. A resposta da temperatura à nova janela ainda precisa
+  ser observada ao longo do tempo.
+
+## Observação térmica após a janela de 0,1 °C
+
+- 2026-10-15, BOOT_COUNT=92. Após a inicialização, a temperatura medida subiu de 36,4 °C
+  para 37,1 °C em cerca de 2 min e 20 s; o aquecedor estava desligado nas últimas
+  amostras. A temperatura passou 0,1 °C do limiar de desligamento (37,0 °C), compatível
+  com inércia térmica; a amostra ainda não demonstra estabilização prolongada.
+- CO₂ permaneceu desabilitado e a válvula fechada. A leitura caiu de aproximadamente
+  11.071 para 9.588 ppm durante a mesma janela, cerca de −553 ppm/min no fim. Como o
+  valor inicial ocorreu após reinicialização do controlador/sensor, não usar essa janela
+  para estimar a concentração real nem para reativar a dosagem automática.
+- O sensor configurado é DHT22, cuja precisão nominal informada pela Adafruit é ±0,5 °C
+  e intervalo mínimo de leitura de 2 s. Assim, a janela de 0,1 °C controla a leitura
+  exibida, mas não comprova exatidão absoluta de ±0,1 °C. Para garantir essa exatidão,
+  será necessário comparar/calibrar com uma sonda de referência mais precisa.
+
+## Suavização da adaptação de dose de CO₂
+
+- 2026-10-15. A telemetria anterior mostrou que 60 ms renderam um aumento máximo de
+  99 ppm, mas a proporção de uma única resposta calculou 419 ms para a dose seguinte.
+  Substituída a estimativa direta por uma média adaptativa: cada nova resposta estabilizada
+  contribui com um terço para a eficiência ppm/ms estimada. A dose continua proporcional
+  à distância até 50.000 ppm e se adapta ao fluxo observado; na ausência de resposta,
+  a eficiência cai gradualmente até um piso de 0,5 ppm/ms, sem a duplicação abrupta da
+  dose anterior. A primeira dose permanece escalada pela distância e limitada a 60 ms.
+- A observação ainda precisa ser validada com CO₂ habilitado e concentração confiável.
+  Até lá, o CO₂ permanece desligado por causa das leituras anômalas após reinicialização.
+- Compilação e upload bem-sucedidos para Uno: 32.208 bytes de Flash (99%) e 955 bytes
+  de RAM global, restando 48 bytes de Flash. O monitor indicou BOOT_COUNT=94 e confirmou
+  `co2_enabled=0`, `valve_open=0` e aquecimento habilitado. Na amostra curta após a
+  reinicialização, a temperatura variou de 36,8 para 36,7 °C e a leitura de CO₂ caiu de
+  7.673 para 7.507 ppm em ~13 s; por ser logo após boot, a leitura não valida a
+  concentração real. A nova adaptação ainda não foi exercitada porque o CO₂ segue OFF.
+
+## Protocolo do MH-Z16 e bloqueio de pré-aquecimento
+
+- 2026-10-15. O manual oficial Winsen MH-Z16 v2.4 especifica pré-aquecimento de 3 min,
+  resposta T90 abaixo de 30 s e leitura UART `0x86` em dois bytes: concentração = byte
+  alto × 256 + byte baixo. O documento é inconsistente quanto às faixas: a tabela principal
+  declara 0–5% selecionável, enquanto a tabela de opções inclui 0–10% e 0–15%. Como não
+  documenta escala alternativa para a saída UART de 16 bits, o firmware não converte nem
+  tenta reconstruir valores acima de 65.535 ppm. A meta de 50.000 ppm continua dentro da
+  faixa representável; 100.000 ppm não está representável por esse formato.
+- Adicionado bloqueio de dosagem automática durante 180 s após cada reinicialização, em
+  respeito ao pré-aquecimento especificado pelo fabricante. O controle/manual prime fica
+  disponível. Compilação concluída: 32.212 bytes de Flash (99%) e 955 bytes de RAM;
+  upload concluído. Em BOOT_COUNT=96, confirmou-se `co2_enabled=0` e `valve_open=0`.
+  A leitura caiu de 5.050 para 4.844 ppm em ~17 s, cerca de −720 ppm/min; por iniciar
+  após boot e não haver referência independente, essa amostra não determina a
+  concentração real. A condição de pré-aquecimento não pôde ser verificada em operação,
+  pois o controle automático permaneceu desligado.
+- Referência: [manual oficial MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf),
+  seções 4, 7 e 8. A própria documentação lista opções de faixa diferentes entre a tabela
+  principal e a tabela de variantes; manter a leitura em 16 bits e não extrapolar o sensor
+  para além do protocolo é deliberado até confirmação do fabricante para esta unidade.
+- O CSV local conecta somente UART do sensor de faixa 10k (TX→D12, RX→D5), sem sinal
+  analógico ou PWM para uma leitura independente. Isso impede validar o valor em alta
+  concentração por um segundo canal. A mensagem serial de inicialização foi atualizada
+  para indicar o bloqueio de 180 s em vez da antiga espera de 10 s.
+- A mensagem foi compilada e gravada: 32.202 bytes de Flash e 955 bytes de RAM. O CO₂
+  segue desligado conforme último `BOOT_COUNT=96`; o upload não altera esse valor da
+  EEPROM. Não abri outra sessão serial após gravar.
+
+## Controle térmico sem atraso para desligar
+
+- 2026-10-15, BOOT_COUNT=98. Em uma janela de ~3 min sem injeção de CO₂, o sensor marcou
+  de 2.496 até 218 ppm e `rate_ppm_min` ficou perto de −700 ppm/min. A leitura terminou
+  abaixo do valor típico do ar ambiente; não é possível separar vazamento de deriva ou
+  erro do sensor com o equipamento disponível. O controle de CO₂ permaneceu OFF.
+- A temperatura subiu de 36,7 para 37,2 °C. O log mostrou que a permanência mínima de
+  10 s entre mudanças também impedia desligar o aquecedor ao atingir o limite, causando
+  alguns segundos de aquecimento adicional. Alterado o controle: o limiar e o corte
+  desligam imediatamente; os 10 s continuam como intervalo mínimo antes de religar.
+  A resposta térmica após essa mudança ainda precisa ser medida.
+- Firmware gravado e observado a partir de BOOT_COUNT=100. Com a nova lógica, a amostra
+  máxima ficou em 37,1 °C durante ~6 min; o aquecedor desligou nos limiares e respeitou
+  a espera antes de religar. Com o CO₂ em 65.063 ppm e caindo, o usuário já havia
+  autorizado automação; habilitei `CO2 ON` às ~16:12. Às 16:17, a leitura era 60.246
+  ppm, `rate_ppm_min` perto de −815, `co2_enabled=1` e `valve_open=0`; ainda acima da
+  meta, então nenhuma dose foi liberada. A janela de 180 s passou sem abertura da válvula.
+- Compilação/upload: 32.162 bytes de Flash e 955 bytes de RAM global.
+
+## Redução de dose após resposta atrasada e wraparound
+
+- 2026-10-15. Durante o ensaio autorizado, o CO₂ foi habilitado automaticamente com
+  leitura inicial próxima de 65.063 ppm. A leitura caiu até cerca de 50.000 ppm; ao
+  cruzar a meta inferior, o controlador aplicou pulsos adaptativos de 5, 55, 178 e
+  461 ms, aguardando ao menos cerca de um minuto e desaceleração entre eles.
+- Após o pulso de 461 ms, a leitura demorou e depois subiu de aproximadamente 48.235
+  para além do máximo representável de 65.535 ppm. O serial registrou suspeita de
+  wraparound; a leitura reapareceu em ~579 ppm e continuou subindo. O valor posterior
+  de ~16.643 ppm confirma que a injeção foi real, mas os valores baixos após a volta
+  não representam uma queda real do CO₂. O detector de salto travou o controle.
+- Desliguei o automático pelo serial; telemetria confirmou `co2_enabled=0` e
+  `valve_open=0`. Após gravar a nova versão, BOOT_COUNT=102 confirmou novamente ambos
+  desligados. O aquecedor permaneceu habilitado e a temperatura observada ficou em
+  36,8–36,9 °C.
+- Para reduzir ultrapassagens com resposta tardia e variação de pressão, a dose
+  proporcional automática agora aplica inicialmente 1/6 do déficit estimado por ciclo,
+  mantendo o ganho adaptativo medido, espera por estabilização e limites de pulso.
+  A fração menor é uma medida conservadora após o salto observado; deve ser avaliada
+  pela telemetria antes de aumentar. A janela térmica já está em 0,1 °C: liga em
+  36,9 °C, desliga em 37,0 °C e corta por segurança em 37,1 °C.
+- Compilação e upload concluídos para Arduino Uno: 32.202 bytes de Flash (99%) e
+  955 bytes de RAM global. O monitor após upload confirmou o novo boot, CO₂ OFF,
+  válvula fechada e aquecimento habilitado. Próxima medição deve aguardar que o sensor
+  saia da faixa de wraparound; manter o controle de CO₂ desligado até a leitura ficar
+  confiável.
+
+## Ajuste da banda térmica em função da inércia observada
+
+- 2026-10-15. Na sequência de ensaios térmicos, limites de acionamento de 10 s
+  mantiveram o sensor abaixo do alvo durante a recuperação após reinícios. Um teste
+  temporário de 2 s foi revertido: a leitura caiu até 36,3 °C. O máximo foi então
+  elevado a 30 s, mantendo desligamento imediato pela temperatura e intervalo mínimo
+  de 10 s antes de religar.
+- Com acionamento longo, o sensor continuou subindo depois do corte e chegou a 37,4 °C;
+  isso demonstrou inércia térmica relevante. A banda foi antecipada para ligar em
+  36,7 °C e desligar em 36,8 °C, mantendo 0,1 °C entre limiares e o corte rígido em
+  37,1 °C. O objetivo do deslocamento é compensar o calor residual medido.
+- Após o último upload (BOOT_COUNT=112), o CO₂ e a válvula permaneceram desligados;
+  o aquecedor estava habilitado. A leitura térmica passou de 36,4–36,5 °C durante a
+  recuperação para 36,8 °C; após o corte, ainda chegou a 37,2 °C e então permaneceu
+  perto de 37,1–37,2 °C com o relé desligado. Portanto, a banda de 0,1 °C já está
+  configurada, mas o comportamento real ainda excede a faixa desejada por inércia e
+  precisa de mais uma janela sem reinicializações para validar a configuração.
+- Durante a mesma janela, `INT` ficou perto de 29,5–29,7 °C; o ventilador desligou
+  abaixo do limite e permaneceu desligado. A leitura de CO₂ seguiu instável após o
+  wraparound e caiu em torno de 700–850 ppm/min, com controle automático OFF. Não usar
+  essa leitura para dosagem nem como estimativa isolada de vazamento.
+- Compilação e gravação para Uno concluídas: 32.202 bytes de Flash e 955 bytes de RAM
+  global. A versão está carregada; o estado final observado mantém CO₂ OFF e válvula
+  fechada.
+
+## Faixa profissional de CO₂ e trava persistente contra rollover
+
+- 2026-10-15. A documentação de fabricantes de incubadoras profissionais consultada declara
+  precisão de controle de CO₂ de ±0,1 ponto percentual (Thermo Fisher Heracell/Forma); a
+  Memmert declara precisão de ajuste de 0,1% e variação temporal de ±0,2%. Adotada para a
+  meta de 5,0% a faixa de controle de 4,9–5,1% (49.000–51.000 ppm). Essa é a tolerância
+  nominal de controle; vazamento e resposta do sensor podem impedir mantê-la continuamente.
+- O controle automático passa a iniciar correção abaixo de 49.000 ppm e considera verde a
+  faixa de 49.000–51.000 ppm. O alvo matemático permanece 50.000 ppm. Pulsos manuais são
+  recusados a partir de 51.000 ppm.
+- Na última janela antes do upload, o firmware anterior mostrou CO₂ de 62.503 para 61.311
+  ppm e taxas móveis entre cerca de −576 e −889 ppm/min. Como a leitura está próxima do
+  limite do campo de 16 bits e já houve rollover observado, essa inclinação não deve ser
+  tratada como uma medida confiável de vazamento. A temperatura variou de 36,5 a 37,3 °C,
+  ainda acima do teto desejado em alguns ciclos; o aquecedor estava habilitado e o CO₂ OFF.
+- Incluída trava persistente: ao alcançar 60.000 ppm ou observar um salto bruto de pelo
+  menos 15.000 ppm, o código grava um marcador EEPROM uma única vez, desliga o automático,
+  recusa pulsos manuais e invalida a leitura. Reinicializações não apagam a trava. `CO2 ACK`
+  apaga o marcador somente com o automático desligado; nova ativação exige um comando
+  separado. Isso não faz gravações em cada ciclo e mantém o contador de reinicializações
+  independente.
+- Para liberar Flash sem retirar os ícones animados, a leitura grande de CO₂ passou da fonte
+  alfanumérica completa para a variante numérica compacta, com o mesmo tamanho visual. A
+  compilação para Uno usa 30.702 bytes (95%) e 955 bytes de RAM. Firmware gravado. Em
+  BOOT_COUNT=116, o evento `co2_near_protocol_limit` ocorreu a 60.327 ppm; telemetria
+  confirmou `co2_valid=0`, `co2_enabled=0` e `valve_open=0`. Após reiniciar novamente,
+  BOOT_COUNT=117 registrou `co2_range_lock_restored_after_boot`; a leitura de 60.022 ppm
+  continuou inválida, com controle OFF e válvula fechada. Isso confirma que a trava persiste
+  sem depender de gravações por ciclo. Depois de reiniciar o monitor para confirmar a trava,
+  a leitura caiu abaixo de 60.000 ppm, mas permanece inválida e bloqueada; não limpei a
+  trava nem habilitei a válvula sem uma referência independente para validar o sensor.
+- O limite do ventilador interno foi elevado de 30 para 31 °C, com desligamento abaixo de
+  30 °C, para evitar manter o ventilador ligado quando a sonda interna lia 29,7–29,9 °C.
+  Nos boots 116–117, a sonda ficou em 30,0 °C e o ventilador permaneceu OFF; ainda não houve
+  teste no limiar de 31 °C.
+- Referências de precisão profissional: [Thermo Fisher Heracell 150i/240i](https://www.thermofisher.com/TFS-Assets/LED/brochures/Heracell%20150i%20and%20240i%20CO2%200820%20Web.pdf),
+  [Thermo Fisher Forma](https://www.thermofisher.com/in/en/home/life-science/lab-equipment/co2-incubators/models/direct-heat.html),
+  [Memmert ICO50](https://www.memmert.com/en/products/incubators/co2-incubator/ico50-2).

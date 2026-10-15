@@ -215,14 +215,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação com as animações dos controles usa 32.120
-bytes de Flash (99%) e 825 bytes de RAM global (40%), deixando 136 bytes de Flash e
-1.223 bytes de RAM para crescimento, pilha e chamadas.
+serial antes de compilar/gravar. A compilação atual usa 31.978 bytes de Flash (99%) e
+825 bytes de RAM global (40%), deixando 278 bytes de Flash e 1.223 bytes de RAM para
+pilha e chamadas.
 
-A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas sobem
-por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor gira
-enquanto o ventilador funciona. As animações redesenham apenas as áreas pequenas dos
-ícones; leituras sem alteração não redesenham os campos de texto.
+A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
+variação do CO₂, mantendo os ícones animados e os estados ON/OFF na faixa inferior.
+O cabeçalho mantém a cor de estado e o contador de reinicializações. As bolhas sobem
+por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor
+gira enquanto o ventilador funciona. Leituras sem alteração não redesenham os campos
+de texto.
 
 As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
@@ -232,7 +234,7 @@ O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
 estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líquida de CO₂
-normalizada para ppm/min numa janela válida de aproximadamente 60 segundos; o campo
+normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; o campo
 `rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
 tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
 A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
@@ -244,11 +246,18 @@ ambos ficam fora do controle automático.
 
 As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
 temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
-ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,5–37,5 °C. O valor
+ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
+percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
+A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
+de temperatura é 36,9–37,1 °C. O aquecedor
+liga em 36,9 °C e desliga em 37,0 °C, com corte de segurança em 37,1 °C. O valor
 medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
-(até 65.535 ppm). Uma queda de faixa compatível com rollover acima de 60.000 ppm trava
-a injeção e gera um evento, para não interpretar o valor baixo subsequente como falta de
-CO₂.
+(até 65.535 ppm). Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
+rollover, o firmware desliga a injeção, grava uma trava de segurança na EEPROM e marca a
+leitura como inválida. A trava sobrevive a reinicializações e evita interpretar um valor
+baixo posterior como falta de CO₂. Ela só é apagada pelo comando `CO2 ACK`, após verificar
+o sensor; esse comando mantém o automático desligado. A gravação ocorre só na transição
+para a trava, sem gravações periódicas.
 
 Comandos disponíveis:
 
@@ -258,38 +267,47 @@ STATUS
 CO2 ON
 CO2 OFF
 CO2 PRIME
+CO2 ACK
 HEAT ON
 HEAT OFF
 ALL OFF
 ```
 
-`CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
-desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
-físicos. O termostato experimental atual liga até 36,8 °C e desliga a partir de 37,0 °C,
-com intervalo mínimo de 20 s entre mudanças do relé e limite de 20 s por acionamento.
-O corte de segurança permanece em 37,2 °C. A faixa visual esperada continua sendo
-36,5–37,5 °C; esses limites ainda precisam de validação térmica prolongada. Enquanto o CO₂ estiver
-abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
-rapidamente. A dose automática inicial atual é 90 ms. Depois de cada dose, o controle espera
+`CO2 ON` habilita o controle automático, exceto enquanto a trava de faixa estiver ativa;
+`CO2 ACK` limpa a trava e deixa o automático desligado. `HEAT ON` habilita o termostato.
+`ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
+físicos. O termostato liga em 36,7 °C e desliga a partir de 36,8 °C,
+com pelo menos 10 s de espera antes de religar e limite de 30 s por acionamento.
+O corte de segurança fica em 37,1 °C. A banda de controle entre ligar e desligar é
+0,1 °C; a faixa visual esperada é 36,9–37,1 °C;
+esse controle ainda precisa de validação térmica prolongada. Enquanto o CO₂ estiver
+abaixo de 49.000 ppm, o automático inicia uma dose quando a leitura não está subindo
+rapidamente. Após reinício, a primeira dose é escalada pela distância à meta, com
+referência inicial conservadora de 12 ppm por ms e teto de 60 ms. Depois de cada dose, o controle espera
 ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
 300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
 esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
 leitura em queda não bloqueia a correção.
-O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
+O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
-o cálculo usa metade do tempo proporcional estimado e limita cada aumento a 1,5 vez o
-pulso anterior, com piso de 5 ms para evitar pulsos menores que a resolução prática da
-válvula, até 1.000 ms. A rampa também consegue sair de um valor anterior abaixo do piso.
-Ao se aproximar da meta,
-os pulsos ficam limitados a 250 ms nos
-últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
+cada resposta atualiza em um terço a eficiência estimada; isso evita que uma única
+amostra determine a dose seguinte. O controle calcula a dose pela distância à meta e
+pela eficiência suavizada, aplicando inicialmente um sexto desse tempo proporcional por
+ciclo. Essa fração foi reduzida após um ensaio em que uma dose de 461 ms provocou subida
+atrasada suficiente para cruzar o limite de 65.535 ppm do protocolo e aparecer como
+leitura baixa por wraparound. O limite é 1.000 ms por pulso. A primeira dose após
+reinício usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms
+para evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
+empilhar pulsos durante a subida atrasada.
+O controle automático aguarda também 3 minutos após cada reinicialização, conforme o
+pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto
 toque dispara imediatamente. Isso permite uma dose manual progressiva enquanto o
 controle automático mantém o estado que já tinha. Se houver uma leitura de CO₂ no
-limite configurado (50.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
+limite superior da faixa (51.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
 o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
 válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
 modo automático ao fim da janela de três segundos.
