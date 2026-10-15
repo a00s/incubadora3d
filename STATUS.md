@@ -432,3 +432,17 @@ filamento/processo e 39 STL das demais peças preservados.
   29,5–30 °C durante a coleta; não houve prova de que chegaria abaixo de 29 °C para
   desligar. O limiar liga/desliga 30/29 °C é conservador, mas falta confirmar a posição
   da sonda e medir a resposta térmica do compartimento com o ventilador ativo.
+
+## Amostra ao vivo de temperatura, ventilador e taxa de CO₂
+
+- 2026-10-15, monitor serial aberto em PTY com `sg dialout`; a abertura reiniciou a
+  placa e o `BOOT_COUNT` passou a 54. CO₂ automático estava desligado, aquecimento
+  automático ligado, válvula fechada.
+- Durante cerca de 92 s de telemetria após a inicialização, CO₂ caiu de 43.070 para
+  42.265 ppm; a janela de 60 s reportou **−550 ppm/min**. Temperatura da câmara ficou
+  entre 36,5 e 37,1 °C; sonda interna entre 29,5 e 29,7 °C. Ventilador permaneceu
+  desligado, pois a sonda não atingiu 30 °C.
+- O campo `ppm/min` já é desenhado na tela durante a fase de adaptação: mostra `---`
+  até completar uma janela válida de aproximadamente 60 s e então exibe a taxa com
+  sinal. Ele é atualizado a cada janela, sem depender de o controle automático ter
+  estabilizado ou alcançado a meta. O mesmo valor está disponível na telemetria serial.
