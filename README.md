@@ -215,15 +215,18 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 31.896 bytes de Flash
-(98%) e 917 bytes de RAM global (44%), deixando 1.131 bytes para pilha e chamadas.
+serial antes de compilar/gravar. A compilação com as animações dos controles usa 32.120
+bytes de Flash (99%) e 825 bytes de RAM global (40%), deixando 136 bytes de Flash e
+1.223 bytes de RAM para crescimento, pilha e chamadas.
 
-A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
-sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
-energizado e o rotor gira enquanto o ventilador funciona. A animação redesenha somente
-a pequena área do ícone ativo; leituras sem alteração não redesenham os campos de texto.
-As cores de fundo indicam falha, espera ou operação normal, e a inicialização mostra
-uma breve animação de DNA.
+A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas sobem
+por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor gira
+enquanto o ventilador funciona. As animações redesenham apenas as áreas pequenas dos
+ícones; leituras sem alteração não redesenham os campos de texto.
+
+As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
+sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
+de DNA foi retirado para reservar espaço de firmware às animações e ao controle da incubadora.
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
@@ -262,12 +265,16 @@ ALL OFF
 
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
-físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
-abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
-automática inicial é 45 ms. Depois de cada dose, o controle espera ao menos cerca de um
-minuto e também exige que a taxa de subida medida não passe de 5 ppm/s por 30 segundos
-contínuos antes de injetar novamente; se a leitura continuar subindo mais rápido, ele
-espera mais. Uma leitura em queda não bloqueia a correção.
+físicos. O termostato experimental atual liga até 36,8 °C e desliga a partir de 37,0 °C,
+com intervalo mínimo de 20 s entre mudanças do relé e limite de 20 s por acionamento.
+O corte de segurança permanece em 37,2 °C. A faixa visual esperada continua sendo
+36,5–37,5 °C; esses limites ainda precisam de validação térmica prolongada. Enquanto o CO₂ estiver
+abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
+rapidamente. A dose automática inicial atual é 90 ms. Depois de cada dose, o controle espera
+ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
+300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
+esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
+leitura em queda não bloqueia a correção.
 O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
@@ -429,3 +436,12 @@ pontas que começavam suspensas nessa orientação. STL e STEP individuais estã
 nessa posição; o conjunto STEP e o visualizador mostram a posição montada.
 Suportes desativados somente para a bucha e suas duas amostras no 3MF. As outras
 configurações salvas foram preservadas. Conferir novamente o encaixe no TPU 85A.
+
+No cabeçalho do display, a cor indica o estado geral e `R<n>` mostra a contagem de
+boots. A leitura de CO₂ e a temperatura também mudam de cor individualmente quando
+saem da faixa. As bolhas permanecem animadas por 3 s após um pulso, mesmo quando a
+válvula ficou aberta por poucos milissegundos.
+
+Visual atual: o fundo voltou ao azul-marinho (`RGB 8,18,30`), que dá ao display
+o tom futurista desejado. A animação de pontos permanece visível durante os 10 s de
+aquecimento do sensor de CO₂; depois, a interface de leituras aparece.

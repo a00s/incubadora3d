@@ -35,7 +35,11 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_GOOD_MIN_PPM 48000L
 #define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
 #define CO2_STABLE_TIME_MS 30000UL
-#define TEMPERATURE_LIMIT 37
+#define HEATER_ON_TEMPERATURE 36.8
+#define HEATER_OFF_TEMPERATURE 37.0
+#define HEATER_MIN_SWITCH_MS 20000UL
+#define HEATER_MAX_ON_MS 20000UL
+#define HEATER_HARD_CUTOFF 37.2
 #define TEMPERATURE_GOOD_MIN 36.5
 #define TEMPERATURE_GOOD_MAX 37.5
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
@@ -56,6 +60,8 @@ int32_t lastCo2RawPpm = 0;
 uint16_t lastCo2PulseMs = 0;
 int32_t eeprom_contador_int = 0;
 int ventilador_status = 0;
+unsigned long heaterLastSwitchAt = 0;
+unsigned long heaterOnSince = 0;
 bool co2ReferenceReady = false;
 bool co2BaselineReady = false;
 bool co2TrendReady = false;
@@ -65,6 +71,8 @@ bool co2RangeWrapLatched = false;
 bool co2RawReferenceReady = false;
 bool displayCacheValid = false;
 int32_t displayCo2Ppm = -2;
+int8_t displayCo2Quality = -1;
+int8_t displayTempQuality = -1;
 int16_t displayTempTenths = 32767;
 int16_t displayHumidityPercent = 32767;
 int16_t displayInternalTempTenths = 32767;
@@ -80,6 +88,7 @@ int8_t displayCo2Active = -1;
 int8_t displayHeaterActive = -1;
 uint8_t activityIconFrame = 0;
 unsigned long lastActivityIconFrameAt = 0;
+unsigned long co2AnimationUntil = 0;
 int32_t displayCo2RatePpmMin = 0;
 int8_t displayCo2RateReady = -1;
 unsigned long lastValidCo2Time = 0;
@@ -111,7 +120,7 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t delayProporcionalAnt = 30;    // Semente; rampa de 1,5x limita o primeiro pulso a 45 ms
+int32_t delayProporcionalAnt = 60;    // Semente; rampa de 1,5x limita o primeiro pulso a 90 ms
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -164,6 +173,7 @@ void setup()
     dhtint.begin();
     pinMode(HEATER,OUTPUT);
     digitalWrite(HEATER,HIGH);
+    heaterLastSwitchAt = millis();
     pinMode(CO2PUMP,OUTPUT);
     digitalWrite(CO2PUMP,HIGH);
 
@@ -177,20 +187,17 @@ void setup()
     
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
-    playIntroDna();
-    drawDisplayFrame();
     contador_pomp = POMP_WAITING_TIME;
     Serial.println(F("Wait 10 seconds for the sensor to start up"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
 //    }
-    delay(10000);   
+    playLoadingDots();
     // Disable auto-calibration
   disableAutoCalibration();
-
-  // Verify if auto-calibration is disabled
-  verifyAutoCalibration();
+  // Reveal live readings only after sensor warm-up and configuration.
+  drawDisplayFrame();
   //   mySerialCO2.listen();
   //  // Disable auto-calibration
     // byte autoCalibOff[] = {0xFF, 0x01, 0x79, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86};
@@ -356,8 +363,13 @@ void loop()
         co2RateWindowStartPpm = CO2i;
         lastMinuteTime = currentTime;
     }
+    // Keep the minimum cooldown, then wait for a sustained slowdown before
+    // another automatic dose. Live telemetry showed the chamber response can
+    // keep rising well beyond 60 s; dosing during that rise stacked pulses.
+    bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 &&
+                             contador_pomp == 0 && co2TrendReady;
     int32_t delayProporcional = validCo2
-      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, co2TrendReady && contador_pomp == 0)
+      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, doseResponseReady)
       : DELAY_MINIMO;
 
     
@@ -377,10 +389,6 @@ void loop()
        ventilador_status = 0;
     }
 
-    if(contador_pomp < 0){
-      contador_pomp = 0;
-    }
-    
     if(sensorReadOk && CO2i == 0){
       Serial.println(F("EVENT,co2_zero_reading,invalid_for_control"));
     }
@@ -404,7 +412,7 @@ void loop()
 //    Serial.println(CO2i);  
 
     if (validCo2 && CO2i < CO2_TARGET_PPM && botao_co2_onoff == 1 &&
-        contador_pomp == 0 && co2ClickCount == 0) {
+        contador_pomp == 0 && co2TrendReady && co2ClickCount == 0) {
       co2_before_pump = CO2i;
       co2BaselineReady = true;
       int32_t pulseMs;
@@ -437,6 +445,7 @@ void loop()
       digitalWrite(CO2PUMP, LOW);
       delay(pulseMs);
       digitalWrite(CO2PUMP, HIGH);
+      co2AnimationUntil = millis() + 3000UL;
       delayProporcionalAnt = pulseMs;
       max_co2_increase = 0;
       co2StableSince = 0;
@@ -447,15 +456,7 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    if(t < TEMPERATURE_LIMIT){ 
-      if(botao_aquecedor_onoff == 1){
-        digitalWrite(HEATER,LOW);
-      } else {
-        digitalWrite(HEATER,HIGH);
-      }
-    } else {
-      digitalWrite(HEATER,HIGH);
-    }
+    controlHeater(t, millis());
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
@@ -471,7 +472,7 @@ void loop()
     printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
 
-    contador_pomp = contador_pomp -1;
+    if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
     // delay(60000);
 }
@@ -482,38 +483,6 @@ void reinitializeScreen() {
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
     drawDisplayFrame();
-}
-
-void drawDnaStroke(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                   uint8_t r, uint8_t g, uint8_t b) {
-  ucg.setColor(0, r, g, b);
-  ucg.drawLine(x1, y1, x2, y2);
-  ucg.drawLine(x1 + 1, y1, x2 + 1, y2);
-  ucg.drawLine(x1 - 1, y1, x2 - 1, y2);
-}
-
-void playIntroDna() {
-  ucg.setColor(0, 8, 18, 30);
-  ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
-  static const int8_t strandA[] PROGMEM = {64, 82, 94, 96, 87, 70, 50, 36, 32, 40, 57, 77, 92, 96, 88, 70, 50};
-  static const int8_t strandB[] PROGMEM = {64, 46, 34, 32, 41, 58, 78, 92, 96, 88, 71, 51, 36, 32, 40, 58, 78};
-
-  // Large double helix with base pairs visible across the full display.
-  for (uint8_t i = 0; i < 16; i++) {
-    int16_t y = 14 + i * 8;
-    int16_t ax = pgm_read_byte(&strandA[i]);
-    int16_t bx = pgm_read_byte(&strandB[i]);
-    int16_t nextY = y + 8;
-    int16_t nextAx = pgm_read_byte(&strandA[i + 1]);
-    int16_t nextBx = pgm_read_byte(&strandB[i + 1]);
-    drawDnaStroke(ax, y, nextAx, nextY, 93, 89, 255);
-    drawDnaStroke(bx, y, nextBx, nextY, 156, 104, 255);
-    if ((i & 1) == 0) {
-      ucg.setColor(0, 115, 205, 250);
-      ucg.drawLine(ax, y, bx, y);
-    }
-  }
-  delay(350);
 }
 
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
@@ -528,14 +497,22 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
     ucg.drawLine(x + 8, y + 7, x + 15, y + 10);
     return;
   }
-
-  // Bubble columns rise in staggered steps while the CO2 valve is open.
   for (uint8_t bubble = 0; bubble < 3; bubble++) {
     uint8_t phase = (frame + bubble * 2) & 3;
     uint8_t bx = x + 3 + bubble * 7 + ((phase == 1 || phase == 2) ? 1 : 0);
     uint8_t by = y + 13 - phase * 3;
     ucg.drawCircle(bx, by, bubble == 1 ? 2 : 1, UCG_DRAW_ALL);
   }
+}
+
+void playLoadingDots() {
+  ucg.setColor(0, 8, 18, 30);
+  ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
+  for (uint8_t frame = 0; frame < 60; frame++) {
+    drawCo2Icon(52, 72, true, true, frame & 3);
+    delay(160);
+  }
+  delay(400);
 }
 
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
@@ -581,13 +558,14 @@ void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t fram
 
 void updateActivityIcons() {
   if (!displayCacheValid) return;
-  bool co2Flowing = digitalRead(CO2PUMP) == LOW;
+  unsigned long now = millis();
+  bool co2Flowing = digitalRead(CO2PUMP) == LOW ||
+                    (co2AnimationUntil != 0 && (int32_t)(now - co2AnimationUntil) < 0);
   bool heating = digitalRead(HEATER) == LOW;
   bool fanSpinning = ventilador_status != 0;
   uint8_t co2Frame = activityIconFrame & 3;
   uint8_t heaterFrame = activityIconFrame & 3;
   uint8_t fanFrame = activityIconFrame % 12;
-
   if (co2Flowing || displayCo2Active != co2Flowing) {
     drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, co2Frame);
     displayCo2Active = co2Flowing;
@@ -622,8 +600,11 @@ void drawHealthIndicator() {
   setHealthColor();
   ucg.drawBox(7, 3, 48, 17);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 8, 18, 30);
-  ucg.setPrintPos(10, 16); ucg.print(displayHealthState == DISPLAY_FAULT ? F("2 FORA") : (displayHealthState == DISPLAY_WAIT ? F("1 FORA") : F("OK")));
+  ucg.setColor(0, 0, 0, 0);
+  char bootCountText[12];
+  bootCountText[0] = 'R';
+  ltoa(eeprom_contador_int, bootCountText + 1, 10);
+  ucg.setPrintPos(10, 16); ucg.print(bootCountText);
   ucg.setColor(0, 130, 190, 215);
   ucg.setPrintPos(78, 16); ucg.print(F("CO2 ppm"));
 }
@@ -643,7 +624,7 @@ void drawDisplayFrame() {
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
   drawCo2Icon(11, 120, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 121, botao_aquecedor_onoff, false, 0);
-  drawFanIcon(98, 120, ventilador_status, false, 0);
+  drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setFont(ucg_font_inr16_mr);
   displayCacheValid = false;
@@ -737,15 +718,22 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
   const uint8_t bgR = 8, bgG = 18, bgB = 30;
+  int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
+  int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 : -1);
 
-  if (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1)) {
+  if (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1) || displayCo2Quality != co2Quality) {
     ucg.setFont(ucg_font_inr16_mr);
     char nextCo2Text[8];
     if (co2Valid) ltoa(CO2i, nextCo2Text, 10);
     else strcpy_P(nextCo2Text, PSTR("---"));
+    if (displayCo2Quality != co2Quality) displayCo2Text[0] = '\0';
+    uint8_t co2R = co2Quality == 1 ? 70 : (co2Quality == 0 ? 255 : 255);
+    uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 0 ? 190 : 100);
+    uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 0 ? 45 : 90);
     drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
-                    8, 18, 30, 220, 235, 250);
+                    bgR, bgG, bgB, co2R, co2G, co2B);
     displayCo2Ppm = co2Valid ? CO2i : -1;
+    displayCo2Quality = co2Quality;
   }
 
   bool co2RateValid = co2RatePpmMinReady && co2Valid;
@@ -764,12 +752,17 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   }
 
   ucg.setFont(ucg_font_7x13_mr);
-  if (!displayCacheValid || displayTempTenths != tempTenths) {
+  if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
+    if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
+    uint8_t tempR = tempQuality == 1 ? 230 : 255;
+    uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 0 ? 190 : 100);
+    uint8_t tempB = tempQuality == 1 ? 240 : (tempQuality == 0 ? 45 : 90);
     drawTextChanges(displayTempText, nextTempText, 5, 77, 62, 18, 58,
-                    bgR, bgG, bgB, 230, 235, 240);
+                    bgR, bgG, bgB, tempR, tempG, tempB);
     displayTempTenths = tempTenths;
+    displayTempQuality = tempQuality;
   }
   if (!displayCacheValid || displayHumidityPercent != humidityPercent) {
     char nextHumidityText[8];
@@ -861,6 +854,7 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   digitalWrite(CO2PUMP, LOW);
   delay(pulseMs);
   digitalWrite(CO2PUMP, HIGH);
+  co2AnimationUntil = millis() + 3000UL;
   contador_pomp = POMP_WAITING_TIME;
   Serial.print(F("EVENT,co2_manual_pulse,")); Serial.print(source); Serial.print(','); Serial.print(pulseMs);
   Serial.print(F("ms,baseline,")); if (co2BaselineReady) Serial.println(F("valid")); else Serial.println(F("pending"));
@@ -900,7 +894,7 @@ void setCo2Enabled(bool enabled) {
     botao_co2_onoff = newState;
     EEPROM.put(EEPROM_CO2, botao_co2_onoff);
   }
-  if (enabled) delayProporcionalAnt = 30;
+  if (enabled) delayProporcionalAnt = 60;
   else digitalWrite(CO2PUMP, HIGH);
 }
 
@@ -910,7 +904,35 @@ void setHeaterEnabled(bool enabled) {
     botao_aquecedor_onoff = newState;
     EEPROM.put(EEPROM_AQUECIMENTO, botao_aquecedor_onoff);
   }
-  if (!enabled) digitalWrite(HEATER, HIGH);
+  if (!enabled && digitalRead(HEATER) == LOW) {
+    digitalWrite(HEATER, HIGH);
+    heaterLastSwitchAt = millis();
+    heaterOnSince = 0;
+  }
+}
+
+void controlHeater(float temperature, unsigned long now) {
+  bool heaterOn = digitalRead(HEATER) == LOW;
+  if (botao_aquecedor_onoff != 1 || isnan(temperature)) {
+    if (heaterOn) digitalWrite(HEATER, HIGH);
+    return;
+  }
+
+  if (heaterOn) {
+    if (temperature >= HEATER_HARD_CUTOFF ||
+        (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
+         (temperature >= HEATER_OFF_TEMPERATURE ||
+          now - heaterOnSince >= HEATER_MAX_ON_MS))) {
+      digitalWrite(HEATER, HIGH);
+      heaterLastSwitchAt = now;
+      heaterOnSince = 0;
+    }
+  } else if (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
+             temperature <= HEATER_ON_TEMPERATURE) {
+    digitalWrite(HEATER, LOW);
+    heaterLastSwitchAt = now;
+    heaterOnSince = now;
+  }
 }
 
 void finishCo2ClickSequence() {
@@ -1014,44 +1036,10 @@ void disableAutoCalibration() {
   byte disableAutoCalib[] = {0xFF, 0x01, 0x79, 0x00, 0x00, 0x00, 0x00, 0x00, 0x86}; // Adjust checksum as needed
   mySerialCO2.write(disableAutoCalib, 9);
 
-  // Wait for a response (optional, for debugging)
+  // Drain the sensor's acknowledgement without sending diagnostic text to USB serial.
   delay(500);
   while (mySerialCO2.available()) {
-    byte response = mySerialCO2.read();
-    Serial.print(response, HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-}
-
-void verifyAutoCalibration() {
-  // Command to check auto-calibration status
-  // byte checkAutoCalib[] = {0xFF, 0x01, 0x7D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x82}; // Adjust checksum as needed
-  // mySerialCO2.write(checkAutoCalib, 9);
-
-  // Wait for a response
-  delay(500);
-  byte response[9];
-  int index = 0;
-  while (mySerialCO2.available() && index < 9) {
-    response[index++] = mySerialCO2.read();
-  }
-
-  // Print the response
-  Serial.print("Auto-Calibration Response: ");
-  for (int i = 0; i < 9; i++) {
-    Serial.print(response[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-
-  // Check the auto-calibration status from the response
-  if (response[2] == 0x79 && response[3] == 0x00) {
-    Serial.println("Auto-calibration is disabled.");
-  } else if (response[1] == 0x7D && response[2] == 0x01) {
-    Serial.println("Auto-calibration is enabled.");
-  } else {
-    Serial.println("Unknown response.");
+    mySerialCO2.read();
   }
 }
 

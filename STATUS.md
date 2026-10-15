@@ -293,3 +293,312 @@ filamento/processo e 39 STL das demais peças preservados.
   instável. O limite de rampa baseado em `1 + 1/2` impedia que a dose crescesse acima
   de 1 ms. Correção: piso automático de 5 ms e limite de rampa com incremento mínimo;
   compilada e gravada para a próxima dose.
+
+## Observação adaptativa de CO₂ e correção do indicador de boots
+
+- 2026-10-15, monitor USB aberto com o controle automático de CO₂ e aquecimento
+  habilitados. O contador serial `BOOT_COUNT` marcou 37 ao iniciar o monitor; abrir
+  a porta serial causa reset por DTR e também incrementa esse contador.
+- A leitura caiu de aproximadamente 25.265 ppm para 24.967 ppm; a taxa em janela
+  de 60 s foi −252 ppm/min. O controle aplicou 45 ms e depois 67 ms.
+- A resposta ao pulso de 67 ms foi atrasada: o pico registrado após o pulso foi
+  +1.006 ppm e a janela marcou +964 ppm/min. Depois o controle usou pulsos de 5 e
+  7 ms; a taxa voltou para −285 ppm/min. A rampa então subiu para 10 e 15 ms,
+  acompanhando a perda observada, sem extrapolar novamente para dezenas de ms.
+- As janelas subsequentes marcaram −257 e −125 ppm/min. A concentração ficou perto
+  de 25,2–25,5 mil ppm. Isso confirma que a dose útil muda com o tempo e que a
+  resposta tardia deve permanecer separada da taxa instantânea.
+- A temperatura externa variou de 36,7 a 37,7 °C com o aquecimento habilitado;
+  chegou momentaneamente a 37,7 °C e depois retornou a 37,0–37,1 °C. O ventilador
+  ligou quando a leitura interna chegou a 30,0 °C. CO₂, temperatura e umidade foram
+  reportados válidos durante a observação.
+- Corrigi o cabeçalho: a cor mantém o estado geral, sem “1 FORA/2 FORA”; o contador
+  `R<n>` volta ao display. A leitura de CO₂ muda para vermelho fora da faixa e
+  verde dentro; a temperatura muda para vermelho fora e mantém cor neutra dentro.
+  Quando um pulso termina, as bolhas continuam animadas por 3 segundos para tornar
+  visíveis os pulsos curtos. Compilado e gravado para Uno: 32.214 bytes Flash (99%),
+  923 bytes RAM (45%). O reset de gravação incrementa o contador persistente uma vez.
+
+## Retorno ao azul-marinho e animação durante aquecimento
+
+- O teste de fundo preto foi revertido após a preferência pelo azul-marinho
+  `RGB 8,18,30`, aplicado à intro, tela, leituras e áreas apagadas dos ícones.
+- A intro de DNA ficou na tela durante os 10 s de aquecimento; revisão posterior
+  substitui a hélice grande por pontos animados de CO₂ durante a espera, mantendo as
+  animações dos três ícones principais.
+- A última gravação testada ocupava 32.132/32.256 bytes de Flash e 923/2.048 bytes
+  de RAM. Esta revisão compilou e foi gravada com `--verify`: 32.208/32.256 bytes
+  de Flash (48 bytes livres) e 923/2.048 bytes de RAM. A gravação reinicia a placa
+  e incrementa o contador persistente uma vez.
+- Antes desta revisão, a leitura perto de 26.000 ppm caiu a cerca de −362 ppm/min;
+  após os ciclos de espera, o controle automático abriu um pulso de 45 ms. A demora
+  para atingir 5% continua como ponto de investigação, separado desta revisão visual.
+
+## Dose automática ajustada pela resposta observada
+
+- Monitor sem DTR, sem reiniciar a placa: perto de 26.000 ppm, a primeira janela
+  registrou −313 ppm/min. Após um pulso de 45 ms, a janela seguinte ficou em
+  −7 ppm/min. Com pulsos seguintes de 5 e 7 ms, a taxa voltou a −21 ppm/min; a
+  concentração caiu cerca de 400 ppm ao longo de pouco mais de 3 minutos.
+- O log mostrou que a taxa instantânea ruidosa fazia o cálculo voltar a 5 ms,
+  mesmo após esperar o ciclo de resposta. O critério de estabilidade de 30 s não
+  deve bloquear o cálculo do tamanho da dose: a espera de aproximadamente 60 s já
+  permite observar a resposta do sensor.
+- Revisão inicial (posteriormente revista após logs de subida atrasada): dimensionar
+  o próximo pulso usando a resposta observada após o
+  intervalo, sem exigir que a inclinação instantânea esteja estável. A rampa continua
+  limitada a 1,5× por ciclo e os limites por proximidade ao alvo são preservados.
+  No teste anterior à troca da revisão, a resposta observada levou o próximo pulso de
+  45 para 67 ms e depois 100 ms; o pulso de 100 ms provocou subida rápida. Isso confirma
+  a adaptação à vazão, mas exige acompanhar o atraso do sensor para evitar excesso.
+- A temperatura chegou a 37,7 °C enquanto o relé já estava desligado; depois caiu
+  gradualmente para 37,0 °C. Alterei o termostato para ligar abaixo de 36,5 °C e cortar
+  em 36,7 °C para compensar o calor residual. A histerese foi compilada e gravada nesta
+  revisão; ainda precisa ser acompanhada com o aquecedor ligado para validar os picos.
+- A intro de DNA grande foi removida. Os três pontos de espera reutilizam o ícone vetorial
+  de CO₂, desenhado por coordenadas em 25×17 px; as animações compactas dos três controles
+  permanecem. Não há bitmap de ícone no firmware.
+- Firmware compilado e gravado para Uno com `--verify`: 32.068/32.256 bytes de Flash
+  (188 bytes livres) e 923/2.048 bytes de RAM. O upload reiniciou a placa uma vez; o
+  contador persistente de inicializações registra esse reset.
+
+## Resposta tardia observada e pausa automática
+
+- A abertura do monitor reiniciou a placa uma vez (contador persistente 49). No início
+  do registro, CO₂ marcava 43.041 ppm, temperatura 36,5 °C, aquecimento ligado e
+  controle de CO₂ ligado. A primeira dose automática após o reinício foi 45 ms a
+  42.308 ppm.
+- Com CO₂ a 42.316 ppm, o ciclo seguinte aplicou 67 ms. A leitura então subiu até
+  48.977 ppm, com pico de taxa instantânea de +217,88 ppm/s. A janela de um minuto
+  chegou a +3.442 ppm/min. O código permitiu uma dose adicional de 71 ms após apenas
+  60 s, enquanto a subida ainda estava em andamento.
+- Desativei o automático pela serial em 45.865 ppm. Sem novos pulsos, a leitura ainda
+  subiu até cerca de 49.000 ppm e depois caiu. Isso confirma que o ciclo de 60 s pode
+  acabar antes da resposta tardia; a concentração não ultrapassou 50.000 ppm neste
+  ensaio. O automático permaneceu desligado ao final da coleta.
+- A temperatura cortou o aquecedor em 36,7 °C, mas atingiu 37,6 °C após a inércia
+  térmica; posteriormente ficou perto de 37,5 °C e desceu gradualmente. A histerese
+  reduziu o pico observado anteriormente de 37,7 °C, mas ainda não mantém o alvo de
+  37,0 °C com precisão. O ventilador ligou ao atingir 30 °C internamente.
+- Revisão atual: após o cooldown mínimo, bloquear novas doses automáticas enquanto a
+  inclinação estiver acima de 5 ppm/s (300 ppm/min). Exigir 30 s contínuos abaixo desse
+  limite antes de calcular/aplicar outra dose; doses manuais continuam sendo um caminho
+  explícito de intervenção. Compilado e gravado com `--verify`: 32.084/32.256 bytes de
+  Flash (172 bytes livres), 923/2.048 bytes de RAM. O automático está salvo como
+  desligado; validar a nova espera com a próxima ativação monitorada.
+
+## Verificação da espera e da pressão da câmara
+
+- Após uma nova ativação monitorada em 47.230 ppm, foram aplicados pulsos de 45 ms e,
+  após o cooldown, 67 ms. A leitura do segundo pulso subiu de 46.161 para cerca de
+  46.947 ppm em aproximadamente 100 s; a máxima observada até então foi +786 ppm.
+  A próxima dose não saiu no fim dos 60 s: `trend_ready=0` enquanto a taxa ainda
+  passava de 300 ppm/min, confirmando o bloqueio por subida.
+- Depois que a subida desacelerou por 30 s, foi aplicado um pulso automático de 5 ms.
+  A auditoria do loop encontrou a causa: `contador_pomp` era impresso em zero e depois
+  decrementado para −1; no ciclo seguinte, o cálculo proporcional acontecia antes de
+  a correção para zero, tornando a estimativa inválida e selecionando o piso de 5 ms.
+  O CO₂ automático foi desligado em 46.295 ppm. A taxa líquida anterior foi
+  −589 ppm/min; este valor ainda não distingue fuga física de troca de ar/transiente.
+- Revisão gravada: o contador agora decrementa somente acima de zero, para que a
+  estimativa proporcional seja calculada no mesmo ciclo em que o cooldown termina.
+  Compilado e gravado com `--verify`: 32.070/32.256 bytes de Flash (186 bytes livres),
+  923/2.048 bytes de RAM. O CO₂ automático está salvo como desligado; validar a estimativa
+  corrigida na próxima ativação monitorada.
+- Referências de fabricante consultadas: [Thermo Fisher Steri-Cult manual](https://assets.thermofisher.com/TFS-Assets/LED/manuals/forma-stericult-co2-incubator-usermanual-7023307.pdf)
+  especifica ±0,1 °C de controle, ±0,2 °C de uniformidade e ±0,1% CO₂ a 5%;
+  [Memmert ICO105](https://www.memmert.com/en/products/incubators/co2-incubator/ico105-2/pdf)
+  lista sondas Pt100 redundantes, aquecimento em seis lados e calibração de fábrica
+  no centro da câmara a 37 °C/5% CO₂. O [manual Thermo Heracell](https://documents.thermofisher.com/TFS-Assets/LED/manuals/FILE-1907-718829-EN.pdf)
+  descreve leve pressurização e saída por compensação de pressão; o [manual Thermo BBD](https://tools.thermofisher.com/content/sfs/manuals/D21735~.pdf)
+  especifica um respiro para impedir acumulação indesejada de pressão.
+- Comparação prática: nossa leitura exterior variou de 36,1 a 37,5 °C no aquecimento,
+  com pico observado 0,5 °C acima da meta. Não há ainda calibração contra termômetro
+  rastreável nem mapa de uniformidade; portanto, não é possível comparar precisão real
+  com as especificações comerciais. A câmara deve permanecer ventilada/compensada, não
+  hermeticamente pressurizada.
+- A telemetria desta rodada marcou 52–54% RH a aproximadamente 37 °C. O valor ainda
+  precisa ser conferido com higrômetro independente; se confirmado, está bem abaixo do
+  sistema de umidificação de 95% RH a 37 °C especificado no manual Steri-Cult.
+- Auditoria do CAD: não há canal de compensação de pressão dedicado à câmara. O respiro
+  Ø0,8 mm da junta TPU atravessa apenas a pele externa do bulbo e não comunica com a
+  câmara. Não abrir um furo sem restrição/filtro: antes de apertar mais a porta, definir
+  um componente de compensação adequado e seu ponto de instalação. Pela câmara nominal
+  de 112×132×111 mm, o volume é cerca de 1,64 L; em uma conta idealizada sem saída de
+  gás, atingir 5% a partir do ar ambiente exigiria acrescentar ~86 mL de CO₂ e elevaria
+  a pressão em ~5,3 kPa, aplicando ~78 N na área frontal de 112×132 mm. Isso não é uma
+  classificação de pressão da peça.
+- O ventilador acionou em 30 °C na sonda secundária e manteve a leitura perto de
+  29,5–30 °C durante a coleta; não houve prova de que chegaria abaixo de 29 °C para
+  desligar. O limiar liga/desliga 30/29 °C é conservador, mas falta confirmar a posição
+  da sonda e medir a resposta térmica do compartimento com o ventilador ativo.
+
+## Amostra ao vivo de temperatura, ventilador e taxa de CO₂
+
+- 2026-10-15, monitor serial aberto em PTY com `sg dialout`; a abertura reiniciou a
+  placa e o `BOOT_COUNT` passou a 54. CO₂ automático estava desligado, aquecimento
+  automático ligado, válvula fechada.
+- Durante cerca de 92 s de telemetria após a inicialização, CO₂ caiu de 43.070 para
+  42.265 ppm; a janela de 60 s reportou **−550 ppm/min**. Temperatura da câmara ficou
+  entre 36,5 e 37,1 °C; sonda interna entre 29,5 e 29,7 °C. Ventilador permaneceu
+  desligado, pois a sonda não atingiu 30 °C.
+- O campo `ppm/min` já é desenhado na tela durante a fase de adaptação: mostra `---`
+  até completar uma janela válida de aproximadamente 60 s e então exibe a taxa com
+  sinal. Ele é atualizado a cada janela, sem depender de o controle automático ter
+  estabilizado ou alcançado a meta. O mesmo valor está disponível na telemetria serial.
+
+## Ciclo térmico limitado e nova semente de CO₂
+
+- 2026-10-15. Alterei o termostato para impor intervalo mínimo de 30 s entre mudanças
+  do relé, limitar cada ciclo ligado a 45 s e desligar imediatamente ao atingir 37,2 °C.
+  A histerese continua ligando abaixo de 36,5 °C e desligando em 36,7 °C. No primeiro
+  ciclo observado após a gravação, o relé desligou pelo limite de 45 s com leitura de
+  36,4 °C; a temperatura chegou a 36,9 °C e permaneceu entre 36,9–37,0 °C por cerca de
+  um minuto. É um resultado preliminar, ainda sem ciclo longo ou termômetro de referência.
+- Para compensar a perda observada, elevei a semente do pulso automático de 30 para
+  60 ms; a rampa limitada a 1,5× solicita 90 ms no primeiro ciclo. Um pulso de 90 ms
+  foi aplicado perto de 29.452 ppm e a leitura estava em 29.166 ppm cerca de 57 s depois.
+  O teste foi interrompido antes de completar a janela de resposta porque a porta seria
+  aberta para troca da vedação; portanto, esse ponto não mede a resposta do pulso.
+  O controle automático e o aquecedor foram desligados antes da intervenção.
+- Para manter a margem de Flash do Uno, os desenhos de ventilador, chama e bolhas foram
+  simplificados para ícones estáticos; as bolhas ainda aparecem por 3 s após um pulso.
+  A compilação e a gravação com verificação foram concluídas: 32.008/32.256 bytes de
+  Flash (248 bytes livres) e 926/2.048 bytes de RAM. A revisão do firmware e desta
+  documentação precisa ser enviada ao Git.
+
+## Vedação nova, taxa de perda e retorno das animações
+
+- 2026-10-15, após o usuário instalar a vedação nova e fechar a porta. CO₂ automático
+  permaneceu desligado, válvula fechada. O monitor serial normal reportou `BOOT_COUNT,64`;
+  sessões seriais abertas durante a coleta reiniciam a placa e incrementam esse contador.
+- A comparação começou com a câmara ainda fria, a 33,1 °C e 27.136 ppm. O aquecimento
+  foi habilitado para aproximar as condições da linha de base antiga; a temperatura
+  atingiu 37,5 °C e depois oscilou entre 36,3 e 37,5 °C nos ciclos observados. A umidade
+  medida variou de 43,0 a 45,3% RH. O ventilador acionou ao redor de 30 °C na sonda interna.
+- Em cerca de 7,5 min, o CO₂ caiu de 27.136 para 24.744 ppm. As janelas de taxa válidas
+  registraram **−336, −326, −339, −328, −299, −307 e −296 ppm/min**. A linha de base da vedação
+  antiga foi −385, −302, −363 e −298 ppm/min, com média −337. As taxas continuam na mesma
+  faixa; como concentração inicial, temperatura e umidade não foram exatamente pareadas,
+  este ensaio não mostra redução clara do vazamento após a troca.
+- A tentativa de capturar via `socat` produziu bytes corrompidos no terminal após um
+  comando de aquecimento; ela foi encerrada e substituída pelo monitor Arduino CLI, que
+  voltou a produzir linhas `DATA` válidas. Os dados acima vêm do monitor normal.
+- Para recuperar movimento nos três ícones, removi `verifyAutoCalibration()`: a função
+  não enviava a consulta que dizia verificar, esperava 500 ms e interpretava bytes
+  residuais sem garantir que o buffer de resposta estivesse preenchido. Mantive o comando
+  de desativação da calibração automática e o descarte da resposta. As animações compactas
+  de CO₂, chama e ventilador foram restauradas. Compilação e gravação com verificação:
+  32.120/32.256 bytes de Flash (136 livres), 825/2.048 bytes de RAM.
+- Após a gravação, o monitor confirmou inicialização normal e `BOOT_COUNT,66`. CO₂ ficou
+  desabilitado, aquecimento habilitado e válvula fechada. Em duas janelas após o reinício,
+  as taxas foram −269 e −292 ppm/min, com temperatura entre 36,4 e 37,1 °C e umidade de
+  45,5–46,0% RH. A sonda interna ficou em 29,1–29,5 °C. A taxa de −292 ppm/min perto de
+  23.700 ppm continua compatível com a perda anterior; não confirma melhora da vedação.
+  A tela não foi fotografada após restaurar as animações, então a aparência física ainda
+  precisa de confirmação visual.
+
+## Continuação da observação de umidade após troca da vedação
+
+- 2026-10-15, continuação da mesma sessão serial (`BOOT_COUNT` permanece 66; sem novo
+  reset). CO₂ automático desligado, aquecimento automático ligado, válvula fechada.
+- Em cerca de 2 min, CO₂ caiu de 23.371 para 23.134 ppm; as amostras intermediárias
+  foram monotônicas e a janela móvel publicada ficou em −290 ppm/min. Temperatura
+  variou de 36,3 a 36,8 °C; umidade relativa subiu de 46,7 para 47,1%; sonda interna
+  ficou em 29,6–29,7 °C. O relé de aquecimento alternou durante o período.
+- Esse trecho não prova que a vedação melhorou nem que a umidade aumentou por causa da
+  vedação: não houve umidade ambiente de referência e as condições de temperatura e
+  concentração variam. Guardar 46,7–47,1% RH como leitura anterior à instalação do
+  recipiente de água maior, a ser comparada em condições semelhantes.
+- Continuação da mesma sessão: a janela seguinte atualizou a taxa para −306 ppm/min
+  perto de 23.055 ppm. Temperatura voltou a 37,0 °C; RH oscilou entre 46,8 e 46,5%.
+  A oscilação reforça que a comparação do recipiente maior deve usar um trecho após
+  estabilização térmica, e não somente a tendência inicial de umidade.
+
+## Janela longa da mesma sessão: estabilidade térmica e perda de CO₂
+
+- Sem novo reset desde `BOOT_COUNT,66`; CO₂ automático desligado, aquecimento automático
+  ligado e válvula fechada. Entre aproximadamente 23.055 e 22.696 ppm, a taxa foi
+  atualizada de −306 para −301 ppm/min. A queda ao longo do trecho é compatível com
+  essa taxa; o número de taxa só muda quando fecha a janela de cálculo.
+- Em cerca de 3 min adicionais, a temperatura da câmara ficou entre 36,5 e 37,0 °C,
+  enquanto o relé alternou sem acionamento contínuo; a sonda interna ficou em 29,7–29,9 °C.
+  RH permaneceu entre 46,3 e 46,7%. É evidência preliminar de controle térmico próximo
+  à meta neste trecho, não uma validação independente de precisão nem uniformidade.
+- Comparar a leitura de RH com a do recipiente maior depois de aguardar a temperatura
+  estabilizar. A leitura atual de 46,3–46,7% é a referência local imediatamente anterior.
+- Janela seguinte da mesma sessão (10:35 UTC): CO₂ chegou a 22.443 ppm e a taxa foi
+  recalculada para −271 ppm/min em 22.474 ppm. RH ficou em 47,5–47,7%; a temperatura
+  variou de 36,3 a 36,7 °C. A sonda interna alcançou 30,0 °C e o ventilador ligou; o
+  aquecedor desligou ao passar por 36,5 °C, conforme a histerese observada. Os dois
+  estados coexistiram por um intervalo curto, sem evidência aqui de erro de controle.
+
+## Ajuste experimental do controle térmico e referência antes do anel do sensor
+
+- 2026-10-15. Para aproximar a leitura da meta de 37 °C após ciclos observados entre
+  36,3 e 37,0 °C, o termostato foi ajustado de 36,5/36,7 °C para ligar até 36,8 °C e
+  desligar a partir de 37,0 °C. O intervalo mínimo entre mudanças e o limite de cada
+  acionamento passaram de 30/45 s para 20/20 s; o corte de segurança permaneceu em
+  37,2 °C.
+- Compilado e gravado com `--verify`: 32.120/32.256 bytes de Flash e 825/2.048 bytes
+  de RAM. O monitor após a gravação confirmou inicialização e `BOOT_COUNT,68`; CO₂
+  automático permaneceu desligado e válvula fechada.
+- Primeira observação ainda é transitória: após o reset a leitura caiu de 36,5 para
+  36,0 °C, depois ficou entre 36,6 e 37,3 °C. Em um pulso de 20 s, o sensor mostrou
+  subida residual até 37,3 °C com o relé já desligado; nos ciclos seguintes ficou
+  em torno de 36,6–36,9 °C. Isso sugere que o centro da leitura se aproximou de 37 °C,
+  mas ainda há inércia e o ensaio não fecha estabilidade em longo prazo. Não aumentar
+  mais a energia do aquecedor sem observar uma janela maior.
+- Referência de perda da câmara após instalar a vedação nova da porta e antes de instalar
+  o anel novo do sensor: válvula fechada, temperatura estabilizada perto de 36,8–36,9 °C,
+  leitura de CO₂ próxima de 20.032 ppm e janela de aproximadamente −305 ppm/min. A taxa
+  perto de 20.000 ppm é menor em valor absoluto que a medida a 26.000–28.000 ppm, como
+  esperado para uma mesma troca proporcional com o ar ambiente.
+- Normalizando aproximadamente por excesso sobre 420 ppm ambiente, a constante observada
+  é ~0,0123/min com a vedação antiga (−337 ppm/min em ~27.918 ppm), ~0,0125/min com a
+  vedação nova da porta (−319 ppm/min em ~25.940 ppm) e ~0,0155/min na janela atual antes
+  do anel (−305 ppm/min em ~20.032 ppm). Os ensaios não são pareados nem calibrados; não
+  demonstram melhora da porta. Repetir depois da instalação do anel em temperatura e
+  concentração semelhantes para avaliar o efeito do conjunto, sem atribuir a fuga a uma
+  localização específica.
+- Continuação da referência antes do anel, sem reset e ainda com a vedação nova da porta:
+  a janela seguinte marcou −218 ppm/min perto de 19.610 ppm; temperatura ficou em 37,1 °C,
+  RH em 48,2–48,3% e aquecedor desligado. A constante aproximada, usando 420 ppm como
+  ambiente, é ~0,0113/min. Continua na mesma ordem das referências com vedação antiga e
+  nova; a leitura adicional não muda a conclusão de que a vedação da porta ainda não
+  demonstrou redução clara. Após instalar o anel, repetir a janela perto de 37 °C.
+
+## Primeiro indício após instalar o anel do sensor (encaixe ainda frouxo)
+
+- 2026-10-15, após retirar e recolocar o sensor para experimentar o anel ainda com folga.
+  Os atuadores permaneceram desligados e a válvula fechada. A leitura caiu transitoriamente
+  de ~19.200 para ~2.000 ppm e depois subiu até ~16.260 ppm; toda essa recuperação foi
+  excluída da medição de perda.
+- Após a leitura se estabilizar perto de 16.260 ppm, uma janela completa caiu de cerca de
+  16.260 para 16.139 ppm em ~61 s: **−119 ppm/min**. A temperatura caiu de 34,2 para
+  33,5 °C durante a janela e RH subiu de 51,9 para 53,0%; o aquecimento estava desligado.
+- Normalização aproximada por excesso sobre 420 ppm: ~0,0076/min nesta janela, contra
+  ~0,0113/min antes do anel (−218 ppm/min perto de 19.610 ppm). Isso sugeriria ~33% menos
+  perda fracionária, mas a comparação não está controlada: a câmara foi aberta, o sensor
+  foi movido, a temperatura estava vários graus mais baixa e o encaixe ainda tem folga.
+  Tratar apenas como indício inicial; repetir com o anel justo e a temperatura estabilizada
+  perto de 37 °C antes de concluir se houve melhora.
+- Segunda janela consecutiva após o assentamento do sensor marcou −141 ppm/min perto de
+  15.995 ppm, com a câmara a 32,8 °C e ainda esfriando. Usando o mesmo modelo simples
+  (excesso sobre 420 ppm), as duas janelas pós-anel têm constantes ~0,0076 e ~0,0091/min,
+  média ~0,0083/min, cerca de 27% abaixo de ~0,0113/min antes do anel. Há um indício
+  repetido de melhora mesmo com folga, mas o teste começou após retirar/recolocar o sensor
+  e a câmara não estava a 37 °C; não é confirmação. O CO₂ e o aquecimento seguem desligados.
+- Atualização posterior do mesmo ensaio frouxo: duas janelas adicionais marcaram −169 ppm/min
+  perto de 15.822 ppm e −145 ppm/min perto de 15.674 ppm, com temperatura caindo de 32,2
+  para 31,6 °C e RH subindo de 55,1 para 56,0%. Constantes aproximadas: ~0,0110 e
+  ~0,0095/min, média ~0,0102/min, somente ~10% abaixo da referência pré-anel (~0,0113/min).
+  Portanto, o ganho aparente de ~27% das primeiras janelas não persistiu; a leitura após
+  remoção/recolocação ainda estava se acomodando e a temperatura continuava mudando. O
+  encaixe frouxo não demonstra melhora mensurável. Repetir com o anel final e a câmara
+  estabilizada perto de 37 °C.
+- Terceira janela posterior ao anel frouxo: −153 ppm/min perto de 15.517 ppm, com a
+  temperatura em 31,1–31,0 °C. A constante aproximada é ~0,0101/min, coerente com as
+  duas janelas anteriores e ainda próxima da linha de base (~0,0113/min). O resultado
+  reforça que não há melhora clara demonstrada; a câmara segue fria e fora das condições
+  de comparação pretendidas.
