@@ -1203,3 +1203,14 @@ filamento/processo e 39 STL das demais peças preservados.
   comprovada.
 - Durante todo o monitoramento, `co2_range_lock=1`, `co2_valid=0`, controle automático de
   CO₂ desligado e válvula fechada. Os números brutos do sensor não são concentração válida.
+
+## Repetição térmica com condições contínuas
+
+- 2026-10-15, BOOT_COUNT=143. Início em 36,8 °C; após uma queda inicial até 36,6 °C, os
+  pulsos foram crescendo conforme a demanda. A leitura chegou a 36,9–37,0 °C em ~2 min.
+- Na janela total de ~5 min, a temperatura variou entre 36,6 e 37,0 °C, sem exceder 37,0 °C.
+  Perto da meta, o PID pediu pulsos de ~4–6 s; em 36,7–36,8 °C, a demanda aumentou para
+  ~10–12 s. Houve uma queda até 36,7 °C seguida de recuperação gradual, e o último trecho
+  ficou em 37,0 °C com aquecedor desligado. Melhor que a janela anterior (sem pico de 37,2 °C),
+  mas ainda há desvios de até 0,4 °C abaixo da meta; seguir acompanhando antes de retunar.
+- `co2_range_lock=1`, `co2_valid=0`, `co2_enabled=0`, `valve_open=0` durante toda a sessão.
