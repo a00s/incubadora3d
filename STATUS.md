@@ -866,3 +866,18 @@ filamento/processo e 39 STL das demais peças preservados.
   de saída foi enviado. Não há telemetria posterior para confirmar o estado atual da
   válvula ou da incubadora. Não repetir monitoramento nem comandos de CO₂ sem presença
   confirmada.
+
+## Painel numérico restaurado após retorno do usuário
+
+- 2026-10-15. O usuário informou que a alternância com gráfico deixou a interface
+  desorganizada e pediu retorno ao painel anterior, sem gráfico. Removidos a página de
+  gráfico, o histórico de 32 pontos e a alternância; restaurados temperatura interna e
+  rótulos ON/OFF sob os três ícones. Mantidos o contador de boots, a cor de estado, taxa
+  de CO₂, animações dos ícones e a remoção dos tetos especiais de dose perto da meta.
+- Compilação: 31.978 bytes de Flash e 825 bytes de RAM global. Firmware carregado com
+  sucesso; o monitor serial confirmou `BOOT_COUNT=82` e dados válidos. No primeiro trecho
+  após inicialização, CO₂ variou de 48.708 para 48.661 ppm, temperatura externa de 36,9
+  para 36,6 °C, umidade ~58,1% e sensor interno 29,4 °C. CO₂ e aquecimento permaneceram
+  habilitados; válvula fechada durante a amostra. A taxa ppm/min ainda não estava válida.
+- O painel deve ser conferido visualmente no display pelo usuário; a sessão serial foi
+  encerrada após confirmação de boot e telemetria.

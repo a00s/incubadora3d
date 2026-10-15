@@ -215,16 +215,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual usa 32.142 bytes de Flash (99%) e
-851 bytes de RAM global (41%), deixando 114 bytes de Flash e 1.197 bytes de RAM para
+serial antes de compilar/gravar. A compilação atual usa 31.978 bytes de Flash (99%) e
+825 bytes de RAM global (40%), deixando 278 bytes de Flash e 1.223 bytes de RAM para
 pilha e chamadas.
 
-A tela alterna a cada cerca de 8 s entre CO₂/temperatura/umidade/taxa e um gráfico de
-CO₂, mantendo os ícones de CO₂, chama e ventilador na faixa inferior. O gráfico guarda
-as últimas 32 amostras (cerca de 4 min) e destaca a linha de 50.000 ppm. A temperatura
-interna continua na telemetria. As bolhas sobem por 3 s após um pulso, a chama oscila
-enquanto o aquecedor está energizado e o rotor gira enquanto o ventilador funciona.
-Leituras sem alteração não redesenham os campos de texto.
+A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
+variação do CO₂, mantendo os ícones animados e os estados ON/OFF na faixa inferior.
+O cabeçalho mantém a cor de estado e o contador de reinicializações. As bolhas sobem
+por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor
+gira enquanto o ventilador funciona. Leituras sem alteração não redesenham os campos
+de texto.
 
 As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
