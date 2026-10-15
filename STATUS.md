@@ -490,3 +490,10 @@ filamento/processo e 39 STL das demais peças preservados.
   de desativação da calibração automática e o descarte da resposta. As animações compactas
   de CO₂, chama e ventilador foram restauradas. Compilação e gravação com verificação:
   32.120/32.256 bytes de Flash (136 livres), 825/2.048 bytes de RAM.
+- Após a gravação, o monitor confirmou inicialização normal e `BOOT_COUNT,66`. CO₂ ficou
+  desabilitado, aquecimento habilitado e válvula fechada. Em duas janelas após o reinício,
+  as taxas foram −269 e −292 ppm/min, com temperatura entre 36,4 e 37,1 °C e umidade de
+  45,5–46,0% RH. A sonda interna ficou em 29,1–29,5 °C. A taxa de −292 ppm/min perto de
+  23.700 ppm continua compatível com a perda anterior; não confirma melhora da vedação.
+  A tela não foi fotografada após restaurar as animações, então a aparência física ainda
+  precisa de confirmação visual.
