@@ -684,3 +684,41 @@ filamento/processo e 39 STL das demais peças preservados.
   de vazamento: mistura/estabilização, temperatura e vedação podem contribuir. Repetir
   a janela com o novo anel instalado para comparar sob concentração e temperatura
   semelhantes.
+
+## Resposta de CO₂ e aquecimento antes da troca do anel
+
+- 2026-10-15. Nova conexão serial reiniciou o Uno (`BOOT_COUNT=75`). Ao iniciar, CO₂
+  estava em 32.936 ppm, temperatura 28,6 °C e controles desligados. Com autorização
+  prévia para operar a incubadora, liguei CO₂ e aquecimento automáticos para continuar
+  o ensaio rumo a 50.000 ppm/37 °C. A válvula iniciou fechada.
+- Pulsos automáticos: 90 ms em 32.398 ppm, 135 ms em 31.992 ppm e 202 ms em 32.977 ppm.
+  Após o pulso de 135 ms, a leitura subiu lentamente até ~33.117 ppm (ganho máximo
+  registrado ~1.125 ppm). Após o pulso de 202 ms, a leitura subiu até 41.973 ppm,
+  aumento de 8.996 ppm, com pico da taxa instantânea de 627 ppm/s e demora de cerca de
+  136 s para atingir o máximo. O automático foi desligado durante a subida; a leitura
+  ainda continuou subindo com `co2_enabled=0` e `valve_open=0`, evidenciando grande
+  atraso do sensor/resposta da câmara. O primeiro pulso de 90 ms não mostrou ganho
+  detectável antes da dose seguinte.
+- Após o pico, CO₂ automático foi reativado brevemente e emitiu pulsos de 29 ms e 43 ms.
+  O ganho após 43 ms foi pequeno (~234 ppm no máximo observado); a leitura depois voltou
+  a cair. CO₂ foi desligado novamente antes da manutenção do sensor. Não houve leitura
+  inválida nem indicação de rollover. A taxa durante queda sem novos pulsos voltou à
+  ordem de −400 a −500 ppm/min, consistente com as janelas anteriores, mas a câmara
+  estava quente e a vedação/anel novo não estavam confirmados.
+- Aquecimento automático elevou a temperatura de 28,5 °C para 37,0 °C em cerca de
+  10 min. O relé respeitou ciclos máximos de 20 s; desligou perto de 37 °C e a leitura
+  não ultrapassou 37,0 °C durante esta janela. Após `HEAT OFF`, temperatura caiu para
+  36,1 °C. Não alterar limites com base em apenas um ciclo.
+- Para a pergunta sobre exposição no quarto: o volume CAD da câmara é
+  112×132×111 mm = 1,64 L; a 5% contém ~82 mL de CO₂, e a 4,2% contém ~69 mL. A queda
+  observada de ~464 ppm/min a 3,3% corresponde, sob hipótese de mistura uniforme e
+  leitura correta, a cerca de 0,76 mL/min de perda líquida de CO₂ da câmara. Em um
+  quarto de 30 m³ sem ventilação, isso representaria ~12 ppm adicionais em 8 h. É uma
+  estimativa de primeira ordem, não uma medição do ar do quarto; não cobre falha do
+  cilindro, regulador, mangueira ou válvula presa aberta. O CO₂ é inodoro; NIOSH lista
+  REL de 5.000 ppm TWA, 30.000 ppm short-term e IDLH de 40.000 ppm:
+  https://www.cdc.gov/niosh/npg/npgd0103.html
+- Estado para manutenção, confirmado por `STATUS`: `co2_enabled=0`,
+  `heater_enabled=0`, `valve_open=0`, `heater_on=0`; CO₂ 41.080 ppm, temperatura
+  36,6 °C. A última telemetria antes de remover o sensor mostrou 40.427 ppm e 36,1 °C,
+  ainda caindo. Manter saídas desligadas até o sensor com o anel novo estar reinstalado.
