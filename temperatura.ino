@@ -32,6 +32,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 
 #define CO2_TARGET_PPM 50000L
 #define CO2_SENSOR_PROTOCOL_MAX_PPM 65535L
+#define CO2_SENSOR_WARMUP_MS 180000UL
 #define CO2_GOOD_MIN_PPM 48000L
 #define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
 #define CO2_STABLE_TIME_MS 30000UL
@@ -424,7 +425,8 @@ void loop()
 //    Serial.print("\tCO2: ");
 //    Serial.println(CO2i);  
 
-    if (validCo2 && CO2i < CO2_TARGET_PPM && botao_co2_onoff == 1 &&
+    if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
+        CO2i < CO2_TARGET_PPM && botao_co2_onoff == 1 &&
         contador_pomp == 0 && co2TrendReady && co2ClickCount == 0) {
       co2_before_pump = CO2i;
       co2BaselineReady = true;

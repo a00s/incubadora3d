@@ -946,3 +946,25 @@ filamento/processo e 39 STL das demais peças preservados.
   reinicialização, a temperatura variou de 36,8 para 36,7 °C e a leitura de CO₂ caiu de
   7.673 para 7.507 ppm em ~13 s; por ser logo após boot, a leitura não valida a
   concentração real. A nova adaptação ainda não foi exercitada porque o CO₂ segue OFF.
+
+## Protocolo do MH-Z16 e bloqueio de pré-aquecimento
+
+- 2026-10-15. O manual oficial Winsen MH-Z16 v2.4 especifica pré-aquecimento de 3 min,
+  resposta T90 abaixo de 30 s e leitura UART `0x86` em dois bytes: concentração = byte
+  alto × 256 + byte baixo. O documento é inconsistente quanto às faixas: a tabela principal
+  declara 0–5% selecionável, enquanto a tabela de opções inclui 0–10% e 0–15%. Como não
+  documenta escala alternativa para a saída UART de 16 bits, o firmware não converte nem
+  tenta reconstruir valores acima de 65.535 ppm. A meta de 50.000 ppm continua dentro da
+  faixa representável; 100.000 ppm não está representável por esse formato.
+- Adicionado bloqueio de dosagem automática durante 180 s após cada reinicialização, em
+  respeito ao pré-aquecimento especificado pelo fabricante. O controle/manual prime fica
+  disponível. Compilação concluída: 32.212 bytes de Flash (99%) e 955 bytes de RAM;
+  upload concluído. Em BOOT_COUNT=96, confirmou-se `co2_enabled=0` e `valve_open=0`.
+  A leitura caiu de 5.050 para 4.844 ppm em ~17 s, cerca de −720 ppm/min; por iniciar
+  após boot e não haver referência independente, essa amostra não determina a
+  concentração real. A condição de pré-aquecimento não pôde ser verificada em operação,
+  pois o controle automático permaneceu desligado.
+- Referência: [manual oficial MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf),
+  seções 4, 7 e 8. A própria documentação lista opções de faixa diferentes entre a tabela
+  principal e a tabela de variantes; manter a leitura em 16 bits e não extrapolar o sensor
+  para além do protocolo é deliberado até confirmação do fabricante para esta unidade.

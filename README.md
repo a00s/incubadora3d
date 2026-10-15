@@ -288,6 +288,8 @@ pela eficiência suavizada, limitado a 1.000 ms por pulso. A primeira dose após
 usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms para
 evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
 empilhar pulsos durante a subida atrasada.
+O controle automático aguarda também 3 minutos após cada reinicialização, conforme o
+pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto
