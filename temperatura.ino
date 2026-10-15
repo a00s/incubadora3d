@@ -46,7 +46,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_MIN_OFF_MS 10000UL
 #define HEATER_PID_MAX_ON_MS 20000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
-#define HEATER_PID_KP_MS_PER_C 24000.0f
+#define HEATER_PID_KP_MS_PER_C 32000.0f
 #define HEATER_PID_KI_MS_PER_C_MIN 6000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
 #define HEATER_HARD_CUTOFF 37.1
@@ -648,7 +648,7 @@ void drawHealthIndicator() {
   ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(11, 16); ucg.print(co2RangeWrapLatched ? F("CO2 LOCK") : F("CO2 ppm"));
+  ucg.setPrintPos(5, 16); ucg.print(co2RangeWrapLatched ? F("BRUTO ppm") : F("CO2 ppm"));
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
@@ -771,11 +771,11 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
   int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 : -1);
 
-  if (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1) || displayCo2Quality != co2Quality) {
+  if (!displayCacheValid || displayCo2Ppm != CO2i || displayCo2Quality != co2Quality) {
     // Mantém os ppm grandes com a fonte numérica compacta do Uno.
     ucg.setFont(ucg_font_inr16_mn);
     char nextCo2Text[8];
-    if (co2Valid) ltoa(CO2i, nextCo2Text, 10);
+    if (CO2i >= 0) ltoa(CO2i, nextCo2Text, 10);
     else strcpy_P(nextCo2Text, PSTR("---"));
     if (displayCo2Quality != co2Quality) displayCo2Text[0] = '\0';
     uint8_t co2R = co2Quality == 1 ? 70 : (co2Quality == 0 ? 255 : 255);
@@ -783,11 +783,11 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 0 ? 45 : 90);
     drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
                     bgR, bgG, bgB, co2R, co2G, co2B);
-    displayCo2Ppm = co2Valid ? CO2i : -1;
+    displayCo2Ppm = CO2i;
     displayCo2Quality = co2Quality;
   }
 
-  bool co2RateValid = co2RatePpmMinReady && co2Valid;
+  bool co2RateValid = co2RatePpmMinReady;
   int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
   if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
     char nextRateText[8];

@@ -1314,3 +1314,28 @@ filamento/processo e 39 STL das demais peças preservados.
   enquanto o vale transitório pós-reset foi 0,3–0,4 °C abaixo da meta. A abertura do monitor
   serial reinicia o Uno e zera os estados voláteis do PID; essa queda inicial não equivale a
   uma operação contínua sem reset. CO₂ permaneceu travado/inválido, automático e válvula OFF.
+
+## Diagnóstico do CO₂ com a porta aberta
+
+- 2026-10-15, BOOT_COUNT=156–158. O usuário confirmou a porta aberta e desligou o aquecimento
+  pelo botão. Telemetria confirmou aquecimento OFF, controle automático de CO₂ OFF e válvula
+  fechada. Temperatura principal caiu de ~36,7 °C para 35,6 °C antes do upload e continuou
+  caindo após o reinício; temperatura interna ficou em 30,6 °C, abaixo do limiar de 31 °C do
+  ventilador, que permaneceu OFF.
+- A leitura serial bruta caiu de ~20.443 para ~20.218 ppm em ~67 s. Depois do upload, caiu de
+  ~19.994 para ~19.840 ppm em ~63 s. Apesar da porta aberta, o sinal não se aproximou de uma
+  leitura típica do ar ambiente. Como `co2_range_lock=1` e `co2_valid=0`, esses valores e sua
+  variação não medem a concentração real nem uma taxa real de vazamento. O ensaio aponta para
+  uma leitura/protocolo que ainda não acompanha a troca do ar, mas não distingue entre
+  condicionamento do sensor, variante/codificação do MH-Z16, alimentação ou comunicação.
+- A trava é uma proteção persistida pelo firmware: é acionada por leitura bruta a partir de
+  60.000 ppm ou salto de pelo menos 15.000 ppm entre amostras; bloqueia o controle automático,
+  não a leitura do sensor. A origem exata da trava atual antecede este trecho de log. A tela
+  agora exibe o número reportado pelo protocolo com o cabeçalho `BRUTO ppm` durante essa
+  proteção. A taxa ppm/min continua indisponível enquanto os dados não forem considerados
+  válidos.
+- Firmware compilado e gravado; após o upload, BOOT_COUNT=158 e os estados persistidos
+  confirmaram aquecimento e controle de CO₂ desligados, válvula fechada. Compilação: 32.166
+  bytes de Flash e 983 bytes de RAM. O ajuste Kp=32.000 ms/°C foi testado antes da abertura,
+  mas este ensaio foi interrompido ao abrir a porta e desligar o aquecimento; não usar os
+  dados seguintes para avaliar estabilidade térmica em operação fechada.
