@@ -1431,6 +1431,12 @@ filamento/processo e 39 STL das demais peças preservados.
   acionamento da válvula, favorece instabilidade/acomodação ou escala do sensor como hipótese
   para esses valores; não quantifica vazamento. Manter `co2_valid=0`, sem exibir taxa válida ou
   permitir controle automático até referência independente e identificação da unidade.
+- Revisão do parser local `NDIRZ16::measure()`: cada amostra numérica registrada exige sync
+  `0xFF`, comando de resposta `0x86` e checksum de quadro aceito; falha de leitura produziria
+  `co2_ppm=-1` e `EVENT,co2_sensor_read_failed`. Não houve esse evento nem amostras `-1` na
+  janela observada, então a UART entrega quadros estruturalmente válidos. `co2_valid=0` nessa
+  sessão significa a trava persistida do firmware, não falha do parser. Isso reduz a hipótese
+  de simples desalinhamento UART, mas não valida a escala, calibração ou concentração física.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
