@@ -1409,6 +1409,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Continuação: de 13.726 ppm em 756,3 s para 13.373 ppm em 913,7 s, média de −135 ppm/min em
   ~2,6 min. `co2_valid=0`, `co2_range_lock=1` e todos os atuadores OFF permaneceram constantes;
   a deriva UART segue monotônica sem representar uma taxa real de perda.
+- Continuação até 1.010,4 s: 13.726 ppm em 756,3 s para 13.170 ppm, média de ~−131 ppm/min em
+  ~4,2 min. A placa permaneceu no BOOT_COUNT=164, com trava persistente, leitura inválida e
+  atuadores OFF. A série continua sem indicar platô; requer comparação com tensão/alimentação
+  medida e referência externa antes de tirar conclusão sobre concentração.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
