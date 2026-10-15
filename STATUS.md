@@ -319,14 +319,16 @@ filamento/processo e 39 STL das demais peças preservados.
   visíveis os pulsos curtos. Compilado e gravado para Uno: 32.214 bytes Flash (99%),
   923 bytes RAM (45%). O reset de gravação incrementa o contador persistente uma vez.
 
-## Teste visual do fundo preto e resposta após pulsos curtos
+## Retorno ao azul-marinho e intro durante aquecimento
 
-- O código anterior usava azul-marinho `RGB 8,18,30`; o display não estava limitado
-  a preto. Para comparar no próprio equipamento, o fundo da intro, tela, valores e
-  áreas apagadas dos ícones foi trocado para `RGB 0,0,0`, mantendo os destaques.
-- Firmware compilado e gravado com `--verify`: Flash 32.132/32.256 bytes (99%),
-  RAM 923/2.048 bytes (45%). O upload causa um reboot e incrementa o contador uma vez.
-- Na telemetria anterior à gravação, o contador serial indicou 39 ao abrir o monitor.
-  Após uma janela de −159 ppm/min, a seguinte marcou +5 ppm/min perto de 26.628 ppm;
-  o controlador voltou a um pulso de 5 ms depois da dose de 15 ms. Temperatura em torno
-  de 37,5 °C, umidade 50,5% e ventilador ligado com sensor interno perto de 30 °C.
+- O teste de fundo preto foi revertido após a preferência pelo azul-marinho
+  `RGB 8,18,30`, aplicado à intro, tela, leituras e áreas apagadas dos ícones.
+- A intro de DNA agora continua na tela durante os 10 s de aquecimento do sensor;
+  os dados e indicadores aparecem depois da configuração do sensor.
+- A última gravação testada ocupava 32.132/32.256 bytes de Flash e 923/2.048 bytes
+  de RAM. Esta revisão compilou e foi gravada com `--verify`: 32.208/32.256 bytes
+  de Flash (48 bytes livres) e 923/2.048 bytes de RAM. A gravação reinicia a placa
+  e incrementa o contador persistente uma vez.
+- Antes desta revisão, a leitura perto de 26.000 ppm caiu a cerca de −362 ppm/min;
+  após os ciclos de espera, o controle automático abriu um pulso de 45 ms. A demora
+  para atingir 5% continua como ponto de investigação, separado desta revisão visual.

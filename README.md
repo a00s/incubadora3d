@@ -432,6 +432,6 @@ boots. A leitura de CO₂ e a temperatura também mudam de cor individualmente q
 saem da faixa. As bolhas permanecem animadas por 3 s após um pulso, mesmo quando a
 válvula ficou aberta por poucos milissegundos.
 
-Teste visual atual: o fundo do display está em preto puro (`RGB 0,0,0`) para
-comparação com o azul-marinho anterior. Cores de estado, leituras e ícones foram
-mantidas.
+Visual atual: o fundo voltou ao azul-marinho (`RGB 8,18,30`), que dá ao display
+o tom futurista desejado. A intro com DNA permanece visível durante os 10 s de
+aquecimento do sensor de CO₂; depois, a interface de leituras aparece.
