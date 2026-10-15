@@ -1188,3 +1188,18 @@ filamento/processo e 39 STL das demais peças preservados.
   explica que o atraso entre fonte térmica, sensor e carga altera a oscilação. Para esta
   montagem, continuam desconhecidos a posição térmica exata do DHT, a tensão no aquecedor e
   a perda de calor da câmara.
+
+## Acompanhamento térmico após retenção da integral
+
+- 2026-10-15, BOOT_COUNT=142. A leitura começou em 37,1 °C, tocou 37,2 °C nos primeiros
+  segundos e depois caiu gradualmente até 36,5 °C. A demanda aumentou com a queda; a saída
+  aplicou pulsos progressivos, chegando a cerca de 12–14 s ligada com 10 s mínimos desligada.
+- A temperatura recuperou 37,0 °C após cerca de 3 min e oscilou entre 37,0–37,1 °C por
+  aproximadamente 1 min. Depois caiu novamente até 36,7 °C e recuperou outra vez; perto do
+  fim da janela, permaneceu entre 37,0–37,1 °C por cerca de 1 min, sem aquecimento ativo.
+  O último dado foi 36,9 °C com um pulso de ~6,3 s em andamento. A amostra confirma que a
+  integral retida volta a pedir calor após atravessar a meta, mas a incubadora ainda alterna
+  períodos abaixo e dentro da faixa de 36,9–37,1 °C; a estabilidade prolongada não está
+  comprovada.
+- Durante todo o monitoramento, `co2_range_lock=1`, `co2_valid=0`, controle automático de
+  CO₂ desligado e válvula fechada. Os números brutos do sensor não são concentração válida.
