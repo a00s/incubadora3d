@@ -428,7 +428,7 @@ void loop()
     float t = dht.readTemperature();
     float t_interna = dhtint.readTemperature();      
     processSerialCommands();
-    // Apply the heater safety cut before this loop can pulse the CO2 valve.
+    // Apply the heater safety cut before automatic CO2 dosing in this loop.
     controlHeater(t, millis());
     if (validCo2) last_co2i = CO2i;
     // Serial.println(t_interna);
