@@ -13,8 +13,6 @@
 #include <DHT_U.h>
 
 //#define ERROR_LOG_ADDRESS 0 // EEPROM address to store error log
-#define EEPROM_CO2 0
-#define EEPROM_AQUECIMENTO 12
 #define EEPROM_CONTADOR 24
 #define EEPROM_CO2_RANGE_LOCK 28
 
@@ -50,6 +48,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_PID_KI_MS_PER_C_MIN 6000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
 #define HEATER_HARD_CUTOFF 37.1
+#define HEATER_EMERGENCY_CUTOFF 38.0
 #define TEMPERATURE_GOOD_MIN 36.9
 #define TEMPERATURE_GOOD_MAX 37.1
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
@@ -168,14 +167,8 @@ void setup()
 
     // -------------------- DEBUG --------------------------
 
-    EEPROM.get(EEPROM_AQUECIMENTO, botao_aquecedor_onoff);
-    EEPROM.get(EEPROM_CO2, botao_co2_onoff);
     co2RangeWrapLatched = EEPROM.read(EEPROM_CO2_RANGE_LOCK) == CO2_SENSOR_LOCK_MAGIC;
     mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
-    if (co2RangeWrapLatched && botao_co2_onoff != 0) {
-      botao_co2_onoff = 0;
-      EEPROM.put(EEPROM_CO2, botao_co2_onoff);
-    }
     Serial.print(F("PreCO2: "));
     Serial.print(botao_co2_onoff);
     Serial.print(F(" PreTemp: "));
@@ -975,7 +968,6 @@ bool setCo2Enabled(bool enabled) {
   int newState = enabled ? 1 : 0;
   if (botao_co2_onoff != newState) {
     botao_co2_onoff = newState;
-    EEPROM.put(EEPROM_CO2, botao_co2_onoff);
   }
   if (!enabled) digitalWrite(CO2PUMP, HIGH);
   return true;
@@ -985,7 +977,6 @@ void setHeaterEnabled(bool enabled) {
   int newState = enabled ? 1 : 0;
   if (botao_aquecedor_onoff != newState) {
     botao_aquecedor_onoff = newState;
-    EEPROM.put(EEPROM_AQUECIMENTO, botao_aquecedor_onoff);
   }
   if (!enabled && digitalRead(HEATER) == LOW) {
     digitalWrite(HEATER, HIGH);
@@ -997,7 +988,16 @@ void setHeaterEnabled(bool enabled) {
 
 void controlHeater(float temperature, unsigned long now) {
   bool heaterOn = digitalRead(HEATER) == LOW;
-  if (botao_aquecedor_onoff != 1 || isnan(temperature)) {
+  bool temperatureFault = isnan(temperature) ||
+                          temperature >= HEATER_EMERGENCY_CUTOFF;
+  if (temperatureFault &&
+      (botao_aquecedor_onoff != 0 || botao_co2_onoff != 0 || heaterOn)) {
+    Serial.println(F("EVT,SAFE_OFF"));
+    setHeaterEnabled(false);
+    setCo2Enabled(false);
+    heaterOn = false;
+  }
+  if (botao_aquecedor_onoff != 1 || temperatureFault) {
     if (heaterOn) {
       digitalWrite(HEATER, HIGH);
       heaterLastTransitionAt = now;
