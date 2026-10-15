@@ -360,10 +360,11 @@ void loop()
         co2RateWindowStartPpm = CO2i;
         lastMinuteTime = currentTime;
     }
-    // The pump wait already gives the sensor a full response interval. Do not
-    // require a perfectly steady instantaneous slope to size the next pulse:
-    // noisy readings otherwise force repeated 5 ms doses while CO2 is far low.
-    bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 && contador_pomp == 0;
+    // Keep the minimum cooldown, then wait for a sustained slowdown before
+    // another automatic dose. Live telemetry showed the chamber response can
+    // keep rising well beyond 60 s; dosing during that rise stacked pulses.
+    bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 &&
+                             contador_pomp == 0 && co2TrendReady;
     int32_t delayProporcional = validCo2
       ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, doseResponseReady)
       : DELAY_MINIMO;
@@ -412,7 +413,7 @@ void loop()
 //    Serial.println(CO2i);  
 
     if (validCo2 && CO2i < CO2_TARGET_PPM && botao_co2_onoff == 1 &&
-        contador_pomp == 0 && co2ClickCount == 0) {
+        contador_pomp == 0 && co2TrendReady && co2ClickCount == 0) {
       co2_before_pump = CO2i;
       co2BaselineReady = true;
       int32_t pulseMs;

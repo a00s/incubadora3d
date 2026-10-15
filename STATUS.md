@@ -360,3 +360,28 @@ filamento/processo e 39 STL das demais peças preservados.
 - Firmware compilado e gravado para Uno com `--verify`: 32.068/32.256 bytes de Flash
   (188 bytes livres) e 923/2.048 bytes de RAM. O upload reiniciou a placa uma vez; o
   contador persistente de inicializações registra esse reset.
+
+## Resposta tardia observada e pausa automática
+
+- A abertura do monitor reiniciou a placa uma vez (contador persistente 49). No início
+  do registro, CO₂ marcava 43.041 ppm, temperatura 36,5 °C, aquecimento ligado e
+  controle de CO₂ ligado. A primeira dose automática após o reinício foi 45 ms a
+  42.308 ppm.
+- Com CO₂ a 42.316 ppm, o ciclo seguinte aplicou 67 ms. A leitura então subiu até
+  48.977 ppm, com pico de taxa instantânea de +217,88 ppm/s. A janela de um minuto
+  chegou a +3.442 ppm/min. O código permitiu uma dose adicional de 71 ms após apenas
+  60 s, enquanto a subida ainda estava em andamento.
+- Desativei o automático pela serial em 45.865 ppm. Sem novos pulsos, a leitura ainda
+  subiu até cerca de 49.000 ppm e depois caiu. Isso confirma que o ciclo de 60 s pode
+  acabar antes da resposta tardia; a concentração não ultrapassou 50.000 ppm neste
+  ensaio. O automático permaneceu desligado ao final da coleta.
+- A temperatura cortou o aquecedor em 36,7 °C, mas atingiu 37,6 °C após a inércia
+  térmica; posteriormente ficou perto de 37,5 °C e desceu gradualmente. A histerese
+  reduziu o pico observado anteriormente de 37,7 °C, mas ainda não mantém o alvo de
+  37,0 °C com precisão. O ventilador ligou ao atingir 30 °C internamente.
+- Revisão atual: após o cooldown mínimo, bloquear novas doses automáticas enquanto a
+  inclinação estiver acima de 5 ppm/s (300 ppm/min). Exigir 30 s contínuos abaixo desse
+  limite antes de calcular/aplicar outra dose; doses manuais continuam sendo um caminho
+  explícito de intervenção. Compilado e gravado com `--verify`: 32.084/32.256 bytes de
+  Flash (172 bytes livres), 923/2.048 bytes de RAM. O automático está salvo como
+  desligado; validar a nova espera com a próxima ativação monitorada.

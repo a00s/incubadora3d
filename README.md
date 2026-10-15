@@ -215,7 +215,7 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 32.068 bytes de Flash
+serial antes de compilar/gravar. A última compilação para Uno usa 32.084 bytes de Flash
 (99%) e 923 bytes de RAM global (45%), deixando 1.125 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
@@ -265,12 +265,12 @@ ALL OFF
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O aquecedor liga abaixo de 36,5 °C e corta em 36,7 °C para compensar a inércia
 térmica; a faixa visual esperada continua sendo 36,5–37,5 °C. Enquanto o CO₂ estiver
-abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
-automática inicial é 45 ms. Depois de cada dose, o controle espera ao menos cerca de um
-minuto para observar a resposta do sensor. Ao fim da espera, usa o ganho observado para
-dimensionar o próximo pulso mesmo que a taxa instantânea ainda oscile; uma taxa instável
-não deve prender a dose no mínimo de 5 ms. Uma leitura em queda também não bloqueia a
-correção.
+abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
+rapidamente. A dose automática inicial é 45 ms. Depois de cada dose, o controle espera
+ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
+300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
+esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
+leitura em queda não bloqueia a correção.
 O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
