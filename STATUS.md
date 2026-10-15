@@ -1302,3 +1302,15 @@ filamento/processo e 39 STL das demais peças preservados.
   ainda têm precisão limitada; não interpretar o reinício como uma perturbação normal de uso.
   CO₂ permaneceu travado/inválido (`co2_range_lock=1`, `co2_valid=0`), automático desligado e
   válvula fechada.
+
+## Nova repetição da faixa térmica estabilizada
+
+- 2026-10-15, BOOT_COUNT=153, 4 min 48 s de telemetria. A temperatura começou em 37,1 °C,
+  passou a 37,0 °C e caiu até 36,7 °C durante o primeiro minuto. A ação do PID aumentou em
+  resposta; a leitura retornou a 37,0 °C perto de 2,5 min. Depois permaneceu majoritariamente
+  em 36,9–37,0 °C, tocando 37,1 °C em leituras breves. O aquecedor foi desligado ao atingir
+  37,1 °C e nenhum valor maior foi observado.
+- A repetição confirma a faixa final de ±0,1 °C por aproximadamente 2 min após recuperação,
+  enquanto o vale transitório pós-reset foi 0,3–0,4 °C abaixo da meta. A abertura do monitor
+  serial reinicia o Uno e zera os estados voláteis do PID; essa queda inicial não equivale a
+  uma operação contínua sem reset. CO₂ permaneceu travado/inválido, automático e válvula OFF.
