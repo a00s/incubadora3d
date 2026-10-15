@@ -14,11 +14,22 @@ encosta na face frontal remanescente e robusta do corpo em Y=0, entre o canal
 da junta da caixa e a abertura. Não usa a pequena borda fina quebrada como
 apoio ou batente; também não precisa extrair a junta da caixa.
 
-O bulbo tem ponta livre em Y=3,2 mm no fecho e Y=2,0 mm na dobradiça.
-A altura total é 7,45 / 6,25 mm, com redução contínua de 1,2 mm junto à dobradiça.
-O trecho largo passa de 1,85 para **3,10 mm**, e a cavidade de 0,75 para
-**2,00 mm**, mantendo peles nominais de 0,55 mm. O alargamento ocorre para fora, na parte livre
-do tubo para evitar colisão com a caixa.
+O perfil foi redesenhado como uma base de encaixe, pescoço e cabeça oca
+volumosa, conforme a fita de vedação fotografada pelo usuário. O bulbo chega
+a **4,70 mm de largura**, com cavidade de **3,60 mm** e peles laterais de cerca
+de 0,55 mm. A seção usa transições graduais e teto inclinado para imprimir
+sem suportes; o formato aproxima um bulbo arredondado, com teto imprimível.
+
+A ponta livre fica em Y=5,70 mm no fecho e Y=4,50 mm junto à dobradiça;
+a altura total é **9,95 / 8,75 mm**, com redução contínua de 1,20 mm. A cabeça
+mais alta exige mais deformação no fechamento existente: começar pela amostra
+e conferir o contato antes do anel completo. O alargamento ocorre para fora,
+na parte livre, preservando as folgas com a porta rígida e o receptor da caixa.
+
+Um respiro **Ø0,8 mm** atravessa somente a parede externa do bulbo, na lateral
+do fecho, altura Z70. Liga a cavidade à atmosfera externa para aliviar o ar
+preso durante a compressão. Não perfura a parede interna que separa a cavidade
+da câmara. Não tapar o respiro com adesivo; testar passagem de ar e estanqueidade.
 
 A largura máxima do pé passa de 0,59 para **0,94 mm** (+0,35 mm). O canal
 rígido tem 1,65 mm no fundo, mas entrada estreita e pouca profundidade:
@@ -52,9 +63,8 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 | 3 / 4 | Aquecedor, metades A / B |
 | 5 / 6 | Sensor lateral, metades A / B |
 
-O perfil foi revisado para manter material contínuo entre a base, o pé e o
-tubo: o apoio do pé foi prolongado e a parede interna próxima à raiz foi
-reforçada. O trecho flexível alto e as alturas de 7,45 / 6,25 mm permanecem.
+O perfil mantém material contínuo entre base, pé e bulbo; a amostra inclui
+a cabeça inteira e o respiro externo. As alturas são 9,95 / 8,75 mm.
 O fatiamento das seis bandejas passa sem avisos de regiões suspensas e sem
 suportes, com a detecção do fatiador ativa. Imprimir primeiro a amostra para
 conferir encaixe, compressão e calibração do material.

@@ -12,6 +12,7 @@ import cadquery as cq
 OUT=Path(__file__).resolve().parents[1]/'output/v59'
 q=cq.importers.importStep(str(OUT/'amostra_V_porta_TPU.step'))
 previous=[];previous_printable=[];checks=0;step=.2;bb=q.val().BoundingBox()
+assert abs(bb.zmax-(LATCH_PROJECTION+4.25))<.05,'Coupon must include full bulb tip'
 for layer in range(math.ceil(bb.zlen/step)):
     z=(layer+.5)*step
     if z>bb.zmax:break
@@ -34,6 +35,9 @@ for layer in range(math.ceil(bb.zlen/step)):
     previous=intervals;checks+=1
 seal=cq.importers.importStep(str(OUT/'junta_V_porta_TPU.step'))
 assert seal.val().isValid() and len(seal.solids().vals())==1
+assert not seal.val().isInside((-1.1,3,70)),'External vent blocked'
+assert seal.val().isInside((-1.1,3,72)),'Bulb outer wall missing beside vent'
+assert seal.val().isInside((3.0,3,70)),'Inner sealing wall perforated'
 profile=json.loads((OUT/'door_v_profile.json').read_text())
 def box(w,d,h,x=0,y=0,z=0):return cq.Workplane('XY').box(w,d,h,centered=False).translate((x,y,z))
 def loft(stations):
@@ -48,7 +52,7 @@ assert abs(latch.ymax-LATCH_PROJECTION)<.05
 assert abs(hinge.ymax-HINGE_PROJECTION)<.05
 assert latch.ymax-hinge.ymax>1.1
 report=dict(junta_da_caixa_preservada=True,solido_step_valido=True,pecas_junta_porta=1,
-            intersecao_receptor_fino_mm3=0,contato_face_frontal_y0=True,
+            respiro_externo_diametro_mm=.8,parede_interna_integra_no_respiro=True,intersecao_receptor_fino_mm3=0,contato_face_frontal_y0=True,
             amostra_cortes=checks,camada_mm=step,paredes_sem_reinicio_flutuante_largura_0p42=True,crescimento_secao_maximo_graus=45,
             projecao_nominal_fecho_mm=LATCH_PROJECTION,projecao_nominal_dobradica_mm=HINGE_PROJECTION,
             altura_nominal_total_fecho_mm=LATCH_PROJECTION+4.25,

@@ -87,14 +87,14 @@ v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="4
 <text x="240" y="422">Aperto comprime TPU · forma livre mostrada</text></g></svg>'''
 if 'lw_bulb' in v_profile:
     def v_points(points):
-        return ' '.join(f'{220+(inset-1.7)*48:.1f},{75+(y+4.25)*26:.1f}' for y,inset in points)
+        return ' '.join(f'{220+(inset-1.7)*26:.1f},{75+(y+4.25)*26:.1f}' for y,inset in points)
     foot=v_points([(y,boss_at(y)-v_profile.get("lw_foot_outer_offset",.25)) for y,depth in v_profile['foot']]+
                   [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['foot'])])
     receiver=v_points([(y,inset-1) for y,inset in v_profile['receiver']]+list(reversed(v_profile['receiver'])))
     stem_top=v_profile.get('lw_stem_top',-3.45)
     def contour(stations):
         return v_points([(y,a) for y,a,b in stations]+[(y,b) for y,a,b in reversed(stations)])
-    v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="480" height="440" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
+    v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
 <title>Vedação removível da porta · eSUN TPU-LW</title>
 <defs><mask id="door-lw-void"><rect width="480" height="440" fill="white"/><polygon points="{contour(v_profile['lw_void'])}" fill="black"/></mask></defs>
 <polygon points="{receiver}" fill="#c5d4df" opacity=".25"/>
@@ -104,10 +104,10 @@ if 'lw_bulb' in v_profile:
 <polygon points="{contour(v_profile['lw_bulb'])}" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
 <g fill="currentColor" font-size="16" text-anchor="middle" font-family="sans-serif">
 <text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>
-<text x="240" y="310">Tubo oco alongado · maior curso de compressão</text>
-<text x="240" y="345">Contato na face robusta do corpo, em Y=0</text>
-<text x="240" y="380">Altura total: fecho 7,45 · dobradiça 6,25 mm</text>
-<text x="240" y="415">Retenção original · não depende da borda quebrada</text></g></svg>'''
+<text x="240" y="365">Bulbo oco largo · respiro externo Ø0,8 mm</text>
+<text x="240" y="395">Contato na face robusta do corpo, em Y=0</text>
+<text x="240" y="425">Altura total: fecho 9,95 · dobradiça 8,75 mm</text>
+<text x="240" y="455">Retenção original · não depende da borda quebrada</text></g></svg>'''
 (folder/'corte_vedacao_V.svg').write_text(v_svg)
 svg += v_svg
 s=(p/'cad/viewer-template.html').read_text().replace('__MESH_GZIP__',mesh).replace('__SEAL_SECTION__',svg)

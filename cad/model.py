@@ -798,10 +798,10 @@ v_channel=inset_ring([(y,boss_inset(y)-.8) for y,depth in V_GROOVE],
 doorpart=doorpart.cut(v_channel,clean=False)
 from lw_seals import build_door_seal, BULB, VOID, LATCH_PROJECTION, HINGE_PROJECTION, HINGE_REDUCTION, STEM_TOP, FOOT_OUTER_OFFSET
 v_seal=build_door_seal(inset_ring,inset_loft,boss_inset,V_FOOT)
-P.update(door_v_lip_wall=.5,door_seal_material='eSUN TPU-LW',door_seal_profile='tall hollow tube with retained V foot',
+P.update(door_v_lip_wall=.5,door_seal_material='eSUN TPU-LW',door_seal_profile='wide vented hollow bulb with retained V foot',
          door_seal_contact='intact body front land; existing body gasket untouched',
          door_seal_latch_projection_mm=LATCH_PROJECTION,door_seal_hinge_projection_mm=HINGE_PROJECTION,
-         door_seal_broken_receiver_required=False,door_seal_print_stem_top_y=STEM_TOP,door_seal_foot_width_mm=FOOT_OUTER_OFFSET+.34,door_seal_tube_width_mm=3.1,door_seal_cavity_width_mm=2.0,door_seal_leak_test='pending physical test')
+         door_seal_broken_receiver_required=False,door_seal_print_stem_top_y=STEM_TOP,door_seal_foot_width_mm=FOOT_OUTER_OFFSET+.34,door_seal_tube_width_mm=4.7,door_seal_cavity_width_mm=3.6,door_seal_leak_test='pending physical test')
 assert len(doorpart.solids().vals())==1 and doorpart.val().isValid(),'Tapered monolithic door invalid'
 assert independent(v_seal).intersect(receiver,clean=False).val().Volume()<1e-5,'Door seal relies on broken receiver'
 assert len(v_seal.solids().vals())==1 and v_seal.val().isValid(),'V gasket disconnected'
@@ -1159,7 +1159,7 @@ for name,obj in [('amostra_pressao_junta',pressure_coupon),('amostra_dobradica_b
     flat=flat.translate((-bb.xmin,-bb.ymin,-bb.zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
 # Straight V coupons match the actual inclined surfaces and retention profile.
-v_clip=box(18,10,35,-4,-6,50)
+v_clip=box(18,14,35,-4,-6,50)
 for name,obj in [('amostra_V_porta_rigida',doorpart.intersect(v_clip)),
                  ('amostra_V_porta_TPU',v_seal.intersect(v_clip)),
                  ('amostra_V_assento_corpo',receiver.intersect(v_clip).union(box(18,3,35,-4,.1,50)))]:
