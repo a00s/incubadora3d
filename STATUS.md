@@ -1214,3 +1214,15 @@ filamento/processo e 39 STL das demais peças preservados.
   ficou em 37,0 °C com aquecedor desligado. Melhor que a janela anterior (sem pico de 37,2 °C),
   mas ainda há desvios de até 0,4 °C abaixo da meta; seguir acompanhando antes de retunar.
 - `co2_range_lock=1`, `co2_valid=0`, `co2_enabled=0`, `valve_open=0` durante toda a sessão.
+
+## Terceira janela de acompanhamento térmico
+
+- 2026-10-15, BOOT_COUNT=144, ~5 min. A amostra inicial foi 37,0 °C; caiu a 36,6 °C no
+  primeiro minuto, enquanto o pedido de calor crescia de ~2 s para ~12 s. A temperatura
+  voltou a 37,0 °C em cerca de 2,5 min, permaneceu perto da meta por ~40 s e então oscilou
+  até 36,7 °C. No fim da janela recuperou 36,9 °C, com demanda de ~7,4 s e relé desligado.
+- Faixa observada 36,6–37,0 °C, sem leitura acima da meta. O vale de 0,4 °C abaixo se repetiu;
+  o PID adaptou a duração dos pulsos e recuperou a temperatura, porém ainda leva minutos para
+  corrigir uma queda. Nenhuma alteração de ganho foi feita nesta sessão.
+- CO₂ permaneceu travado e inválido (`co2_range_lock=1`, `co2_valid=0`); controle desligado e
+  válvula fechada.
