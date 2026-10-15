@@ -12,7 +12,7 @@ import cadquery as cq
 OUT=Path(__file__).resolve().parents[1]/'output/v59'
 q=cq.importers.importStep(str(OUT/'amostra_V_porta_TPU.step'))
 previous=[];previous_printable=[];checks=0;step=.2;bb=q.val().BoundingBox()
-assert abs(bb.zmax-(LATCH_PROJECTION+4.25))<.05,'Coupon must include full bulb tip'
+assert abs(bb.zmax-(HINGE_PROJECTION+4.25))<.05,'Coupon must include full hinge bulb tip'
 for layer in range(math.ceil(bb.zlen/step)):
     z=(layer+.5)*step
     if z>bb.zmax:break

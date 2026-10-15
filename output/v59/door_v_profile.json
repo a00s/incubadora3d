@@ -201,7 +201,12 @@
       0.96
     ]
   ],
-  "hinge_projection_reduction_mm": 1.2000000000000002,
+  "hinge_projection_reduction_mm": 3.7,
   "lw_stem_top": -3.0,
-  "lw_foot_outer_offset": 0.6
+  "lw_foot_outer_offset": 0.6,
+  "lw_hinge_scale": 0.4383265856950067,
+  "lw_hinge_transition_x": [
+    90,
+    110
+  ]
 }

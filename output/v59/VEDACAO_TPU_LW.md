@@ -20,11 +20,16 @@ a **4,70 mm de largura**, com cavidade de **3,60 mm** e peles laterais de cerca
 de 0,55 mm. A seção usa transições graduais e teto inclinado para imprimir
 sem suportes; o formato aproxima um bulbo arredondado, com teto imprimível.
 
-A ponta livre fica em Y=5,70 mm no fecho e Y=4,50 mm junto à dobradiça;
-a altura total é **9,95 / 8,75 mm**, com redução contínua de 1,20 mm. A cabeça
-mais alta exige mais deformação no fechamento existente: começar pela amostra
-e conferir o contato antes do anel completo. O alargamento ocorre para fora,
-na parte livre, preservando as folgas com a porta rígida e o receptor da caixa.
+O bulbo aprovado é mantido até X90. Os últimos 30 mm das travessas fazem a
+transição para uma cabeça menor no lado das dobradiças (X110–120). A ponta
+livre junto à dobradiça passa de **4,50 para 2,00 mm**. A altura total passa
+para **6,25 mm** nessa lateral, mantendo **9,95 mm** e ponta Y=5,70 no fecho.
+A cabeça da dobradiça também fica mais estreita: cerca de **2,68 mm**, com
+cavidade de **1,58 mm** e peles nominais de 0,55 mm. A base de encaixe não muda.
+
+A redução localizada libera o volume que encontra primeiro a caixa durante
+o fechamento inclinado. A seção CAD não prevê força de fechamento: testar
+a amostra da dobradiça antes do anel. A junta da caixa permanece instalada.
 
 Um respiro **Ø0,8 mm** atravessa somente a parede externa do bulbo, na lateral
 do fecho, altura Z70. Liga a cavidade à atmosfera externa para aliviar o ar
@@ -58,13 +63,14 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 
 | Bandeja | Peça |
 | --- | --- |
-| 1 | Amostra da junta removível da porta |
+| 1 | Amostra do lado da dobradiça da junta da porta |
 | 2 | Junta inteira da porta |
 | 3 / 4 | Aquecedor, metades A / B |
 | 5 / 6 | Sensor lateral, metades A / B |
 
 O perfil mantém material contínuo entre base, pé e bulbo; a amostra inclui
-a cabeça inteira e o respiro externo. As alturas são 9,95 / 8,75 mm.
+a cabeça inteira reduzida do lado da dobradiça, sem o respiro que fica no fecho.
+As alturas são 9,95 / 6,25 mm.
 O fatiamento das seis bandejas passa sem avisos de regiões suspensas e sem
 suportes, com a detecção do fatiador ativa. Imprimir primeiro a amostra para
 conferir encaixe, compressão e calibração do material.
@@ -82,15 +88,16 @@ salvas e acrescenta um perfil exclusivo para as peças desta alteração.
 
 ## Perfil revisado após teste a 230 °C / 70%
 
-- Bico 256 °C, mesa 50 °C, camada 0,2 mm, velocidades de extrusão 25 mm/s.
+- Bico 270 °C, mesa 50 °C, camada 0,2 mm, velocidades de extrusão 25 mm/s.
 - Retração normal, de camada e de troca: 0; wipe e Z-hop desativados.
 - Ventilador 100% após a primeira camada; ventilador auxiliar desligado;
   sem redução automática de velocidade por resfriamento; sem suportes.
 - Três paredes e preenchimento 100% no material da junta. A cavidade desenhada
   continua vazia porque está no CAD, independentemente do preenchimento.
-- Fluxo **0,60 a 256 °C**, par do gráfico eSUN enviado pelo usuário: referência
-  de 81A e expansão de 167%. Calibrar primeiro na amostra; valores de laboratório
-  não garantem a mesma dureza ou dimensão na K1C.
+- Fluxo **0,55 a 270 °C**, estimativa entre os pares 256 °C/0,60 e
+  280 °C/0,50 do gráfico enviado. A página atual eSUN recomenda 210–270 °C;
+  este teste usa o limite recomendado, mantendo retração desativada.
+  O fluxo de 55% precisa ser calibrado na amostra; não é um par certificado.
 
 A temperatura e a velocidade estão nas faixas do
 [TDS eSUN](https://www.esun3d.com/media/esun/catalog/certification/product/TPU-LW/TPU-LW_TDS_V1_.pdf).

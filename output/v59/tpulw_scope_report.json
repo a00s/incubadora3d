@@ -4,8 +4,8 @@
   "perfis_usuario_1_a_3_preservados": true,
   "processo_global_preservado": true,
   "perfil_esun_tpu_lw_revisado": {
-    "temperatura_c": 256,
-    "fluxo": 0.6
+    "temperatura_c": 270,
+    "fluxo": 0.55
   },
   "geometria_cabos_preservada": true
 }

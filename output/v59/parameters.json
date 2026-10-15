@@ -569,11 +569,13 @@
   "door_seal_profile": "wide vented hollow bulb with retained V foot",
   "door_seal_contact": "intact body front land; existing body gasket untouched",
   "door_seal_latch_projection_mm": 5.7,
-  "door_seal_hinge_projection_mm": 4.5,
+  "door_seal_hinge_projection_mm": 2.0,
   "door_seal_broken_receiver_required": false,
   "door_seal_leak_test": "pending physical test",
   "door_seal_print_stem_top_y": -3.0,
   "door_seal_foot_width_mm": 0.94,
   "door_seal_tube_width_mm": 4.7,
-  "door_seal_cavity_width_mm": 3.6
+  "door_seal_cavity_width_mm": 3.6,
+  "door_seal_hinge_transition_start_x_mm": 90,
+  "door_seal_hinge_scale": 0.4383265856950067
 }

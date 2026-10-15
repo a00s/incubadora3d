@@ -49,7 +49,8 @@ with zipfile.ZipFile(OUT/'vedacoes_eSUN_TPU_LW.3mf') as z:
             if params.get('E',0)>1e-6 and any(a in params for a in 'XY'):speeds.add(round(feed/60,3))
         assert not negative,(pid,negative[:3])
         assert speeds=={25.0},(pid,speeds)
-        assert 'START_PRINT EXTRUDER_TEMP=256 BED_TEMP=50' in data
+        assert 'START_PRINT EXTRUDER_TEMP=270 BED_TEMP=50' in data
+        assert re.search(r'^; filament_flow_ratio = 0\.55(?:,|$)',data,re.M)
         assert not re.search(r'^T[1-9]\d*\s*$',data,re.M)
         assert 'M106 S255' in data
         result=json.loads((path.parent/'result.json').read_text());assert result['return_code']==0
