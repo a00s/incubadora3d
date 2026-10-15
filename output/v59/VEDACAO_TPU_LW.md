@@ -14,18 +14,17 @@ encosta na face frontal remanescente e robusta do corpo em Y=0, entre o canal
 da junta da caixa e a abertura. Não usa a pequena borda fina quebrada como
 apoio ou batente; também não precisa extrair a junta da caixa.
 
-O bulbo tem menor projeção no lado das dobradiças (X120): ponta livre em
-Y=1,8 mm, contra Y=3,0 mm no lado do fecho. Assim, a interferência nominal
-contra o plano frontal é 1,8–3,0 mm, com variação contínua entre as laterais.
-A altura total nominal, medida desde a base traseira, passa a **7,25 mm no
-fecho e 6,05 mm na dobradiça**, contra cerca de 4,90 / 4,50 mm anteriormente.
-A cavidade axial passa de aproximadamente 3,15 para 5,60 mm no fecho, com
-paredes laterais nominais de 0,55 mm no trecho paralelo. A redução no lado da
-dobradiça é contínua, sem degrau. A cavidade alta permite dobramento das paredes;
-a espuma e o vazio trabalham juntos. Não é uma previsão de força ou deformação.
-Como a caixa mantém a mesma posição de fechamento, a junta mais alta precisará
-ceder mais; testar a amostra e fechar sem forçar o PC.
-A peça precisa ser montada com a lateral menor junto às dobradiças.
+O bulbo tem ponta livre em Y=3,2 mm no fecho e Y=2,0 mm na dobradiça.
+A altura total é 7,45 / 6,25 mm, com redução contínua de 1,2 mm junto à dobradiça.
+O trecho largo passa de 1,85 para **3,10 mm**, e a cavidade de 0,75 para
+**2,00 mm**, mantendo peles nominais de 0,55 mm. O alargamento ocorre para fora, na parte livre
+do tubo para evitar colisão com a caixa.
+
+A largura máxima do pé passa de 0,59 para **0,94 mm** (+0,35 mm). O canal
+rígido tem 1,65 mm no fundo, mas entrada estreita e pouca profundidade:
+aumentar 1 mm inteiro neste perfil comprometeria a rampa imprimível sem suporte.
+Esta versão testa maior retenção preservando a rampa e a porta existente.
+A maciez e a retenção finais precisam ser conferidas na amostra física.
 
 Imprimir deitada, com a ligação traseira plana na mesa e o bulbo para cima
 (+Y do CAD), sem suportes. A porta rígida continua com a frente externa plana
@@ -55,7 +54,7 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 
 O perfil foi revisado para manter material contínuo entre a base, o pé e o
 tubo: o apoio do pé foi prolongado e a parede interna próxima à raiz foi
-reforçada. O trecho flexível alto e as alturas de 7,25 / 6,05 mm permanecem.
+reforçada. O trecho flexível alto e as alturas de 7,45 / 6,25 mm permanecem.
 O fatiamento das seis bandejas passa sem avisos de regiões suspensas e sem
 suportes, com a detecção do fatiador ativa. Imprimir primeiro a amostra para
 conferir encaixe, compressão e calibração do material.
@@ -71,17 +70,17 @@ velocidade da primeira camada, são globais. Por isso, o arquivo separado tem o
 processo completo para TPU-LW; o projeto completo mantém as configurações gerais
 salvas e acrescenta um perfil exclusivo para as peças desta alteração.
 
-## Perfil inicial
+## Perfil revisado após teste a 230 °C / 70%
 
-- Bico 230 °C, mesa 50 °C, camada 0,2 mm, velocidades de extrusão 25 mm/s.
+- Bico 256 °C, mesa 50 °C, camada 0,2 mm, velocidades de extrusão 25 mm/s.
 - Retração normal, de camada e de troca: 0; wipe e Z-hop desativados.
 - Ventilador 100% após a primeira camada; ventilador auxiliar desligado;
   sem redução automática de velocidade por resfriamento; sem suportes.
 - Três paredes e preenchimento 100% no material da junta. A cavidade desenhada
   continua vazia porque está no CAD, independentemente do preenchimento.
-- Fluxo **0,70 é estimativa inicial de engenharia**, não valor certificado para
-  esta bobina/K1C. Calibrar primeiro na amostra; confirmar continuidade das
-  paredes e dimensões após expansão antes de imprimir a junta inteira.
+- Fluxo **0,60 a 256 °C**, par do gráfico eSUN enviado pelo usuário: referência
+  de 81A e expansão de 167%. Calibrar primeiro na amostra; valores de laboratório
+  não garantem a mesma dureza ou dimensão na K1C.
 
 A temperatura e a velocidade estão nas faixas do
 [TDS eSUN](https://www.esun3d.com/media/esun/catalog/certification/product/TPU-LW/TPU-LW_TDS_V1_.pdf).
@@ -114,5 +113,4 @@ permanecem pendentes de ensaio físico.
 Se o Creality Print mostrar `DynamicConfig::opt_float()` para
 `small_perimeter_speed`, fechar o projeto antigo e reabrir o 3MF corrigido.
 A sobrescrita individual de 100% foi removida; no arquivo separado, a velocidade
-passa a ser herdada do valor global absoluto de 25 mm/s. A geometria e os demais
-ajustes permanecem iguais. Não salvar o projeto antigo sobre o arquivo corrigido.
+passa a ser herdada do valor global absoluto de 25 mm/s. Essa correção continua nesta revisão do tubo. Não salvar o projeto antigo sobre o arquivo corrigido.

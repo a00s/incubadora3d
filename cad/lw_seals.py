@@ -8,19 +8,22 @@ import math
 import cadquery as cq
 
 # (Y, outer inset, inner inset); inset grows toward the chamber centre.
+# Widen outward only above the rigid door land, preserving hinge sweep clearance.
+# Skin remains >= extrusion width so support analysis retains both walls.
 BULB=[(-4.05,.2,1.05),(-3.0,.15,1.35),(-1.0,.6,2.0),
-      (0,.8,2.65),(1.8,.8,2.65),(3.0,1.5,1.95)]
+      (0,.8,2.65),(1.3,-.45,2.65),(1.5,-.45,2.65),(3.2,1.05,1.15)]
 VOID=[(-3.3,.65,.72),(-2.5,.75,1.0),(-1.0,1.15,1.45),
-      (0,1.35,2.1),(1.7,1.35,2.1),(2.3,1.65,1.8)]
-LATCH_PROJECTION=3.0
-HINGE_PROJECTION=1.8
+      (0,1.35,2.1),(1.3,.1,2.1),(2.6,1.15,1.25)]
+LATCH_PROJECTION=3.2
+HINGE_PROJECTION=2.0
 HINGE_REDUCTION=LATCH_PROJECTION-HINGE_PROJECTION
 STEM_TOP=-3.0
+FOOT_OUTER_OFFSET=.6
 
 
 
 def build_door_seal(inset_ring,inset_loft,boss_inset,foot):
-    base=inset_ring([(y,boss_inset(y)-.25) for y,d in foot],
+    base=inset_ring([(y,boss_inset(y)-FOOT_OUTER_OFFSET) for y,d in foot],
                     [(y,boss_inset(y)+d) for y,d in foot])
     # These parts stay below the nominal receiver's Y=-3.7 starting plane.
     web=inset_ring([(-4.25,.15),(-3.8,.15)],

@@ -40,7 +40,7 @@ def loft(stations):
     wires=[box(120-2*i,1,140-2*i,i,y-1,i).edges('|Y').fillet(10-i).faces('>Y').val().outerWire() for y,i in stations]
     return cq.Workplane(obj=cq.Solid.makeLoft(wires,ruled=True))
 receiver=loft([(y,i-1) for y,i in profile['receiver']]).cut(loft(profile['receiver']),clean=False)
-assert seal.intersect(receiver).val().Volume()<1e-5
+assert seal.intersect(receiver,clean=False).val().Volume()<1e-5
 assert seal.intersect(box(150,1,170,-10,0,-10)).val().Volume()>0
 latch=seal.intersect(box(8,12,35,0,-5,50)).val().BoundingBox()
 hinge=seal.intersect(box(8,12,35,112,-5,50)).val().BoundingBox()

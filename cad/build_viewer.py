@@ -60,7 +60,7 @@ v_profile=json.loads((folder/'door_v_profile.json').read_text())
 def v_points(points):
     return ' '.join(f'{90+inset*35:.1f},{250+y*35:.1f}' for y,inset in points)
 def boss_at(y):return 4.95+.5*y
-foot=v_points([(y,boss_at(y)-.25) for y,depth in v_profile['foot']]+
+foot=v_points([(y,boss_at(y)-v_profile.get("lw_foot_outer_offset",.25)) for y,depth in v_profile['foot']]+
               [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['foot'])])
 groove=v_points([(y,boss_at(y)-.8) for y,depth in v_profile['groove']]+
                 [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['groove'])])
@@ -88,7 +88,7 @@ v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="4
 if 'lw_bulb' in v_profile:
     def v_points(points):
         return ' '.join(f'{220+(inset-1.7)*48:.1f},{75+(y+4.25)*26:.1f}' for y,inset in points)
-    foot=v_points([(y,boss_at(y)-.25) for y,depth in v_profile['foot']]+
+    foot=v_points([(y,boss_at(y)-v_profile.get("lw_foot_outer_offset",.25)) for y,depth in v_profile['foot']]+
                   [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['foot'])])
     receiver=v_points([(y,inset-1) for y,inset in v_profile['receiver']]+list(reversed(v_profile['receiver'])))
     stem_top=v_profile.get('lw_stem_top',-3.45)
@@ -106,7 +106,7 @@ if 'lw_bulb' in v_profile:
 <text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>
 <text x="240" y="310">Tubo oco alongado · maior curso de compressão</text>
 <text x="240" y="345">Contato na face robusta do corpo, em Y=0</text>
-<text x="240" y="380">Altura total: fecho 7,25 · dobradiça 6,05 mm</text>
+<text x="240" y="380">Altura total: fecho 7,45 · dobradiça 6,25 mm</text>
 <text x="240" y="415">Retenção original · não depende da borda quebrada</text></g></svg>'''
 (folder/'corte_vedacao_V.svg').write_text(v_svg)
 svg += v_svg
