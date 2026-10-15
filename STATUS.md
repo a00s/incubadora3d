@@ -762,3 +762,23 @@ filamento/processo e 39 STL das demais peças preservados.
   começou a cair. Como outra dose desse tamanho poderia consumir a margem restante,
   desliguei o CO₂ automático em 49.475 ppm; o firmware confirmou `ACK,CO2,OFF` e a
   válvula permaneceu fechada. O aquecimento automático continuou ligado, a 36,7 °C.
+
+## Retomada após ajuste do pote de água e aquecimento
+
+- 2026-10-15. O usuário aumentou o pote de água e fechou a incubadora. Nas amostras
+  seguintes a umidade subiu de 51,7% para 65,8% em cerca de 3,5 min; depois ficou
+  próxima de 65,4–65,8%. O teste mostra resposta rápida ao aumento de água/superfície,
+  mas ainda não confirma a umidade de equilíbrio nem se essa condição atende ao
+  protocolo da cultura.
+- O usuário reativou o aquecimento pelo painel. O DHT permaneceu válido, com a
+  temperatura subindo aproximadamente de 25,4 para 26,6 °C em ~90 s. O relé alternou
+  ciclos máximos de cerca de 20 s; o aquecimento segue muito abaixo dos 37 °C e ainda
+  precisa de acompanhamento prolongado para avaliar a taxa térmica e eventual perda
+  de calor. A temperatura interna da eletrônica ficou em 28,8–28,9 °C.
+- CO₂ automático permaneceu ligado. Foi aplicado um pulso de 60 ms a ~49.013 ppm; a
+  resposta atrasada chegou a cerca de 49.363 ppm (+350 ppm), depois recuou para
+  ~49.260 ppm, sempre abaixo de 50.000 ppm. Válvula fechada entre pulsos. Não se
+  conclui ainda retenção em 5% nem vazamento isolado: temperatura, umidade e resposta
+  atrasada do sensor estão variando.
+- No último estado consultado: `co2_enabled=1`, `heater_enabled=1`, `heater_on=1`,
+  `valve_open=0`, `boot_count=75`; leituras 49.260 ppm, 26,6 °C e 65,4% RH.
