@@ -175,6 +175,51 @@ Os controles mostram a geometria; não substituem testes físicos.
 
 ## Controle do Arduino pela USB
 
+### Preparar, compilar e gravar
+
+A placa usada é Arduino Uno R3 (`arduino:avr:uno`). O código fonte permanece em
+[temperatura.ino](temperatura.ino); a pasta [firmware/incubadora](firmware/incubadora)
+é a entrada de sketch exigida pelo Arduino CLI. A biblioteca `NDIRZ16` está incluída
+em `arduino-libraries/`; as outras versões ficam fixadas no script.
+
+Instale o [Arduino CLI](https://arduino.github.io/arduino-cli/latest/installation/)
+1.5.1 no Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR="$HOME/.local/bin" sh -s 1.5.1
+```
+
+No diretório do projeto, prepare as ferramentas e bibliotecas uma vez:
+
+```bash
+scripts/arduino.sh setup
+```
+
+Para compilar, gravar e abrir o monitor serial:
+
+```bash
+scripts/arduino.sh compile
+scripts/arduino.sh upload
+scripts/arduino.sh monitor
+```
+
+O padrão da porta é `/dev/ttyACM0`; substitua por `ARDUINO_PORT=/dev/ttyUSB0` se
+necessário. No Linux, se o usuário não tiver acesso direto à porta, use o grupo
+`dialout` para cada comando, por exemplo:
+
+```bash
+sg dialout -c 'scripts/arduino.sh upload'
+sg dialout -c 'scripts/arduino.sh monitor'
+```
+
+O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
+serial antes de compilar/gravar. A compilação atual para Uno usa 890 bytes dos 2048 bytes
+de RAM global e deixa 1158 bytes para pilha e chamadas.
+
+A tela usa ícones de molécula, resistência e ventilador com estado ligado/desligado,
+cores de fundo para falha, espera ou operação normal e uma breve animação de entrada
+com `@epigeneticaemcasa`. Leituras sem alteração não redesenham seus campos.
+
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
@@ -201,8 +246,9 @@ EEPROM, como os botões físicos. O aquecedor continua limitado pelo firmware a 
 curto de 5 ms, mesmo durante a espera do controle automático. Se houver uma leitura de
 CO₂ no limite configurado ou acima, o pulso é recusado. Sem leitura disponível, o pulso
 é permitido e o firmware começa a aprender a resposta quando chegarem leituras válidas.
-O atalho mantém o modo automático no estado anterior à sequência; um toque simples
-continua alternando esse modo.
+O atalho mantém o modo automático no estado anterior à sequência sem gravar toques
+intermediários na EEPROM. Um toque simples alterna esse modo ao fim da janela de três
+segundos usada para reconhecer o atalho.
 Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
 resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
 direta da válvula.
