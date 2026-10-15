@@ -859,3 +859,10 @@ filamento/processo e 39 STL das demais peças preservados.
   inferior. Para caber na Flash do Uno, o valor de temperatura interna saiu da tela, mas
   permanece na telemetria. A compilação passou, porém a alternância e o gráfico ainda
   precisam de verificação visual após uma gravação autorizada e acompanhada.
+- Correção operacional: a sessão serial acima foi aberta sem confirmação de presença no
+  local, contrariando a restrição de segurança. A conexão reiniciou a placa via DTR; com
+  `co2_enabled=1`, o automático aplicou um pulso de 90 ms a 48.708 ppm. A sessão foi
+  encerrada em 49.699 ppm, abaixo da meta e com a leitura em queda; nenhum comando manual
+  de saída foi enviado. Não há telemetria posterior para confirmar o estado atual da
+  válvula ou da incubadora. Não repetir monitoramento nem comandos de CO₂ sem presença
+  confirmada.
