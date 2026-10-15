@@ -420,8 +420,10 @@ void loop()
     int32_t pulseLimit = DELAY_MINIMO;
     int32_t co2Deficit = CO2_TARGET_PPM - CO2i;
     if (validCo2 && co2Deficit > 0) {
-      // Allow larger steps far below target; taper the cap within ~32k ppm of target.
-      pulseLimit += co2Deficit >> 7;
+      // Scale the pulse cap with the remaining deficit. A >>6 ramp responds
+      // faster during large deficits while still tapering to short pulses
+      // close to target; the observed dose gain continues to adapt each cycle.
+      pulseLimit += co2Deficit >> 6;
       if (pulseLimit > DELAY_MAXIMO) pulseLimit = DELAY_MAXIMO;
     }
     int32_t delayProporcional = validCo2
