@@ -39,7 +39,7 @@
     {
       "peca": "TPU_passagem_sensor.stl",
       "dimensoes_mm": [
-        20.0,
+        20.83,
         16.0,
         15.2
       ],
@@ -48,7 +48,7 @@
     {
       "peca": "TPU_passagem_sensor_metade_A.stl",
       "dimensoes_mm": [
-        8.0,
+        8.84,
         16.0,
         15.2
       ],

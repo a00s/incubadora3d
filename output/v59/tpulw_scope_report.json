@@ -1,26 +1,20 @@
 {
-  "geometrias_stl_preservadas": 41,
+  "outros_stl_preservados": 38,
   "outros_objetos_3mf_preservados": 38,
-  "perfis_e_processo_globais_preservados": true,
-  "paredes": 3,
-  "camadas_solidas_por_face": 4,
-  "pecas": [
-    {
-      "bandeja": 5,
-      "preenchimento_percentual": 30,
-      "padrao": "gyroid",
-      "filamento_antes_mm": 218.17,
-      "filamento_agora_mm": 176.87,
-      "uma_metade_por_impressao": true
-    },
-    {
-      "bandeja": 6,
-      "preenchimento_percentual": 30,
-      "padrao": "gyroid",
-      "filamento_antes_mm": 213.29,
-      "filamento_agora_mm": 175.67,
-      "uma_metade_por_impressao": true
-    }
+  "perfis_salvos_preservados": true,
+  "encaixe_externo_preservado": true,
+  "berco_A_com_tres_alojamentos_retencao": true,
+  "tampa_B_com_tres_apoios": true,
+  "pecas_complementares_sem_sobreposicao": true,
+  "centros_fios_mm": [
+    -3.3,
+    0,
+    3.3
   ],
-  "vedacao_e_flexibilidade_pendentes_ensaio_fisico": true
+  "passo_mm": 3.3,
+  "diametro_canal_mm": 1.1,
+  "preenchimento_percentual": 30,
+  "step_validos": true,
+  "malhas_fechadas": true,
+  "retencao_e_vedacao_pendentes_ensaio_fisico": true
 }

@@ -560,7 +560,7 @@
   ],
   "rear_plane_y": 125,
   "wire_plug_inner_recess_mm": 0.3,
-  "wire_plug_split_plane": "through all wire axes",
+  "wire_plug_split_plane": "heater axial split; sensor contoured cradle and cap",
   "sensor_tpu_neck_wall_mm": 1.7,
   "sensor_tpu_flange_overlap_mm": 1.6,
   "sensor_tpu_material": "eSUN TPU-LW",
@@ -583,5 +583,7 @@
   "sensor_tpu_lower_bulb": true,
   "sensor_tpu_lower_bulb_bore_mm": 15.0,
   "sensor_tpu_lower_bulb_skin_mm": 0.55,
-  "sensor_tpu_upper_geometry_preserved_from_z_mm": 5.32
+  "sensor_tpu_upper_geometry_preserved_from_z_mm": 5.32,
+  "sensor_wire_channel_pitch_mm": 3.3,
+  "sensor_wire_carrier": "A cradle with retention lips; B compression cap"
 }

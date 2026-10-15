@@ -418,7 +418,8 @@ wire_plug_halves={}
 wire_plug_reports={}
 P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.10,
          heater_wire_diameter=1.42,heater_seal_channel_diameter=1.32,
-         wire_plug_inner_recess_mm=.3,wire_plug_split_plane='through all wire axes')
+         sensor_wire_channel_pitch_mm=3.3,sensor_wire_carrier='A cradle with retention lips; B compression cap',
+         wire_plug_inner_recess_mm=.3,wire_plug_split_plane='heater axial split; sensor contoured cradle and cap')
 def cable_port(name,origin,rear,wire_diameter,positions):
     global body
     def place(obj):
@@ -454,7 +455,7 @@ def cable_port(name,origin,rear,wire_diameter,positions):
         add(f'prensa_passagem_{name}_{side}',place(keeper.intersect(half)),'#729daf')
     assert independent(body).intersect(place(aperture)).val().Volume()<1e-5,'Cable route blocked'
     assert len(body.solids().vals())==1,'Cable-port bosses disconnected'
-cable_port('sensor',(4,90,127.5),'side',P['sensor_seal_channel_diameter'],[-2.8,0,2.8])
+cable_port('sensor',(4,90,127.5),'side',P['sensor_seal_channel_diameter'],[-3.3,0,3.3])
 cable_port('aquecedor',(60,111,116),True,P['heater_seal_channel_diameter'],[-2.5,2.5])
 # Position references only: exact module mount and heater support pending dimensions.
 add('sensor_temperatura_umidade_referencia',box(7,20,15,8,80,119.7),'#d8d8ce','reference')

@@ -414,18 +414,19 @@ Cada arquivo contém duas metades separadas por 4 mm, com a borda externa plana
 na mesa. A divisão passa pelo eixo de todos os fios: acomodar os fios nas
 canaletas abertas, juntar as metades e inserir a rolha pelo lado externo.
 Aquecedor: dois fios Ø1,42 mm, canais Ø1,26 mm, sem alteração.
-Sensor lateral de umidade/temperatura: três fios Ø1,40 mm, com canais reduzidos
-de Ø1,24 para **Ø1,10 mm** e entradas **Ø1,40 mm**. O TPU-LW comprime os fios
-ao longo da rolha; a compressão radial nominal é de 0,15 mm no sensor.
+Sensor lateral de umidade/temperatura: três fios Ø1,40 mm, em canais Ø1,10 mm.
+A peça A é um berço com três alojamentos e lábios de retenção; a B é uma tampa
+com apoios individuais de compressão. As bocas laterais em funil permitem
+encaixar um fio de cada vez antes de fechar. Centros a 3,30 mm, com 1,90 mm
+entre as superfícies nominais dos fios. Entradas axiais Ø1,40 mm.
 
-Os furos existentes Ø12 mm e a parede de 14 mm são preservados. O corpo da
-rolha é Ø12,24 mm, com flange externa Ø16 × 1,5 mm e recuo interno de 0,3 mm.
-No conjunto STEP e no visualizador, aparecem montadas na parede. No projeto
-completo, aquecedor na bandeja 11 e sensor na 12. Para imprimir uma metade
-por vez, usar o arquivo separado: sensor nas bandejas **5 e 6**, aquecedor 3/4.
-As metades do sensor usam 30% de preenchimento giroidal, 3 paredes e 4 camadas
-sólidas por face. Imprimir as bandejas 5 e 6 separadamente, uma metade por vez.
-Acomodar os fios nas canaletas, fechar as metades e conferir vedação na impressão.
+Os furos Ø12 mm, a parede de 14 mm, o corpo Ø12,24 mm e a flange Ø16 × 1,5 mm
+são preservados. No projeto completo, sensor na bandeja 12. Para imprimir uma
+peça por vez, usar o arquivo separado: **berço A na 5 e tampa B na 6**.
+Ambas usam 30% giroidal, 3 paredes e 4 camadas sólidas por face. Assentar cada
+fio no berço fora da caixa, fechar a tampa e inserir no furo existente. Não
+misturar com metades da revisão anterior. Montagem e vedação precisam do teste físico.
+[Corte de montagem](output/v59/corte_rolha_sensor_berco_tampa.svg).
 
 ### Revisão da bucha redonda para TPU 85A
 

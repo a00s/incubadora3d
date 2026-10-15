@@ -17,7 +17,19 @@
     "diametro_entrada_canais_mm": 1.4,
     "interferencia_fios_radial_mm": 0.15,
     "interferencia_corpo_radial_mm": 0.12,
-    "encaixe_e_vedacao_fisicos_pendentes": true
+    "encaixe_e_vedacao_fisicos_pendentes": true,
+    "metade_A": "berco com labios individuais de retencao",
+    "metade_B": "tampa com tres apoios de compressao",
+    "centros_canais_mm": [
+      -3.3,
+      0,
+      3.3
+    ],
+    "passo_canais_mm": 3.3,
+    "espaco_nominal_entre_fios_mm": 1.9,
+    "boca_lateral_minima_mm": 0.8,
+    "entrada_lateral_funil_mm": 1.6,
+    "espessura_nominal_labios_mm": 0.6
   },
   "aquecedor": {
     "fios": 2,

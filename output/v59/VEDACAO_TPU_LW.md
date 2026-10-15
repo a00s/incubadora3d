@@ -85,10 +85,14 @@ Corpo livre Ø12,24 mm; flange externa Ø16 × 1,5 mm. A interferência externa
 e os encaixes rígidos são preservados.
 
 - Aquecedor: 2 fios Ø1,42 mm; canais Ø1,26 mm, sem alteração.
-- Sensor de temperatura: 3 fios Ø1,40 mm; canais reduzidos de **Ø1,24 para
-  Ø1,10 mm**, com entradas de **Ø1,40 mm** em vez de Ø1,84 mm. A compressão
-  radial nominal passa de 0,08 para **0,15 mm**. Os centros dos três fios e a
-  divisão das metades permanecem iguais; o trecho reto comprime os fios ao longo da rolha.
+- Sensor de temperatura: 3 fios Ø1,40 mm, em canais Ø1,10 mm. O conjunto
+  agora tem **A: berço com lábios individuais de retenção** e **B: tampa com
+  três apoios de compressão**, em lugar das duas metades iguais.
+  Os centros passam de 2,8 para **3,3 mm**, com espaço nominal de **1,9 mm
+  entre fios**. Cada alojamento do berço tem boca lateral em funil e garganta
+  livre de **0,8 mm**, para reter o fio após o encaixe. A tampa é complementar
+  aos lábios e fecha cada alojamento separadamente. As entradas axiais dos
+  canais mantêm Ø1,40 mm. Corpo Ø12,24 mm e flange Ø16 mm são preservados.
 
 As metades do sensor usam **30% de preenchimento giroidal**, com **3 paredes**
 e **4 camadas sólidas superiores/inferiores** de 0,2 mm (0,8 mm por face).
@@ -96,10 +100,21 @@ As demais peças continuam com seus ajustes anteriores. As bandejas **5 e 6**
 contêm uma metade cada: fatiar e imprimir uma bandeja por vez. Isso evita
 imprimir as duas peças simultaneamente com TPU-LW sem retração.
 
-Assentar cada fio na meia canaleta, juntar as metades e inserir no furo
-existente. O TPU-LW deve comprimir os fios e as faces de união; conferir
-fechamento das metades e vedação no teste físico. Não trocar metades entre
-as duas rolhas nem puxar os conectores através dos canais apertados.
+Montagem do sensor de temperatura:
+
+1. Imprimir o **berço A na bandeja 5** e a **tampa B na bandeja 6**, uma por vez.
+2. Fora do furo da caixa, encaixar um fio de cada vez no seu alojamento do
+   berço, pela entrada lateral. Os lábios devem ceder e reter cada fio na sede.
+3. Conferir os três fios separados e assentados. Alinhar a tampa B; seus
+   apoios entram nas bocas dos alojamentos e comprimem os lábios individualmente.
+4. Fechar o conjunto e inserir pela face externa no furo Ø12 mm existente.
+   Conferir fechamento das faces e estanqueidade. A montagem é nominal; força
+   de encaixe, retenção dos fios e vedação precisam do teste físico em TPU-LW.
+
+Não misturar peças da revisão anterior com berço/tampa novos. A rolha do
+aquecedor mantém as duas metades anteriores. Os nomes `_metade_A` e `_metade_B`
+foram mantidos nos STL/STEP por compatibilidade, mas agora identificam berço e tampa.
+[Corte transversal de montagem](corte_rolha_sensor_berco_tampa.svg).
 
 ## Arquivo para imprimir
 
@@ -110,7 +125,7 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com doze bandejas:
 | 1 | Amostra do lado da dobradiça da junta da porta |
 | 2 | Junta inteira da porta |
 | 3 / 4 | Aquecedor, metades A / B |
-| 5 / 6 | Sensor lateral, metades A / B |
+| 5 / 6 | Sensor de temperatura: berço A / tampa B |
 | 7 | Bucha CO₂: bulbo Ø15,0 mm + lábios Ø15,2 mm |
 | 8 / 9 | Amostras CO₂: bulbos Ø15,1 / Ø15,3 mm |
 | 10 | Junta da caixa, para reposição futura |
