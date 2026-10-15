@@ -475,29 +475,29 @@ void drawFanIcon(uint8_t x, uint8_t y, bool enabled) {
 }
 
 void drawDisplayFrame() {
-  uint8_t bgR = displayHealthState == DISPLAY_FAULT ? 105 : (displayHealthState == DISPLAY_WAIT ? 92 : 12);
-  uint8_t bgG = displayHealthState == DISPLAY_FAULT ? 12 : (displayHealthState == DISPLAY_WAIT ? 62 : 78);
-  uint8_t bgB = displayHealthState == DISPLAY_FAULT ? 15 : (displayHealthState == DISPLAY_WAIT ? 8 : 42);
+  uint8_t bgR = displayHealthState == DISPLAY_FAULT ? 150 : (displayHealthState == DISPLAY_WAIT ? 10 : 0);
+  uint8_t bgG = displayHealthState == DISPLAY_FAULT ? 8 : (displayHealthState == DISPLAY_WAIT ? 32 : 92);
+  uint8_t bgB = displayHealthState == DISPLAY_FAULT ? 12 : (displayHealthState == DISPLAY_WAIT ? 105 : 42);
   ucg.clearScreen();
   ucg.setColor(0, bgR, bgG, bgB);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 255, 255, 255);
   ucg.setPrintPos(5, 13); ucg.print(displayHealthState == DISPLAY_FAULT ? F("FALHA") : (displayHealthState == DISPLAY_WAIT ? F("AGUARDE") : F("OK")));
-  ucg.setPrintPos(79, 13); ucg.print(F("CO2 ppm"));
+  ucg.setPrintPos(75, 13); ucg.print(F("CO2 ppm"));
   ucg.setColor(0, 235, 245, 255);
-  ucg.setPrintPos(5, 56); ucg.print(F("TEMP"));
-  ucg.setPrintPos(66, 56); ucg.print(F("UMID"));
-  ucg.setPrintPos(5, 82); ucg.print(F("INT"));
+  ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
+  ucg.setPrintPos(66, 59); ucg.print(F("UMID"));
+  ucg.setPrintPos(5, 91); ucg.print(F("INT"));
   ucg.setColor(0, 220, 230, 245);
-  drawCo2Icon(4, 112, botao_co2_onoff);
-  drawHeaterIcon(65, 113, botao_aquecedor_onoff);
-  drawFanIcon(5, 132, ventilador_status);
+  drawCo2Icon(4, 120, botao_co2_onoff);
+  drawHeaterIcon(65, 121, botao_aquecedor_onoff);
+  drawFanIcon(5, 138, ventilador_status);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setPrintPos(28, 124); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
-  ucg.setPrintPos(89, 124); ucg.print(botao_aquecedor_onoff ? F("ON") : F("OFF"));
-  ucg.setPrintPos(28, 144); ucg.print(ventilador_status ? F("ON") : F("OFF"));
-  ucg.setPrintPos(68, 144); ucg.print(co2TrendReady && contador_pomp == 0 ? F("CO2 OK") : F("CO2 WAIT"));
+  ucg.setPrintPos(28, 132); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
+  ucg.setPrintPos(89, 132); ucg.print(botao_aquecedor_onoff ? F("ON") : F("OFF"));
+  ucg.setPrintPos(28, 154); ucg.print(ventilador_status ? F("ON") : F("OFF"));
+  ucg.setPrintPos(68, 154); ucg.print(co2TrendReady && contador_pomp == 0 ? F("CO2 OK") : F("CO2 WAIT"));
   ucg.setFont(ucg_font_inr16_mr);
   displayCacheValid = false;
 }
@@ -513,9 +513,9 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
-  uint8_t bgR = displayHealthState == DISPLAY_FAULT ? 105 : (displayHealthState == DISPLAY_WAIT ? 92 : 12);
-  uint8_t bgG = displayHealthState == DISPLAY_FAULT ? 12 : (displayHealthState == DISPLAY_WAIT ? 62 : 78);
-  uint8_t bgB = displayHealthState == DISPLAY_FAULT ? 15 : (displayHealthState == DISPLAY_WAIT ? 8 : 42);
+  uint8_t bgR = displayHealthState == DISPLAY_FAULT ? 150 : (displayHealthState == DISPLAY_WAIT ? 10 : 0);
+  uint8_t bgG = displayHealthState == DISPLAY_FAULT ? 8 : (displayHealthState == DISPLAY_WAIT ? 32 : 92);
+  uint8_t bgB = displayHealthState == DISPLAY_FAULT ? 12 : (displayHealthState == DISPLAY_WAIT ? 105 : 42);
 
   if (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1)) {
     ucg.setFont(ucg_font_inr16_mr);
@@ -527,46 +527,46 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
 
   ucg.setFont(ucg_font_7x13_mr);
   if (!displayCacheValid || displayTempTenths != tempTenths) {
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 59, 58, 18);
-    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(5, 73);
+    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 62, 58, 18);
+    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(5, 77);
     if (tempTenths == -32768) ucg.print(F("--.- C"));
     else { ucg.print(temperature, 1); ucg.print(F(" C")); }
     displayTempTenths = tempTenths;
   }
   if (!displayCacheValid || displayHumidityPercent != humidityPercent) {
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(65, 59, 59, 18);
-    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(66, 73);
+    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(65, 62, 59, 18);
+    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(66, 77);
     if (humidityPercent == -32768) ucg.print(F("-- %"));
     else { ucg.print(humidity, 0); ucg.print(F(" %")); }
     displayHumidityPercent = humidityPercent;
   }
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 85, 58, 18);
-    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(5, 99);
+    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 94, 58, 18);
+    ucg.setColor(0, 230, 235, 240); ucg.setPrintPos(5, 109);
     if (internalTempTenths == -32768) ucg.print(F("--.- C"));
     else { ucg.print(internalTemperature, 1); ucg.print(F(" C")); }
     displayInternalTempTenths = internalTempTenths;
   }
 
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
-    drawCo2Icon(4, 112, botao_co2_onoff);
-    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(28, 124); ucg.print(botao_co2_onoff ? F("ON ") : F("OFF"));
+    drawCo2Icon(4, 120, botao_co2_onoff);
+    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(28, 132); ucg.print(botao_co2_onoff ? F("ON ") : F("OFF"));
     displayCo2Enabled = botao_co2_onoff;
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
-    drawHeaterIcon(65, 113, botao_aquecedor_onoff);
-    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(89, 124); ucg.print(botao_aquecedor_onoff ? F("ON ") : F("OFF"));
+    drawHeaterIcon(65, 121, botao_aquecedor_onoff);
+    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(89, 132); ucg.print(botao_aquecedor_onoff ? F("ON ") : F("OFF"));
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
-    drawFanIcon(5, 132, ventilador_status);
-    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(28, 144); ucg.print(ventilador_status ? F("ON ") : F("OFF"));
+    drawFanIcon(5, 138, ventilador_status);
+    ucg.setColor(0, 255, 255, 255); ucg.setPrintPos(28, 154); ucg.print(ventilador_status ? F("ON ") : F("OFF"));
     displayFanOn = ventilador_status;
   }
   if (!displayCacheValid || displayResponseObserved != responseObserved) {
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(64, 127, 60, 18);
+    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(64, 140, 60, 18);
     ucg.setColor(0, responseObserved ? 60 : 220, responseObserved ? 210 : 175, responseObserved ? 120 : 60);
-    ucg.setPrintPos(66, 141); ucg.print(responseObserved ? F("CO2 OK") : F("CO2 WAIT"));
+    ucg.setPrintPos(66, 154); ucg.print(responseObserved ? F("CO2 OK") : F("CO2 WAIT"));
     displayResponseObserved = responseObserved;
   }
   displayCacheValid = true;
