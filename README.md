@@ -269,7 +269,7 @@ ALL OFF
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O termostato liga em 36,9 °C e desliga a partir de 37,0 °C,
-com intervalo mínimo de 10 s entre mudanças do relé e limite de 10 s por acionamento.
+com pelo menos 10 s de espera antes de religar e limite de 10 s por acionamento.
 O corte de segurança fica em 37,1 °C. A faixa visual esperada é 36,9–37,1 °C;
 esse controle ainda precisa de validação térmica prolongada. Enquanto o CO₂ estiver
 abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo

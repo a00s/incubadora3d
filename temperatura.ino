@@ -935,9 +935,8 @@ void controlHeater(float temperature, unsigned long now) {
 
   if (heaterOn) {
     if (temperature >= HEATER_HARD_CUTOFF ||
-        (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
-         (temperature >= HEATER_OFF_TEMPERATURE ||
-          now - heaterOnSince >= HEATER_MAX_ON_MS))) {
+        temperature >= HEATER_OFF_TEMPERATURE ||
+        now - heaterOnSince >= HEATER_MAX_ON_MS) {
       digitalWrite(HEATER, HIGH);
       heaterLastSwitchAt = now;
       heaterOnSince = 0;

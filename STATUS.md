@@ -975,3 +975,22 @@ filamento/processo e 39 STL das demais peças preservados.
 - A mensagem foi compilada e gravada: 32.202 bytes de Flash e 955 bytes de RAM. O CO₂
   segue desligado conforme último `BOOT_COUNT=96`; o upload não altera esse valor da
   EEPROM. Não abri outra sessão serial após gravar.
+
+## Controle térmico sem atraso para desligar
+
+- 2026-10-15, BOOT_COUNT=98. Em uma janela de ~3 min sem injeção de CO₂, o sensor marcou
+  de 2.496 até 218 ppm e `rate_ppm_min` ficou perto de −700 ppm/min. A leitura terminou
+  abaixo do valor típico do ar ambiente; não é possível separar vazamento de deriva ou
+  erro do sensor com o equipamento disponível. O controle de CO₂ permaneceu OFF.
+- A temperatura subiu de 36,7 para 37,2 °C. O log mostrou que a permanência mínima de
+  10 s entre mudanças também impedia desligar o aquecedor ao atingir o limite, causando
+  alguns segundos de aquecimento adicional. Alterado o controle: o limiar e o corte
+  desligam imediatamente; os 10 s continuam como intervalo mínimo antes de religar.
+  A resposta térmica após essa mudança ainda precisa ser medida.
+- Firmware gravado e observado a partir de BOOT_COUNT=100. Com a nova lógica, a amostra
+  máxima ficou em 37,1 °C durante ~6 min; o aquecedor desligou nos limiares e respeitou
+  a espera antes de religar. Com o CO₂ em 65.063 ppm e caindo, o usuário já havia
+  autorizado automação; habilitei `CO2 ON` às ~16:12. Às 16:17, a leitura era 60.246
+  ppm, `rate_ppm_min` perto de −815, `co2_enabled=1` e `valve_open=0`; ainda acima da
+  meta, então nenhuma dose foi liberada. A janela de 180 s passou sem abertura da válvula.
+- Compilação/upload: 32.162 bytes de Flash e 955 bytes de RAM global.
