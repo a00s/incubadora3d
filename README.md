@@ -246,12 +246,18 @@ ambos ficam fora do controle automático.
 
 As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
 temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
-ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,9–37,1 °C. O aquecedor
+ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
+percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
+A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
+de temperatura é 36,9–37,1 °C. O aquecedor
 liga em 36,9 °C e desliga em 37,0 °C, com corte de segurança em 37,1 °C. O valor
 medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
-(até 65.535 ppm). Uma queda de faixa compatível com rollover acima de 60.000 ppm trava
-a injeção e gera um evento, para não interpretar o valor baixo subsequente como falta de
-CO₂.
+(até 65.535 ppm). Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
+rollover, o firmware desliga a injeção, grava uma trava de segurança na EEPROM e marca a
+leitura como inválida. A trava sobrevive a reinicializações e evita interpretar um valor
+baixo posterior como falta de CO₂. Ela só é apagada pelo comando `CO2 ACK`, após verificar
+o sensor; esse comando mantém o automático desligado. A gravação ocorre só na transição
+para a trava, sem gravações periódicas.
 
 Comandos disponíveis:
 
@@ -261,19 +267,21 @@ STATUS
 CO2 ON
 CO2 OFF
 CO2 PRIME
+CO2 ACK
 HEAT ON
 HEAT OFF
 ALL OFF
 ```
 
-`CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
-desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
+`CO2 ON` habilita o controle automático, exceto enquanto a trava de faixa estiver ativa;
+`CO2 ACK` limpa a trava e deixa o automático desligado. `HEAT ON` habilita o termostato.
+`ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O termostato liga em 36,7 °C e desliga a partir de 36,8 °C,
 com pelo menos 10 s de espera antes de religar e limite de 30 s por acionamento.
 O corte de segurança fica em 37,1 °C. A banda de controle entre ligar e desligar é
 0,1 °C; a faixa visual esperada é 36,9–37,1 °C;
 esse controle ainda precisa de validação térmica prolongada. Enquanto o CO₂ estiver
-abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
+abaixo de 49.000 ppm, o automático inicia uma dose quando a leitura não está subindo
 rapidamente. Após reinício, a primeira dose é escalada pela distância à meta, com
 referência inicial conservadora de 12 ppm por ms e teto de 60 ms. Depois de cada dose, o controle espera
 ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
@@ -299,7 +307,7 @@ toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto
 toque dispara imediatamente. Isso permite uma dose manual progressiva enquanto o
 controle automático mantém o estado que já tinha. Se houver uma leitura de CO₂ no
-limite configurado (50.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
+limite superior da faixa (51.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
 o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
 válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
 modo automático ao fim da janela de três segundos.

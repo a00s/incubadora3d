@@ -1046,3 +1046,42 @@ filamento/processo e 39 STL das demais peças preservados.
 - Compilação e gravação para Uno concluídas: 32.202 bytes de Flash e 955 bytes de RAM
   global. A versão está carregada; o estado final observado mantém CO₂ OFF e válvula
   fechada.
+
+## Faixa profissional de CO₂ e trava persistente contra rollover
+
+- 2026-10-15. A documentação de fabricantes de incubadoras profissionais consultada declara
+  precisão de controle de CO₂ de ±0,1 ponto percentual (Thermo Fisher Heracell/Forma); a
+  Memmert declara precisão de ajuste de 0,1% e variação temporal de ±0,2%. Adotada para a
+  meta de 5,0% a faixa de controle de 4,9–5,1% (49.000–51.000 ppm). Essa é a tolerância
+  nominal de controle; vazamento e resposta do sensor podem impedir mantê-la continuamente.
+- O controle automático passa a iniciar correção abaixo de 49.000 ppm e considera verde a
+  faixa de 49.000–51.000 ppm. O alvo matemático permanece 50.000 ppm. Pulsos manuais são
+  recusados a partir de 51.000 ppm.
+- Na última janela antes do upload, o firmware anterior mostrou CO₂ de 62.503 para 61.311
+  ppm e taxas móveis entre cerca de −576 e −889 ppm/min. Como a leitura está próxima do
+  limite do campo de 16 bits e já houve rollover observado, essa inclinação não deve ser
+  tratada como uma medida confiável de vazamento. A temperatura variou de 36,5 a 37,3 °C,
+  ainda acima do teto desejado em alguns ciclos; o aquecedor estava habilitado e o CO₂ OFF.
+- Incluída trava persistente: ao alcançar 60.000 ppm ou observar um salto bruto de pelo
+  menos 15.000 ppm, o código grava um marcador EEPROM uma única vez, desliga o automático,
+  recusa pulsos manuais e invalida a leitura. Reinicializações não apagam a trava. `CO2 ACK`
+  apaga o marcador somente com o automático desligado; nova ativação exige um comando
+  separado. Isso não faz gravações em cada ciclo e mantém o contador de reinicializações
+  independente.
+- Para liberar Flash sem retirar os ícones animados, a leitura grande de CO₂ passou da fonte
+  alfanumérica completa para a variante numérica compacta, com o mesmo tamanho visual. A
+  compilação para Uno usa 30.702 bytes (95%) e 955 bytes de RAM. Firmware gravado. Em
+  BOOT_COUNT=116, o evento `co2_near_protocol_limit` ocorreu a 60.327 ppm; telemetria
+  confirmou `co2_valid=0`, `co2_enabled=0` e `valve_open=0`. Após reiniciar novamente,
+  BOOT_COUNT=117 registrou `co2_range_lock_restored_after_boot`; a leitura de 60.022 ppm
+  continuou inválida, com controle OFF e válvula fechada. Isso confirma que a trava persiste
+  sem depender de gravações por ciclo. Depois de reiniciar o monitor para confirmar a trava,
+  a leitura caiu abaixo de 60.000 ppm, mas permanece inválida e bloqueada; não limpei a
+  trava nem habilitei a válvula sem uma referência independente para validar o sensor.
+- O limite do ventilador interno foi elevado de 30 para 31 °C, com desligamento abaixo de
+  30 °C, para evitar manter o ventilador ligado quando a sonda interna lia 29,7–29,9 °C.
+  Nos boots 116–117, a sonda ficou em 30,0 °C e o ventilador permaneceu OFF; ainda não houve
+  teste no limiar de 31 °C.
+- Referências de precisão profissional: [Thermo Fisher Heracell 150i/240i](https://www.thermofisher.com/TFS-Assets/LED/brochures/Heracell%20150i%20and%20240i%20CO2%200820%20Web.pdf),
+  [Thermo Fisher Forma](https://www.thermofisher.com/in/en/home/life-science/lab-equipment/co2-incubators/models/direct-heat.html),
+  [Memmert ICO50](https://www.memmert.com/en/products/incubators/co2-incubator/ico50-2).
