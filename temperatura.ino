@@ -6,7 +6,6 @@
 #include <avr/wdt.h>
 #include <EEPROM.h>
 #include <avr/pgmspace.h>
-#include <math.h>
 #include <string.h>
 
 #include <Adafruit_Sensor.h>
@@ -34,6 +33,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_TARGET_PPM 50000L
 #define CO2_SENSOR_PROTOCOL_MAX_PPM 65535L
 #define CO2_GOOD_MIN_PPM 48000L
+#define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
+#define CO2_STABLE_TIME_MS 30000UL
 #define TEMPERATURE_LIMIT 37
 #define TEMPERATURE_GOOD_MIN 36.5
 #define TEMPERATURE_GOOD_MAX 37.5
@@ -71,11 +72,14 @@ char displayCo2Text[8] = "";
 char displayTempText[8] = "";
 char displayHumidityText[8] = "";
 char displayInternalTempText[8] = "";
+char displayCo2RateText[8] = "";
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
 int8_t displayFanOn = -1;
-int8_t displayResponseObserved = -1;
+int32_t displayCo2RatePpmMin = 0;
+int8_t displayCo2RateReady = -1;
 unsigned long lastValidCo2Time = 0;
+unsigned long co2StableSince = 0;
 char serialCommandBuffer[24];
 uint8_t serialCommandLength = 0;
 bool co2ButtonStable = false, co2ButtonCandidate = false;
@@ -95,7 +99,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 1000;   // ms; limite superior, com rampa de no máximo 2x por ciclo
+const int DELAY_MAXIMO = 1000;   // ms; limite superior do pulso automático
 const int DELAY_MINIMO = 1;       // ms
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
@@ -103,13 +107,16 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t delayProporcionalAnt = 30;    // Semente calibrada: próximo pulso automático começa em 60 ms
+int32_t delayProporcionalAnt = 30;    // Semente; rampa de 1,5x limita o primeiro pulso a 45 ms
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
-// Variáveis para calcular a média de aumento ou queda de CO2 por minuto
-int32_t co2AccumulatedChange = 0; // Acumula as mudanças de CO2
+// Janela para calcular a tendência de CO2 em ppm/min
 unsigned long lastMinuteTime = 0; // Armazena o tempo do último cálculo de média
 const unsigned long oneMinuteInterval = 60000; // Intervalo de um minuto em milissegundos
+int32_t co2RatePpmMin = 0;
+int32_t co2RateWindowStartPpm = 0;
+bool co2RatePpmMinReady = false;
+bool co2RateWindowStarted = false;
 
 // Variáveis globais para aprendizado adaptativo
 // float media_eficiencia = 0.0;
@@ -280,16 +287,29 @@ void loop()
         if (deltaTime > 0) {
           co2Rate = co2Delta * 1000.0f / deltaTime;
           if (co2Rate > maxRate) maxRate = co2Rate;
-          co2AccumulatedChange += co2Delta;
-          co2TrendReady = true;
+          if (co2Rate <= CO2_STABLE_RATE_PPM_PER_SEC) {
+            if (co2StableSince == 0) co2StableSince = currentTime;
+            co2TrendReady = currentTime - co2StableSince >= CO2_STABLE_TIME_MS;
+          } else {
+            co2StableSince = 0;
+            co2TrendReady = false;
+          }
         } else {
           co2Rate = 0;
         }
       } else {
         co2ReferenceReady = true;
         co2Rate = 0;
+        co2StableSince = 0;
+        co2TrendReady = false;
       }
       lastValidCo2Time = currentTime;
+      if (!co2RateWindowStarted) {
+        co2RateWindowStartPpm = CO2i;
+        lastMinuteTime = currentTime;
+        co2RateWindowStarted = true;
+        co2RatePpmMinReady = false;
+      }
       if (co2BaselineReady) {
         int32_t increaseSincePump = CO2i - co2_before_pump;
         if (increaseSincePump > max_co2_increase) max_co2_increase = increaseSincePump;
@@ -300,17 +320,19 @@ void loop()
     } else {
       co2Rate = 0;
       co2ReferenceReady = false;
+      co2StableSince = 0;
       co2TrendReady = false;
+      co2RateWindowStarted = false;
+      co2RatePpmMinReady = false;
     }
-    // float averageChangePerMinute = 0.0;
-    // Verificar se passou um minuto para calcular a média
-    if (currentTime - lastMinuteTime >= oneMinuteInterval) {
-        Serial.print(F("Média de aumento/queda de CO2 por minuto: "));
-        Serial.print(co2AccumulatedChange);
-        Serial.println(F(" ppm/min"));
-
-        // Reiniciar acumulador e tempo
-        co2AccumulatedChange = 0;
+    if (validCo2 && co2RateWindowStarted && currentTime - lastMinuteTime >= oneMinuteInterval) {
+        unsigned long rateWindowMs = currentTime - lastMinuteTime;
+        int64_t ppmChange = (int64_t)CO2i - co2RateWindowStartPpm;
+        co2RatePpmMin = (int32_t)(ppmChange * 60000LL / rateWindowMs);
+        co2RatePpmMinReady = true;
+        Serial.print(F("CO2_RATE_PPM_MIN,"));
+        Serial.println(co2RatePpmMin);
+        co2RateWindowStartPpm = CO2i;
         lastMinuteTime = currentTime;
     }
     int32_t delayProporcional = validCo2
@@ -365,7 +387,7 @@ void loop()
       co2_before_pump = CO2i;
       co2BaselineReady = true;
       int32_t pulseMs;
-      if (max_co2_increase <= 8) {
+      if (lastCo2PulseMs == 0 || max_co2_increase <= 8) {
         pulseMs = delayProporcionalAnt * 2;
         if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
         Serial.print(F("EVENT,co2_pulse,ramp,ms,"));
@@ -375,7 +397,7 @@ void loop()
       }
       if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
-      int32_t maxRampPulse = delayProporcionalAnt * 2;
+      int32_t maxRampPulse = delayProporcionalAnt + delayProporcionalAnt / 2;
       if (maxRampPulse > DELAY_MAXIMO) maxRampPulse = DELAY_MAXIMO;
       if (pulseMs > maxRampPulse) pulseMs = maxRampPulse;
       int32_t ppmRemaining = CO2_TARGET_PPM - CO2i;
@@ -389,6 +411,7 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
       delayProporcionalAnt = pulseMs;
       max_co2_increase = 0;
+      co2StableSince = 0;
       co2TrendReady = false;
       contador_pomp = POMP_WAITING_TIME;
       maxRate = 0;
@@ -407,7 +430,7 @@ void loop()
     }
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
-      Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
+    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
@@ -416,7 +439,8 @@ void loop()
     Serial.print(digitalRead(HEATER) == LOW ? 1 : 0); Serial.print(','); Serial.print(ventilador_status); Serial.print(',');
     Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0); Serial.print(','); Serial.print(delayProporcional); Serial.print(',');
     Serial.print(lastCo2PulseMs); Serial.print(',');
-    Serial.print(co2Rate, 2); Serial.print(','); Serial.print(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
+    Serial.print(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
+    Serial.print(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
 
     contador_pomp = contador_pomp -1;
@@ -514,6 +538,9 @@ void drawDisplayFrame() {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
+  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setColor(0, 130, 190, 215);
+  ucg.setPrintPos(73, 91); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("UMID"));
@@ -543,6 +570,22 @@ void formatTenths(int16_t value, char *text) {
   text[index++] = ' ';
   text[index++] = 'C';
   text[index] = '\0';
+}
+
+void formatPpmPerMinute(int32_t value, bool valid, char *text) {
+  if (!valid) {
+    strcpy_P(text, PSTR("---"));
+    return;
+  }
+  if (value > 99999 || value < -99999) {
+    ltoa(value / 1000, text, 10);
+    strcat_P(text, PSTR("k"));
+  } else if (value > 0) {
+    text[0] = '+';
+    ltoa(value, text + 1, 10);
+  } else {
+    ltoa(value, text, 10);
+  }
 }
 
 void drawTextChanges(char *previous, const char *next, uint8_t x, uint8_t baseline,
@@ -595,7 +638,6 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     displayHealthState = healthState;
     drawHealthIndicator();
   }
-  bool responseObserved = co2TrendReady && contador_pomp == 0;
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
@@ -609,6 +651,21 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
                     8, 18, 30, 220, 235, 250);
     displayCo2Ppm = co2Valid ? CO2i : -1;
+  }
+
+  bool co2RateValid = co2RatePpmMinReady && co2Valid;
+  int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
+  if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
+    char nextRateText[8];
+    formatPpmPerMinute(shownCo2Rate, co2RateValid, nextRateText);
+    ucg.setFont(ucg_font_7x13_mr);
+    uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
+    uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
+    uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
+    drawTextChanges(displayCo2RateText, nextRateText, 73, 109, 94, 18, 54,
+                    bgR, bgG, bgB, rateR, rateG, rateB);
+    displayCo2RatePpmMin = shownCo2Rate;
+    displayCo2RateReady = co2RateValid;
   }
 
   ucg.setFont(ucg_font_7x13_mr);
@@ -636,15 +693,6 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     drawTextChanges(displayInternalTempText, nextInternalTempText, 5, 109, 94, 18, 58,
                     bgR, bgG, bgB, 230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
-  }
-
-  if (!displayCacheValid || displayResponseObserved != responseObserved) {
-    ucg.setFont(ucg_font_7x13_mr);
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(77, 94, 47, 18);
-    ucg.setColor(0, responseObserved ? 60 : 150, responseObserved ? 210 : 175, responseObserved ? 145 : 195);
-    ucg.setPrintPos(responseObserved ? 108 : 77, 109);
-    ucg.print(responseObserved ? F("OK") : F("AGUARDE"));
-    displayResponseObserved = responseObserved;
   }
 
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
@@ -686,6 +734,8 @@ void printStatus(unsigned long now) {
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
   Serial.print(F(",rate_ppm_s=")); Serial.print(co2Rate, 2);
+  Serial.print(F(",rate_ppm_min_valid=")); Serial.print(co2RatePpmMinReady ? 1 : 0);
+  Serial.print(F(",rate_ppm_min=")); Serial.print(co2RatePpmMin);
   Serial.print(F(",trend_ready=")); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
 }
 
@@ -699,6 +749,7 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   co2BaselineReady = freshReading && CO2i > 0;
   if (co2BaselineReady) co2_before_pump = CO2i;
   max_co2_increase = 0;
+  co2StableSince = 0;
   co2TrendReady = false;
   co2ReferenceReady = freshReading;
   if (freshReading) last_co2i = CO2i;
@@ -910,7 +961,10 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
     return DELAY_MINIMO;
   }
   int64_t ppmNecessario = (int64_t)ppm_objetivo - ppm_atual;
-  int64_t tempoValvula = ppmNecessario * ms_ultima_vez / aumento_ultima_vez;
+  // Use metade do tempo estimado para evitar um pulso de preenchimento total.
+  // A resposta atrasada do sensor e a pressão variável podem continuar elevando
+  // a concentração depois que a válvula fecha.
+  int64_t tempoValvula = ppmNecessario * ms_ultima_vez / (2LL * aumento_ultima_vez);
   if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;
   if (tempoValvula > DELAY_MAXIMO) return DELAY_MAXIMO;
   return (int32_t)tempoValvula;

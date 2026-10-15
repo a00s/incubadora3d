@@ -223,7 +223,11 @@ com `@epigeneticaemcasa`. Leituras sem alteração não redesenham seus campos.
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
-estado do controle, incluindo `boot_count`. A linha `BOOT_COUNT` e o campo `boot_count`
+estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líquida de CO₂
+normalizada para ppm/min numa janela válida de aproximadamente 60 segundos; o campo
+`rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
+tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
+A linha `BOOT_COUNT` e o campo `boot_count`
 leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
 por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;
 ambos ficam fora do controle automático.
@@ -253,10 +257,15 @@ ALL OFF
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
 abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
-automática inicial agora é 60 ms; os testes mostraram aumento de concentração após essa
-dose, com variação e atraso entre ciclos. O controle observa a resposta por cerca de um
-minuto e limita cada aumento a no máximo o dobro do pulso anterior, até 1.000 ms. O
-cálculo proporcional usa a concentração medida após cada dose; ao se aproximar da meta,
+automática inicial é 45 ms. Depois de cada dose, o controle espera ao menos cerca de um
+minuto e também exige que a taxa de subida medida não passe de 5 ppm/s por 30 segundos
+contínuos antes de injetar novamente; se a leitura continuar subindo mais rápido, ele
+espera mais. Uma leitura em queda não bloqueia a correção.
+O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
+acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
+da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
+o cálculo usa metade do tempo proporcional estimado e limita cada aumento a 1,5 vez o
+pulso anterior, até 1.000 ms. Ao se aproximar da meta,
 os pulsos ficam limitados a 250 ms nos
 últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
