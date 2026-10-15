@@ -1021,3 +1021,28 @@ filamento/processo e 39 STL das demais peças preservados.
   válvula fechada e aquecimento habilitado. Próxima medição deve aguardar que o sensor
   saia da faixa de wraparound; manter o controle de CO₂ desligado até a leitura ficar
   confiável.
+
+## Ajuste da banda térmica em função da inércia observada
+
+- 2026-10-15. Na sequência de ensaios térmicos, limites de acionamento de 10 s
+  mantiveram o sensor abaixo do alvo durante a recuperação após reinícios. Um teste
+  temporário de 2 s foi revertido: a leitura caiu até 36,3 °C. O máximo foi então
+  elevado a 30 s, mantendo desligamento imediato pela temperatura e intervalo mínimo
+  de 10 s antes de religar.
+- Com acionamento longo, o sensor continuou subindo depois do corte e chegou a 37,4 °C;
+  isso demonstrou inércia térmica relevante. A banda foi antecipada para ligar em
+  36,7 °C e desligar em 36,8 °C, mantendo 0,1 °C entre limiares e o corte rígido em
+  37,1 °C. O objetivo do deslocamento é compensar o calor residual medido.
+- Após o último upload (BOOT_COUNT=112), o CO₂ e a válvula permaneceram desligados;
+  o aquecedor estava habilitado. A leitura térmica passou de 36,4–36,5 °C durante a
+  recuperação para 36,8 °C; após o corte, ainda chegou a 37,2 °C e então permaneceu
+  perto de 37,1–37,2 °C com o relé desligado. Portanto, a banda de 0,1 °C já está
+  configurada, mas o comportamento real ainda excede a faixa desejada por inércia e
+  precisa de mais uma janela sem reinicializações para validar a configuração.
+- Durante a mesma janela, `INT` ficou perto de 29,5–29,7 °C; o ventilador desligou
+  abaixo do limite e permaneceu desligado. A leitura de CO₂ seguiu instável após o
+  wraparound e caiu em torno de 700–850 ppm/min, com controle automático OFF. Não usar
+  essa leitura para dosagem nem como estimativa isolada de vazamento.
+- Compilação e gravação para Uno concluídas: 32.202 bytes de Flash e 955 bytes de RAM
+  global. A versão está carregada; o estado final observado mantém CO₂ OFF e válvula
+  fechada.
