@@ -994,3 +994,30 @@ filamento/processo e 39 STL das demais peças preservados.
   ppm, `rate_ppm_min` perto de −815, `co2_enabled=1` e `valve_open=0`; ainda acima da
   meta, então nenhuma dose foi liberada. A janela de 180 s passou sem abertura da válvula.
 - Compilação/upload: 32.162 bytes de Flash e 955 bytes de RAM global.
+
+## Redução de dose após resposta atrasada e wraparound
+
+- 2026-10-15. Durante o ensaio autorizado, o CO₂ foi habilitado automaticamente com
+  leitura inicial próxima de 65.063 ppm. A leitura caiu até cerca de 50.000 ppm; ao
+  cruzar a meta inferior, o controlador aplicou pulsos adaptativos de 5, 55, 178 e
+  461 ms, aguardando ao menos cerca de um minuto e desaceleração entre eles.
+- Após o pulso de 461 ms, a leitura demorou e depois subiu de aproximadamente 48.235
+  para além do máximo representável de 65.535 ppm. O serial registrou suspeita de
+  wraparound; a leitura reapareceu em ~579 ppm e continuou subindo. O valor posterior
+  de ~16.643 ppm confirma que a injeção foi real, mas os valores baixos após a volta
+  não representam uma queda real do CO₂. O detector de salto travou o controle.
+- Desliguei o automático pelo serial; telemetria confirmou `co2_enabled=0` e
+  `valve_open=0`. Após gravar a nova versão, BOOT_COUNT=102 confirmou novamente ambos
+  desligados. O aquecedor permaneceu habilitado e a temperatura observada ficou em
+  36,8–36,9 °C.
+- Para reduzir ultrapassagens com resposta tardia e variação de pressão, a dose
+  proporcional automática agora aplica inicialmente 1/6 do déficit estimado por ciclo,
+  mantendo o ganho adaptativo medido, espera por estabilização e limites de pulso.
+  A fração menor é uma medida conservadora após o salto observado; deve ser avaliada
+  pela telemetria antes de aumentar. A janela térmica já está em 0,1 °C: liga em
+  36,9 °C, desliga em 37,0 °C e corta por segurança em 37,1 °C.
+- Compilação e upload concluídos para Arduino Uno: 32.202 bytes de Flash (99%) e
+  955 bytes de RAM global. O monitor após upload confirmou o novo boot, CO₂ OFF,
+  válvula fechada e aquecimento habilitado. Próxima medição deve aguardar que o sensor
+  saia da faixa de wraparound; manter o controle de CO₂ desligado até a leitura ficar
+  confiável.

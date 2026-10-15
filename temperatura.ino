@@ -117,6 +117,7 @@ const int DELAY_MAXIMO = 1000;   // ms; limite superior do pulso automático
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
+const int CO2_DOSE_FRACTION_DENOMINATOR = 6; // Avança em frações para compensar resposta atrasada
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_FAULT 0
@@ -1067,7 +1068,11 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   int32_t ppmNecessario = ppm_objetivo - ppm_atual;
   // Suaviza em 1/3 a eficiência medida a cada resposta estabilizada, acompanhando
   // a pressão variável sem deixar uma única amostra definir todo o pulso seguinte.
-  int32_t tempoValvula = ppmNecessario * 100L / ganhoPpmPorMsX100;
+  // O sensor pode refletir a injeção muitos segundos depois de fechar a válvula.
+  // Usar toda a dose proporcional de uma vez causou ultrapassagem observada;
+  // aplicar 1/6 do déficit por ciclo mantém o ajuste adaptativo e reduz o risco.
+  int32_t tempoValvula = ppmNecessario * 100L /
+                         (ganhoPpmPorMsX100 * CO2_DOSE_FRACTION_DENOMINATOR);
   if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;
   if (tempoValvula > DELAY_MAXIMO) return DELAY_MAXIMO;
   return (int32_t)tempoValvula;

@@ -283,10 +283,13 @@ O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
 cada resposta atualiza em um terço a eficiência estimada; isso evita que uma única
-amostra determine a dose seguinte. O controle calcula o pulso pela distância à meta e
-pela eficiência suavizada, limitado a 1.000 ms por pulso. A primeira dose após reinício
-usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms para
-evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
+amostra determine a dose seguinte. O controle calcula a dose pela distância à meta e
+pela eficiência suavizada, aplicando inicialmente um sexto desse tempo proporcional por
+ciclo. Essa fração foi reduzida após um ensaio em que uma dose de 461 ms provocou subida
+atrasada suficiente para cruzar o limite de 65.535 ppm do protocolo e aparecer como
+leitura baixa por wraparound. O limite é 1.000 ms por pulso. A primeira dose após
+reinício usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms
+para evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
 empilhar pulsos durante a subida atrasada.
 O controle automático aguarda também 3 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
