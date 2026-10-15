@@ -602,3 +602,123 @@ filamento/processo e 39 STL das demais peças preservados.
   duas janelas anteriores e ainda próxima da linha de base (~0,0113/min). O resultado
   reforça que não há melhora clara demonstrada; a câmara segue fria e fora das condições
   de comparação pretendidas.
+
+## Resposta do CO₂ e aquecimento após reinstalar o sensor
+
+- 2026-10-15. O sensor foi recolocado no anel ainda com folga. Após a recuperação da
+  leitura ambiente (~706 ppm), o CO₂ subiu até ~10.000 ppm sem injeção; aguardamos a
+  taxa cair antes de ligar o automático. Este trecho inicial é acomodação do sensor e
+  não serve como ensaio de vedação.
+- Com o aquecedor habilitado, a câmara subiu de ~28,7 °C para ~36,9 °C em cerca de
+  9,5 min. O relé operou em ciclos limitados a 20 s; a leitura chegou momentaneamente
+  a 37,2 °C com o relé já desligado, mostrando inércia térmica residual. Depois se
+  manteve perto de 36,5–37,1 °C enquanto o controle permaneceu habilitado.
+- Com o CO₂ automático ligado e alvo de 50.000 ppm, os pulsos observados foram 90,
+  135, 202, 303 e 93 ms. Os primeiros dois não produziram resposta clara imediatamente;
+  após os pulsos seguintes, o sensor mostrou resposta atrasada e acumulada. Um pulso de
+  303 ms partiu de ~18.000 ppm e a leitura alcançou ~37.900 ppm durante a resposta; o
+  firmware registrou aumento máximo de ~20.015 ppm desde esse pulso. Após o pulso de
+  93 ms, a leitura chegou a ~39.294 ppm. O alvo de 50.000 ppm não foi atingido nesta
+  sessão. Não atribuir todo o ganho a um único pulso: os trechos de resposta se
+  sobrepõem e a pressão do reservatório varia.
+- O firmware manteve a válvula fechada enquanto a concentração continuava subindo; só
+  liberou nova dose após a tendência desacelerar e ficar estável. A taxa de janela
+  chegou a +9.586 ppm/min durante a recuperação e depois caiu para +271 ppm/min antes
+  da última dose. Essa resposta confirma que um integrador convencional atualizado a
+  cada leitura poderia acumular comando durante o atraso; preservar espera de resposta,
+  limites de pulso e anti-windup ao avaliar PID para CO₂.
+- Para encerrar a intervenção antes da atualização do projeto, CO₂ e aquecimento foram
+  desligados por comando serial; a serial confirmou válvula e aquecedor desligados. Cerca
+  de 126 s depois, STATUS mostrou 38.510 ppm, 35,4 °C, RH 50,9%, ventilador ligado e
+  taxa móvel de −300 ppm/min. Como o anel ainda tinha folga e a temperatura estava
+  mudando, essa queda não é comparação válida de vazamento.
+- O teste de temperatura mostra resposta lenta e pequena ultrapassagem após desligar o
+  aquecedor. Antes de adicionar PID, registrar mais ciclos nas mesmas condições; para
+  temperatura, limitar integral e comutar o aquecedor com proteção de tempo mínimo e
+  corte independente. Para CO₂, preferir ganho proporcional/adaptativo por dose e
+  janela de assentamento; qualquer componente integral precisa congelar durante a
+  resposta pós-pulso. Não foram alterados nem gravados parâmetros de controle nesta
+  sessão.
+
+## Semântica do trend_ready durante queda de CO₂
+
+- 2026-10-15. A serial mostrou `rate_ppm_s=-11,47` e `trend_ready=1` durante queda
+  rápida de CO₂. Primeiro interpretamos `trend_ready` como taxa absoluta próxima de
+  zero e fizemos uma versão simétrica (`-5..+5 ppm/s`) no commit 773f9f4.
+- A revisão do algoritmo mostrou que esse indicador libera nova dose após a resposta
+  positiva atrasada do pulso anterior. O perigo que se quer evitar é empilhar doses
+  enquanto o sensor ainda registra uma subida tardia. Uma taxa negativa forte indica
+  perda de CO₂; após o cooldown mínimo de ~60 s, isso pode exigir compensação. Impor
+  taxa absoluta pequena bloquearia a reposição durante uma fuga persistente.
+- A condição simétrica foi revertida: o firmware volta a considerar a tendência pronta
+  quando `co2Rate <= +5 ppm/s` por 30 s, com o cooldown mínimo preservado. Isso não
+  declara uma queda rápida “plana”; significa apenas que não há subida positiva acima
+  do limite. A taxa assinada continua disponível na tela e na telemetria. Revalidar em
+  um ciclo com o sensor reinstalado, CO₂ abaixo da meta e vazão de queda conhecida.
+- A versão simétrica compilou e foi gravada, mas a observação de queda após boot não
+  comprovou se ela era melhor para a incubadora; foi revertida antes de continuar o
+  ensaio. O teste de bancada será repetido com a semântica anterior. Controles estavam
+  desligados e válvula fechada durante esta revisão.
+- Revisão restaurada compilada para Uno: 32.120/32.256 bytes de Flash e 825/2.048
+  bytes de RAM. Upload com verificação terminou sem erro. A reconexão serial após o
+  upload confirmou `BOOT_COUNT=72`, `co2_enabled=0`, `heater_enabled=0`, `valve_open=0`
+  e `heater_on=0`; CO₂ 35.192 ppm, temperatura 30,3 °C e umidade 58,7% na última
+  amostra. O sensor já apresentava queda; após o boot a janela de tendência ainda não
+  estava pronta. O monitor serial foi fechado para não causar outro reset. A nova
+  semântica segue sem validação dinâmica com controle ativo.
+
+## Queda de CO₂ com saídas desligadas
+
+- 2026-10-15. Abri o monitor serial para uma nova janela de observação; DTR reiniciou
+  o Uno e o firmware reportou `BOOT_COUNT=73`. Esse incremento corresponde à conexão
+  do monitor, não a um crash. Após 13,5 s de aquecimento do sensor, CO₂ caiu de
+  34.718 para 34.139 ppm em 74,8 s (cerca de −464 ppm/min). A janela móvel reportou
+  −468 ppm/min. A queda foi contínua, embora a taxa por amostra variasse.
+- Durante toda a janela `co2_enabled=0`, `heater_enabled=0`, `valve_open=0` e
+  `heater_on=0`. Temperatura lida caiu de 30,0 para 29,4 °C, umidade subiu de 59,3 para
+  60,3% e temperatura interna ficou em 29,5–29,6 °C. `trend_ready` passou a 1 após
+  completar a janela de assentamento, com CO₂ ainda caindo; isso confirma a semântica
+  restaurada, mas não valida o ciclo de dosagem sob controle ativo.
+- O novo anel ainda não foi confirmado como instalado nesta medição. Portanto este é
+  um baseline do estado físico atual, não uma comparação do anel novo nem prova isolada
+  de vazamento: mistura/estabilização, temperatura e vedação podem contribuir. Repetir
+  a janela com o novo anel instalado para comparar sob concentração e temperatura
+  semelhantes.
+
+## Resposta de CO₂ e aquecimento antes da troca do anel
+
+- 2026-10-15. Nova conexão serial reiniciou o Uno (`BOOT_COUNT=75`). Ao iniciar, CO₂
+  estava em 32.936 ppm, temperatura 28,6 °C e controles desligados. Com autorização
+  prévia para operar a incubadora, liguei CO₂ e aquecimento automáticos para continuar
+  o ensaio rumo a 50.000 ppm/37 °C. A válvula iniciou fechada.
+- Pulsos automáticos: 90 ms em 32.398 ppm, 135 ms em 31.992 ppm e 202 ms em 32.977 ppm.
+  Após o pulso de 135 ms, a leitura subiu lentamente até ~33.117 ppm (ganho máximo
+  registrado ~1.125 ppm). Após o pulso de 202 ms, a leitura subiu até 41.973 ppm,
+  aumento de 8.996 ppm, com pico da taxa instantânea de 627 ppm/s e demora de cerca de
+  136 s para atingir o máximo. O automático foi desligado durante a subida; a leitura
+  ainda continuou subindo com `co2_enabled=0` e `valve_open=0`, evidenciando grande
+  atraso do sensor/resposta da câmara. O primeiro pulso de 90 ms não mostrou ganho
+  detectável antes da dose seguinte.
+- Após o pico, CO₂ automático foi reativado brevemente e emitiu pulsos de 29 ms e 43 ms.
+  O ganho após 43 ms foi pequeno (~234 ppm no máximo observado); a leitura depois voltou
+  a cair. CO₂ foi desligado novamente antes da manutenção do sensor. Não houve leitura
+  inválida nem indicação de rollover. A taxa durante queda sem novos pulsos voltou à
+  ordem de −400 a −500 ppm/min, consistente com as janelas anteriores, mas a câmara
+  estava quente e a vedação/anel novo não estavam confirmados.
+- Aquecimento automático elevou a temperatura de 28,5 °C para 37,0 °C em cerca de
+  10 min. O relé respeitou ciclos máximos de 20 s; desligou perto de 37 °C e a leitura
+  não ultrapassou 37,0 °C durante esta janela. Após `HEAT OFF`, temperatura caiu para
+  36,1 °C. Não alterar limites com base em apenas um ciclo.
+- Para a pergunta sobre exposição no quarto: o volume CAD da câmara é
+  112×132×111 mm = 1,64 L; a 5% contém ~82 mL de CO₂, e a 4,2% contém ~69 mL. A queda
+  observada de ~464 ppm/min a 3,3% corresponde, sob hipótese de mistura uniforme e
+  leitura correta, a cerca de 0,76 mL/min de perda líquida de CO₂ da câmara. Em um
+  quarto de 30 m³ sem ventilação, isso representaria ~12 ppm adicionais em 8 h. É uma
+  estimativa de primeira ordem, não uma medição do ar do quarto; não cobre falha do
+  cilindro, regulador, mangueira ou válvula presa aberta. O CO₂ é inodoro; NIOSH lista
+  REL de 5.000 ppm TWA, 30.000 ppm short-term e IDLH de 40.000 ppm:
+  https://www.cdc.gov/niosh/npg/npgd0103.html
+- Estado para manutenção, confirmado por `STATUS`: `co2_enabled=0`,
+  `heater_enabled=0`, `valve_open=0`, `heater_on=0`; CO₂ 41.080 ppm, temperatura
+  36,6 °C. A última telemetria antes de remover o sensor mostrou 40.427 ppm e 36,1 °C,
+  ainda caindo. Manter saídas desligadas até o sensor com o anel novo estar reinstalado.
