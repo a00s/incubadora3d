@@ -34,6 +34,7 @@ class NDIRZ16 {
 
         uint32_t ppm;
         uint8_t  temperature;
+        bool     rawLoggingEnabled;
 
         uint8_t  measure();
         int32_t  getppm();

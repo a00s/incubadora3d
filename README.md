@@ -205,6 +205,18 @@ scripts/arduino.sh upload
 scripts/arduino.sh monitor
 ```
 
+Com a trava persistente de CO₂ ativa, o firmware também envia cada quadro UART aceito pelo
+sensor como 9 bytes binários, sem alterar a validação ou os relés. Para separar esses quadros
+do CSV no computador, use `scripts/capture_serial.py` (Python padrão, sem dependências):
+
+```bash
+scripts/capture_serial.py /dev/ttyACM0
+```
+
+O coletor valida o marcador `FF 86` e o checksum e imprime os quadros como `CO2_RAW,...`; as
+demais linhas permanecem texto serial. Para uso normal sem a trava, o firmware não emite esses
+bytes binários.
+
 O padrão da porta é `/dev/ttyACM0`; substitua por `ARDUINO_PORT=/dev/ttyUSB0` se
 necessário. No Linux, se o usuário não tiver acesso direto à porta, use o grupo
 `dialout` para cada comando, por exemplo:

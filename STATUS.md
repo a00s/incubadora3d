@@ -1483,3 +1483,10 @@ filamento/processo e 39 STL das demais peças preservados.
   de 6%, mas ainda não está provado que a placa use esse protocolo/faixa. Não mudar parser nem
   enviar `0x99` sem identificar a revisão exata e obter a codificação da Winsen; capturar o quadro
   UART bruto em bancada será o próximo teste de firmware apropriado.
+- Preparada instrumentação de diagnóstico em bancada: quando a trava CO₂ está ativa, a
+  biblioteca encaminha o quadro `0x86` validado como 9 bytes binários na USB; o coletor
+  `scripts/capture_serial.py` o converte em linha `CO2_RAW` e preserva o texto/CSV. A trava liga
+  a captura no boot e ao ser acionada; `CO2 ACK` a desliga. Compilação Uno R3 concluída em 32.230
+  bytes de 32.256 e 984 bytes de RAM global. O upload não foi possível: `/dev/ttyACM0` pertence
+  ao grupo `dialout`, ausente nas permissões do processo atual; `sudo` exige senha. A versão
+  gravada segue a anterior até a permissão USB ser liberada.

@@ -172,6 +172,7 @@ void setup()
     EEPROM.get(EEPROM_AQUECIMENTO, botao_aquecedor_onoff);
     EEPROM.get(EEPROM_CO2, botao_co2_onoff);
     co2RangeWrapLatched = EEPROM.read(EEPROM_CO2_RANGE_LOCK) == CO2_SENSOR_LOCK_MAGIC;
+    mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
     if (co2RangeWrapLatched && botao_co2_onoff != 0) {
       botao_co2_onoff = 0;
       EEPROM.put(EEPROM_CO2, botao_co2_onoff);
@@ -328,12 +329,14 @@ void loop()
       int32_t rawCo2Jump = sensorPpm - lastCo2RawPpm;
       if (sensorPpm >= CO2_SENSOR_LOCK_PPM && !co2RangeWrapLatched) {
         co2RangeWrapLatched = true;
+        mySensorCO2.rawLoggingEnabled = true;
         EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
         setCo2Enabled(false);
         Serial.println(F("EVENT,co2_near_protocol_limit,auto_locked_persistently"));
       }
       if (co2RawReferenceReady && (rawCo2Jump >= 15000 || rawCo2Jump <= -15000)) {
         co2RangeWrapLatched = true;
+        mySensorCO2.rawLoggingEnabled = true;
         EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
         setCo2Enabled(false);
         Serial.print(F("EVENT,co2_protocol_jump_suspected,delta_ppm,"));
@@ -933,12 +936,14 @@ void handleSerialCommand() {
     setCo2Enabled(false);
     EEPROM.update(EEPROM_CO2_RANGE_LOCK, 0);
     co2RangeWrapLatched = false;
+    mySensorCO2.rawLoggingEnabled = false;
     co2RawReferenceReady = false;
     co2ReferenceReady = false;
     Serial.println(F("ACK,CO2,RANGE_UNLOCKED_AUTO_OFF"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 LOCK")) == 0) {
     setCo2Enabled(false);
     co2RangeWrapLatched = true;
+    mySensorCO2.rawLoggingEnabled = true;
     EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
     Serial.println(F("ACK,CO2,RANGE_LOCKED_AUTO_OFF"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 OFF")) == 0 || strcmp_P(serialCommandBuffer, PSTR("ALL OFF")) == 0) {

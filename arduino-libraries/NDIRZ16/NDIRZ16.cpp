@@ -26,6 +26,7 @@ uint8_t NDIRZ16::cmd_measure[9] = {0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79}
 NDIRZ16::NDIRZ16(Stream *stream)
 {
     serial = stream;
+    rawLoggingEnabled = false;
 }
 /*
 uint16_t NDIRZ16::getppm()
@@ -92,6 +93,7 @@ uint8_t NDIRZ16::measure ()
 
     if (buf[1] == 0x86) {
         if (checksum_valid(buf)) {
+            if (rawLoggingEnabled) Serial.write(buf, 9);
             ppm         = (uint16_t)buf[2] << 8 | buf[3];
             temperature = buf[4] - 40;
             return true;
