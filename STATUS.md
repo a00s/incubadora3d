@@ -824,3 +824,28 @@ filamento/processo e 39 STL das demais peças preservados.
   segue com ambos os controles habilitados, leitura perto de 49.017 ppm e temperatura
   perto de 36,8 °C. Próxima decisão sobre aumentar a dose deve considerar a resposta
   atrasada deste segundo pulso.
+
+## Resposta tardia do pulso de 90 ms e decisão de rampa
+
+- 2026-10-15. Nova sessão serial abriu a placa por DTR (`BOOT_COUNT=78`); o estado
+  inicial reportou CO₂ automático e aquecimento habilitados, 49.065 ppm e 36,9 °C.
+  Não foram enviados comandos para mudar os controles.
+- A concentração caiu até 48.708 ppm, com janela de −338 ppm/min, antes de o
+  automático aplicar um pulso de 90 ms. A temperatura permaneceu de 36,5 a 37,1 °C.
+  A resposta foi atrasada: a leitura aumentou gradualmente e atingiu o máximo observado
+  de 49.848 ppm, ganho de 1.140 ppm, cerca de 132 s após o pulso. Não ultrapassou o
+  alvo de 50.000 ppm. Depois recuou; a sessão terminou em 49.699 ppm, cerca de 151 s
+  após a dose. A umidade variou de 55,6 a 57,4%.
+- O resultado confirma que o pulso de 90 ms teve efeito grande e lento nesta condição;
+  a comparação com o pulso anterior de 40 ms não é um ensaio controlado, pois a
+  pressão/vazão, a temperatura, a concentração inicial e o estado da mistura podem
+  ter mudado. Manter a resposta medida como referência adaptativa, não como uma
+  conversão fixa de milissegundos para ppm.
+- Decisão de firmware: retirar os limites especiais de 90 ms nos últimos 3.000 ppm e
+  40 ms nos últimos 1.000 ppm. A dose seguirá o cálculo proporcional já existente,
+  limitado a 1.000 ms, com ganho reduzido pela metade, rampa de no máximo 1,5× em relação
+  à dose anterior e bloqueio enquanto a resposta atrasada não desacelerar. A telemetria
+  desta sessão não mostra cruzamento da meta nem justificou comando `CO2 OFF`.
+- Encerrada a observação serial quando a presença do operador não estava confirmada;
+  não emitir novos pulsos assistidos nem abrir monitor remoto sem confirmação de que
+  alguém está no local e acompanhando a incubadora.
