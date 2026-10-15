@@ -722,3 +722,77 @@ filamento/processo e 39 STL das demais peças preservados.
   `heater_enabled=0`, `valve_open=0`, `heater_on=0`; CO₂ 41.080 ppm, temperatura
   36,6 °C. A última telemetria antes de remover o sensor mostrou 40.427 ppm e 36,1 °C,
   ainda caindo. Manter saídas desligadas até o sensor com o anel novo estar reinstalado.
+
+## Resposta após instalar o novo anel do sensor de CO₂
+
+- 2026-10-15. O usuário instalou o novo anel TPU-LW no sensor de CO₂. A vedação dos
+  três fios do sensor térmico ainda não estava instalada, portanto a perda observada
+  não isola o efeito do novo anel. CO₂ automático e aquecimento foram ligados para
+  retomar o ensaio. O Uno permaneceu no mesmo boot da observação anterior; o monitor
+  serial não foi reaberto durante esta sequência.
+- Com CO₂ na faixa de 34–36 mil ppm, pulsos automáticos de 90 ms tiveram resposta
+  pequena ou não detectável nas primeiras leituras; o de 135 ms elevou a leitura em
+  cerca de 2.206 ppm até ~36.424 ppm após ~110 s. Um pulso de 202 ms elevou-a em
+  ~8.855 ppm até ~45.048 ppm ao longo de aproximadamente 150–200 s. A forte diferença
+  entre doses confirma que a pressão/vazão e a resposta atrasada impedem tratar os
+  milissegundos como uma relação fixa com ppm.
+- Já perto do alvo, pulsos adaptados menores foram de 58, 87, 74, 49, 60 e 48 ms.
+  A resposta de 87 ms ainda acrescentou aproximadamente 1.800 ppm depois do pulso;
+  a de 74 ms acrescentou aproximadamente 1.387 ppm. O pulso de 60 ms teve cauda
+  atrasada de pelo menos ~705 ppm e chegou a ~48.997 ppm. O pulso subsequente de
+  48 ms foi aplicado automaticamente após nova queda em ~48.856 ppm: a leitura
+  chegou a 49.197 ppm (~+341 ppm) e depois começou a cair. Nesta amostra a leitura
+  permaneceu abaixo de 50.000 ppm; ainda não houve estabilização comprovada em 5%.
+  O controlador aguardou tendência descendente após as caudas positivas, em vez de
+  empilhar pulsos durante a subida.
+- Após o pulso de 48 ms, leituras recentes variaram de ~49.197 para ~49.147 ppm, com
+  `co2_enabled=1`, válvula fechada entre doses e `heater_enabled=1`. Temperatura
+  observada ficou principalmente em 36,6–37,0 °C; houve uma excursão a 37,3 °C em
+  um trecho anterior, então desliguei o aquecimento manualmente. A temperatura
+  continuou até ~37,2 °C por inércia e caiu a 36,1 °C; o aquecimento automático foi
+  religado a 36,1 °C e depois manteve-se próximo de 37 °C. Umidade ficou em torno de
+  51–52%. Não alterar limites térmicos com base nesta única sequência.
+- Resultado provisório: o CO₂ automático agora compensa quedas com pulsos pequenos
+  abaixo da meta e aproximou a câmara de 5%, sem ultrapassar 50.000 ppm nesta janela.
+  Isto não prova que a câmara se mantém em 5% nem quantifica o vazamento: a rolha dos
+  três fios segue pendente, e concentração, mistura e temperatura ainda variam. Repetir
+  após instalar a rolha térmica e comparar períodos com leituras estabilizadas.
+- A telemetria seguinte confirmou nova queda; o controlador aplicou 60 ms em
+  48.991 ppm. A leitura atingiu 49.531 ppm (~+540 ppm) cerca de 110 s depois e então
+  começou a cair. Como outra dose desse tamanho poderia consumir a margem restante,
+  desliguei o CO₂ automático em 49.475 ppm; o firmware confirmou `ACK,CO2,OFF` e a
+  válvula permaneceu fechada. O aquecimento automático continuou ligado, a 36,7 °C.
+
+## Retomada após ajuste do pote de água e aquecimento
+
+- 2026-10-15. O usuário aumentou o pote de água e fechou a incubadora. Nas amostras
+  seguintes a umidade subiu de 51,7% para 65,8% em cerca de 3,5 min; depois ficou
+  próxima de 65,4–65,8%. O teste mostra resposta rápida ao aumento de água/superfície,
+  mas ainda não confirma a umidade de equilíbrio nem se essa condição atende ao
+  protocolo da cultura.
+- O usuário reativou o aquecimento pelo painel. O DHT permaneceu válido, com a
+  temperatura subindo aproximadamente de 25,4 para 26,6 °C em ~90 s. O relé alternou
+  ciclos máximos de cerca de 20 s; o aquecimento segue muito abaixo dos 37 °C e ainda
+  precisa de acompanhamento prolongado para avaliar a taxa térmica e eventual perda
+  de calor. A temperatura interna da eletrônica ficou em 28,8–28,9 °C.
+- CO₂ automático permaneceu ligado. Foi aplicado um pulso de 60 ms a ~49.013 ppm; a
+  resposta atrasada chegou a cerca de 49.363 ppm (+350 ppm), depois recuou para
+  ~49.260 ppm, sempre abaixo de 50.000 ppm. Válvula fechada entre pulsos. Não se
+  conclui ainda retenção em 5% nem vazamento isolado: temperatura, umidade e resposta
+  atrasada do sensor estão variando.
+- No último estado consultado: `co2_enabled=1`, `heater_enabled=1`, `heater_on=1`,
+  `valve_open=0`, `boot_count=75`; leituras 49.260 ppm, 26,6 °C e 65,4% RH.
+- Continuação da telemetria: a leitura caiu para ~48.730 ppm e o automático aplicou
+  um pulso de rampa de 30 ms. As duas janelas móveis de um minuto seguintes foram
+  `−313` e `−22 ppm/min`, comparadas à janela anterior de `−379 ppm/min`; ao final,
+  o CO₂ estava ~48.550 ppm. A queda portanto desacelerou muito nesse trecho, embora
+  o pulso, a mudança de temperatura, a mistura e outras condições impeçam atribuir
+  a diferença à vedação isoladamente. O DHT permaneceu válido: temperatura subiu de
+  ~27,5 para ~30,7 °C e RH caiu de ~64,7 para ~60,5% durante o aquecimento. Estado
+  consultado: `co2_enabled=1`, `heater_enabled=1`, válvula fechada, `boot_count=75`.
+- Verificação adicional: a janela seguinte voltou a `−193 ppm/min`, portanto a taxa
+  de `−22 ppm/min` foi transitória e não confirma estabilização. O CO₂ caiu de ~48.730
+  para ~48.384 ppm em ~140 s; então o automático iniciou novo pulso de rampa de 45 ms.
+  Cerca de 15 s depois estava em ~48.327 ppm, ainda cedo para medir a resposta do pulso.
+  Temperatura subiu a ~31,7 °C e RH estava em ~59,2%; aquecimento habilitado, relé
+  alternando ciclos e válvula fechada entre doses.
