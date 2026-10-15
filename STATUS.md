@@ -913,3 +913,18 @@ filamento/processo e 39 STL das demais peças preservados.
   do upload; não reabri a serial após gravar, para não reiniciar a placa e invalidar a
   leitura térmica em andamento. A resposta da temperatura à nova janela ainda precisa
   ser observada ao longo do tempo.
+
+## Observação térmica após a janela de 0,1 °C
+
+- 2026-10-15, BOOT_COUNT=92. Após a inicialização, a temperatura medida subiu de 36,4 °C
+  para 37,1 °C em cerca de 2 min e 20 s; o aquecedor estava desligado nas últimas
+  amostras. A temperatura passou 0,1 °C do limiar de desligamento (37,0 °C), compatível
+  com inércia térmica; a amostra ainda não demonstra estabilização prolongada.
+- CO₂ permaneceu desabilitado e a válvula fechada. A leitura caiu de aproximadamente
+  11.071 para 9.588 ppm durante a mesma janela, cerca de −553 ppm/min no fim. Como o
+  valor inicial ocorreu após reinicialização do controlador/sensor, não usar essa janela
+  para estimar a concentração real nem para reativar a dosagem automática.
+- O sensor configurado é DHT22, cuja precisão nominal informada pela Adafruit é ±0,5 °C
+  e intervalo mínimo de leitura de 2 s. Assim, a janela de 0,1 °C controla a leitura
+  exibida, mas não comprova exatidão absoluta de ±0,1 °C. Para garantir essa exatidão,
+  será necessário comparar/calibrar com uma sonda de referência mais precisa.
