@@ -1242,3 +1242,17 @@ filamento/processo e 39 STL das demais peças preservados.
   é curta para provar estabilidade prolongada ou atribuir a melhora somente ao Kp. Manter a
   observação antes de qualquer outro ajuste. CO₂ permaneceu travado e inválido
   (`co2_range_lock=1`, `co2_valid=0`), automático desligado e válvula fechada.
+
+## Confirmação prolongada do Kp térmico
+
+- 2026-10-15, BOOT_COUNT=148, cerca de 5 min com Kp=24.000 ms/°C. A temperatura iniciou em
+  36,8 °C, caiu até 36,7 °C no primeiro minuto e alcançou 37,0 °C em ~2 min. Depois oscilou
+  principalmente entre 36,7 e 37,0 °C, com ciclos de queda gradual e recuperação; terminou
+  em 37,0 °C. Não houve leitura acima de 37,0 °C nem corte de segurança.
+- Em 36,7 °C, o PID aumentou o pedido até ~11,8 s; perto de 36,9 °C, os pedidos ficaram em
+  ~4–7 s. Em 37,0 °C a demanda foi zero e o relé permaneceu majoritariamente desligado. A
+  tendência variou aproximadamente de −0,2 a +0,1 °C/min. O ganho maior sustenta recuperação,
+  mas não eliminou oscilações de até 0,3 °C na leitura; manter o ajuste atual e observar antes
+  de alterar mais parâmetros.
+- CO₂ seguiu travado e inválido (`co2_range_lock=1`, `co2_valid=0`), com controle automático
+  desligado e válvula fechada. Os valores brutos de CO₂ não são concentração válida.
