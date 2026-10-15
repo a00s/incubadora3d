@@ -213,7 +213,7 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 31.906 bytes de Flash
+serial antes de compilar/gravar. A última compilação para Uno usa 31.896 bytes de Flash
 (98%) e 917 bytes de RAM global (44%), deixando 1.131 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
@@ -270,7 +270,9 @@ O tempo é recalibrado pela elevação de ppm observada em relação ao pulso ap
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
 o cálculo usa metade do tempo proporcional estimado e limita cada aumento a 1,5 vez o
-pulso anterior, até 1.000 ms. Ao se aproximar da meta,
+pulso anterior, com piso de 5 ms para evitar pulsos menores que a resolução prática da
+válvula, até 1.000 ms. A rampa também consegue sair de um valor anterior abaixo do piso.
+Ao se aproximar da meta,
 os pulsos ficam limitados a 250 ms nos
 últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4

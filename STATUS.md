@@ -269,3 +269,27 @@ suportes ativa. G-code do arquivo separado: 25 mm/s, retração zero, sem suport
 STEP reimportado válido, STL fechado, 36 cortes CAD e limites K1C conferidos.
 Visualizador atualizado, HTTP 200 e controles sem erros. Configurações de
 filamento/processo e 39 STL das demais peças preservados.
+
+## Linha de base de perda de CO₂ — vedação antiga
+
+- 2026-10-15, após o usuário fechar a porta com a vedação antiga reinstalada.
+  CO₂ desabilitado, válvula fechada, aquecimento habilitado e meta de 37 °C.
+- Após o reset para gravar o firmware, o `BOOT_COUNT` lido foi 35. Quatro janelas
+  consecutivas de aproximadamente 60 s registraram **−385, −302, −363 e −298 ppm/min**.
+- Durante as janelas, CO₂ caiu de 28.601 para 27.234 ppm; temperatura ficou entre
+  36,7 e 37,5 °C e umidade entre 46,2 e 47,4%. O ventilador interno ligou perto de
+  30 °C; aquecedor ciclou conforme a temperatura. O sensor reportou leituras válidas.
+- Evidência de perda persistente com a porta fechada, mas a taxa ainda é uma
+  estimativa operacional: não foi medida a concentração externa nem calibrado o
+  sensor. Para comparar a vedação nova, repetir com temperatura e concentração
+  inicial semelhantes e CO₂ desligado durante as janelas de medição.
+- Após registrar a linha de base, o automático de CO₂ foi reativado para seguir
+  em direção à meta de 50.000 ppm; a taxa seguinte já inclui injeção e não representa
+  vazamento isolado.
+- Com CO₂ reativado perto de 27.000 ppm, foram aplicados pulsos automáticos de
+  45, 67 e 100 ms. A resposta ao pulso de 100 ms foi atrasada: a elevação máxima
+  observada chegou a 172 ppm, e a janela de 60 s marcou +208 ppm/min apesar da perda.
+- Depois, o controlador aplicou duas doses de 1 ms enquanto a resposta ainda era
+  instável. O limite de rampa baseado em `1 + 1/2` impedia que a dose crescesse acima
+  de 1 ms. Correção: piso automático de 5 ms e limite de rampa com incremento mínimo;
+  compilada e gravada para a próxima dose.

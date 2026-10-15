@@ -104,7 +104,7 @@ int32_t max_co2_increase = 0;
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
 const int DELAY_MAXIMO = 1000;   // ms; limite superior do pulso automático
-const int DELAY_MINIMO = 1;       // ms
+const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_FAULT 0
@@ -418,7 +418,14 @@ void loop()
       }
       if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
-      int32_t maxRampPulse = delayProporcionalAnt + delayProporcionalAnt / 2;
+      int32_t maxRampPulse;
+      if (delayProporcionalAnt < DELAY_MINIMO) {
+        maxRampPulse = DELAY_MINIMO;
+      } else {
+        int32_t rampIncrement = delayProporcionalAnt / 2;
+        if (rampIncrement < 1) rampIncrement = 1;
+        maxRampPulse = delayProporcionalAnt + rampIncrement;
+      }
       if (maxRampPulse > DELAY_MAXIMO) maxRampPulse = DELAY_MAXIMO;
       if (pulseMs > maxRampPulse) pulseMs = maxRampPulse;
       int32_t ppmRemaining = CO2_TARGET_PPM - CO2i;
