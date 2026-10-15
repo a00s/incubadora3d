@@ -796,3 +796,31 @@ filamento/processo e 39 STL das demais peças preservados.
   Cerca de 15 s depois estava em ~48.327 ppm, ainda cedo para medir a resposta do pulso.
   Temperatura subiu a ~31,7 °C e RH estava em ~59,2%; aquecimento habilitado, relé
   alternando ciclos e válvula fechada entre doses.
+
+## Gravação do cabeçalho e observação após upload
+
+- 2026-10-15. Firmware do commit `9336d18` compilado e gravado com sucesso usando
+  `sg dialout`; monitor serial confirmou boot normal com `BOOT_COUNT=77`. O contador
+  estava em 75 antes da gravação; upload e conexão do monitor reiniciam a placa via
+  DTR. Não foi enviado comando serial para mudar os controles.
+- A faixa de estado colorida, o rótulo `CO2 ppm` à esquerda e `R77` alinhado à direita
+  foram carregados. A aparência física do novo cabeçalho ainda precisa ser conferida
+  visualmente no display.
+- Na primeira observação após a espera de inicialização, CO₂ estava em 48.793 ppm,
+  temperatura em 37,1 °C e umidade em 54,5%. Ao longo de aproximadamente 4,5 min,
+  a leitura de CO₂ variou entre 48.793 e 49.229 ppm e terminou em 49.017 ppm. Controle
+  automático de CO₂ e aquecimento permaneceram habilitados; o relé de aquecimento
+  alternou e a válvula ficou fechada entre as doses. Temperatura variou entre 36,5 e
+  37,1 °C; umidade terminou perto de 56,5%.
+- O automático aplicou dois pulsos de 40 ms, iniciados perto de 49.127 e 49.098 ppm,
+  respectivamente, abaixo do alvo de 50.000 ppm. Após o primeiro, o campo de elevação
+  máxima observada marcou apenas 21 ppm; após o segundo, não houve elevação positiva
+  detectável nos primeiros ~65 s. O atraso pode ser maior, então isso não demonstra
+  falha do sensor nem mede a dose real. O evento também evidencia que o limite de
+  40 ms nos últimos 1.000 ppm impede pulsos maiores apesar de a estimativa proporcional
+  ter chegado a 859 ms antes do segundo pulso. A taxa calculada variou de +235 a
+  −111 ppm/min nas janelas, sem estabilização comprovada em 5%.
+- O monitor foi fechado ao fim da observação; o estado atual preservado pelo firmware
+  segue com ambos os controles habilitados, leitura perto de 49.017 ppm e temperatura
+  perto de 36,8 °C. Próxima decisão sobre aumentar a dose deve considerar a resposta
+  atrasada deste segundo pulso.
