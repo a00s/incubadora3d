@@ -1369,12 +1369,15 @@ filamento/processo e 39 STL das demais peças preservados.
   um registro isolado.
 - Depois de ~3 min desde o BOOT_COUNT=164, a leitura bruta caiu de ~17.800 para ~14.784 ppm
   ao longo de cerca de 2 min. O sensor segue respondendo, mas a leitura permanece inválida e a
-  trava ativa. A queda temporal pode coincidir com o pré-aquecimento de 3 min indicado em uma
-  revisão do manual; não demonstra calibração, retorno a uma concentração conhecida ou que o
-  clique físico causou a mudança.
+  trava ativa. Uma revisão antiga do manual informa pré-aquecimento de 3 min, mas a versão 2.6
+  (2022-04) e a página oficial atual informam 10 s. Como a etiqueta e o número de série não
+  identificam qual revisão/firmware rege esta unidade, não atribuir a queda ao pré-aquecimento;
+  ela não demonstra calibração, retorno a uma concentração conhecida ou que o clique físico
+  causou a mudança.
 - Na continuação da mesma sessão, a leitura bruta caiu de 14.652 para 14.613 ppm em 16,9 s
   (aprox. −138 ppm/min). A temperatura principal ficou em ~23,9–24,0 °C e a interna em
   ~29,4 °C; CO₂, válvula, aquecimento e ventilador permaneceram desligados. Essa é somente a
   inclinação do valor UART inválido, não uma taxa confirmada de perda de CO₂.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
-  [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html).
+  [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
+  [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
