@@ -283,7 +283,7 @@ pulso anterior, com piso de 5 ms para evitar pulsos menores que a resolução pr
 válvula, até 1.000 ms. A rampa também consegue sair de um valor anterior abaixo do piso.
 Ao se aproximar da meta,
 os pulsos ficam limitados a 250 ms nos
-últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
+últimos 10.000 ppm, 90 ms nos últimos 3.000 ppm e 40 ms nos últimos 1.000 ppm.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto

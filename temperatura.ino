@@ -438,8 +438,8 @@ void loop()
       if (pulseMs > maxRampPulse) pulseMs = maxRampPulse;
       int32_t ppmRemaining = CO2_TARGET_PPM - CO2i;
       if (ppmRemaining < 10000L && pulseMs > 250) pulseMs = 250;
-      if (ppmRemaining < 3000L && pulseMs > 60) pulseMs = 60;
-      if (ppmRemaining < 1000L && pulseMs > 20) pulseMs = 20;
+      if (ppmRemaining < 3000L && pulseMs > 90) pulseMs = 90;
+      if (ppmRemaining < 1000L && pulseMs > 40) pulseMs = 40;
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
       digitalWrite(CO2PUMP, LOW);
@@ -598,15 +598,16 @@ void drawHealthIndicator() {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
   setHealthColor();
-  ucg.drawBox(7, 3, 48, 17);
+  ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 0, 0, 0);
+  ucg.setColor(0, 130, 190, 215);
+  ucg.setPrintPos(11, 16); ucg.print(F("CO2 ppm"));
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
-  ucg.setPrintPos(10, 16); ucg.print(bootCountText);
-  ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(78, 16); ucg.print(F("CO2 ppm"));
+  ucg.setColor(0, 230, 235, 240);
+  ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 16);
+  ucg.print(bootCountText);
 }
 
 void drawDisplayFrame() {
