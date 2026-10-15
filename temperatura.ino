@@ -1258,8 +1258,8 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   if (lossRate > 0) lossRate = 0;
   if (lossRate < -5000) lossRate = -5000;
   int32_t lossPerResponse = -lossRate * co2ResponseLagSeconds / 60L;
-  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 3 : 4;
-  if (lossPerResponse > CO2_TOLERANCE_PPM / 3) {
+  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3;
+  if (lossPerResponse > CO2_TOLERANCE_PPM / 2) {
     fractionDenominator = 1 + CO2_TOLERANCE_PPM / lossPerResponse;
   }
   int32_t tempoValvula = ppmNecessario * 100L /
