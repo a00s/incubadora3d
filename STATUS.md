@@ -1490,3 +1490,12 @@ filamento/processo e 39 STL das demais peças preservados.
   bytes de 32.256 e 984 bytes de RAM global. O upload não foi possível: `/dev/ttyACM0` pertence
   ao grupo `dialout`, ausente nas permissões do processo atual; `sudo` exige senha. A versão
   gravada segue a anterior até a permissão USB ser liberada.
+- Revisão candidata do ritmo de aquisição CO₂, ainda não gravada: o teto automático passou a
+  variar com o déficit para 50.000 ppm, `min(250 ms, 5 ms + deficit/128)`, substituindo o teto
+  fixo de 60 ms. Ex.: em 32.977 ppm o limite calculado é 138 ms; em 49.000 ppm é 12 ms; bem
+  abaixo do alvo satura em 250 ms. Isso usa os ensaios anteriores (pulsos de 202 ms perto de
+  33.000 ppm tiveram cauda de ~9.000 ppm e resposta que demorou até ~2–3 min) para permitir
+  avanço inicial maior e reduzir a dose perto da meta. O cooldown e a espera por tendência
+  continuam iguais; como a cauda pode superar 60 s, validar em ciclos curtos e interromper se a
+  leitura subir rápido. Build passou em 32.210 bytes de 32.256; sem teste de hardware porque o
+  processo ainda não tem acesso a `/dev/ttyACM0`.

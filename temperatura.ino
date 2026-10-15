@@ -132,7 +132,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 60;     // ms; teto por pulso automático para limitar overshoot
+const int DELAY_MAXIMO = 250;    // ms; teto inicial, reduzido dinamicamente ao aproximar do alvo
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
@@ -143,7 +143,6 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t delayProporcionalAnt = 60;    // Semente inicial; depois o ganho medido ajusta o pulso
 int32_t co2GainEstimatePpmPerMsX100 = CO2_BOOTSTRAP_PPM_PER_MS * 100L;
 bool co2DoseResponsePending = false;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
@@ -418,8 +417,15 @@ void loop()
     // keep rising well beyond 60 s; dosing during that rise stacked pulses.
     bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 &&
                              contador_pomp == 0 && co2TrendReady;
+    int32_t pulseLimit = DELAY_MINIMO;
+    int32_t co2Deficit = CO2_TARGET_PPM - CO2i;
+    if (validCo2 && co2Deficit > 0) {
+      // Allow larger steps far below target; taper the cap within ~32k ppm of target.
+      pulseLimit += co2Deficit >> 7;
+      if (pulseLimit > DELAY_MAXIMO) pulseLimit = DELAY_MAXIMO;
+    }
     int32_t delayProporcional = validCo2
-      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, co2GainEstimatePpmPerMsX100, doseResponseReady)
+      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, co2GainEstimatePpmPerMsX100, doseResponseReady, pulseLimit)
       : DELAY_MINIMO;
 
     
@@ -470,7 +476,6 @@ void loop()
       if (lastCo2PulseMs == 0) {
         int32_t ppmNeeded = CO2_TARGET_PPM - CO2i;
         pulseMs = ppmNeeded / CO2_BOOTSTRAP_PPM_PER_MS;
-        if (pulseMs > delayProporcionalAnt) pulseMs = delayProporcionalAnt;
         Serial.print(F("EVENT,co2_pulse,first,ms,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
@@ -484,10 +489,10 @@ void loop()
           co2DoseResponsePending = false;
         }
         pulseMs = calcularDelayProporcional(CO2i, CO2_TARGET_PPM,
-                                            co2GainEstimatePpmPerMsX100, true);
+                                            co2GainEstimatePpmPerMsX100, true, pulseLimit);
         Serial.print(F("EVENT,co2_pulse,ms,"));
       }
-      if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
+      if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
@@ -495,7 +500,6 @@ void loop()
       delay(pulseMs);
       digitalWrite(CO2PUMP, HIGH);
       co2AnimationUntil = millis() + 3000UL;
-      delayProporcionalAnt = pulseMs;
       co2DoseResponsePending = true;
       max_co2_increase = 0;
       co2StableSince = 0;
@@ -910,7 +914,6 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   if (pulseMs < MANUAL_CO2_PULSE_MS) pulseMs = MANUAL_CO2_PULSE_MS;
   if (pulseMs > MANUAL_CO2_MAX_PULSE_MS) pulseMs = MANUAL_CO2_MAX_PULSE_MS;
   lastCo2PulseMs = pulseMs;
-  delayProporcionalAnt = pulseMs;
   co2DoseResponsePending = co2BaselineReady;
   maxRate = 0;
   digitalWrite(CO2PUMP, LOW);
@@ -972,8 +975,7 @@ bool setCo2Enabled(bool enabled) {
     botao_co2_onoff = newState;
     EEPROM.put(EEPROM_CO2, botao_co2_onoff);
   }
-  if (enabled) delayProporcionalAnt = 60;
-  else digitalWrite(CO2PUMP, HIGH);
+  if (!enabled) digitalWrite(CO2PUMP, HIGH);
   return true;
 }
 
@@ -1183,7 +1185,7 @@ void disableAutoCalibration() {
 
 
 // Função para calcular o tempo de abertura
-int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32_t ganhoPpmPorMsX100, bool tendenciaValida) {
+int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32_t ganhoPpmPorMsX100, bool tendenciaValida, int32_t pulseLimit) {
   if (!tendenciaValida || ppm_atual <= 0 || ppm_objetivo <= ppm_atual ||
       ganhoPpmPorMsX100 <= 0) {
     return DELAY_MINIMO;
@@ -1197,7 +1199,7 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   int32_t tempoValvula = ppmNecessario * 100L /
                          (ganhoPpmPorMsX100 * CO2_DOSE_FRACTION_DENOMINATOR);
   if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;
-  if (tempoValvula > DELAY_MAXIMO) return DELAY_MAXIMO;
+  if (tempoValvula > pulseLimit) return pulseLimit;
   return (int32_t)tempoValvula;
 }
 
