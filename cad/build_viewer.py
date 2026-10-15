@@ -1,6 +1,7 @@
 import base64
 import gzip
 import json
+import math
 from pathlib import Path
 p=Path(__file__).resolve().parents[1]
 folder=p/'output/v59'
@@ -87,13 +88,27 @@ v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 440" width="4
 <text x="240" y="422">Aperto comprime TPU · forma livre mostrada</text></g></svg>'''
 if 'lw_bulb' in v_profile:
     def v_points(points):
-        return ' '.join(f'{220+(inset-1.7)*26:.1f},{75+(y+4.25)*26:.1f}' for y,inset in points)
+        return ' '.join(f'{145+(inset-1.7)*26:.1f},{75+(y+4.25)*26:.1f}' for y,inset in points)
     foot=v_points([(y,boss_at(y)-v_profile.get("lw_foot_outer_offset",.25)) for y,depth in v_profile['foot']]+
                   [(y,boss_at(y)+depth) for y,depth in reversed(v_profile['foot'])])
     receiver=v_points([(y,inset-1) for y,inset in v_profile['receiver']]+list(reversed(v_profile['receiver'])))
     stem_top=v_profile.get('lw_stem_top',-3.45)
     def contour(stations):
         return v_points([(y,a) for y,a,b in stations]+[(y,b) for y,a,b in reversed(stations)])
+    hinge_scale=v_profile.get('lw_hinge_scale',1)
+    def hinge_contour(stations,is_void=False):
+        result=[]
+        for side,rows in ((-1,stations),(1,list(reversed(stations)))):
+            for y,a,b in rows:
+                inset=a if side==-1 else b
+                scale=1-(1-hinge_scale)*min(1,max(0,y+1))
+                target=1.7+(inset-1.7)*scale
+                if not is_void:target+=side*.55*(1-scale)
+                angle=math.atan(1.2*max(0,y+4.05)/9.75/120)
+                extra=(v_profile['hinge_projection_reduction_mm']-1.2)*max(0,y)/5.7
+                actual_y=y-extra*math.cos(angle)-(120-target)*math.sin(angle)
+                result.append((actual_y,target))
+        return v_points(result)
     v_svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" style="width:100%;max-width:600px;height:auto" role="img" aria-label="Junta oca da porta em TPU-LW, junta da caixa preservada">
 <title>Vedação removível da porta · eSUN TPU-LW</title>
 <defs><mask id="door-lw-void"><rect width="480" height="440" fill="white"/><polygon points="{contour(v_profile['lw_void'])}" fill="black"/></mask></defs>
@@ -102,11 +117,14 @@ if 'lw_bulb' in v_profile:
 <polygon points="{v_points([(-4.25,.15),(-3.8,.15),(-3.8,boss_at(-3.8)-.05),(-4.25,boss_at(-4.25)-.05)])}" fill="#45ae89"/>
 <polygon points="{v_points([(y,boss_at(y)-.6) for y in (-4.25,stem_top)]+[(y,boss_at(y)-.05) for y in (stem_top,-4.25)])}" fill="#45ae89"/>
 <polygon points="{contour(v_profile['lw_bulb'])}" fill="#45ae89" stroke="currentColor" mask="url(#door-lw-void)"/>
+<defs><mask id="hinge-lw-void"><rect width="480" height="480" fill="white"/><polygon points="{hinge_contour(v_profile['lw_void'],True)}" fill="black"/></mask></defs>
+<g transform="translate(195,0)"><polygon points="{foot}" fill="#45ae89"/><polygon points="{hinge_contour(v_profile['lw_bulb'])}" fill="#45ae89" stroke="currentColor" mask="url(#hinge-lw-void)"/></g>
 <g fill="currentColor" font-size="16" text-anchor="middle" font-family="sans-serif">
+<text x="145" y="55">Fecho</text><text x="340" y="55">Dobradiça</text>
 <text x="240" y="25">Junta da caixa preservada · trocar somente a da porta</text>
 <text x="240" y="365">Bulbo oco largo · respiro externo Ø0,8 mm</text>
 <text x="240" y="395">Contato na face robusta do corpo, em Y=0</text>
-<text x="240" y="425">Altura total: fecho 9,95 · dobradiça 8,75 mm</text>
+<text x="240" y="425">Altura total: fecho 9,95 · dobradiça 6,25 mm</text>
 <text x="240" y="455">Retenção original · não depende da borda quebrada</text></g></svg>'''
 (folder/'corte_vedacao_V.svg').write_text(v_svg)
 svg += v_svg

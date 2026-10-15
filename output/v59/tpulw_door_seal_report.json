@@ -6,13 +6,13 @@
   "parede_interna_integra_no_respiro": true,
   "intersecao_receptor_fino_mm3": 0,
   "contato_face_frontal_y0": true,
-  "amostra_cortes": 50,
+  "amostra_cortes": 31,
   "camada_mm": 0.2,
   "paredes_sem_reinicio_flutuante_largura_0p42": true,
   "crescimento_secao_maximo_graus": 45,
   "projecao_nominal_fecho_mm": 5.7,
-  "projecao_nominal_dobradica_mm": 4.5,
+  "projecao_nominal_dobradica_mm": 2.0,
   "altura_nominal_total_fecho_mm": 9.95,
-  "altura_nominal_total_dobradica_mm": 8.75,
+  "altura_nominal_total_dobradica_mm": 6.25,
   "limite": "Secao reta CAD, nao simula deformacao, forca ou estanqueidade"
 }

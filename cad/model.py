@@ -796,12 +796,12 @@ V_FOOT=[(-3.8,-.05),(-3.0,.34),(-2.9,.18)]
 v_channel=inset_ring([(y,boss_inset(y)-.8) for y,depth in V_GROOVE],
                      [(y,boss_inset(y)+depth) for y,depth in V_GROOVE])
 doorpart=doorpart.cut(v_channel,clean=False)
-from lw_seals import build_door_seal, BULB, VOID, LATCH_PROJECTION, HINGE_PROJECTION, HINGE_REDUCTION, STEM_TOP, FOOT_OUTER_OFFSET
+from lw_seals import build_door_seal, BULB, VOID, LATCH_PROJECTION, HINGE_PROJECTION, HINGE_REDUCTION, STEM_TOP, FOOT_OUTER_OFFSET, HINGE_SCALE
 v_seal=build_door_seal(inset_ring,inset_loft,boss_inset,V_FOOT)
 P.update(door_v_lip_wall=.5,door_seal_material='eSUN TPU-LW',door_seal_profile='wide vented hollow bulb with retained V foot',
          door_seal_contact='intact body front land; existing body gasket untouched',
          door_seal_latch_projection_mm=LATCH_PROJECTION,door_seal_hinge_projection_mm=HINGE_PROJECTION,
-         door_seal_broken_receiver_required=False,door_seal_print_stem_top_y=STEM_TOP,door_seal_foot_width_mm=FOOT_OUTER_OFFSET+.34,door_seal_tube_width_mm=4.7,door_seal_cavity_width_mm=3.6,door_seal_leak_test='pending physical test')
+         door_seal_hinge_transition_start_x_mm=90,door_seal_hinge_scale=HINGE_SCALE,door_seal_broken_receiver_required=False,door_seal_print_stem_top_y=STEM_TOP,door_seal_foot_width_mm=FOOT_OUTER_OFFSET+.34,door_seal_tube_width_mm=4.7,door_seal_cavity_width_mm=3.6,door_seal_leak_test='pending physical test')
 assert len(doorpart.solids().vals())==1 and doorpart.val().isValid(),'Tapered monolithic door invalid'
 assert independent(v_seal).intersect(receiver,clean=False).val().Volume()<1e-5,'Door seal relies on broken receiver'
 assert len(v_seal.solids().vals())==1 and v_seal.val().isValid(),'V gasket disconnected'
@@ -1147,7 +1147,7 @@ for name,obj in [('amostra_canal_rigido',rigid),('amostra_junta_TPU',flex),('amo
     flat=obj.rotate((0,0,0),(1,0,0),-90)
     flat=flat.translate((0,0,-flat.val().BoundingBox().zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
-(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=[],lip_wall=.5,lw_bulb=BULB,lw_void=VOID,hinge_projection_reduction_mm=HINGE_REDUCTION,lw_stem_top=STEM_TOP,lw_foot_outer_offset=FOOT_OUTER_OFFSET),indent=2))
+(OUT/'door_v_profile.json').write_text(json.dumps(dict(boss=BOSS_PROFILE,receiver=RECEIVER_PROFILE,groove=V_GROOVE,foot=V_FOOT,lips=[],lip_wall=.5,lw_bulb=BULB,lw_void=VOID,hinge_projection_reduction_mm=HINGE_REDUCTION,lw_stem_top=STEM_TOP,lw_foot_outer_offset=FOOT_OUTER_OFFSET,lw_hinge_scale=HINGE_SCALE,lw_hinge_transition_x=[90,110]),indent=2))
 (OUT/'seal_profile.json').write_text(json.dumps(dict(groove=GROOVE,foot=FOOT,lip_centers=LIP_CENTERS,inner_lip_centers=BODY_INNER_LIP_CENTERS,lip_wall=LIP_WALL,nominal_compression=1.5),indent=2))
 assert independent(body).intersect(seal).val().Volume()<1e-5,'Seal retention foot collides with body'
 pressure_coupon=box(20,3,35,0,-4,0)
@@ -1160,8 +1160,9 @@ for name,obj in [('amostra_pressao_junta',pressure_coupon),('amostra_dobradica_b
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
 # Straight V coupons match the actual inclined surfaces and retention profile.
 v_clip=box(18,14,35,-4,-6,50)
+hinge_clip=box(18,14,35,106,-6,50)
 for name,obj in [('amostra_V_porta_rigida',doorpart.intersect(v_clip)),
-                 ('amostra_V_porta_TPU',v_seal.intersect(v_clip)),
+                 ('amostra_V_porta_TPU',v_seal.intersect(hinge_clip)),
                  ('amostra_V_assento_corpo',receiver.intersect(v_clip).union(box(18,3,35,-4,.1,50)))]:
     assert obj.val().isValid() and len(obj.solids().vals())==1,name
     flat=obj.rotate((0,0,0),(1,0,0),90 if name=='amostra_V_porta_TPU' else -90)
@@ -1169,7 +1170,7 @@ for name,obj in [('amostra_V_porta_rigida',doorpart.intersect(v_clip)),
     flat=flat.translate((-bb.xmin,-bb.ymin,-bb.zmin))
     cq.exporters.export(flat,str(OUT/f'{name}.stl'))
 cq.exporters.export(v_seal,str(OUT/'junta_V_porta_TPU.step'))
-flat=v_seal.intersect(v_clip).rotate((0,0,0),(1,0,0),90)
+flat=v_seal.intersect(hinge_clip).rotate((0,0,0),(1,0,0),90)
 bb=flat.val().BoundingBox();flat=flat.translate((-bb.xmin,-bb.ymin,-bb.zmin))
 cq.exporters.export(flat,str(OUT/'amostra_V_porta_TPU.step'))
 # A single sample STL holds the actual pod corner and its blind base side by side.

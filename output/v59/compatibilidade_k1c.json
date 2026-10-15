@@ -75,9 +75,9 @@
     {
       "peca": "amostra_V_porta_TPU.stl",
       "dimensoes_mm": [
-        5.19,
+        3.75,
         35.0,
-        9.94
+        6.27
       ],
       "cabe_com_margem_5mm": true
     },
@@ -300,7 +300,7 @@
     {
       "peca": "junta_V_porta_TPU.stl",
       "dimensoes_mm": [
-        122.8,
+        121.36,
         9.94,
         142.8
       ],

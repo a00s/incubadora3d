@@ -4,7 +4,7 @@
   "bandejas": [
     {
       "bandeja": 1,
-      "camadas": 49,
+      "camadas": 31,
       "velocidades_extrusao_mm_s": [
         25.0
       ],
