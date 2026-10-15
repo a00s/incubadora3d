@@ -514,3 +514,16 @@ filamento/processo e 39 STL das demais peças preservados.
   perto de 23.055 ppm. Temperatura voltou a 37,0 °C; RH oscilou entre 46,8 e 46,5%.
   A oscilação reforça que a comparação do recipiente maior deve usar um trecho após
   estabilização térmica, e não somente a tendência inicial de umidade.
+
+## Janela longa da mesma sessão: estabilidade térmica e perda de CO₂
+
+- Sem novo reset desde `BOOT_COUNT,66`; CO₂ automático desligado, aquecimento automático
+  ligado e válvula fechada. Entre aproximadamente 23.055 e 22.696 ppm, a taxa foi
+  atualizada de −306 para −301 ppm/min. A queda ao longo do trecho é compatível com
+  essa taxa; o número de taxa só muda quando fecha a janela de cálculo.
+- Em cerca de 3 min adicionais, a temperatura da câmara ficou entre 36,5 e 37,0 °C,
+  enquanto o relé alternou sem acionamento contínuo; a sonda interna ficou em 29,7–29,9 °C.
+  RH permaneceu entre 46,3 e 46,7%. É evidência preliminar de controle térmico próximo
+  à meta neste trecho, não uma validação independente de precisão nem uniformidade.
+- Comparar a leitura de RH com a do recipiente maior depois de aguardar a temperatura
+  estabilizar. A leitura atual de 46,3–46,7% é a referência local imediatamente anterior.
