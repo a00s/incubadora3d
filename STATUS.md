@@ -757,3 +757,8 @@ filamento/processo e 39 STL das demais peças preservados.
   Isto não prova que a câmara se mantém em 5% nem quantifica o vazamento: a rolha dos
   três fios segue pendente, e concentração, mistura e temperatura ainda variam. Repetir
   após instalar a rolha térmica e comparar períodos com leituras estabilizadas.
+- A telemetria seguinte confirmou nova queda; o controlador aplicou 60 ms em
+  48.991 ppm. A leitura atingiu 49.531 ppm (~+540 ppm) cerca de 110 s depois e então
+  começou a cair. Como outra dose desse tamanho poderia consumir a margem restante,
+  desliguei o CO₂ automático em 49.475 ppm; o firmware confirmou `ACK,CO2,OFF` e a
+  válvula permaneceu fechada. O aquecimento automático continuou ligado, a 36,7 °C.
