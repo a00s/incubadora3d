@@ -1,7 +1,7 @@
 """Split compression cable plugs in eSUN TPU-LW for the existing Ø12 × 14 mm wall passages.
 
 Local Z points outward. Z=0 is the inner wall, Z=14 the outer wall.
-The heater splits at X=0; the sensor uses a contoured cradle/cap around the axes.
+Both plugs use a contoured cradle/cap around the wire axes.
 """
 import cadquery as cq
 
@@ -30,18 +30,17 @@ def build_wire_plug(name):
                                    cq.Vector(0,y,15)))
     halves = tuple(q.intersect(cq.Workplane('XY', origin=(x, -10, -1))
                    .box(10, 20, 18, centered=False)) for x in (-10, 0))
-    if name=='sensor':
-        # A carries all wires: individual flexible lips wrap past the wire axes.
-        # B is the complementary cap, with a tongue for every funnel mouth.
-        cradle=halves[0]
-        for y in positions:
-            boss=cq.Workplane('XY',origin=(0,y,.3)).circle(1.15).extrude(15.2)
-            mouth=cq.Workplane('XY',origin=(0,y,0)).polyline(
-                [(.15,-.4),(.55,-.4),(.85,-.8),(1.4,-.8),
-                 (1.4,.8),(.85,.8),(.55,.4),(.15,.4)]).close().extrude(16)
-            cradle=cradle.union(q.intersect(boss).cut(mouth))
-        cap=q.cut(cradle)
-        halves=(cradle,cap)
+    # A carries all wires: individual flexible lips wrap past the wire axes.
+    # B is the complementary cap, with a tongue for every funnel mouth.
+    cradle=halves[0]
+    for y in positions:
+        boss=cq.Workplane('XY',origin=(0,y,.3)).circle(1.15).extrude(15.2)
+        mouth=cq.Workplane('XY',origin=(0,y,0)).polyline(
+            [(.15,-.4),(.55,-.4),(.85,-.8),(1.4,-.8),
+             (1.4,.8),(.85,.8),(.55,.4),(.15,.4)]).close().extrude(16)
+        cradle=cradle.union(q.intersect(boss).cut(mouth))
+    cap=q.cut(cradle)
+    halves=(cradle,cap)
     assert all(h.val().isValid() and len(h.solids().vals()) == 1 for h in halves)
     return halves
 
@@ -75,11 +74,10 @@ def check_wire_plug(name, halves):
         for h in halves:
             assert h.intersect(wire).val().Volume() > 0
     assert q.intersect(cq.Workplane('XY').circle(6.12).circle(6).extrude(14)).val().Volume()>0
-    if name=='sensor':
-        for y in positions:
-            a,b=[h.val() for h in halves]
-            assert a.isInside((.65,y+.6,7)) and a.isInside((.65,y-.6,7))
-            assert not a.isInside((.8,y,7)) and b.isInside((.8,y,7))
+    for y in positions:
+        a,b=[h.val() for h in halves]
+        assert a.isInside((.65,y+.6,7)) and a.isInside((.65,y-.6,7))
+        assert not a.isInside((.8,y,7)) and b.isInside((.8,y,7))
     pair = print_pair(halves)
     assert len(pair.solids().vals()) == 2 and pair.val().isValid()
     assert abs(pair.val().BoundingBox().zmin) < 1e-5
@@ -94,8 +92,7 @@ def check_wire_plug(name, halves):
                 diametro_entrada_canais_mm=round(diameter-2*RADIAL_INTERFERENCE[name]+2*LEAD_IN_RADIAL[name],2),
                 interferencia_fios_radial_mm=RADIAL_INTERFERENCE[name], interferencia_corpo_radial_mm=.12,
                 encaixe_e_vedacao_fisicos_pendentes=True)
-    if name=='sensor':
-        report.update(metade_A='berco com labios individuais de retencao',metade_B='tampa com tres apoios de compressao',
-                      centros_canais_mm=list(positions),passo_canais_mm=3.3,espaco_nominal_entre_fios_mm=1.9,
-                      boca_lateral_minima_mm=.8,entrada_lateral_funil_mm=1.6,espessura_nominal_labios_mm=.6)
+    report.update(metade_A='berco com labios individuais de retencao',metade_B='tampa com '+('tres' if len(positions)==3 else 'dois')+' apoios de compressao',
+                  centros_canais_mm=list(positions),passo_canais_mm=round(positions[1]-positions[0],2),espaco_nominal_entre_fios_mm=round(positions[1]-positions[0]-diameter,2),
+                  boca_lateral_minima_mm=.8,entrada_lateral_funil_mm=1.6,espessura_nominal_labios_mm=round(1.15-(diameter/2-RADIAL_INTERFERENCE[name]),2))
     return report

@@ -23,7 +23,7 @@ for path in (ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf',
             name=next(m.get('value') for m in obj.findall('metadata') if m.get('key')=='name')
             if dedicated or name in NAMES:
                 assert not any(m.get('key')=='small_perimeter_speed' for m in obj.iter('metadata')),name
-                if name.startswith('TPU_passagem_sensor'):
+                if name.startswith(('TPU_passagem_sensor','TPU_passagem_aquecedor')):
                     settings={m.get('key'):m.get('value') for m in obj.findall('metadata')}
                     assert settings['sparse_infill_density']=='30%'
                     assert settings['sparse_infill_pattern']=='gyroid'

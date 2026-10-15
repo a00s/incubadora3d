@@ -1,9 +1,9 @@
 {
   "pecas": [
     {
-      "peca": "TPU_passagem_sensor",
-      "stl": "TPU_passagem_sensor.stl",
-      "bandeja": 12,
+      "peca": "TPU_passagem_aquecedor",
+      "stl": "TPU_passagem_aquecedor.stl",
+      "bandeja": 11,
       "dimensoes_mm": [
         20.83451271057129,
         16.0,

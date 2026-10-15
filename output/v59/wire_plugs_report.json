@@ -49,6 +49,17 @@
     "diametro_entrada_canais_mm": 1.86,
     "interferencia_fios_radial_mm": 0.08,
     "interferencia_corpo_radial_mm": 0.12,
-    "encaixe_e_vedacao_fisicos_pendentes": true
+    "encaixe_e_vedacao_fisicos_pendentes": true,
+    "metade_A": "berco com labios individuais de retencao",
+    "metade_B": "tampa com dois apoios de compressao",
+    "centros_canais_mm": [
+      -2.5,
+      2.5
+    ],
+    "passo_canais_mm": 5.0,
+    "espaco_nominal_entre_fios_mm": 3.58,
+    "boca_lateral_minima_mm": 0.8,
+    "entrada_lateral_funil_mm": 1.6,
+    "espessura_nominal_labios_mm": 0.52
   }
 }

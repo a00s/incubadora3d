@@ -417,9 +417,10 @@ from wire_plugs import build_wire_plug, compound, print_pair, check_wire_plug
 wire_plug_halves={}
 wire_plug_reports={}
 P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.10,
-         heater_wire_diameter=1.42,heater_seal_channel_diameter=1.32,
+         heater_wire_diameter=1.42,heater_seal_channel_diameter=1.26,
          sensor_wire_channel_pitch_mm=3.3,sensor_wire_carrier='A cradle with retention lips; B compression cap',
-         wire_plug_inner_recess_mm=.3,wire_plug_split_plane='heater axial split; sensor contoured cradle and cap')
+         heater_wire_channel_pitch_mm=5.0,heater_wire_carrier='A cradle with retention lips; B compression cap',
+         wire_plug_inner_recess_mm=.3,wire_plug_split_plane='heater and sensor contoured cradle and cap')
 def cable_port(name,origin,rear,wire_diameter,positions):
     global body
     def place(obj):

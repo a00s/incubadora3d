@@ -84,7 +84,10 @@ Rolhas bipartidas para os mesmos furos Ø12 × 14 mm e fios existentes.
 Corpo livre Ø12,24 mm; flange externa Ø16 × 1,5 mm. A interferência externa
 e os encaixes rígidos são preservados.
 
-- Aquecedor: 2 fios Ø1,42 mm; canais Ø1,26 mm, sem alteração.
+- Aquecedor: 2 fios Ø1,42 mm; canais Ø1,26 mm. Agora também usa **berço A
+  com dois alojamentos e lábios de retenção**, fechado pela **tampa B de
+  compressão**. Centros a 5 mm; garganta lateral de 0,8 mm. Os diâmetros
+  de vedação e o encaixe externo são mantidos.
 - Sensor de temperatura: 3 fios Ø1,40 mm, em canais Ø1,10 mm. O conjunto
   agora tem **A: berço com lábios individuais de retenção** e **B: tampa com
   três apoios de compressão**, em lugar das duas metades iguais.
@@ -94,27 +97,28 @@ e os encaixes rígidos são preservados.
   aos lábios e fecha cada alojamento separadamente. As entradas axiais dos
   canais mantêm Ø1,40 mm. Corpo Ø12,24 mm e flange Ø16 mm são preservados.
 
-As metades do sensor usam **30% de preenchimento giroidal**, com **3 paredes**
+As peças A e B de ambas as rolhas usam **30% de preenchimento giroidal**, com **3 paredes**
 e **4 camadas sólidas superiores/inferiores** de 0,2 mm (0,8 mm por face).
-As demais peças continuam com seus ajustes anteriores. As bandejas **5 e 6**
+As demais peças continuam com seus ajustes anteriores. As bandejas **3 e 4**
+contêm o berço e a tampa do aquecedor; **5 e 6**
 contêm uma metade cada: fatiar e imprimir uma bandeja por vez. Isso evita
 imprimir as duas peças simultaneamente com TPU-LW sem retração.
 
-Montagem do sensor de temperatura:
+Montagem das duas rolhas:
 
-1. Imprimir o **berço A na bandeja 5** e a **tampa B na bandeja 6**, uma por vez.
+1. Imprimir uma peça por vez: aquecedor **A na 3 e B na 4**; sensor **A na 5 e B na 6**.
 2. Fora do furo da caixa, encaixar um fio de cada vez no seu alojamento do
    berço, pela entrada lateral. Os lábios devem ceder e reter cada fio na sede.
-3. Conferir os três fios separados e assentados. Alinhar a tampa B; seus
+3. Conferir os dois ou três fios separados e assentados. Alinhar a tampa B; seus
    apoios entram nas bocas dos alojamentos e comprimem os lábios individualmente.
 4. Fechar o conjunto e inserir pela face externa no furo Ø12 mm existente.
    Conferir fechamento das faces e estanqueidade. A montagem é nominal; força
    de encaixe, retenção dos fios e vedação precisam do teste físico em TPU-LW.
 
-Não misturar peças da revisão anterior com berço/tampa novos. A rolha do
-aquecedor mantém as duas metades anteriores. Os nomes `_metade_A` e `_metade_B`
+Não misturar peças da revisão anterior com berço/tampa novos. Os nomes `_metade_A` e `_metade_B`
 foram mantidos nos STL/STEP por compatibilidade, mas agora identificam berço e tampa.
-[Corte transversal de montagem](corte_rolha_sensor_berco_tampa.svg).
+[Corte do sensor](corte_rolha_sensor_berco_tampa.svg) ·
+[Corte do aquecedor](corte_rolha_aquecedor_berco_tampa.svg).
 
 ## Arquivo para imprimir
 
@@ -124,7 +128,7 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com doze bandejas:
 | --- | --- |
 | 1 | Amostra do lado da dobradiça da junta da porta |
 | 2 | Junta inteira da porta |
-| 3 / 4 | Aquecedor, metades A / B |
+| 3 / 4 | Aquecedor: berço A / tampa B |
 | 5 / 6 | Sensor de temperatura: berço A / tampa B |
 | 7 | Bucha CO₂: bulbo Ø15,0 mm + lábios Ø15,2 mm |
 | 8 / 9 | Amostras CO₂: bulbos Ø15,1 / Ø15,3 mm |
@@ -156,7 +160,7 @@ TPU 85A fica salvo, mas sem nenhuma peça atribuída.
 - Retração normal, de camada e de troca: 0; wipe e Z-hop desativados.
 - Ventilador 100% após a primeira camada; ventilador auxiliar desligado;
   sem redução automática de velocidade por resfriamento; sem suportes.
-- Três paredes. As duas metades do sensor de temperatura usam preenchimento
+- Três paredes. As quatro peças das rolhas do aquecedor e do sensor usam preenchimento
   giroidal de 30%; as demais peças mantêm 100%. São quatro camadas sólidas por
   face. As cavidades desenhadas no CAD continuam vazias em qualquer preenchimento.
 - Fluxo **0,55 a 270 °C**, estimativa entre os pares 256 °C/0,60 e

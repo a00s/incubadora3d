@@ -33,7 +33,7 @@ SETTINGS.update(enable_support='0',layer_height='0.2',initial_layer_print_height
                 internal_bridge_speed='100%',extruder='4',
                 avoid_crossing_wall='1',ironing_type='no ironing')
 
-OBJECT_SETTINGS={'TPU_passagem_sensor':{'sparse_infill_density':'30%','sparse_infill_pattern':'gyroid'}}
+OBJECT_SETTINGS={name:{'sparse_infill_density':'30%','sparse_infill_pattern':'gyroid'} for name in ('TPU_passagem_sensor','TPU_passagem_aquecedor')}
 
 def setmeta(node,key,value):
     item=next((m for m in node.findall('metadata') if m.get('key')==key),None)
