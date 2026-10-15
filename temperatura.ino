@@ -449,9 +449,9 @@ void loop()
     int32_t co2Deficit = CO2_TARGET_PPM - co2ProjectedPpm;
     if (validCo2 && co2Deficit > 0) {
       // Scale the pulse cap with the remaining deficit. A >>5 ramp responds
-      // faster during large deficits while still tapering to short pulses
-      // close to target; the observed dose gain continues to adapt each cycle.
-      pulseLimit += co2Deficit >> 5;
+      // faster during large deficits while still tapering near target; the
+      // observed dose gain continues to adapt each cycle.
+      pulseLimit += co2Deficit >> 4;
       if (pulseLimit > DELAY_MAXIMO) pulseLimit = DELAY_MAXIMO;
     }
     int32_t delayProporcional = validCo2
@@ -1258,7 +1258,7 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   if (lossRate > 0) lossRate = 0;
   if (lossRate < -5000) lossRate = -5000;
   int32_t lossPerResponse = -lossRate * co2ResponseLagSeconds / 60L;
-  uint8_t fractionDenominator = 4;
+  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 3 : 4;
   if (lossPerResponse > CO2_TOLERANCE_PPM / 3) {
     fractionDenominator = 1 + CO2_TOLERANCE_PPM / lossPerResponse;
   }
