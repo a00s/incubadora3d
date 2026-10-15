@@ -38,7 +38,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_SENSOR_LOCK_MAGIC 0xA5
 #define CO2_SENSOR_WARMUP_MS 180000UL
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
-#define CO2_STABLE_RATE_PPM_PER_MIN 300L
+#define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
 #define CO2_STABLE_TIME_MS 30000UL
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 10000UL
@@ -376,13 +376,13 @@ void loop()
           co2RatePpmMinReady = true;
         }
       }
-      // Use the rolling ~30 s slope for dosing readiness. Individual MH-Z16
-      // samples jitter by several ppm, which continually reset a per-sample
-      // stability timer even when the chamber trend was already slow.
-      bool co2TrendSlow = co2RatePpmMinReady &&
-                          co2RatePpmMin >= -CO2_STABLE_RATE_PPM_PER_MIN &&
-                          co2RatePpmMin <= CO2_STABLE_RATE_PPM_PER_MIN;
-      if (co2TrendSlow) {
+      // Use the rolling ~30 s slope to avoid stacking doses while CO2 is still
+      // rising after a pulse. A falling level must remain dose-ready so the
+      // controller can replace gas lost through leaks. Individual MH-Z16
+      // samples jitter by several ppm, so don't gate on per-sample changes.
+      bool co2RiseSlow = co2RatePpmMinReady &&
+                         co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN;
+      if (co2RiseSlow) {
         if (co2StableSince == 0) co2StableSince = currentTime;
         co2TrendReady = currentTime - co2StableSince >= CO2_STABLE_TIME_MS;
       } else {
