@@ -1274,3 +1274,16 @@ filamento/processo e 39 STL das demais peças preservados.
   ±0,1 °C, mas a precisão do DHT22 e a duração curta impedem concluir controle físico exato
   ou estabilidade de longo prazo. Repetir em outra janela antes de retunar. CO₂ permaneceu
   travado/inválido (`co2_range_lock=1`, `co2_valid=0`), controle desligado e válvula fechada.
+
+## Janela prolongada após habilitar trim no setpoint
+
+- 2026-10-15, BOOT_COUNT=152, telemetria contínua por aproximadamente 6 min. A temperatura
+  iniciou em 36,9 °C, caiu a 36,6 °C e voltou à meta em ~3 min. Depois oscilou entre
+  36,6–37,1 °C; no trecho final ficou principalmente em 36,9–37,0 °C. O relé desligou ao
+  atingir 37,1 °C e não houve leitura acima desse limite. Em 37,0 °C, a demanda de manutenção
+  ficou em ~1,6–4,2 s; abaixo da meta cresceu para ~5–13 s conforme a queda e a tendência.
+- A nova condição permitiu pulsos no setpoint, mas a leitura ainda variou até 0,5 °C desde o
+  vale frio. A última janela, por sua maior duração, mostra recuperação e manutenção perto de
+  37 °C, mas ainda não prova uniformidade da câmara nem a precisão real do DHT22.
+- CO₂ permaneceu `co2_range_lock=1`, `co2_valid=0`, `co2_enabled=0`, `valve_open=0`; a leitura
+  bruta do sensor continua inválida e não foi usada na análise.
