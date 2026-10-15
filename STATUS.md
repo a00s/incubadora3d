@@ -527,3 +527,8 @@ filamento/processo e 39 STL das demais peças preservados.
   à meta neste trecho, não uma validação independente de precisão nem uniformidade.
 - Comparar a leitura de RH com a do recipiente maior depois de aguardar a temperatura
   estabilizar. A leitura atual de 46,3–46,7% é a referência local imediatamente anterior.
+- Janela seguinte da mesma sessão (10:35 UTC): CO₂ chegou a 22.443 ppm e a taxa foi
+  recalculada para −271 ppm/min em 22.474 ppm. RH ficou em 47,5–47,7%; a temperatura
+  variou de 36,3 a 36,7 °C. A sonda interna alcançou 30,0 °C e o ventilador ligou; o
+  aquecedor desligou ao passar por 36,5 °C, conforme a histerese observada. Os dois
+  estados coexistiram por um intervalo curto, sem evidência aqui de erro de controle.
