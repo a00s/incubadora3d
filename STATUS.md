@@ -1339,3 +1339,8 @@ filamento/processo e 39 STL das demais peças preservados.
   bytes de Flash e 983 bytes de RAM. O ajuste Kp=32.000 ms/°C foi testado antes da abertura,
   mas este ensaio foi interrompido ao abrir a porta e desligar o aquecimento; não usar os
   dados seguintes para avaliar estabilidade térmica em operação fechada.
+- A pedido do usuário, a faixa vertical de estado da tela agora fica vermelha sempre que a
+  trava persistida está ativa, inclusive quando a temperatura estiver dentro da faixa normal.
+  O valor continua identificado como `BRUTO ppm`. Compilado e gravado em BOOT_COUNT=160;
+  `STATUS` confirmou `co2_range_lock=1`, aquecimento e CO₂ OFF, válvula fechada e ventilador
+  OFF (sensor interno em 30,6 °C). Nova compilação: 32.182 bytes de Flash e 983 bytes de RAM.

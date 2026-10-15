@@ -636,7 +636,7 @@ void serviceActivityIconAnimation() {
 }
 
 void setHealthColor() {
-  if (displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
+  if (co2RangeWrapLatched || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
   else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
   else ucg.setColor(0, 50, 220, 125);
 }
@@ -648,7 +648,8 @@ void drawHealthIndicator() {
   ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(5, 16); ucg.print(co2RangeWrapLatched ? F("BRUTO ppm") : F("CO2 ppm"));
+  ucg.setPrintPos(co2RangeWrapLatched ? 5 : 11, 16);
+  ucg.print(co2RangeWrapLatched ? F("BRUTO ppm") : F("CO2 ppm"));
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
