@@ -561,3 +561,9 @@ filamento/processo e 39 STL das demais peças preservados.
   demonstram melhora da porta. Repetir depois da instalação do anel em temperatura e
   concentração semelhantes para avaliar o efeito do conjunto, sem atribuir a fuga a uma
   localização específica.
+- Continuação da referência antes do anel, sem reset e ainda com a vedação nova da porta:
+  a janela seguinte marcou −218 ppm/min perto de 19.610 ppm; temperatura ficou em 37,1 °C,
+  RH em 48,2–48,3% e aquecedor desligado. A constante aproximada, usando 420 ppm como
+  ambiente, é ~0,0113/min. Continua na mesma ordem das referências com vedação antiga e
+  nova; a leitura adicional não muda a conclusão de que a vedação da porta ainda não
+  demonstrou redução clara. Após instalar o anel, repetir a janela perto de 37 °C.
