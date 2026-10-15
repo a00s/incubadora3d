@@ -1396,6 +1396,9 @@ filamento/processo e 39 STL das demais peças preservados.
   ativa (`co2_valid=0`, `co2_range_lock=1`) e CO₂, válvula, aquecimento e ventilador permaneceram
   OFF. Temperatura principal ~23,5–23,6 °C, RH ~56,0–56,2% e sonda interna ~29,5 °C. A deriva
   permanece consistente, mas não é uma taxa de vazamento validada.
+- Janela seguinte: 13.934 para 13.838 ppm em ~46 s (aprox. −125 ppm/min). Temperatura ~23,5 °C,
+  RH ~56,3–56,5%, sonda interna ~29,5 °C; trava ativa e todos os atuadores OFF. Segue como
+  deriva do número UART sem validação de concentração.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
