@@ -497,3 +497,16 @@ filamento/processo e 39 STL das demais peças preservados.
   23.700 ppm continua compatível com a perda anterior; não confirma melhora da vedação.
   A tela não foi fotografada após restaurar as animações, então a aparência física ainda
   precisa de confirmação visual.
+
+## Continuação da observação de umidade após troca da vedação
+
+- 2026-10-15, continuação da mesma sessão serial (`BOOT_COUNT` permanece 66; sem novo
+  reset). CO₂ automático desligado, aquecimento automático ligado, válvula fechada.
+- Em cerca de 2 min, CO₂ caiu de 23.371 para 23.134 ppm; as amostras intermediárias
+  foram monotônicas e a janela móvel publicada ficou em −290 ppm/min. Temperatura
+  variou de 36,3 a 36,8 °C; umidade relativa subiu de 46,7 para 47,1%; sonda interna
+  ficou em 29,6–29,7 °C. O relé de aquecimento alternou durante o período.
+- Esse trecho não prova que a vedação melhorou nem que a umidade aumentou por causa da
+  vedação: não houve umidade ambiente de referência e as condições de temperatura e
+  concentração variam. Guardar 46,7–47,1% RH como leitura anterior à instalação do
+  recipiente de água maior, a ser comparada em condições semelhantes.
