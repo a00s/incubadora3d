@@ -1226,3 +1226,19 @@ filamento/processo e 39 STL das demais peças preservados.
   corrigir uma queda. Nenhuma alteração de ganho foi feita nesta sessão.
 - CO₂ permaneceu travado e inválido (`co2_range_lock=1`, `co2_valid=0`); controle desligado e
   válvula fechada.
+
+## Ajuste proporcional térmico de +20%
+
+- 2026-10-15, BOOT_COUNT=147. O ganho proporcional subiu de 20.000 para
+  24.000 ms/°C; integral, derivada, pausa mínima de 10 s, pulso máximo de 20 s e corte
+  independente em 37,1 °C permaneceram iguais. O aquecedor flexível mostrado pelo usuário
+  está identificado como 12 V / 10 W (corrente nominal calculada: ~0,83 A; corrente e tensão
+  efetivas ainda não medidas).
+- Em quase 3 min de observação, a temperatura começou em 36,6 °C, oscilou entre 36,5 e
+  36,8 °C no primeiro minuto e chegou a 37,0 °C em aproximadamente 2 min. No trecho final
+  ficou entre 36,9 e 37,0 °C, sem ultrapassar 37,0 °C. A demanda caiu gradualmente perto da
+  meta; os pulsos finais ficaram em torno de 4–6 s, separados pelo intervalo mínimo.
+- Esta janela mostrou recuperação contínua e uma faixa observada mais estreita no fim; ainda
+  é curta para provar estabilidade prolongada ou atribuir a melhora somente ao Kp. Manter a
+  observação antes de qualquer outro ajuste. CO₂ permaneceu travado e inválido
+  (`co2_range_lock=1`, `co2_valid=0`), automático desligado e válvula fechada.
