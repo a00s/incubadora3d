@@ -416,7 +416,7 @@ for zprobe in [20,60,135]:
 from wire_plugs import build_wire_plug, compound, print_pair, check_wire_plug
 wire_plug_halves={}
 wire_plug_reports={}
-P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.30,
+P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.10,
          heater_wire_diameter=1.42,heater_seal_channel_diameter=1.32,
          wire_plug_inner_recess_mm=.3,wire_plug_split_plane='through all wire axes')
 def cable_port(name,origin,rear,wire_diameter,positions):

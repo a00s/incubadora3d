@@ -11,6 +11,9 @@ SPECS = {
 }
 
 
+RADIAL_INTERFERENCE={'sensor':.15,'aquecedor':.08}
+LEAD_IN_RADIAL={'sensor':.15,'aquecedor':.3}
+
 def build_wire_plug(name):
     diameter, positions = SPECS[name]
     # Foam compresses over the entire bore and along each cable. The oversized
@@ -18,12 +21,12 @@ def build_wire_plug(name):
     q = cq.Workplane('XY', origin=(0, 0, .3)).circle(6.12).extrude(13.7)
     q = q.union(cq.Workplane('XY', origin=(0, 0, 14)).circle(8).extrude(1.5))
     for y in positions:
-        radius = diameter/2 - .08
+        radius = diameter/2 - RADIAL_INTERFERENCE[name]
         q = q.cut(cq.Workplane('XY', origin=(0, y, 0)).circle(radius).extrude(16))
         # Lead-ins on both ends; all layers begin on the outer flange.
-        q = q.cut(cq.Solid.makeCone(radius+.3, radius, .5,
+        q = q.cut(cq.Solid.makeCone(radius+LEAD_IN_RADIAL[name], radius, .5,
                                    cq.Vector(0,y,.3)))
-        q = q.cut(cq.Solid.makeCone(radius, radius+.3, .5,
+        q = q.cut(cq.Solid.makeCone(radius, radius+LEAD_IN_RADIAL[name], .5,
                                    cq.Vector(0,y,15)))
     halves = tuple(q.intersect(cq.Workplane('XY', origin=(x, -10, -1))
                    .box(10, 20, 18, centered=False)) for x in (-10, 0))
@@ -48,8 +51,12 @@ def check_wire_plug(name, halves):
     assert abs(bb.zmin-.3) < 1e-5 and abs(bb.zmax-15.5) < 1e-5
     assert halves[0].intersect(halves[1]).val().Volume() < 1e-5
     # Interference is deliberate for this foam: 0.12 radial at the body,
-    # 0.08 radial at each wire, and continuous compression along the split.
+    # the specified radial interference at each wire, and continuous compression along the split.
     for y in positions:
+        channel_radius=diameter/2-RADIAL_INTERFERENCE[name]
+        for z in (1,7,14.5):
+            assert not halves[1].val().isInside((channel_radius-.01,y,z))
+            assert halves[1].val().isInside((channel_radius+.01,y,z))
         wire = cq.Workplane('XY', origin=(0, y, 1)).circle(diameter/2).extrude(12)
         for h in halves:
             assert h.intersect(wire).val().Volume() > 0
@@ -62,8 +69,9 @@ def check_wire_plug(name, halves):
                 recuo_interno_mm=.3, profundidade_inserida_mm=13.7,
                 flange_externa_mm=1.5, diametro_flange_mm=16,
                 diametro_corpo_mm=12.24, material="eSUN TPU-LW",
-                diametro_livre_canais_fios_mm=round(diameter-.16, 2),
+                diametro_livre_canais_fios_mm=round(diameter-2*RADIAL_INTERFERENCE[name], 2),
                 contato_fios_continuo_mm=13.7,
                 metades=2, distancia_metades_impressao_mm=4,
-                interferencia_fios_radial_mm=.08, interferencia_corpo_radial_mm=.12,
+                diametro_entrada_canais_mm=round(diameter-2*RADIAL_INTERFERENCE[name]+2*LEAD_IN_RADIAL[name],2),
+                interferencia_fios_radial_mm=RADIAL_INTERFERENCE[name], interferencia_corpo_radial_mm=.12,
                 encaixe_e_vedacao_fisicos_pendentes=True)

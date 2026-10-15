@@ -1,33 +1,13 @@
 {
   "pecas": [
     {
-      "peca": "bucha_sensor_TPU",
-      "stl": "bucha_sensor_TPU.stl",
-      "bandeja": 15,
+      "peca": "TPU_passagem_sensor",
+      "stl": "TPU_passagem_sensor.stl",
+      "bandeja": 12,
       "dimensoes_mm": [
-        24.0,
-        23.99254035949707,
-        9.000000000000002
-      ]
-    },
-    {
-      "peca": "amostra_bucha_sensor_TPU_15.3",
-      "stl": "amostra_bucha_sensor_TPU_15.3.stl",
-      "bandeja": 23,
-      "dimensoes_mm": [
-        24.0,
-        23.99254035949707,
-        9.000000000000002
-      ]
-    },
-    {
-      "peca": "amostra_bucha_sensor_TPU_15.5",
-      "stl": "amostra_bucha_sensor_TPU_15.5.stl",
-      "bandeja": 24,
-      "dimensoes_mm": [
-        24.0,
-        23.99254035949707,
-        9.000000000000002
+        19.995027542114258,
+        16.0,
+        15.199999809265138
       ]
     }
   ],

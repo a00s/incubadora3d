@@ -404,7 +404,7 @@ No projeto completo, bucha na bandeja 15 e amostras 23/24. Começar pela peça
 principal. Encaixe e vedação precisam ser confirmados na impressão em TPU-LW.
 [Corte da bucha](output/v59/corte_bucha_CO2_TPU_LW.svg).
 
-### Passagens labiais dos fios, divididas ao meio
+### Passagens dos fios em TPU-LW, divididas ao meio
 
 [TPU do aquecedor — STL](output/v59/TPU_passagem_aquecedor.stl) ·
 [STEP](output/v59/TPU_passagem_aquecedor.step) ·
@@ -413,17 +413,17 @@ principal. Encaixe e vedação precisam ser confirmados na impressão em TPU-LW.
 Cada arquivo contém duas metades separadas por 4 mm, com a borda externa plana
 na mesa. A divisão passa pelo eixo de todos os fios: acomodar os fios nas
 canaletas abertas, juntar as metades e inserir a rolha pelo lado externo.
-Aquecedor: dois fios Ø1,42 mm. Sensor lateral de umidade/temperatura: três fios
-Ø1,40 mm. Dois lábios de 0,4 mm por fio fazem o contato; o canal no corpo é
-Ø2,6 mm para evitar aperto ao longo de toda a espessura.
+Aquecedor: dois fios Ø1,42 mm, canais Ø1,26 mm, sem alteração.
+Sensor lateral de umidade/temperatura: três fios Ø1,40 mm, com canais reduzidos
+de Ø1,24 para **Ø1,10 mm** e entradas **Ø1,40 mm**. O TPU-LW comprime os fios
+ao longo da rolha; a compressão radial nominal é de 0,15 mm no sensor.
 
 Os furos existentes Ø12 mm e a parede de 14 mm são preservados. O corpo da
-rolha é Ø11,6 mm, com dois lábios externos Ø12,3 mm. A extremidade interna
-fica recuada 0,3 mm, sem flange ou prolongamento para dentro; a flange externa
-mede Ø16 × 1,5 mm. No conjunto STEP e no visualizador, aparecem montadas na
-parede. No 3MF, cada par substitui a rolha anterior na mesma bandeja e conserva
-as configurações salvas: aquecedor na bandeja 11 e sensor na 12.
-Conferir compressão e vedação na impressão real.
+rolha é Ø12,24 mm, com flange externa Ø16 × 1,5 mm e recuo interno de 0,3 mm.
+No conjunto STEP e no visualizador, aparecem montadas na parede. No projeto
+completo, aquecedor na bandeja 11 e sensor na 12. Para imprimir uma metade
+por vez, usar o arquivo separado: sensor nas bandejas **5 e 6**, aquecedor 3/4.
+Acomodar os fios nas canaletas, fechar as metades e conferir vedação na impressão.
 
 ### Revisão da bucha redonda para TPU 85A
 

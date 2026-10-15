@@ -80,12 +80,20 @@ força de inserção e estanqueidade precisam de ensaio físico.
 
 ## Cabos
 
-Rolhas bipartidas para os mesmos furos Ø12 × 14 mm e fios existentes:
-aquecedor 2 × Ø1,42; sensor lateral 3 × Ø1,40 mm. Corpo livre Ø12,24 mm e canais
-Ø1,26 / Ø1,24 mm, com entradas chanfradas. Contato contínuo em lugar dos lábios
-isolados anteriores. A interferência deve comprimir a espuma contra o furo,
-os fios e entre as metades. A flange Ø16 × 1,5 mm permanece somente externa.
-Não trocar metades entre as duas rolhas; não puxar os conectores através delas.
+Rolhas bipartidas para os mesmos furos Ø12 × 14 mm e fios existentes.
+Corpo livre Ø12,24 mm; flange externa Ø16 × 1,5 mm. A interferência externa
+e os encaixes rígidos são preservados.
+
+- Aquecedor: 2 fios Ø1,42 mm; canais Ø1,26 mm, sem alteração.
+- Sensor de temperatura: 3 fios Ø1,40 mm; canais reduzidos de **Ø1,24 para
+  Ø1,10 mm**, com entradas de **Ø1,40 mm** em vez de Ø1,84 mm. A compressão
+  radial nominal passa de 0,08 para **0,15 mm**. Os centros dos três fios e a
+  divisão das metades permanecem iguais; o trecho reto comprime os fios ao longo da rolha.
+
+Assentar cada fio na meia canaleta, juntar as metades e inserir no furo
+existente. O TPU-LW deve comprimir os fios e as faces de união; conferir
+fechamento das metades e vedação no teste físico. Não trocar metades entre
+as duas rolhas nem puxar os conectores através dos canais apertados.
 
 ## Arquivo para imprimir
 

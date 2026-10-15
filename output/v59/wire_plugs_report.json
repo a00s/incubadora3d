@@ -10,11 +10,12 @@
     "diametro_flange_mm": 16,
     "diametro_corpo_mm": 12.24,
     "material": "eSUN TPU-LW",
-    "diametro_livre_canais_fios_mm": 1.24,
+    "diametro_livre_canais_fios_mm": 1.1,
     "contato_fios_continuo_mm": 13.7,
     "metades": 2,
     "distancia_metades_impressao_mm": 4,
-    "interferencia_fios_radial_mm": 0.08,
+    "diametro_entrada_canais_mm": 1.4,
+    "interferencia_fios_radial_mm": 0.15,
     "interferencia_corpo_radial_mm": 0.12,
     "encaixe_e_vedacao_fisicos_pendentes": true
   },
@@ -33,6 +34,7 @@
     "contato_fios_continuo_mm": 13.7,
     "metades": 2,
     "distancia_metades_impressao_mm": 4,
+    "diametro_entrada_canais_mm": 1.86,
     "interferencia_fios_radial_mm": 0.08,
     "interferencia_corpo_radial_mm": 0.12,
     "encaixe_e_vedacao_fisicos_pendentes": true
