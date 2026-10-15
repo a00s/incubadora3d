@@ -173,6 +173,123 @@ Imprima as amostras de encaixe e vedação antes de comprometer a carcaça intei
 
 Os controles mostram a geometria; não substituem testes físicos.
 
+## Controle do Arduino pela USB
+
+### Preparar, compilar e gravar
+
+A placa usada é Arduino Uno R3 (`arduino:avr:uno`). O código fonte permanece em
+[temperatura.ino](temperatura.ino); a pasta [firmware/incubadora](firmware/incubadora)
+é a entrada de sketch exigida pelo Arduino CLI. A biblioteca `NDIRZ16` está incluída
+em `arduino-libraries/`; as outras versões ficam fixadas no script.
+
+Instale o [Arduino CLI](https://arduino.github.io/arduino-cli/latest/installation/)
+1.5.1 no Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR="$HOME/.local/bin" sh -s 1.5.1
+```
+
+No diretório do projeto, prepare as ferramentas e bibliotecas uma vez:
+
+```bash
+scripts/arduino.sh setup
+```
+
+Para compilar, gravar e abrir o monitor serial:
+
+```bash
+scripts/arduino.sh compile
+scripts/arduino.sh upload
+scripts/arduino.sh monitor
+```
+
+O padrão da porta é `/dev/ttyACM0`; substitua por `ARDUINO_PORT=/dev/ttyUSB0` se
+necessário. No Linux, se o usuário não tiver acesso direto à porta, use o grupo
+`dialout` para cada comando, por exemplo:
+
+```bash
+sg dialout -c 'scripts/arduino.sh upload'
+sg dialout -c 'scripts/arduino.sh monitor'
+```
+
+O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
+serial antes de compilar/gravar. A última compilação para Uno usa 31.906 bytes de Flash
+(98%) e 917 bytes de RAM global (44%), deixando 1.131 bytes para pilha e chamadas.
+
+A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
+sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
+energizado e o rotor gira enquanto o ventilador funciona. A animação redesenha somente
+a pequena área do ícone ativo; leituras sem alteração não redesenham os campos de texto.
+As cores de fundo indicam falha, espera ou operação normal, e a inicialização mostra
+uma breve animação de DNA.
+
+O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
+cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
+ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
+estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líquida de CO₂
+normalizada para ppm/min numa janela válida de aproximadamente 60 segundos; o campo
+`rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
+tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
+A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
+formatadas em ponto fixo para reduzir o uso de Flash no Uno.
+A linha `BOOT_COUNT` e o campo `boot_count`
+leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
+por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;
+ambos ficam fora do controle automático.
+
+As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
+temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
+ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,5–37,5 °C. O valor
+medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
+(até 65.535 ppm). Uma queda de faixa compatível com rollover acima de 60.000 ppm trava
+a injeção e gera um evento, para não interpretar o valor baixo subsequente como falta de
+CO₂.
+
+Comandos disponíveis:
+
+```text
+HELP
+STATUS
+CO2 ON
+CO2 OFF
+CO2 PRIME
+HEAT ON
+HEAT OFF
+ALL OFF
+```
+
+`CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
+desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
+físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
+abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
+automática inicial é 45 ms. Depois de cada dose, o controle espera ao menos cerca de um
+minuto e também exige que a taxa de subida medida não passe de 5 ppm/s por 30 segundos
+contínuos antes de injetar novamente; se a leitura continuar subindo mais rápido, ele
+espera mais. Uma leitura em queda não bloqueia a correção.
+O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
+acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
+da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
+o cálculo usa metade do tempo proporcional estimado e limita cada aumento a 1,5 vez o
+pulso anterior, até 1.000 ms. Ao se aproximar da meta,
+os pulsos ficam limitados a 250 ms nos
+últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
+`CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
+toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
+ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto
+toque dispara imediatamente. Isso permite uma dose manual progressiva enquanto o
+controle automático mantém o estado que já tinha. Se houver uma leitura de CO₂ no
+limite configurado (50.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
+o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
+válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
+modo automático ao fim da janela de três segundos.
+Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
+resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
+direta da válvula. O MH-Z16 não informa a faixa configurada por uma consulta UART; a
+antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar a faixa.
+Na telemetria `DATA`, `next_pulse_ms` é o próximo valor calculado e `last_pulse_ms` é o
+tempo do pulso realmente aplicado; ambos são separados de `valve_open`, que mostra o
+estado instantâneo da saída.
+
 ## Gerar os arquivos
 
 Na pasta do repositório:
