@@ -13,7 +13,7 @@
   "insulation_extension": 10,
   "air_cell_width": 6,
   "outer_skin": 2,
-  "sensor_diameter": 15.62,
+  "sensor_diameter": 15.57,
   "sensor_insertion": 80.75,
   "sensor_mount_clearance_diameter": 20.4,
   "inlet_height": 10.5,
@@ -577,5 +577,11 @@
   "door_seal_tube_width_mm": 4.7,
   "door_seal_cavity_width_mm": 3.6,
   "door_seal_hinge_transition_start_x_mm": 90,
-  "door_seal_hinge_scale": 0.4383265856950067
+  "door_seal_hinge_scale": 0.4383265856950067,
+  "sensor_head_ring_diameter": 16.6,
+  "sensor_head_ring_height": 3.18,
+  "sensor_tpu_lower_bulb": true,
+  "sensor_tpu_lower_bulb_bore_mm": 15.0,
+  "sensor_tpu_lower_bulb_skin_mm": 0.55,
+  "sensor_tpu_upper_geometry_preserved_from_z_mm": 5.32
 }

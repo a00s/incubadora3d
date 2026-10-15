@@ -1,46 +1,6 @@
 {
   "pecas": [
     {
-      "peca": "junta_V_porta_TPU",
-      "stl": "junta_V_porta_TPU.stl",
-      "bandeja": 16,
-      "dimensoes_mm": [
-        121.35662388801575,
-        142.79999387264252,
-        9.941500186920166
-      ]
-    },
-    {
-      "peca": "amostra_V_porta_TPU",
-      "stl": "amostra_V_porta_TPU.stl",
-      "bandeja": 21,
-      "dimensoes_mm": [
-        3.746659755706787,
-        35.0,
-        6.267424106597897
-      ]
-    },
-    {
-      "peca": "TPU_passagem_aquecedor",
-      "stl": "TPU_passagem_aquecedor.stl",
-      "bandeja": 11,
-      "dimensoes_mm": [
-        19.995027542114258,
-        16.0,
-        15.199999809265138
-      ]
-    },
-    {
-      "peca": "TPU_passagem_sensor",
-      "stl": "TPU_passagem_sensor.stl",
-      "bandeja": 12,
-      "dimensoes_mm": [
-        19.995027542114258,
-        16.0,
-        15.199999809265138
-      ]
-    },
-    {
       "peca": "bucha_sensor_TPU",
       "stl": "bucha_sensor_TPU.stl",
       "bandeja": 15,
@@ -68,36 +28,6 @@
         24.0,
         23.99254035949707,
         9.000000000000002
-      ]
-    },
-    {
-      "peca": "junta_porta",
-      "stl": "junta_porta.stl",
-      "bandeja": 17,
-      "dimensoes_mm": [
-        125.3999969959259,
-        145.3999969959259,
-        5.5
-      ]
-    },
-    {
-      "peca": "amostra_junta_TPU",
-      "stl": "amostra_junta_TPU.stl",
-      "bandeja": 33,
-      "dimensoes_mm": [
-        4.449999809265137,
-        35.0,
-        5.5
-      ]
-    },
-    {
-      "peca": "amostra_junta_TPU_labios_0p8",
-      "stl": "amostra_junta_TPU_labios_0p8.stl",
-      "bandeja": 34,
-      "dimensoes_mm": [
-        4.550000190734863,
-        35.0,
-        5.5
       ]
     }
   ],

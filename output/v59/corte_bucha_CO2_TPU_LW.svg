@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 565" width="600" height="565" style="width:100%;max-width:650px;height:auto" role="img" aria-label="Corte da bucha CO2 com bulbo inferior oco e labios preservados">
+<title>Bucha CO₂ · seção radial real do STEP</title>
+<rect width="600" height="565" fill="white"/>
+<g font-family="sans-serif" font-size="16" fill="#172b35">
+<text x="300" y="25" text-anchor="middle">Sensor CO₂ · bulbo inferior oco + lábios</text>
+<polygon points="80.00,465.00 115.33,465.00 115.33,203.10 138.50,203.10 138.50,60.00 80.00,60.00" fill="#aab4bd" opacity=".6"/>
+<path d="M210.50,388.50 L210.50,334.50 L228.50,352.50 L228.50,330.00 L210.50,312.00 L210.50,222.00 L228.50,240.00 L228.50,217.50 L210.50,199.50 L210.50,127.50 L305.00,127.50 L305.00,60.00 L152.00,60.00 L134.00,78.00 L134.00,127.50 L156.50,172.50 L164.38,180.38 L107.00,237.75 L107.00,262.50 L176.75,192.75 L183.50,199.50 L183.50,208.50 L174.50,208.50 L138.50,249.00 L116.00,271.50 L102.50,294.00 L102.50,325.50 L117.12,340.12 L107.00,350.25 L107.00,375.00 L129.50,352.50 L147.50,370.50 L174.50,402.00 L197.00,402.00 L183.50,415.50 L233.00,465.00 L260.00,438.00 Z M174.50,235.50 L174.50,282.75 L134.00,323.25 L127.25,316.50 L127.25,294.00 L140.75,271.50 L172.25,235.50 Z M172.25,366.00 L146.29,335.71 L174.50,307.50 L174.50,366.00 Z M201.50,397.50 L199.25,399.75 L199.25,397.50 Z" fill="#45ae89" fill-rule="evenodd" stroke="#173c32"/>
+<text x="335" y="90">Apoio superior preservado</text>
+<text x="335" y="120">Anel Ø16,60 × 3,18 mm</text>
+<text x="335" y="245">Tubo Ø15,57 mm</text>
+<text x="335" y="275">Bulbo livre Ø15,00 mm</text>
+<text x="335" y="305">Pele nominal 0,55 mm</text>
+<text x="300" y="505" text-anchor="middle">Verde: TPU-LW livre · cinza: sensor medido</text>
+<text x="300" y="535" text-anchor="middle">Sobreposição indica compressão; deformação por testar</text>
+</g></svg>

@@ -12,7 +12,7 @@ OUT=Path(__file__).resolve().parents[1]/'output'/'v59'
 OUT.mkdir(exist_ok=True)
 CHECK_MOVEMENTS="--check-movements" in sys.argv
 P=dict(width=120,depth=115,height=140,wall=4,mixer_radius=32,mixer_height=110,slide_length=76,slide_width=26,slide_height=1,tray_pitch=29,port_diameter=6.2,insulation_extension=10,air_cell_width=6,outer_skin=2)
-P.update(sensor_diameter=15.62, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=6.0, inlet_socket_diameter=6.2, inlet_socket_depth=12, inlet_bore_diameter=3.5)
+P.update(sensor_diameter=15.57,sensor_head_ring_diameter=16.60,sensor_head_ring_height=3.18, sensor_insertion=80.75, sensor_mount_clearance_diameter=20.4, inlet_height=10.5, hose_od=6.0, inlet_socket_diameter=6.2, inlet_socket_depth=12, inlet_bore_diameter=3.5)
 P.update(sensor_collar_diameter=18.31, sensor_head_width=20.55, sensor_seal_bore=15.2, rj_cutout_width=14.79, rj_cutout_height=19.31, rj_panel_thickness=1.6)
 P.update(tray_depth=72,tray_rear_y=80,heater_front_y=106,tray_heater_gap=26)
 parts=[]
@@ -833,6 +833,8 @@ P.update(sensor_tpu_wall_mm=.6,sensor_tpu_inner_lip_mm=.55,
          sensor_tpu_outer_lip_count=2,sensor_tpu_sleeve_od_mm=19.8,
          sensor_tpu_core_id_mm=18.6,sensor_tpu_neck_wall_mm=1.7,
          sensor_tpu_flange_overlap_mm=1.6,sensor_tpu_material='eSUN TPU-LW',
+         sensor_tpu_lower_bulb=True,sensor_tpu_lower_bulb_bore_mm=P['sensor_seal_bore']-.2,
+         sensor_tpu_lower_bulb_skin_mm=.55,sensor_tpu_upper_geometry_preserved_from_z_mm=5.32,
          sensor_tpu_print_face='outer collar on bed',sensor_tpu_fit_test='pending physical insertion and seal test')
 sensor_seal=sensor_grommet(P['sensor_seal_bore'])
 add('bucha_sensor_TPU',sensor_seal,'#45ae89','sensor_seal')
@@ -843,6 +845,7 @@ assert independent(body).intersect(independent(sensor_seal).cut(sensor_neck_comp
 sensor_shoulder=mh+8.5
 sensor_tip=sensor_shoulder-P['sensor_insertion']
 sensor_ref=cq.Workplane('XY',origin=(-27,cy,sensor_tip)).circle(P['sensor_diameter']/2).extrude(P['sensor_insertion'])
+sensor_ref=sensor_ref.union(cq.Workplane('XY',origin=(-27,cy,sensor_shoulder-P['sensor_head_ring_height'])).circle(P['sensor_head_ring_diameter']/2).extrude(P['sensor_head_ring_height']))
 sensor_ref=sensor_ref.union(cq.Workplane('XY',origin=(-27,cy,sensor_shoulder)).circle(P['sensor_collar_diameter']/2).extrude(2.5))
 # Collar height and head depth/height remain provisional visual references.
 sensor_ref=sensor_ref.union(box(P['sensor_head_width'],25,25,-27-P['sensor_head_width']/2,cy-12.5,sensor_shoulder+2.5))

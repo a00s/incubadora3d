@@ -1,7 +1,7 @@
 {
-  "tipo": "manga fina com labios flexiveis",
+  "tipo": "manga fina com labios e bulbo oco inferior",
   "furo_impresso_preservado_mm": 20.4,
-  "sensor_mm": 15.62,
+  "sensor_mm": 15.57,
   "diametro_corpo_tpu_mm": 19.8,
   "diametro_interno_corpo_mm": 18.6,
   "diametro_livres_labios_internos_mm": 15.2,
@@ -14,11 +14,11 @@
   "entrada_chanfrada_mm": 17.2,
   "apoio_sensor_z_local_mm": 8.5,
   "solido_valido": true,
-  "interferencia_sensor_apenas_nos_labios": true,
+  "interferencia_sensor_apenas_nos_labios": false,
   "interferencia_no_furo_apenas_nos_labios": true,
   "validacao_fisica_pendente": true,
-  "material_ensaio_usuario": "TPU 85A",
-  "feedback_anterior": "pequena folga no sensor e ruptura na uniao da flange ao remover suportes",
+  "material_ensaio_usuario": "eSUN TPU-LW",
+  "feedback_anterior": "Apoio superior veda no anel Ø16.60 x 3.18; tubo Ø15.57 fica frouxo embaixo",
   "parede_pescoco_reforcado_mm": 1.7,
   "sobreposicao_axial_flange_mm": 1.6,
   "labios_inclinados_para_impressao_flange_na_mesa": true,
@@ -28,5 +28,13 @@
     "altura_camada_mm": 0.2,
     "angulo_maximo_graus": 45,
     "labios_sem_inicio_suspenso": true
-  }
+  },
+  "anel_cabeca_sensor_mm": 16.6,
+  "altura_anel_cabeca_mm": 3.18,
+  "bulbo_inferior_diametro_livre_mm": 15.0,
+  "bulbo_inferior_pele_nominal_mm": 0.55,
+  "bulbo_inferior_cavidade_radial_maxima_mm": 1.05,
+  "compressao_radial_nominal_bulbo_mm": 0.285,
+  "superior_preservado_a_partir_z_mm": 5.32,
+  "labios_originais_preservados": true
 }

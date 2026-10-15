@@ -382,17 +382,20 @@ frente para a mesa; revisar suportes removíveis sob o H central e as colunas
 traseiras. As configurações salvas foram preservadas. Para uma peça mais maciça,
 conferir preenchimento de 100% para este suporte.
 
-### Bucha redonda do sensor de CO₂ com lábios
+### Bucha redonda do sensor de CO₂ com lábios e bulbo oco
 
 [STL da bucha TPU](output/v59/bucha_sensor_TPU.stl) ·
 [STEP](output/v59/bucha_sensor_TPU.step). A manga tem parede de 0,6 mm e
-corpo Ø19,8 mm para o furo existente Ø20,4 mm. Dois lábios internos finos
-seguram o sensor Ø15,62 mm; dois externos acomodam o encaixe no teto.
-A entrada é chanfrada e o apoio do sensor mantém a posição original.
-O diâmetro livre dos lábios internos é 15,2 mm, com amostras de 15,3 e 15,5 mm
-para conferir a resposta do eSUN TPU-LW. No arquivo separado, bucha na bandeja 7
-e amostras 8/9. No projeto completo, bucha na bandeja 15; amostras nas
-bandejas 23 e 24. Encaixe e vedação precisam ser confirmados na peça impressa.
+corpo Ø19,8 mm para o furo existente Ø20,4 mm. Os dois lábios internos e os
+externos são preservados; um bulbo inferior oco adicional, com abertura livre
+Ø15,00 mm, comprime o tubo medido de Ø15,57 mm. A pele nominal é 0,55 mm.
+O apoio superior continua igual para o anel da cabeça Ø16,60 × 3,18 mm.
+
+No arquivo separado, a bucha está na bandeja 7. As amostras 8/9 têm bulbos
+Ø15,10 / Ø15,30 mm; os sufixos `_15.3` / `_15.5` continuam indicando os lábios.
+No projeto completo, bucha na bandeja 15 e amostras 23/24. Começar pela peça
+principal. Encaixe e vedação precisam ser confirmados na impressão em TPU-LW.
+[Corte da bucha](output/v59/corte_bucha_CO2_TPU_LW.svg).
 
 ### Passagens labiais dos fios, divididas ao meio
 

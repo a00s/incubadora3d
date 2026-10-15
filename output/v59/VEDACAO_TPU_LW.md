@@ -3,8 +3,8 @@
 **Não retirar nem mexer na junta que já está encaixada na caixa da incubadora.**
 O PC está quebradiço. As fotos de montagem confirmam duas juntas separadas;
 Todas as peças flexíveis do projeto usam agora eSUN TPU-LW, incluindo a bucha
-do sensor CO₂, as duas juntas, as rolhas dos fios e suas amostras. As geometrias
-de encaixe existentes são mantidas: o fluxo compensa a expansão nominal do material.
+do sensor CO₂, as duas juntas, as rolhas dos fios e suas amostras. Os encaixes rígidos são preservados. A bucha CO₂ recebe um bulbo inferior oco
+conforme as medidas do sensor; o fluxo compensa a expansão nominal do material.
 A junta instalada na caixa não precisa ser retirada.
 Porta, corpo, dobradiças, fecho, gavetas e bucha redonda do sensor são preservados.
 
@@ -53,13 +53,30 @@ rígido da porta permanece intacto. Conferir a retenção na amostra antes do an
 
 ## Anel do sensor CO₂
 
-Bucha de união reforçada, com flange externa Ø24 mm, manga Ø19,8 mm e
-lábios para o furo rígido Ø20,4 mm. A geometria atual passa no fatiamento
-TPU-LW sem suportes; não foi redimensionada com base no fator de expansão,
-pois a compensação deve ocorrer no fluxo. A impressão continua com a face
-externa do colar na mesa. Há duas amostras com furo Ø15,3 / Ø15,5 mm para
-comparar com a bucha nominal Ø15,2 mm e o sensor Ø15,62 mm. Imprimir uma
-amostra de cada vez e conferir retenção, compressão e estanqueidade antes da montagem.
+Medidas do sensor fornecidas pelo usuário: tubo **Ø15,57 mm** e anel junto à
+cabeça **Ø16,60 mm × 3,18 mm de altura**. O apoio superior que vedou bem fica
+preservado a partir de Z local 5,32 mm. A flange, a manga Ø19,8 mm, o furo rígido
+Ø20,4 mm e os dois lábios internos/externos mantêm a geometria existente.
+
+Um bulbo anular oco adicional pressiona o cilindro inferior, com abertura livre
+**Ø15,00 mm** na peça principal e compressão radial nominal de **0,285 mm**.
+A pele interna nominal é de 0,55 mm; a cavidade permite ceder radialmente.
+As raízes dos lábios são mantidas e cruzam parte da cavidade. A bucha é uma
+única peça, sem acrescentar componentes nem alterar o corpo rígido.
+
+| Bandeja separada | Lábios internos | Bulbo inferior livre |
+| --- | --- | --- |
+| 7 — bucha principal | Ø15,20 mm | Ø15,00 mm |
+| 8 — amostra `_15.3` | Ø15,30 mm | Ø15,10 mm |
+| 9 — amostra `_15.5` | Ø15,50 mm | Ø15,30 mm |
+
+Os sufixos dos arquivos continuam indicando o diâmetro dos lábios, não o novo
+bulbo. Começar pela bucha principal da bandeja 7; as amostras oferecem aperto
+menor caso a impressão fique justa demais. Imprimir com a face externa do colar
+na mesa, sem suportes, mantendo 270 °C / fluxo experimental 55%. Retenção,
+força de inserção e estanqueidade precisam de ensaio físico.
+
+[Corte radial extraído do STEP](corte_bucha_CO2_TPU_LW.svg).
 
 ## Cabos
 
@@ -80,8 +97,8 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com doze bandejas:
 | 2 | Junta inteira da porta |
 | 3 / 4 | Aquecedor, metades A / B |
 | 5 / 6 | Sensor lateral, metades A / B |
-| 7 | Anel/bucha do sensor CO₂, furo nominal Ø15,2 mm |
-| 8 / 9 | Amostras da bucha CO₂, furos Ø15,3 / Ø15,5 mm |
+| 7 | Bucha CO₂: bulbo Ø15,0 mm + lábios Ø15,2 mm |
+| 8 / 9 | Amostras CO₂: bulbos Ø15,1 / Ø15,3 mm |
 | 10 | Junta da caixa, para reposição futura |
 | 11 / 12 | Amostras da junta da caixa, lábios de 0,6 / 0,8 mm |
 

@@ -128,6 +128,8 @@ if 'lw_bulb' in v_profile:
 <text x="240" y="455">Retenção original · não depende da borda quebrada</text></g></svg>'''
 (folder/'corte_vedacao_V.svg').write_text(v_svg)
 svg += v_svg
+sensor_section=folder/'corte_bucha_CO2_TPU_LW.svg'
+if sensor_section.exists():svg+=sensor_section.read_text()
 s=(p/'cad/viewer-template.html').read_text().replace('__MESH_GZIP__',mesh).replace('__SEAL_SECTION__',svg)
 out=p/'output/incubadora-3d.html';out.write_text(s)
 # Integral helical receivers add mesh detail; keep a bounded standalone payload.

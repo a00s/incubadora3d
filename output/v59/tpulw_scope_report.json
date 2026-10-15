@@ -1,23 +1,17 @@
 {
-  "todas_pecas_tpu_lw": [
-    "TPU_passagem_aquecedor",
-    "TPU_passagem_sensor",
-    "amostra_junta_TPU",
-    "amostra_junta_TPU_labios_0p8",
-    "bucha_sensor_TPU",
-    "junta_V_porta_TPU",
-    "junta_porta",
-    "amostra_V_porta_TPU",
-    "amostra_bucha_sensor_TPU_15.3",
-    "amostra_bucha_sensor_TPU_15.5"
+  "geometrias_stl_outros_preservadas": 38,
+  "objetos_3mf_outros_preservados": 36,
+  "perfis_e_processo_salvos_preservados": true,
+  "superior_a_partir_z_5p32_preservado": true,
+  "labios_anteriores_preservados": true,
+  "malhas_3_buchas_fechadas": true,
+  "step_3_buchas_validos": true,
+  "diametro_sensor_medido_mm": 15.57,
+  "anel_cabeca_medido_mm": [
+    16.6,
+    3.18
   ],
-  "total_objetos_tpu_lw": 10,
-  "bandejas_arquivo_separado": 12,
-  "stl_geometrias_preservadas": 41,
-  "objetos_rigidos_3mf_preservados": 29,
-  "perfis_e_processo_globais_preservados": true,
-  "perfil_tpu_anterior_sem_pecas": true,
-  "temperatura_c": 270,
-  "fluxo_experimental": 0.55,
-  "encaixe_e_estanqueidade_pendentes_ensaio_fisico": true
+  "bulbo_livre_nominal_mm": 15.0,
+  "compressao_radial_nominal_mm": 0.285,
+  "ensaio_fisico_pendente": true
 }
