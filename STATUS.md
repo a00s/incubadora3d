@@ -790,3 +790,9 @@ filamento/processo e 39 STL das demais peças preservados.
   a diferença à vedação isoladamente. O DHT permaneceu válido: temperatura subiu de
   ~27,5 para ~30,7 °C e RH caiu de ~64,7 para ~60,5% durante o aquecimento. Estado
   consultado: `co2_enabled=1`, `heater_enabled=1`, válvula fechada, `boot_count=75`.
+- Verificação adicional: a janela seguinte voltou a `−193 ppm/min`, portanto a taxa
+  de `−22 ppm/min` foi transitória e não confirma estabilização. O CO₂ caiu de ~48.730
+  para ~48.384 ppm em ~140 s; então o automático iniciou novo pulso de rampa de 45 ms.
+  Cerca de 15 s depois estava em ~48.327 ppm, ainda cedo para medir a resposta do pulso.
+  Temperatura subiu a ~31,7 °C e RH estava em ~59,2%; aquecimento habilitado, relé
+  alternando ciclos e válvula fechada entre doses.
