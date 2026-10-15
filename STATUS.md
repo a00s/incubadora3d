@@ -510,3 +510,7 @@ filamento/processo e 39 STL das demais peças preservados.
   vedação: não houve umidade ambiente de referência e as condições de temperatura e
   concentração variam. Guardar 46,7–47,1% RH como leitura anterior à instalação do
   recipiente de água maior, a ser comparada em condições semelhantes.
+- Continuação da mesma sessão: a janela seguinte atualizou a taxa para −306 ppm/min
+  perto de 23.055 ppm. Temperatura voltou a 37,0 °C; RH oscilou entre 46,8 e 46,5%.
+  A oscilação reforça que a comparação do recipiente maior deve usar um trecho após
+  estabilização térmica, e não somente a tendência inicial de umidade.
