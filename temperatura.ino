@@ -227,9 +227,10 @@ void loop()
 //    }
 //    
     
-    bool sensorReadOk = mySensorCO2.getppm();
+    int32_t sensorPpm = mySensorCO2.getppm();
+    bool sensorReadOk = sensorPpm >= 0;
     if (sensorReadOk) {
-      CO2i = mySensorCO2.ppm;
+      CO2i = sensorPpm;
     } else {
       CO2i = -1;
       Serial.println("EVENT,co2_sensor_read_failed");
@@ -304,8 +305,8 @@ void loop()
       contador_pomp = 0;
     }
     
-    if(CO2i == 0){
-      Serial.println("EVENT,co2_zero_reading");
+    if(sensorReadOk && CO2i == 0){
+      Serial.println("EVENT,co2_zero_reading,invalid_for_control");
     }
     
 //    Serial.print("CONT: ");

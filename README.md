@@ -178,7 +178,8 @@ Os controles mostram a geometria; não substituem testes físicos.
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
-estado do controle.
+estado do controle. Falha de comunicação e leitura de 0 ppm são eventos separados;
+ambos ficam fora do controle automático.
 
 Comandos disponíveis:
 
