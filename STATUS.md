@@ -1424,6 +1424,10 @@ filamento/processo e 39 STL das demais peças preservados.
   ~−129 ppm/min ao longo de ~7,5 min. O contador de `millis()` avançou continuamente, sem boot
   ou falha de leitura aparente; `co2_valid=0`, trava ativa e todos os atuadores OFF. Isso confirma
   comunicação contínua, não a exatidão do valor recebido.
+- Continuação até 1.515,8 s: leitura bruta 12.111 ppm; de 13.726 ppm em 756,3 s, média de
+  ~−128 ppm/min em ~12,7 min. A temperatura ficou ~22,8–23,0 °C e a sonda interna ~29,6–29,7 °C;
+  trava ativa, sem reinício aparente e todos os atuadores OFF. A deriva continua sem platô
+  observado, mas continua inválida para controle e diagnóstico quantitativo de vazamento.
 - Comparação com a seção anterior “Resposta do CO₂ e aquecimento após reinstalar o sensor”:
   naquela inicialização, sem injeção, o número reportado subiu de ~706 ppm para ~10.000 ppm;
   neste BOOT_COUNT=164, sem injeção e com a válvula sempre fechada, caiu de ~18.297 ppm para
