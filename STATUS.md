@@ -417,3 +417,18 @@ filamento/processo e 39 STL das demais peças preservados.
   rastreável nem mapa de uniformidade; portanto, não é possível comparar precisão real
   com as especificações comerciais. A câmara deve permanecer ventilada/compensada, não
   hermeticamente pressurizada.
+- A telemetria desta rodada marcou 52–54% RH a aproximadamente 37 °C. O valor ainda
+  precisa ser conferido com higrômetro independente; se confirmado, está bem abaixo do
+  sistema de umidificação de 95% RH a 37 °C especificado no manual Steri-Cult.
+- Auditoria do CAD: não há canal de compensação de pressão dedicado à câmara. O respiro
+  Ø0,8 mm da junta TPU atravessa apenas a pele externa do bulbo e não comunica com a
+  câmara. Não abrir um furo sem restrição/filtro: antes de apertar mais a porta, definir
+  um componente de compensação adequado e seu ponto de instalação. Pela câmara nominal
+  de 112×132×111 mm, o volume é cerca de 1,64 L; em uma conta idealizada sem saída de
+  gás, atingir 5% a partir do ar ambiente exigiria acrescentar ~86 mL de CO₂ e elevaria
+  a pressão em ~5,3 kPa, aplicando ~78 N na área frontal de 112×132 mm. Isso não é uma
+  classificação de pressão da peça.
+- O ventilador acionou em 30 °C na sonda secundária e manteve a leitura perto de
+  29,5–30 °C durante a coleta; não houve prova de que chegaria abaixo de 29 °C para
+  desligar. O limiar liga/desliga 30/29 °C é conservador, mas falta confirmar a posição
+  da sonda e medir a resposta térmica do compartimento com o ventilador ativo.
