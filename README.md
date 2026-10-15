@@ -213,8 +213,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 32.050 bytes de Flash
-(99%) e 929 bytes de RAM global (45%), deixando 1.119 bytes para pilha e chamadas.
+serial antes de compilar/gravar. A última compilação para Uno usa 31.906 bytes de Flash
+(98%) e 917 bytes de RAM global (44%), deixando 1.131 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
 sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
@@ -230,6 +230,8 @@ estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líqu
 normalizada para ppm/min numa janela válida de aproximadamente 60 segundos; o campo
 `rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
 tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
+A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
+formatadas em ponto fixo para reduzir o uso de Flash no Uno.
 A linha `BOOT_COUNT` e o campo `boot_count`
 leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
 por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;

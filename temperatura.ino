@@ -246,6 +246,23 @@ void setup()
     wdt_enable(WDTO_8S);
 }
 
+void printFixed(float value, uint8_t decimals) {
+  if (isnan(value)) {
+    Serial.print(F("nan"));
+    return;
+  }
+  uint16_t scale = decimals == 2 ? 100 : 10;
+  bool negative = value < 0;
+  float magnitude = negative ? -value : value;
+  uint32_t scaled = (uint32_t)(magnitude * scale + 0.5f);
+  if (negative) Serial.write('-');
+  Serial.print((unsigned long)(scaled / scale));
+  Serial.write('.');
+  uint16_t fraction = scaled % scale;
+  if (decimals == 2 && fraction < 10) Serial.write('0');
+  Serial.print((unsigned long)fraction);
+}
+
 void loop()
 {
     wdt_reset(); // Reset the watchdog timer
@@ -438,13 +455,13 @@ void loop()
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
-    Serial.print(','); Serial.print(t); Serial.print(','); Serial.print(h); Serial.print(','); Serial.print(t_interna);
+    Serial.print(','); printFixed(t, 1); Serial.print(','); printFixed(h, 1); Serial.print(','); printFixed(t_interna, 1);
     Serial.print(','); Serial.print(botao_co2_onoff); Serial.print(','); Serial.print(botao_aquecedor_onoff); Serial.print(',');
     Serial.print(digitalRead(HEATER) == LOW ? 1 : 0); Serial.print(','); Serial.print(ventilador_status); Serial.print(',');
     Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0); Serial.print(','); Serial.print(delayProporcional); Serial.print(',');
     Serial.print(lastCo2PulseMs); Serial.print(',');
-    Serial.print(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
-    Serial.print(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
+    printFixed(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
+    printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
 
     contador_pomp = contador_pomp -1;
@@ -800,16 +817,16 @@ void printStatus(unsigned long now) {
   Serial.print(F(",co2_ppm=")); Serial.print(CO2i);
   Serial.print(F(",co2_valid=")); Serial.print(CO2i > 0 && CO2i <= CO2_SENSOR_PROTOCOL_MAX_PPM && !co2RangeWrapLatched ? 1 : 0);
   Serial.print(F(",boot_count=")); Serial.print(eeprom_contador_int);
-  Serial.print(F(",temp_c=")); Serial.print(dht.readTemperature());
-  Serial.print(F(",humidity_pct=")); Serial.print(dht.readHumidity());
-  Serial.print(F(",internal_temp_c=")); Serial.print(dhtint.readTemperature());
+  Serial.print(F(",temp_c=")); printFixed(dht.readTemperature(), 1);
+  Serial.print(F(",humidity_pct=")); printFixed(dht.readHumidity(), 1);
+  Serial.print(F(",internal_temp_c=")); printFixed(dhtint.readTemperature(), 1);
   Serial.print(F(",co2_enabled=")); Serial.print(botao_co2_onoff);
   Serial.print(F(",heater_enabled=")); Serial.print(botao_aquecedor_onoff);
   Serial.print(F(",fan_on=")); Serial.print(ventilador_status);
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
-  Serial.print(F(",rate_ppm_s=")); Serial.print(co2Rate, 2);
+  Serial.print(F(",rate_ppm_s=")); printFixed(co2Rate, 2);
   Serial.print(F(",rate_ppm_min_valid=")); Serial.print(co2RatePpmMinReady ? 1 : 0);
   Serial.print(F(",rate_ppm_min=")); Serial.print(co2RatePpmMin);
   Serial.print(F(",trend_ready=")); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
