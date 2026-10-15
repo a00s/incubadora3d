@@ -1392,6 +1392,10 @@ filamento/processo e 39 STL das demais peças preservados.
   trava persistente e atuadores desligados. A temperatura principal variou ~23,6–23,8 °C,
   umidade ~55,5–56,1% e sensor interno ~29,4–29,5 °C. A inclinação é consistente com as
   anteriores, mas permanece apenas uma deriva da leitura inválida, sem referência externa.
+- Continuação: de 14.062 para 13.938 ppm em ~56 s (aprox. −133 ppm/min). A trava continuou
+  ativa (`co2_valid=0`, `co2_range_lock=1`) e CO₂, válvula, aquecimento e ventilador permaneceram
+  OFF. Temperatura principal ~23,5–23,6 °C, RH ~56,0–56,2% e sonda interna ~29,5 °C. A deriva
+  permanece consistente, mas não é uma taxa de vazamento validada.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
