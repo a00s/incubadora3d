@@ -1372,5 +1372,9 @@ filamento/processo e 39 STL das demais peças preservados.
   trava ativa. A queda temporal pode coincidir com o pré-aquecimento de 3 min indicado em uma
   revisão do manual; não demonstra calibração, retorno a uma concentração conhecida ou que o
   clique físico causou a mudança.
+- Na continuação da mesma sessão, a leitura bruta caiu de 14.652 para 14.613 ppm em 16,9 s
+  (aprox. −138 ppm/min). A temperatura principal ficou em ~23,9–24,0 °C e a interna em
+  ~29,4 °C; CO₂, válvula, aquecimento e ventilador permaneceram desligados. Essa é somente a
+  inclinação do valor UART inválido, não uma taxa confirmada de perda de CO₂.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html).
