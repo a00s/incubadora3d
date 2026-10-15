@@ -1437,6 +1437,13 @@ filamento/processo e 39 STL das demais peças preservados.
   janela observada, então a UART entrega quadros estruturalmente válidos. `co2_valid=0` nessa
   sessão significa a trava persistida do firmware, não falha do parser. Isso reduz a hipótese
   de simples desalinhamento UART, mas não valida a escala, calibração ou concentração física.
+- Comparação histórica do firmware: antes de `bdde11f` (`Handle MH-Z16 readings as ppm values`),
+  `getppm()` era atribuído a `bool`. Como a biblioteca retorna `-1` em falha, a conversão em C++
+  tratava essa falha como `true` e o código podia reutilizar `mySensorCO2.ppm` anterior como se
+  fosse uma nova leitura. `bdde11f` corrigiu a condição para guardar o retorno em `int32_t` e
+  aceitar apenas valores `>=0`. Esse defeito histórico poderia gerar amostras antigas congeladas
+  em versões anteriores; está corrigido no firmware atual e não explica a deriva contínua atual,
+  cujos quadros passam no parser.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
