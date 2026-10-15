@@ -136,7 +136,7 @@ const int DELAY_MAXIMO = 250;    // ms; teto inicial, reduzido dinamicamente ao 
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
-const int CO2_DOSE_FRACTION_DENOMINATOR = 6; // Avança em frações para compensar resposta atrasada
+const int CO2_DOSE_FRACTION_DENOMINATOR = 4; // Doses maiores, ainda fracionadas para respeitar a resposta atrasada
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_FAULT 0
@@ -420,10 +420,10 @@ void loop()
     int32_t pulseLimit = DELAY_MINIMO;
     int32_t co2Deficit = CO2_TARGET_PPM - CO2i;
     if (validCo2 && co2Deficit > 0) {
-      // Scale the pulse cap with the remaining deficit. A >>6 ramp responds
+      // Scale the pulse cap with the remaining deficit. A >>5 ramp responds
       // faster during large deficits while still tapering to short pulses
       // close to target; the observed dose gain continues to adapt each cycle.
-      pulseLimit += co2Deficit >> 6;
+      pulseLimit += co2Deficit >> 5;
       if (pulseLimit > DELAY_MAXIMO) pulseLimit = DELAY_MAXIMO;
     }
     int32_t delayProporcional = validCo2
