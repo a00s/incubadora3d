@@ -136,7 +136,7 @@ const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
 const int DELAY_MAXIMO = 250;    // ms; teto inicial, reduzido dinamicamente ao aproximar do alvo
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
-const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
+const int32_t CO2_INITIAL_GAIN_ESTIMATE_X100 = 1200L; // Só prior; recalibrado pela primeira resposta
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
@@ -144,7 +144,7 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t co2GainEstimatePpmPerMsX100 = CO2_BOOTSTRAP_PPM_PER_MS * 100L;
+int32_t co2GainEstimatePpmPerMsX100 = CO2_INITIAL_GAIN_ESTIMATE_X100;
 bool co2DoseResponsePending = false;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
@@ -448,7 +448,7 @@ void loop()
     int32_t pulseLimit = DELAY_MINIMO;
     int32_t co2Deficit = CO2_TARGET_PPM - co2ProjectedPpm;
     if (validCo2 && co2Deficit > 0) {
-      // Scale the pulse cap with the remaining deficit. A >>5 ramp responds
+      // Scale the pulse cap with the remaining deficit. A broad ramp responds
       // faster during large deficits while still tapering near target; the
       // observed dose gain continues to adapt each cycle.
       pulseLimit += co2Deficit >> 4;
@@ -504,9 +504,9 @@ void loop()
         doseResponseReady && co2ClickCount == 0) {
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
-        int32_t ppmNeeded = CO2_TARGET_PPM - co2ProjectedPpm;
-        pulseMs = ppmNeeded / CO2_BOOTSTRAP_PPM_PER_MS;
-        Serial.print(F("EVENT,co2_pulse,first,ms,"));
+        // Calibrate from this valve/tank state before using learned gain.
+        pulseMs = DELAY_MINIMO;
+        Serial.print(F("EVENT,co2_pulse,calibration,ms,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
           int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
