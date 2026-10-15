@@ -602,3 +602,40 @@ filamento/processo e 39 STL das demais peças preservados.
   duas janelas anteriores e ainda próxima da linha de base (~0,0113/min). O resultado
   reforça que não há melhora clara demonstrada; a câmara segue fria e fora das condições
   de comparação pretendidas.
+
+## Resposta do CO₂ e aquecimento após reinstalar o sensor
+
+- 2026-10-15. O sensor foi recolocado no anel ainda com folga. Após a recuperação da
+  leitura ambiente (~706 ppm), o CO₂ subiu até ~10.000 ppm sem injeção; aguardamos a
+  taxa cair antes de ligar o automático. Este trecho inicial é acomodação do sensor e
+  não serve como ensaio de vedação.
+- Com o aquecedor habilitado, a câmara subiu de ~28,7 °C para ~36,9 °C em cerca de
+  9,5 min. O relé operou em ciclos limitados a 20 s; a leitura chegou momentaneamente
+  a 37,2 °C com o relé já desligado, mostrando inércia térmica residual. Depois se
+  manteve perto de 36,5–37,1 °C enquanto o controle permaneceu habilitado.
+- Com o CO₂ automático ligado e alvo de 50.000 ppm, os pulsos observados foram 90,
+  135, 202, 303 e 93 ms. Os primeiros dois não produziram resposta clara imediatamente;
+  após os pulsos seguintes, o sensor mostrou resposta atrasada e acumulada. Um pulso de
+  303 ms partiu de ~18.000 ppm e a leitura alcançou ~37.900 ppm durante a resposta; o
+  firmware registrou aumento máximo de ~20.015 ppm desde esse pulso. Após o pulso de
+  93 ms, a leitura chegou a ~39.294 ppm. O alvo de 50.000 ppm não foi atingido nesta
+  sessão. Não atribuir todo o ganho a um único pulso: os trechos de resposta se
+  sobrepõem e a pressão do reservatório varia.
+- O firmware manteve a válvula fechada enquanto a concentração continuava subindo; só
+  liberou nova dose após a tendência desacelerar e ficar estável. A taxa de janela
+  chegou a +9.586 ppm/min durante a recuperação e depois caiu para +271 ppm/min antes
+  da última dose. Essa resposta confirma que um integrador convencional atualizado a
+  cada leitura poderia acumular comando durante o atraso; preservar espera de resposta,
+  limites de pulso e anti-windup ao avaliar PID para CO₂.
+- Para encerrar a intervenção antes da atualização do projeto, CO₂ e aquecimento foram
+  desligados por comando serial; a serial confirmou válvula e aquecedor desligados. Cerca
+  de 126 s depois, STATUS mostrou 38.510 ppm, 35,4 °C, RH 50,9%, ventilador ligado e
+  taxa móvel de −300 ppm/min. Como o anel ainda tinha folga e a temperatura estava
+  mudando, essa queda não é comparação válida de vazamento.
+- O teste de temperatura mostra resposta lenta e pequena ultrapassagem após desligar o
+  aquecedor. Antes de adicionar PID, registrar mais ciclos nas mesmas condições; para
+  temperatura, limitar integral e comutar o aquecedor com proteção de tempo mínimo e
+  corte independente. Para CO₂, preferir ganho proporcional/adaptativo por dose e
+  janela de assentamento; qualquer componente integral precisa congelar durante a
+  resposta pós-pulso. Não foram alterados nem gravados parâmetros de controle nesta
+  sessão.
