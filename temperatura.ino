@@ -115,6 +115,7 @@ const float TAXA_MINIMA = 10.0;   // ppm/s
 const int DELAY_MAXIMO = 1000;   // ms; limite superior do pulso automático
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
+const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_FAULT 0
@@ -122,6 +123,8 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
 int32_t delayProporcionalAnt = 60;    // Semente inicial; depois o ganho medido ajusta o pulso
+int32_t co2GainEstimatePpmPerMsX100 = CO2_BOOTSTRAP_PPM_PER_MS * 100L;
+bool co2DoseResponsePending = false;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -379,7 +382,7 @@ void loop()
     bool doseResponseReady = validCo2 && lastCo2PulseMs > 0 &&
                              contador_pomp == 0 && co2TrendReady;
     int32_t delayProporcional = validCo2
-      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, delayProporcionalAnt, max_co2_increase, doseResponseReady)
+      ? calcularDelayProporcional(CO2i, CO2_TARGET_PPM, co2GainEstimatePpmPerMsX100, doseResponseReady)
       : DELAY_MINIMO;
 
     
@@ -431,12 +434,19 @@ void loop()
         pulseMs = ppmNeeded / CO2_BOOTSTRAP_PPM_PER_MS;
         if (pulseMs > delayProporcionalAnt) pulseMs = delayProporcionalAnt;
         Serial.print(F("EVENT,co2_pulse,first,ms,"));
-      } else if (max_co2_increase <= 8) {
-        pulseMs = delayProporcionalAnt * 2;
-        if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
-        Serial.print(F("EVENT,co2_pulse,ramp,ms,"));
       } else {
-        pulseMs = delayProporcional;
+        if (co2DoseResponsePending && lastCo2PulseMs > 0) {
+          int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
+          if (observedGainX100 < 0) observedGainX100 = 0;
+          co2GainEstimatePpmPerMsX100 =
+            (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
+          if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
+            co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
+          }
+          co2DoseResponsePending = false;
+        }
+        pulseMs = calcularDelayProporcional(CO2i, CO2_TARGET_PPM,
+                                            co2GainEstimatePpmPerMsX100, true);
         Serial.print(F("EVENT,co2_pulse,ms,"));
       }
       if (pulseMs > DELAY_MAXIMO) pulseMs = DELAY_MAXIMO;
@@ -448,6 +458,7 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
       co2AnimationUntil = millis() + 3000UL;
       delayProporcionalAnt = pulseMs;
+      co2DoseResponsePending = true;
       max_co2_increase = 0;
       co2StableSince = 0;
       co2TrendReady = false;
@@ -851,6 +862,7 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   if (pulseMs > MANUAL_CO2_MAX_PULSE_MS) pulseMs = MANUAL_CO2_MAX_PULSE_MS;
   lastCo2PulseMs = pulseMs;
   delayProporcionalAnt = pulseMs;
+  co2DoseResponsePending = co2BaselineReady;
   maxRate = 0;
   digitalWrite(CO2PUMP, LOW);
   delay(pulseMs);
@@ -1046,14 +1058,15 @@ void disableAutoCalibration() {
 
 
 // Função para calcular o tempo de abertura
-int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32_t ms_ultima_vez, int32_t aumento_ultima_vez, bool tendenciaValida) {
-  if (!tendenciaValida || ppm_atual <= 0 || ppm_objetivo <= ppm_atual || ms_ultima_vez <= 0 || aumento_ultima_vez <= 0) {
+int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32_t ganhoPpmPorMsX100, bool tendenciaValida) {
+  if (!tendenciaValida || ppm_atual <= 0 || ppm_objetivo <= ppm_atual ||
+      ganhoPpmPorMsX100 <= 0) {
     return DELAY_MINIMO;
   }
-  int64_t ppmNecessario = (int64_t)ppm_objetivo - ppm_atual;
-  // Recalcula o tempo diretamente a partir do ganho medido no pulso anterior.
-  // A dosagem seguinte só é liberada depois do resfriamento da resposta tardia.
-  int64_t tempoValvula = ppmNecessario * ms_ultima_vez / aumento_ultima_vez;
+  int32_t ppmNecessario = ppm_objetivo - ppm_atual;
+  // Suaviza em 1/3 a eficiência medida a cada resposta estabilizada, acompanhando
+  // a pressão variável sem deixar uma única amostra definir todo o pulso seguinte.
+  int32_t tempoValvula = ppmNecessario * 100L / ganhoPpmPorMsX100;
   if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;
   if (tempoValvula > DELAY_MAXIMO) return DELAY_MAXIMO;
   return (int32_t)tempoValvula;

@@ -282,13 +282,12 @@ leitura em queda não bloqueia a correção.
 O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
-o cálculo usa a proporção completa entre o ganho observado e o tempo de abertura, sem
-limitar artificialmente o aumento entre doses; cada pulso continua limitado a 1.000 ms.
-Se não houver aumento detectável após a janela de observação, a rampa dobra a dose anterior.
-O piso é 5 ms para evitar pulsos abaixo
-da resolução prática da válvula. Não há um teto menor fixo perto da meta; o cálculo
-proporcional reduz a dose com base na resposta observada, e o bloqueio de tendência
-evita empilhar pulsos durante a subida atrasada.
+cada resposta atualiza em um terço a eficiência estimada; isso evita que uma única
+amostra determine a dose seguinte. O controle calcula o pulso pela distância à meta e
+pela eficiência suavizada, limitado a 1.000 ms por pulso. A primeira dose após reinício
+usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms para
+evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
+empilhar pulsos durante a subida atrasada.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto

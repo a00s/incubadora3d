@@ -928,3 +928,21 @@ filamento/processo e 39 STL das demais peças preservados.
   e intervalo mínimo de leitura de 2 s. Assim, a janela de 0,1 °C controla a leitura
   exibida, mas não comprova exatidão absoluta de ±0,1 °C. Para garantir essa exatidão,
   será necessário comparar/calibrar com uma sonda de referência mais precisa.
+
+## Suavização da adaptação de dose de CO₂
+
+- 2026-10-15. A telemetria anterior mostrou que 60 ms renderam um aumento máximo de
+  99 ppm, mas a proporção de uma única resposta calculou 419 ms para a dose seguinte.
+  Substituída a estimativa direta por uma média adaptativa: cada nova resposta estabilizada
+  contribui com um terço para a eficiência ppm/ms estimada. A dose continua proporcional
+  à distância até 50.000 ppm e se adapta ao fluxo observado; na ausência de resposta,
+  a eficiência cai gradualmente até um piso de 0,5 ppm/ms, sem a duplicação abrupta da
+  dose anterior. A primeira dose permanece escalada pela distância e limitada a 60 ms.
+- A observação ainda precisa ser validada com CO₂ habilitado e concentração confiável.
+  Até lá, o CO₂ permanece desligado por causa das leituras anômalas após reinicialização.
+- Compilação e upload bem-sucedidos para Uno: 32.208 bytes de Flash (99%) e 955 bytes
+  de RAM global, restando 48 bytes de Flash. O monitor indicou BOOT_COUNT=94 e confirmou
+  `co2_enabled=0`, `valve_open=0` e aquecimento habilitado. Na amostra curta após a
+  reinicialização, a temperatura variou de 36,8 para 36,7 °C e a leitura de CO₂ caiu de
+  7.673 para 7.507 ppm em ~13 s; por ser logo após boot, a leitura não valida a
+  concentração real. A nova adaptação ainda não foi exercitada porque o CO₂ segue OFF.
