@@ -1424,6 +1424,13 @@ filamento/processo e 39 STL das demais peças preservados.
   ~−129 ppm/min ao longo de ~7,5 min. O contador de `millis()` avançou continuamente, sem boot
   ou falha de leitura aparente; `co2_valid=0`, trava ativa e todos os atuadores OFF. Isso confirma
   comunicação contínua, não a exatidão do valor recebido.
+- Comparação com a seção anterior “Resposta do CO₂ e aquecimento após reinstalar o sensor”:
+  naquela inicialização, sem injeção, o número reportado subiu de ~706 ppm para ~10.000 ppm;
+  neste BOOT_COUNT=164, sem injeção e com a válvula sempre fechada, caiu de ~18.297 ppm para
+  ~12.659 ppm após ~21 min. A deriva de milhares de ppm em sentidos opostos, repetida sem
+  acionamento da válvula, favorece instabilidade/acomodação ou escala do sensor como hipótese
+  para esses valores; não quantifica vazamento. Manter `co2_valid=0`, sem exibir taxa válida ou
+  permitir controle automático até referência independente e identificação da unidade.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
