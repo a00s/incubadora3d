@@ -640,17 +640,29 @@ filamento/processo e 39 STL das demais peças preservados.
   resposta pós-pulso. Não foram alterados nem gravados parâmetros de controle nesta
   sessão.
 
-## Corrigir estabilidade falsa durante queda de CO₂
+## Semântica do trend_ready durante queda de CO₂
 
-- 2026-10-15. A serial mostrou `rate_ppm_s=-11,47` e `trend_ready=1` enquanto o CO₂
-  caía rapidamente. A condição antiga só limitava o lado positivo (`co2Rate <= 5`),
-  classificando qualquer queda como estável. Isso podia liberar uma nova dose durante
-  uma queda acentuada, em vez de esperar a taxa desacelerar.
-- A condição agora exige `-5 <= co2Rate <= +5 ppm/s` continuamente por 30 s antes de
-  marcar a tendência estável. A taxa de janela continua assinada para monitorar ganho
-  ou perda.
-- Compilação para Uno passou: 32.136/32.256 bytes de Flash e 825/2.048 bytes de RAM.
-  `scripts/arduino.sh upload` terminou sem erro com verificação habilitada. CO₂ e
-  aquecimento estavam desligados, válvula fechada antes do flash. Confirmar o contador
-  de boot e o novo `trend_ready` na próxima conexão serial; não reabrimos o monitor
-  nesta sessão para evitar reset adicional.
+- 2026-10-15. A serial mostrou `rate_ppm_s=-11,47` e `trend_ready=1` durante queda
+  rápida de CO₂. Primeiro interpretamos `trend_ready` como taxa absoluta próxima de
+  zero e fizemos uma versão simétrica (`-5..+5 ppm/s`) no commit 773f9f4.
+- A revisão do algoritmo mostrou que esse indicador libera nova dose após a resposta
+  positiva atrasada do pulso anterior. O perigo que se quer evitar é empilhar doses
+  enquanto o sensor ainda registra uma subida tardia. Uma taxa negativa forte indica
+  perda de CO₂; após o cooldown mínimo de ~60 s, isso pode exigir compensação. Impor
+  taxa absoluta pequena bloquearia a reposição durante uma fuga persistente.
+- A condição simétrica foi revertida: o firmware volta a considerar a tendência pronta
+  quando `co2Rate <= +5 ppm/s` por 30 s, com o cooldown mínimo preservado. Isso não
+  declara uma queda rápida “plana”; significa apenas que não há subida positiva acima
+  do limite. A taxa assinada continua disponível na tela e na telemetria. Revalidar em
+  um ciclo com o sensor reinstalado, CO₂ abaixo da meta e vazão de queda conhecida.
+- A versão simétrica compilou e foi gravada, mas a observação de queda após boot não
+  comprovou se ela era melhor para a incubadora; foi revertida antes de continuar o
+  ensaio. O teste de bancada será repetido com a semântica anterior. Controles estavam
+  desligados e válvula fechada durante esta revisão.
+- Revisão restaurada compilada para Uno: 32.120/32.256 bytes de Flash e 825/2.048
+  bytes de RAM. Upload com verificação terminou sem erro. A reconexão serial após o
+  upload confirmou `BOOT_COUNT=72`, `co2_enabled=0`, `heater_enabled=0`, `valve_open=0`
+  e `heater_on=0`; CO₂ 35.192 ppm, temperatura 30,3 °C e umidade 58,7% na última
+  amostra. O sensor já apresentava queda; após o boot a janela de tendência ainda não
+  estava pronta. O monitor serial foi fechado para não causar outro reset. A nova
+  semântica segue sem validação dinâmica com controle ativo.
