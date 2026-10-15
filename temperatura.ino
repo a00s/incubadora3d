@@ -406,6 +406,13 @@ void loop()
       }
       if (co2BaselineReady) {
         int32_t increaseSincePump = CO2i - co2_before_pump;
+        unsigned long elapsedSincePulseMs = currentTime - co2LastPulseAt;
+        if (elapsedSincePulseMs > CO2_RESPONSE_LAG_MAX_MS) {
+          elapsedSincePulseMs = CO2_RESPONSE_LAG_MAX_MS;
+        }
+        int32_t expectedAmbientChange = co2RateAtPulsePpmMin *
+          (int32_t)elapsedSincePulseMs / 60000L;
+        increaseSincePump -= expectedAmbientChange;
         if (increaseSincePump > max_co2_increase) {
           max_co2_increase = increaseSincePump;
           co2MaxRiseAt = currentTime;
@@ -495,8 +502,6 @@ void loop()
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         co2ProjectedPpm < CO2_CONTROL_MIN_PPM && botao_co2_onoff == 1 &&
         doseResponseReady && co2ClickCount == 0) {
-      co2_before_pump = CO2i;
-      co2BaselineReady = true;
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
         int32_t ppmNeeded = CO2_TARGET_PPM - co2ProjectedPpm;
@@ -504,13 +509,7 @@ void loop()
         Serial.print(F("EVENT,co2_pulse,first,ms,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
-          unsigned long responseWindowMs = co2MaxRiseAt > co2LastPulseAt
-            ? co2MaxRiseAt - co2LastPulseAt : (unsigned long)co2ResponseLagSeconds * 1000UL;
-          int32_t ambientChangePpm = co2RateAtPulsePpmMin *
-            (int32_t)responseWindowMs / 60000L;
-          int32_t doseRisePpm = max_co2_increase - ambientChangePpm;
-          if (doseRisePpm < 0) doseRisePpm = 0;
-          int32_t observedGainX100 = doseRisePpm * 100L / lastCo2PulseMs;
+          int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
           co2GainEstimatePpmPerMsX100 =
             (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
           if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
@@ -535,6 +534,8 @@ void loop()
       }
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
+      co2_before_pump = CO2i;
+      co2BaselineReady = true;
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
       digitalWrite(CO2PUMP, LOW);
