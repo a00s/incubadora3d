@@ -1428,6 +1428,10 @@ filamento/processo e 39 STL das demais peças preservados.
   ~−128 ppm/min em ~12,7 min. A temperatura ficou ~22,8–23,0 °C e a sonda interna ~29,6–29,7 °C;
   trava ativa, sem reinício aparente e todos os atuadores OFF. A deriva continua sem platô
   observado, mas continua inválida para controle e diagnóstico quantitativo de vazamento.
+- Continuação até 1.604,3 s: 11.923 ppm, sem platô observado. De 13.726 ppm em 756,3 s, média
+  ~−128 ppm/min em ~14,1 min. Temperatura ~22,7–22,8 °C, RH ~58,4–58,9%, sonda interna
+  ~29,6–29,7 °C; trava ativa e atuadores OFF. A proximidade futura de 10.000 ppm, se ocorrer,
+  não deve ser tomada como limite da variante sem confirmação documental ou referência.
 - Comparação com a seção anterior “Resposta do CO₂ e aquecimento após reinstalar o sensor”:
   naquela inicialização, sem injeção, o número reportado subiu de ~706 ppm para ~10.000 ppm;
   neste BOOT_COUNT=164, sem injeção e com a válvula sempre fechada, caiu de ~18.297 ppm para
