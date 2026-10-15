@@ -1378,6 +1378,10 @@ filamento/processo e 39 STL das demais peças preservados.
   (aprox. −138 ppm/min). A temperatura principal ficou em ~23,9–24,0 °C e a interna em
   ~29,4 °C; CO₂, válvula, aquecimento e ventilador permaneceram desligados. Essa é somente a
   inclinação do valor UART inválido, não uma taxa confirmada de perda de CO₂.
+- Nova janela da mesma sessão: 14.444 para 14.244 ppm em 84,3 s (aprox. −142 ppm/min), com
+  trava persistente e atuadores desligados. A temperatura principal variou ~23,6–23,8 °C,
+  umidade ~55,5–56,1% e sensor interno ~29,4–29,5 °C. A inclinação é consistente com as
+  anteriores, mas permanece apenas uma deriva da leitura inválida, sem referência externa.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
