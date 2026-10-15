@@ -1256,3 +1256,21 @@ filamento/processo e 39 STL das demais peças preservados.
   de alterar mais parâmetros.
 - CO₂ seguiu travado e inválido (`co2_range_lock=1`, `co2_valid=0`), com controle automático
   desligado e válvula fechada. Os valores brutos de CO₂ não são concentração válida.
+
+## PI/D de manutenção no setpoint
+
+- 2026-10-15, BOOT_COUNT=150: a observação anterior mostrou que o cálculo permitia
+  demanda em 37,0 °C, mas a condição `safeToHeat` ainda exigia temperatura estritamente
+  abaixo do setpoint. O relé, portanto, não aplicava a correção no alvo. Ajustada a condição
+  para permitir aquecimento em 37,0 °C; acima do alvo, a saída continua inibida e o corte
+  rígido em 37,1 °C permanece. Compilado e gravado com 32.240 bytes de Flash e 983 bytes de
+  RAM.
+- 2026-10-15, BOOT_COUNT=152, quase 5 min. A leitura iniciou em 36,9 °C, caiu a 36,6 °C e
+  recuperou até 37,0 °C em cerca de 3 min. No trecho final oscilou entre 36,9–37,1 °C por
+  aproximadamente 2 min; o corte desligou o aquecedor quando a leitura atingiu 37,1 °C.
+  Perto da meta, apareceram pedidos de ~1,6–3,0 s em 37,0 °C e pulsos curtos; entre 36,6 e
+  36,7 °C, os pedidos cresceram para ~12–13 s. Não houve leitura acima de 37,1 °C.
+- A mudança permite correção no próprio setpoint e a faixa do trecho final ficou dentro de
+  ±0,1 °C, mas a precisão do DHT22 e a duração curta impedem concluir controle físico exato
+  ou estabilidade de longo prazo. Repetir em outra janela antes de retunar. CO₂ permaneceu
+  travado/inválido (`co2_range_lock=1`, `co2_valid=0`), controle desligado e válvula fechada.

@@ -1033,7 +1033,9 @@ void controlHeater(float temperature, unsigned long now) {
       heaterPidIntegralMs = HEATER_PID_MAX_ON_MS;
     }
   }
-  if (errorC <= 0.0f || temperature >= HEATER_HARD_CUTOFF) {
+  // At the exact setpoint, retain the PI/D trim so the heater can balance
+  // steady heat loss instead of cycling only after a full 0.1 C drop.
+  if (errorC < 0.0f || temperature >= HEATER_HARD_CUTOFF) {
     heaterPidDemandMs = 0;
   } else {
     float derivativeMs = heaterTrendReady
@@ -1050,7 +1052,7 @@ void controlHeater(float temperature, unsigned long now) {
     heaterCurrentPulseMs = heaterPidDemandMs;
   }
 
-  bool safeToHeat = temperature < HEATER_SETPOINT_C &&
+  bool safeToHeat = temperature <= HEATER_SETPOINT_C &&
                     temperature < HEATER_HARD_CUTOFF;
   if (heaterOn && (!safeToHeat || now - heaterPulseStartedAt >= heaterCurrentPulseMs)) {
     digitalWrite(HEATER, HIGH);
