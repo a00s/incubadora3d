@@ -532,3 +532,32 @@ filamento/processo e 39 STL das demais peças preservados.
   variou de 36,3 a 36,7 °C. A sonda interna alcançou 30,0 °C e o ventilador ligou; o
   aquecedor desligou ao passar por 36,5 °C, conforme a histerese observada. Os dois
   estados coexistiram por um intervalo curto, sem evidência aqui de erro de controle.
+
+## Ajuste experimental do controle térmico e referência antes do anel do sensor
+
+- 2026-10-15. Para aproximar a leitura da meta de 37 °C após ciclos observados entre
+  36,3 e 37,0 °C, o termostato foi ajustado de 36,5/36,7 °C para ligar até 36,8 °C e
+  desligar a partir de 37,0 °C. O intervalo mínimo entre mudanças e o limite de cada
+  acionamento passaram de 30/45 s para 20/20 s; o corte de segurança permaneceu em
+  37,2 °C.
+- Compilado e gravado com `--verify`: 32.120/32.256 bytes de Flash e 825/2.048 bytes
+  de RAM. O monitor após a gravação confirmou inicialização e `BOOT_COUNT,68`; CO₂
+  automático permaneceu desligado e válvula fechada.
+- Primeira observação ainda é transitória: após o reset a leitura caiu de 36,5 para
+  36,0 °C, depois ficou entre 36,6 e 37,3 °C. Em um pulso de 20 s, o sensor mostrou
+  subida residual até 37,3 °C com o relé já desligado; nos ciclos seguintes ficou
+  em torno de 36,6–36,9 °C. Isso sugere que o centro da leitura se aproximou de 37 °C,
+  mas ainda há inércia e o ensaio não fecha estabilidade em longo prazo. Não aumentar
+  mais a energia do aquecedor sem observar uma janela maior.
+- Referência de perda da câmara após instalar a vedação nova da porta e antes de instalar
+  o anel novo do sensor: válvula fechada, temperatura estabilizada perto de 36,8–36,9 °C,
+  leitura de CO₂ próxima de 20.032 ppm e janela de aproximadamente −305 ppm/min. A taxa
+  perto de 20.000 ppm é menor em valor absoluto que a medida a 26.000–28.000 ppm, como
+  esperado para uma mesma troca proporcional com o ar ambiente.
+- Normalizando aproximadamente por excesso sobre 420 ppm ambiente, a constante observada
+  é ~0,0123/min com a vedação antiga (−337 ppm/min em ~27.918 ppm), ~0,0125/min com a
+  vedação nova da porta (−319 ppm/min em ~25.940 ppm) e ~0,0155/min na janela atual antes
+  do anel (−305 ppm/min em ~20.032 ppm). Os ensaios não são pareados nem calibrados; não
+  demonstram melhora da porta. Repetir depois da instalação do anel em temperatura e
+  concentração semelhantes para avaliar o efeito do conjunto, sem atribuir a fuga a uma
+  localização específica.
