@@ -589,3 +589,11 @@ filamento/processo e 39 STL das demais peças preservados.
   média ~0,0083/min, cerca de 27% abaixo de ~0,0113/min antes do anel. Há um indício
   repetido de melhora mesmo com folga, mas o teste começou após retirar/recolocar o sensor
   e a câmara não estava a 37 °C; não é confirmação. O CO₂ e o aquecimento seguem desligados.
+- Atualização posterior do mesmo ensaio frouxo: duas janelas adicionais marcaram −169 ppm/min
+  perto de 15.822 ppm e −145 ppm/min perto de 15.674 ppm, com temperatura caindo de 32,2
+  para 31,6 °C e RH subindo de 55,1 para 56,0%. Constantes aproximadas: ~0,0110 e
+  ~0,0095/min, média ~0,0102/min, somente ~10% abaixo da referência pré-anel (~0,0113/min).
+  Portanto, o ganho aparente de ~27% das primeiras janelas não persistiu; a leitura após
+  remoção/recolocação ainda estava se acomodando e a temperatura continuava mudando. O
+  encaixe frouxo não demonstra melhora mensurável. Repetir com o anel final e a câmara
+  estabilizada perto de 37 °C.
