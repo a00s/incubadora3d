@@ -597,3 +597,8 @@ filamento/processo e 39 STL das demais peças preservados.
   remoção/recolocação ainda estava se acomodando e a temperatura continuava mudando. O
   encaixe frouxo não demonstra melhora mensurável. Repetir com o anel final e a câmara
   estabilizada perto de 37 °C.
+- Terceira janela posterior ao anel frouxo: −153 ppm/min perto de 15.517 ppm, com a
+  temperatura em 31,1–31,0 °C. A constante aproximada é ~0,0101/min, coerente com as
+  duas janelas anteriores e ainda próxima da linha de base (~0,0113/min). O resultado
+  reforça que não há melhora clara demonstrada; a câmara segue fria e fora das condições
+  de comparação pretendidas.
