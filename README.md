@@ -215,14 +215,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação com as animações dos controles usa 32.120
-bytes de Flash (99%) e 825 bytes de RAM global (40%), deixando 136 bytes de Flash e
-1.223 bytes de RAM para crescimento, pilha e chamadas.
+serial antes de compilar/gravar. A compilação atual usa 32.142 bytes de Flash (99%) e
+851 bytes de RAM global (41%), deixando 114 bytes de Flash e 1.197 bytes de RAM para
+pilha e chamadas.
 
-A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas sobem
-por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor gira
-enquanto o ventilador funciona. As animações redesenham apenas as áreas pequenas dos
-ícones; leituras sem alteração não redesenham os campos de texto.
+A tela alterna a cada cerca de 8 s entre CO₂/temperatura/umidade/taxa e um gráfico de
+CO₂, mantendo os ícones de CO₂, chama e ventilador na faixa inferior. O gráfico guarda
+as últimas 32 amostras (cerca de 4 min) e destaca a linha de 50.000 ppm. A temperatura
+interna continua na telemetria. As bolhas sobem por 3 s após um pulso, a chama oscila
+enquanto o aquecedor está energizado e o rotor gira enquanto o ventilador funciona.
+Leituras sem alteração não redesenham os campos de texto.
 
 As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
@@ -275,15 +277,14 @@ ao menos cerca de um minuto e só libera outra dose depois que a subida ficar ab
 300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
 esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
 leitura em queda não bloqueia a correção.
-O tempo é recalibrado pela elevação de ppm observada em relação ao pulso aplicado, então
+O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso, então
 acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
 da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
-o cálculo usa metade do tempo proporcional estimado e limita cada aumento a 1,5 vez o
-pulso anterior, com piso de 5 ms para evitar pulsos menores que a resolução prática da
-válvula, até 1.000 ms. A rampa também consegue sair de um valor anterior abaixo do piso.
-Ao se aproximar da meta,
-os pulsos ficam limitados a 250 ms nos
-últimos 10.000 ppm, 90 ms nos últimos 3.000 ppm e 40 ms nos últimos 1.000 ppm.
+o cálculo usa metade do tempo proporcional estimado, limita cada aumento a 1,5 vez o
+pulso anterior e limita cada pulso a 1.000 ms. O piso é 5 ms para evitar pulsos abaixo
+da resolução prática da válvula. Não há um teto menor fixo perto da meta; o cálculo
+proporcional reduz a dose com base na resposta observada, e o bloqueio de tendência
+evita empilhar pulsos durante a subida atrasada.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
 ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto

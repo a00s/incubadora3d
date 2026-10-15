@@ -70,16 +70,18 @@ bool lastCo2ReadingValid = false;
 bool co2RangeWrapLatched = false;
 bool co2RawReferenceReady = false;
 bool displayCacheValid = false;
+bool displayChartPage = false;
+uint8_t co2HistoryY[32];
+uint8_t co2HistoryCount = 0, co2HistoryNext = 0;
+uint8_t displayPageTicks = 0;
 int32_t displayCo2Ppm = -2;
 int8_t displayCo2Quality = -1;
 int8_t displayTempQuality = -1;
 int16_t displayTempTenths = 32767;
 int16_t displayHumidityPercent = 32767;
-int16_t displayInternalTempTenths = 32767;
 char displayCo2Text[8] = "";
 char displayTempText[8] = "";
 char displayHumidityText[8] = "";
-char displayInternalTempText[8] = "";
 char displayCo2RateText[8] = "";
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
@@ -436,10 +438,6 @@ void loop()
       }
       if (maxRampPulse > DELAY_MAXIMO) maxRampPulse = DELAY_MAXIMO;
       if (pulseMs > maxRampPulse) pulseMs = maxRampPulse;
-      int32_t ppmRemaining = CO2_TARGET_PPM - CO2i;
-      if (ppmRemaining < 10000L && pulseMs > 250) pulseMs = 250;
-      if (ppmRemaining < 3000L && pulseMs > 90) pulseMs = 90;
-      if (ppmRemaining < 1000L && pulseMs > 40) pulseMs = 40;
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
       digitalWrite(CO2PUMP, LOW);
@@ -457,7 +455,7 @@ void loop()
     }
 
     controlHeater(t, millis());
-    renderDisplay(t, h, t_interna, validCo2);
+    renderDisplay(t, h, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
       serialHeaderPrinted = true;
@@ -594,6 +592,36 @@ void setHealthColor() {
   else ucg.setColor(0, 50, 220, 125);
 }
 
+void drawNumericLabels() {
+  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setColor(0, 130, 190, 215);
+  ucg.setPrintPos(5, 91); ucg.print(F("ppm/min"));
+  ucg.setColor(0, 150, 200, 225);
+  ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
+  ucg.setPrintPos(66, 59); ucg.print(F("UMID"));
+}
+
+void drawCo2HistoryChart() {
+  const uint8_t left = 8, right = 125, bottom = 105;
+  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setColor(0, 35, 55, 70); ucg.drawHLine(left, 31, right - left + 1);
+  ucg.setColor(0, 50, 150, 100); ucg.drawHLine(left, 43, right - left + 1);
+  ucg.setColor(0, 35, 55, 70); ucg.drawHLine(left, bottom, right - left + 1);
+  ucg.setColor(0, 130, 160, 180); ucg.setPrintPos(1, 47); ucg.print(F("5%"));
+  if (co2HistoryCount == 0) return;
+  uint8_t first = (co2HistoryNext - co2HistoryCount) & 31;
+  int16_t previousX = left, previousY = bottom;
+  ucg.setColor(0, 90, 220, 230);
+  for (uint8_t i = 0; i < co2HistoryCount; i++) {
+    int16_t x = co2HistoryCount < 2 ? (left + right) / 2 : left + (uint16_t)i * (right - left) / 31;
+    int16_t y = co2HistoryY[(first + i) & 31];
+    if (i > 0) ucg.drawLine(previousX, previousY, x, y);
+    else ucg.drawPixel(x, y);
+    previousX = x;
+    previousY = y;
+  }
+}
+
 void drawHealthIndicator() {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
@@ -615,13 +643,9 @@ void drawDisplayFrame() {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
-  ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(73, 91); ucg.print(F("ppm/min"));
-  ucg.setColor(0, 150, 200, 225);
-  ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
-  ucg.setPrintPos(66, 59); ucg.print(F("UMID"));
-  ucg.setPrintPos(5, 91); ucg.print(F("INT"));
+  displayChartPage = false;
+  displayPageTicks = 0;
+  drawNumericLabels();
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
   drawCo2Icon(11, 120, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 121, botao_aquecedor_onoff, false, 0);
@@ -704,7 +728,32 @@ void drawTextChanges(char *previous, const char *next, uint8_t x, uint8_t baseli
   previous[7] = '\0';
 }
 
-void renderDisplay(float temperature, float humidity, float internalTemperature, bool co2Valid) {
+void renderDisplay(float temperature, float humidity, bool co2Valid) {
+  if (++displayPageTicks >= 4) {
+    displayPageTicks = 0;
+    if (co2Valid) {
+      int32_t offset = CO2i - 46000L;
+      if (offset < 0) offset = 0;
+      uint8_t height = offset >> 6;
+      if (height > 74) height = 74;
+      co2HistoryY[co2HistoryNext] = 105 - height;
+      co2HistoryNext = (co2HistoryNext + 1) & 31;
+      if (co2HistoryCount < 32) co2HistoryCount++;
+    }
+    displayChartPage = !displayChartPage;
+    ucg.setColor(0, 8, 18, 30); ucg.drawBox(0, 21, ucg.getWidth(), 95);
+    if (displayChartPage) {
+      drawCo2HistoryChart();
+    } else {
+      drawNumericLabels();
+      displayCo2Ppm = -2; displayCo2Quality = -1;
+      displayCo2RatePpmMin = INT32_MIN; displayCo2RateReady = -1;
+      displayTempTenths = INT16_MIN; displayTempQuality = -1;
+      displayHumidityPercent = INT16_MIN;
+      displayCo2Text[0] = displayCo2RateText[0] = displayTempText[0] = '\0';
+      displayHumidityText[0] = '\0';
+    }
+  }
   bool co2AtTarget = co2Valid && CO2i >= CO2_GOOD_MIN_PPM && CO2i <= CO2_TARGET_PPM;
   bool temperatureAtTarget = !isnan(temperature) &&
                              temperature >= TEMPERATURE_GOOD_MIN && temperature <= TEMPERATURE_GOOD_MAX;
@@ -717,12 +766,11 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   }
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
-  int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
   const uint8_t bgR = 8, bgG = 18, bgB = 30;
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
   int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 : -1);
 
-  if (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1) || displayCo2Quality != co2Quality) {
+  if (!displayChartPage && (!displayCacheValid || displayCo2Ppm != (co2Valid ? CO2i : -1) || displayCo2Quality != co2Quality)) {
     ucg.setFont(ucg_font_inr16_mr);
     char nextCo2Text[8];
     if (co2Valid) ltoa(CO2i, nextCo2Text, 10);
@@ -739,21 +787,21 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
 
   bool co2RateValid = co2RatePpmMinReady && co2Valid;
   int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
-  if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
+  if (!displayChartPage && (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid)) {
     char nextRateText[8];
     formatPpmPerMinute(shownCo2Rate, co2RateValid, nextRateText);
     ucg.setFont(ucg_font_7x13_mr);
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(displayCo2RateText, nextRateText, 73, 109, 94, 18, 54,
+    drawTextChanges(displayCo2RateText, nextRateText, 5, 109, 94, 18, 120,
                     bgR, bgG, bgB, rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
   }
 
   ucg.setFont(ucg_font_7x13_mr);
-  if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
+  if (!displayChartPage && (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality)) {
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
     if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
@@ -765,7 +813,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     displayTempTenths = tempTenths;
     displayTempQuality = tempQuality;
   }
-  if (!displayCacheValid || displayHumidityPercent != humidityPercent) {
+  if (!displayChartPage && (!displayCacheValid || displayHumidityPercent != humidityPercent)) {
     char nextHumidityText[8];
     if (humidityPercent == -32768) strcpy_P(nextHumidityText, PSTR("-- %"));
     else {
@@ -776,37 +824,20 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
                     bgR, bgG, bgB, 230, 235, 240);
     displayHumidityPercent = humidityPercent;
   }
-  if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
-    char nextInternalTempText[8];
-    formatTenths(internalTempTenths, nextInternalTempText);
-    drawTextChanges(displayInternalTempText, nextInternalTempText, 5, 109, 94, 18, 58,
-                    bgR, bgG, bgB, 230, 235, 240);
-    displayInternalTempTenths = internalTempTenths;
-  }
-
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
     drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 137, 38, 18);
-    ucg.setColor(0, botao_co2_onoff ? 220 : 120, botao_co2_onoff ? 235 : 155, botao_co2_onoff ? 250 : 175);
-    ucg.setPrintPos(8, 153); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
     displayCo2Enabled = botao_co2_onoff;
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
     drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(46, 137, 38, 18);
-    ucg.setColor(0, botao_aquecedor_onoff ? 220 : 120, botao_aquecedor_onoff ? 235 : 155, botao_aquecedor_onoff ? 250 : 175);
-    ucg.setPrintPos(52, 153); ucg.print(botao_aquecedor_onoff ? F("ON") : F("OFF"));
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
     drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(88, 137, 38, 18);
-    ucg.setColor(0, ventilador_status ? 220 : 120, ventilador_status ? 235 : 155, ventilador_status ? 250 : 175);
-    ucg.setPrintPos(98, 153); ucg.print(ventilador_status ? F("ON") : F("OFF"));
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;

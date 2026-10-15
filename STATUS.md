@@ -849,3 +849,13 @@ filamento/processo e 39 STL das demais peças preservados.
 - Encerrada a observação serial quando a presença do operador não estava confirmada;
   não emitir novos pulsos assistidos nem abrir monitor remoto sem confirmação de que
   alguém está no local e acompanhando a incubadora.
+- Firmware local atualizado para retirar os tetos de 250/90/40 ms perto do alvo e
+  usar a resposta adaptativa existente, com teto global de 1.000 ms e rampa limitada a
+  1,5×. O build compila em 32.142 bytes de Flash e 851 bytes de RAM global. Esta versão
+  ainda não foi gravada na placa, pois isso reinicia o controle automático e a presença
+  de alguém no local não foi confirmada.
+- A interface local agora alterna o painel superior entre valores e um gráfico simples
+  de 32 amostras de CO₂, com referência de 50.000 ppm; os ícones animados ficam na faixa
+  inferior. Para caber na Flash do Uno, o valor de temperatura interna saiu da tela, mas
+  permanece na telemetria. A compilação passou, porém a alternância e o gráfico ainda
+  precisam de verificação visual após uma gravação autorizada e acompanhada.
