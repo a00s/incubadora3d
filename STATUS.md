@@ -1438,6 +1438,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Continuação até 1.901,4 s: 11.365 ppm. De 13.726 ppm em 756,3 s, média de ~−124 ppm/min em
   ~19,1 min; a janela mais recente de ~68 s caiu 121 ppm (~−107 ppm/min). Ainda não há platô
   confirmado; a trava e todos os atuadores seguem OFF/ativos conforme esperado.
+- `STATUS` em 2.023,6 s confirmou BOOT_COUNT=164, `co2_valid=0`, `co2_range_lock=1` e CO₂,
+  válvula, aquecimento e ventilador OFF. Leitura bruta em 11.116 ppm. De 13.726 ppm aos 756,3 s
+  para 11.116 ppm aos 2.023,6 s, média ~−124 ppm/min em ~21,1 min. Sem reboot, a deriva do
+  número UART continua; não representa concentração validada.
 - Comparação com a seção anterior “Resposta do CO₂ e aquecimento após reinstalar o sensor”:
   naquela inicialização, sem injeção, o número reportado subiu de ~706 ppm para ~10.000 ppm;
   neste BOOT_COUNT=164, sem injeção e com a válvula sempre fechada, caiu de ~18.297 ppm para
