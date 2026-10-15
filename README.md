@@ -213,12 +213,15 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual para Uno usa 890 bytes dos 2048 bytes
-de RAM global e deixa 1158 bytes para pilha e chamadas.
+serial antes de compilar/gravar. A última compilação para Uno usa 32.050 bytes de Flash
+(99%) e 929 bytes de RAM global (45%), deixando 1.119 bytes para pilha e chamadas.
 
-A tela usa ícones de molécula, resistência e ventilador com estado ligado/desligado,
-cores de fundo para falha, espera ou operação normal e uma breve animação de entrada
-com `@epigeneticaemcasa`. Leituras sem alteração não redesenham seus campos.
+A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
+sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
+energizado e o rotor gira enquanto o ventilador funciona. A animação redesenha somente
+a pequena área do ícone ativo; leituras sem alteração não redesenham os campos de texto.
+As cores de fundo indicam falha, espera ou operação normal, e a inicialização mostra
+uma breve animação de DNA.
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
