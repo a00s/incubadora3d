@@ -165,7 +165,7 @@ void setup()
     
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
-    playIntroLogo();
+    playIntroDna();
     drawDisplayFrame();
     contador_pomp = POMP_WAITING_TIME;
     Serial.println(F("Wait 10 seconds for the sensor to start up"));
@@ -434,35 +434,28 @@ void drawLogoStroke(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
   ucg.drawLine(x1 - 1, y1, x2 - 1, y2);
 }
 
-void playIntroLogo() {
+void playIntroDna() {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
+  static const int8_t strandA[] PROGMEM = {64, 82, 94, 96, 87, 70, 50, 36, 32, 40, 57, 77, 92, 96, 88, 70, 50};
+  static const int8_t strandB[] PROGMEM = {64, 46, 34, 32, 41, 58, 78, 92, 96, 88, 71, 51, 36, 32, 40, 58, 78};
 
-  // Light horizontal strands behind the crossed DNA-like mark.
-  for (uint8_t i = 0; i < 7; i++) {
-    int16_t y = 32 + i * 10;
-    int16_t inset = (i == 0 || i == 6) ? 18 : ((i == 1 || i == 5) ? 8 : 0);
-    ucg.setColor(0, 95, 145, 245);
-    ucg.drawHLine(17 + inset, y, 47 - inset / 2);
-    ucg.setColor(0, 190, 105, 245);
-    ucg.drawHLine(64, y, 47 - inset / 2);
+  // Large double helix with base pairs visible across the full display.
+  for (uint8_t i = 0; i < 16; i++) {
+    int16_t y = 14 + i * 8;
+    int16_t ax = pgm_read_byte(&strandA[i]);
+    int16_t bx = pgm_read_byte(&strandB[i]);
+    int16_t nextY = y + 8;
+    int16_t nextAx = pgm_read_byte(&strandA[i + 1]);
+    int16_t nextBx = pgm_read_byte(&strandB[i + 1]);
+    drawLogoStroke(ax, y, nextAx, nextY, 93, 89, 255);
+    drawLogoStroke(bx, y, nextBx, nextY, 156, 104, 255);
+    if ((i & 1) == 0) {
+      ucg.setColor(0, 115, 205, 250);
+      ucg.drawLine(ax, y, bx, y);
+    }
   }
-
-  const int8_t ax[] = {-29, -20, -9, 2, 12, 20, 27};
-  const int8_t ay[] = {-43, -34, -20, -5, 13, 29, 42};
-  const int8_t bx[] = {27, 20, 12, 2, -9, -20, -29};
-  const int8_t by[] = {-43, -34, -20, -5, 13, 29, 42};
-  for (uint8_t i = 0; i < 6; i++) {
-    drawLogoStroke(64 + ax[i], 68 + ay[i], 64 + ax[i + 1], 68 + ay[i + 1], 93, 89, 255);
-    drawLogoStroke(64 + bx[i], 68 + by[i], 64 + bx[i + 1], 68 + by[i + 1], 156, 104, 255);
-  }
-  ucg.setColor(0, 220, 225, 255);
-  ucg.drawDisc(64, 68, 3, UCG_DRAW_ALL);
-  ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 210, 220, 250);
-  ucg.setPrintPos(44, 137);
-  ucg.print(F("ugPlot"));
-  delay(450);
+  delay(350);
 }
 
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled) {
