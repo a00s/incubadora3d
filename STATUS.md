@@ -1435,6 +1435,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - Continuação até 1.748,1 s: 11.656 ppm. De 13.726 ppm em 756,3 s, média de ~−125 ppm/min ao
   longo de ~16,5 min; a janela recente de ~65 s caiu 127 ppm (~−117 ppm/min), confirmando que a
   oscilação curta anterior não era um platô. Trava ativa, leitura inválida e atuadores OFF.
+- Continuação até 1.901,4 s: 11.365 ppm. De 13.726 ppm em 756,3 s, média de ~−124 ppm/min em
+  ~19,1 min; a janela mais recente de ~68 s caiu 121 ppm (~−107 ppm/min). Ainda não há platô
+  confirmado; a trava e todos os atuadores seguem OFF/ativos conforme esperado.
 - Comparação com a seção anterior “Resposta do CO₂ e aquecimento após reinstalar o sensor”:
   naquela inicialização, sem injeção, o número reportado subiu de ~706 ppm para ~10.000 ppm;
   neste BOOT_COUNT=164, sem injeção e com a válvula sempre fechada, caiu de ~18.297 ppm para
