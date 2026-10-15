@@ -1474,3 +1474,12 @@ filamento/processo e 39 STL das demais peças preservados.
   com a leitura anterior refletindo CO₂ elevado dentro da caixa e a leitura diminuindo fora
   dela. Como a escala/calibração ainda não foi validada, esses números e sua taxa de transição
   não devem ser interpretados como concentração ou taxa real de vazamento.
+- Revisão adicional da documentação oficial: o manual v2.4 descreve a resposta UART `0x86` como
+  concentração em dois bytes (`HIGH*256+LOW`) e o comando `0x99` para configurar a faixa. O
+  firmware local só consulta `0x86`, lê os dois bytes como ppm e não configura a faixa. Já o
+  manual v2.6 lista faixas selecionáveis até 0–10%/0–15% VOL e extensão até 150.000 ppm, mas não
+  esclarece como essas faixas maiores são codificadas no UART. Assim, o teto de 65.535 do formato
+  antigo (6,5535% se a unidade continuar ppm) é uma hipótese plausível para o loop observado perto
+  de 6%, mas ainda não está provado que a placa use esse protocolo/faixa. Não mudar parser nem
+  enviar `0x99` sem identificar a revisão exata e obter a codificação da Winsen; capturar o quadro
+  UART bruto em bancada será o próximo teste de firmware apropriado.
