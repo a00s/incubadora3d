@@ -666,3 +666,21 @@ filamento/processo e 39 STL das demais peças preservados.
   amostra. O sensor já apresentava queda; após o boot a janela de tendência ainda não
   estava pronta. O monitor serial foi fechado para não causar outro reset. A nova
   semântica segue sem validação dinâmica com controle ativo.
+
+## Queda de CO₂ com saídas desligadas
+
+- 2026-10-15. Abri o monitor serial para uma nova janela de observação; DTR reiniciou
+  o Uno e o firmware reportou `BOOT_COUNT=73`. Esse incremento corresponde à conexão
+  do monitor, não a um crash. Após 13,5 s de aquecimento do sensor, CO₂ caiu de
+  34.718 para 34.139 ppm em 74,8 s (cerca de −464 ppm/min). A janela móvel reportou
+  −468 ppm/min. A queda foi contínua, embora a taxa por amostra variasse.
+- Durante toda a janela `co2_enabled=0`, `heater_enabled=0`, `valve_open=0` e
+  `heater_on=0`. Temperatura lida caiu de 30,0 para 29,4 °C, umidade subiu de 59,3 para
+  60,3% e temperatura interna ficou em 29,5–29,6 °C. `trend_ready` passou a 1 após
+  completar a janela de assentamento, com CO₂ ainda caindo; isso confirma a semântica
+  restaurada, mas não valida o ciclo de dosagem sob controle ativo.
+- O novo anel ainda não foi confirmado como instalado nesta medição. Portanto este é
+  um baseline do estado físico atual, não uma comparação do anel novo nem prova isolada
+  de vazamento: mistura/estabilização, temperatura e vedação podem contribuir. Repetir
+  a janela com o novo anel instalado para comparar sob concentração e temperatura
+  semelhantes.
