@@ -583,3 +583,9 @@ filamento/processo e 39 STL das demais peças preservados.
   foi movido, a temperatura estava vários graus mais baixa e o encaixe ainda tem folga.
   Tratar apenas como indício inicial; repetir com o anel justo e a temperatura estabilizada
   perto de 37 °C antes de concluir se houve melhora.
+- Segunda janela consecutiva após o assentamento do sensor marcou −141 ppm/min perto de
+  15.995 ppm, com a câmara a 32,8 °C e ainda esfriando. Usando o mesmo modelo simples
+  (excesso sobre 420 ppm), as duas janelas pós-anel têm constantes ~0,0076 e ~0,0091/min,
+  média ~0,0083/min, cerca de 27% abaixo de ~0,0113/min antes do anel. Há um indício
+  repetido de melhora mesmo com folga, mas o teste começou após retirar/recolocar o sensor
+  e a câmara não estava a 37 °C; não é confirmação. O CO₂ e o aquecimento seguem desligados.
