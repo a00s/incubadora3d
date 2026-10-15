@@ -1,4 +1,4 @@
-"""Thin TPU sleeve with two flexible lips against the sensor and the roof hole."""
+"""Thin eSUN TPU-LW sleeve with two flexible lips against the sensor and the roof hole."""
 import cadquery as cq
 
 

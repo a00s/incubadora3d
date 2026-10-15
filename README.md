@@ -45,11 +45,13 @@ conferidos na fabricação. Os furos de referência do inox alinham as passagens
 ## Vedações eSUN TPU-LW
 
 Para imprimir somente as novas vedações, abrir [vedacoes_eSUN_TPU_LW.3mf](output/v59/vedacoes_eSUN_TPU_LW.3mf).
-Seis bandejas: amostra, junta removível da porta em tubo oco mais alto (7,25 / 6,05 mm), menor junto às
-dobradiças, e quatro metades das rolhas, uma peça por impressão.
+Doze bandejas, uma peça por impressão: junta removível da porta (9,95 / 6,25 mm),
+amostra da dobradiça, quatro metades das rolhas, bucha do sensor CO₂ e duas
+amostras, junta da caixa para reposição e duas amostras. Todas as peças antes
+atribuídas ao TPU convencional agora usam eSUN TPU-LW.
 **Manter a junta da caixa instalada, sem removê-la ou forçar o PC.**
 Consultar o [guia de montagem e calibração](output/v59/VEDACAO_TPU_LW.md):
-retração zero; fluxo inicial 0,70 a 230 °C ainda depende de calibração física.
+retração zero; 270 °C e fluxo experimental 0,55 ainda dependem de calibração física.
 O projeto completo contém as peças atualizadas, preservando as demais configurações.
 
 ## Porta, vedação e acesso
@@ -141,13 +143,13 @@ Os furos e as fixações mantêm reforços locais maciços.
 
 ![Corte da carcaça mostrando cavidades alongadas e canais na parede traseira](docs/imagens/corte-interno.png)
 
-Materiais previstos no desenho: PC para peças rígidas, TPU 95A para vedações e
-inox de 0,3 mm para o revestimento. O 3MF referencia os perfis genéricos
-PC/TPU e o processo padrão da K1C com bico de 0,4 mm, sem configurações
-personalizadas de filamento ou velocidades por peça. Selecione sua configuração
-padrão no Creality Print e ajuste a temperatura conforme o filamento utilizado.
-As juntas estão atribuídas ao TPU; imprima cada bandeja com o material correspondente.
-O projeto não contém um processo de impressão validado.
+Materiais previstos no desenho: PC para peças rígidas, eSUN TPU-LW para todas
+as vedações e inox de 0,3 mm para o revestimento. O projeto completo preserva
+os perfis salvos pelo usuário; todas as dez peças flexíveis usam o perfil TPU-LW.
+O antigo perfil TPU convencional permanece salvo, sem objetos atribuídos.
+Usar o arquivo separado de vedações para imprimir uma peça por vez, a 25 mm/s,
+270 °C, fluxo experimental 0,55 e retração zero. As doze bandejas passam no
+fatiamento sem suportes; encaixe e estanqueidade dependem de ensaio físico.
 STL e STEP contêm geometria; as configurações ficam no projeto 3MF.
 
 Antes de imprimir, confira na prévia de camadas:
@@ -388,7 +390,8 @@ corpo Ø19,8 mm para o furo existente Ø20,4 mm. Dois lábios internos finos
 seguram o sensor Ø15,62 mm; dois externos acomodam o encaixe no teto.
 A entrada é chanfrada e o apoio do sensor mantém a posição original.
 O diâmetro livre dos lábios internos é 15,2 mm, com amostras de 15,3 e 15,5 mm
-para conferir a resposta do TPU usado. Bucha na bandeja 15; amostras nas
+para conferir a resposta do eSUN TPU-LW. No arquivo separado, bucha na bandeja 7
+e amostras 8/9. No projeto completo, bucha na bandeja 15; amostras nas
 bandejas 23 e 24. Encaixe e vedação precisam ser confirmados na peça impressa.
 
 ### Passagens labiais dos fios, divididas ao meio

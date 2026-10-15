@@ -73,6 +73,78 @@
       "detector_suportes_ativo": true,
       "aviso_fatiador": null,
       "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 7,
+      "camadas": 44,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 8,
+      "camadas": 44,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 9,
+      "camadas": 44,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 10,
+      "camadas": 27,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 11,
+      "camadas": 27,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
+    },
+    {
+      "bandeja": 12,
+      "camadas": 27,
+      "velocidades_extrusao_mm_s": [
+        25.0
+      ],
+      "retracoes": 0,
+      "suportes": false,
+      "detector_suportes_ativo": true,
+      "aviso_fatiador": null,
+      "limites_k1c_com_margem_5mm": true
     }
   ],
   "gcode_apenas_temporario": true,

@@ -22,5 +22,29 @@
   {
     "peca": "TPU_passagem_sensor_metade_B",
     "bandeja": 6
+  },
+  {
+    "peca": "bucha_sensor_TPU",
+    "bandeja": 7
+  },
+  {
+    "peca": "amostra_bucha_sensor_TPU_15.3",
+    "bandeja": 8
+  },
+  {
+    "peca": "amostra_bucha_sensor_TPU_15.5",
+    "bandeja": 9
+  },
+  {
+    "peca": "junta_porta",
+    "bandeja": 10
+  },
+  {
+    "peca": "amostra_junta_TPU",
+    "bandeja": 11
+  },
+  {
+    "peca": "amostra_junta_TPU_labios_0p8",
+    "bandeja": 12
   }
 ]

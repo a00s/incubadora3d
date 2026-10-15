@@ -1,9 +1,10 @@
-"""Patch only face/cable seals and their coupons in the saved project.
+"""Assign all TPU seals and their coupons to TPU-LW in the saved project.
 
 Clone the user's TPU material into a dedicated slot; existing slots stay exact.
 A separate print project places one seal or cable half on each plate.
 """
 import copy
+import math
 import json
 import shutil
 import uuid
@@ -15,6 +16,10 @@ from pack_forming_tools import CORE, PROD, NS, values, meta, load_mesh
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'output/v59'
 PROFILE=json.loads((ROOT/'cad/profiles/esun_tpu_lw.json').read_text())
+TPU_NAMES=['junta_V_porta_TPU','amostra_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor',
+           'bucha_sensor_TPU','amostra_bucha_sensor_TPU_15.3','amostra_bucha_sensor_TPU_15.5',
+           'junta_porta','amostra_junta_TPU','amostra_junta_TPU_labios_0p8']
+PRINT_NAMES=['amostra_V_porta_TPU','junta_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor']+TPU_NAMES[4:]
 SPEED_KEYS=('outer_wall_speed','inner_wall_speed','sparse_infill_speed',
             'internal_solid_infill_speed','top_surface_speed','gap_infill_speed',
             'initial_layer_speed','initial_layer_infill_speed','bridge_speed',
@@ -57,7 +62,7 @@ def patch(names=None):
     for key,value in previous.items():
         assert project[key][:3]==value[:3] if isinstance(value,list) and len(value)==material_count else project[key]==value,key
     updates={};removed=set();records=[]
-    names=names or ['junta_V_porta_TPU','amostra_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor']
+    names=names or TPU_NAMES
     for name in names:
         saved=next(o for o in config.findall('object') if values(o).get('name')==name)
         wrapper=next(o for o in resources if o.get('id')==saved.get('id'))
@@ -78,10 +83,10 @@ def patch(names=None):
                 for m in list(part.findall('metadata')):
                     if m.get('key')=='extruder':m.set('value','4')
             filename=f'{name}_metade_{half}' if half else name
-            orient=(lambda p:(p[0],-p[2],p[1])) if name=='junta_V_porta_TPU' else None
+            orient=(lambda p:(p[0],-p[2],p[1])) if name in ('junta_V_porta_TPU','junta_porta') else None
             points,faces,size=load_mesh(OUT/f'{filename}.stl',orient)
             transform=[float(v) for v in bi.get('transform').split()]
-            if name=='junta_V_porta_TPU':
+            if name in ('junta_V_porta_TPU','junta_porta'):
                 transform[:9]=[1,0,0,0,1,0,0,0,1]
                 bi.set('transform',' '.join(format(v,'.9g') for v in transform))
                 for assembled in config.find('assemble'):
@@ -122,7 +127,8 @@ def make_print_project(path):
     resources=model.find('m:resources',NS);build=model.find('m:build',NS)
     newconfig=ET.Element('config');newresources=ET.Element(f'{{{CORE}}}resources');newbuild=ET.Element(f'{{{CORE}}}build')
     assemble=ET.SubElement(newconfig,'assemble');updates={};nextid=max(int(o.get('id')) for o in resources)+1
-    names=['amostra_V_porta_TPU','junta_V_porta_TPU','TPU_passagem_aquecedor','TPU_passagem_sensor']
+    names=PRINT_NAMES
+    columns=math.ceil(math.sqrt(len(names)+2))
     jobs=[]
     for name in names:
         saved=next(o for o in config.findall('object') if values(o).get('name')==name)
@@ -146,7 +152,7 @@ def make_print_project(path):
                 mo.remove(mo.find('m:mesh',NS));mesh=ET.SubElement(mo,f'{{{CORE}}}mesh');vv=ET.SubElement(mesh,f'{{{CORE}}}vertices');tt=ET.SubElement(mesh,f'{{{CORE}}}triangles')
                 for p in points:ET.SubElement(vv,f'{{{CORE}}}vertex',**{a:format(p[i]-(dz if i==2 else 0),'.9g') for i,a in enumerate('xyz')})
                 for face in faces:ET.SubElement(tt,f'{{{CORE}}}triangle',**{f'v{i+1}':str(v) for i,v in enumerate(face)})
-            pid=len(jobs)+1;transform=bi.get('transform').split();transform[9]=str(110+264*((pid-1)%3));transform[10]=str(110-264*((pid-1)//3));bi.set('transform',' '.join(transform))
+            pid=len(jobs)+1;transform=bi.get('transform').split();transform[9]=str(110+264*((pid-1)%columns));transform[10]=str(110-264*((pid-1)//columns));bi.set('transform',' '.join(transform))
             plate=ET.Element('plate');meta(plate,'plater_id',pid);meta(plate,'plater_name',f'{pid} - TPU-LW - {filename}');meta(plate,'locked','false')
             instance=ET.SubElement(plate,'model_instance');meta(instance,'object_id',record.get('id'));meta(instance,'instance_id',0);meta(instance,'identify_id',1000+pid)
             ET.SubElement(assemble,'assemble_item',object_id=record.get('id'),instance_id='0',transform=bi.get('transform'),offset='0 0 0')

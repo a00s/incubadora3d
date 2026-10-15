@@ -1,7 +1,7 @@
 """Check actual Creality-generated paths, not just the saved profile values.
 
 Usage: python cad/check_lw_print.py /tmp
-Expects tpulw-slice-N/plate_N.gcode for the six print-only plates.
+Expects tpulw-slice-N/plate_N.gcode for the twelve print-only plates.
 """
 import json
 import re
@@ -19,7 +19,7 @@ with zipfile.ZipFile(OUT/'vedacoes_eSUN_TPU_LW.3mf') as z:
     assert z.testzip() is None
     model=ET.fromstring(z.read('3D/3dmodel.model'))
     config=ET.fromstring(z.read('Metadata/model_settings.config'))
-    assert len(config.findall('plate'))==6
+    assert len(config.findall('plate'))==12
     objects={o.get('id'):o for o in model.find('m:resources',NS)}
     items={i.get('objectid'):i for i in model.find('m:build',NS)}
     for plate in config.findall('plate'):
@@ -29,7 +29,7 @@ with zipfile.ZipFile(OUT/'vedacoes_eSUN_TPU_LW.3mf') as z:
         component=wrapper.find('m:components/m:component',NS);mesh=objects[component.get('objectid')].find('m:mesh',NS)
         vertices=[tuple(float(v.get(a)) for a in 'xyz') for v in mesh.find('m:vertices',NS)]
         t=[float(v) for v in items[oid].get('transform').split()];assert t[:9]==[1,0,0,0,1,0,0,0,1]
-        ox,oy=264*((pid-1)%3),-264*((pid-1)//3)
+        ox,oy=264*((pid-1)%4),-264*((pid-1)//4)
         lo=[min(v[a]+t[9+a] for v in vertices) for a in range(3)]
         hi=[max(v[a]+t[9+a] for v in vertices) for a in range(3)]
         assert lo[0]>=ox+5 and hi[0]<=ox+215 and lo[1]>=oy+5 and hi[1]<=oy+215 and abs(lo[2])<1e-5 and hi[2]<=250

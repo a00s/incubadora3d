@@ -2,7 +2,10 @@
 
 **Não retirar nem mexer na junta que já está encaixada na caixa da incubadora.**
 O PC está quebradiço. As fotos de montagem confirmam duas juntas separadas;
-a alteração agora é somente na junta removível da porta e nas rolhas dos fios.
+Todas as peças flexíveis do projeto usam agora eSUN TPU-LW, incluindo a bucha
+do sensor CO₂, as duas juntas, as rolhas dos fios e suas amostras. As geometrias
+de encaixe existentes são mantidas: o fluxo compensa a expansão nominal do material.
+A junta instalada na caixa não precisa ser retirada.
 Porta, corpo, dobradiças, fecho, gavetas e bucha redonda do sensor são preservados.
 
 ## Junta da porta
@@ -48,6 +51,16 @@ na mesa; esta alteração não exige reimprimi-la. Começar pela amostra recorta
 do mesmo perfil da junta. Somente o pé flexível recebe uma rampa mais suave para impressão; o canal
 rígido da porta permanece intacto. Conferir a retenção na amostra antes do anel.
 
+## Anel do sensor CO₂
+
+Bucha de união reforçada, com flange externa Ø24 mm, manga Ø19,8 mm e
+lábios para o furo rígido Ø20,4 mm. A geometria atual passa no fatiamento
+TPU-LW sem suportes; não foi redimensionada com base no fator de expansão,
+pois a compensação deve ocorrer no fluxo. A impressão continua com a face
+externa do colar na mesa. Há duas amostras com furo Ø15,3 / Ø15,5 mm para
+comparar com a bucha nominal Ø15,2 mm e o sensor Ø15,62 mm. Imprimir uma
+amostra de cada vez e conferir retenção, compressão e estanqueidade antes da montagem.
+
 ## Cabos
 
 Rolhas bipartidas para os mesmos furos Ø12 × 14 mm e fios existentes:
@@ -59,7 +72,7 @@ Não trocar metades entre as duas rolhas; não puxar os conectores através dela
 
 ## Arquivo para imprimir
 
-Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
+Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com doze bandejas:
 
 | Bandeja | Peça |
 | --- | --- |
@@ -67,11 +80,15 @@ Abrir **`vedacoes_eSUN_TPU_LW.3mf`**, com seis bandejas:
 | 2 | Junta inteira da porta |
 | 3 / 4 | Aquecedor, metades A / B |
 | 5 / 6 | Sensor lateral, metades A / B |
+| 7 | Anel/bucha do sensor CO₂, furo nominal Ø15,2 mm |
+| 8 / 9 | Amostras da bucha CO₂, furos Ø15,3 / Ø15,5 mm |
+| 10 | Junta da caixa, para reposição futura |
+| 11 / 12 | Amostras da junta da caixa, lábios de 0,6 / 0,8 mm |
 
 O perfil mantém material contínuo entre base, pé e bulbo; a amostra inclui
 a cabeça inteira reduzida do lado da dobradiça, sem o respiro que fica no fecho.
 As alturas são 9,95 / 6,25 mm.
-O fatiamento das seis bandejas passa sem avisos de regiões suspensas e sem
+O fatiamento das doze bandejas passa sem avisos de regiões suspensas e sem
 suportes, com a detecção do fatiador ativa. Imprimir primeiro a amostra para
 conferir encaixe, compressão e calibração do material.
 
@@ -79,12 +96,13 @@ Cada bandeja contém uma peça. Os STL/STEP `*_metade_A` e `*_metade_B` já têm
 a flange na mesa. No projeto completo, as peças atualizadas ficam nas bandejas
 originais: junta da porta 16, amostra 21, rolhas pareadas 11/12. Os pares do
 projeto completo são referências: não imprimir as duas metades simultaneamente.
-A junta da caixa e suas amostras continuam exatamente como estavam.
+A junta da caixa e suas amostras mantêm a geometria e agora usam o mesmo perfil TPU-LW.
 
 O Creality Print 7.2.1 limita o projeto a 36 bandejas e alguns ajustes, como
 velocidade da primeira camada, são globais. Por isso, o arquivo separado tem o
 processo completo para TPU-LW; o projeto completo mantém as configurações gerais
-salvas e acrescenta um perfil exclusivo para as peças desta alteração.
+salvas e atribui o perfil TPU-LW a todas as dez peças flexíveis. O perfil antigo
+TPU 85A fica salvo, mas sem nenhuma peça atribuída.
 
 ## Perfil revisado após teste a 230 °C / 70%
 

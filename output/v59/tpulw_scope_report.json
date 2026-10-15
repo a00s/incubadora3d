@@ -1,11 +1,23 @@
 {
-  "stl_outros_preservados": 39,
-  "objetos_3mf_outros_preservados": 37,
-  "perfis_usuario_1_a_3_preservados": true,
-  "processo_global_preservado": true,
-  "perfil_esun_tpu_lw_revisado": {
-    "temperatura_c": 270,
-    "fluxo": 0.55
-  },
-  "geometria_cabos_preservada": true
+  "todas_pecas_tpu_lw": [
+    "TPU_passagem_aquecedor",
+    "TPU_passagem_sensor",
+    "amostra_junta_TPU",
+    "amostra_junta_TPU_labios_0p8",
+    "bucha_sensor_TPU",
+    "junta_V_porta_TPU",
+    "junta_porta",
+    "amostra_V_porta_TPU",
+    "amostra_bucha_sensor_TPU_15.3",
+    "amostra_bucha_sensor_TPU_15.5"
+  ],
+  "total_objetos_tpu_lw": 10,
+  "bandejas_arquivo_separado": 12,
+  "stl_geometrias_preservadas": 41,
+  "objetos_rigidos_3mf_preservados": 29,
+  "perfis_e_processo_globais_preservados": true,
+  "perfil_tpu_anterior_sem_pecas": true,
+  "temperatura_c": 270,
+  "fluxo_experimental": 0.55,
+  "encaixe_e_estanqueidade_pendentes_ensaio_fisico": true
 }
