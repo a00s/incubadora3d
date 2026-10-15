@@ -1465,3 +1465,12 @@ filamento/processo e 39 STL das demais peças preservados.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
+- Teste de resposta ao retirar o sensor da caixa: durante a transição, o valor UART caiu de
+  ~11.017 para 8.261 ppm e seguiu descendo até 965 em cerca de 2 min. O último trecho foi
+  2.599 → 965 ppm em ~46 s; a temperatura ambiente ficou em 22,5–22,6 °C e a umidade em
+  ~58,6–58,9%. BOOT_COUNT permaneceu 164, trava persistente (`co2_valid=0`,
+  `co2_range_lock=1`) e todos os atuadores ficaram desligados. A resposta forte e contínua à
+  mudança de ambiente mostra que a saída UART não estava simplesmente congelada; é compatível
+  com a leitura anterior refletindo CO₂ elevado dentro da caixa e a leitura diminuindo fora
+  dela. Como a escala/calibração ainda não foi validada, esses números e sua taxa de transição
+  não devem ser interpretados como concentração ou taxa real de vazamento.
