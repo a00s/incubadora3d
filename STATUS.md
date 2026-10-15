@@ -466,3 +466,27 @@ filamento/processo e 39 STL das demais peças preservados.
   A compilação e a gravação com verificação foram concluídas: 32.008/32.256 bytes de
   Flash (248 bytes livres) e 926/2.048 bytes de RAM. A revisão do firmware e desta
   documentação precisa ser enviada ao Git.
+
+## Vedação nova, taxa de perda e retorno das animações
+
+- 2026-10-15, após o usuário instalar a vedação nova e fechar a porta. CO₂ automático
+  permaneceu desligado, válvula fechada. O monitor serial normal reportou `BOOT_COUNT,64`;
+  sessões seriais abertas durante a coleta reiniciam a placa e incrementam esse contador.
+- A comparação começou com a câmara ainda fria, a 33,1 °C e 27.136 ppm. O aquecimento
+  foi habilitado para aproximar as condições da linha de base antiga; a temperatura
+  atingiu 37,5 °C e depois oscilou entre 36,3 e 37,5 °C nos ciclos observados. A umidade
+  medida variou de 43,0 a 45,3% RH. O ventilador acionou ao redor de 30 °C na sonda interna.
+- Em cerca de 7,5 min, o CO₂ caiu de 27.136 para 24.744 ppm. As janelas de taxa válidas
+  registraram **−336, −326, −339, −328, −299, −307 e −296 ppm/min**. A linha de base da vedação
+  antiga foi −385, −302, −363 e −298 ppm/min, com média −337. As taxas continuam na mesma
+  faixa; como concentração inicial, temperatura e umidade não foram exatamente pareadas,
+  este ensaio não mostra redução clara do vazamento após a troca.
+- A tentativa de capturar via `socat` produziu bytes corrompidos no terminal após um
+  comando de aquecimento; ela foi encerrada e substituída pelo monitor Arduino CLI, que
+  voltou a produzir linhas `DATA` válidas. Os dados acima vêm do monitor normal.
+- Para recuperar movimento nos três ícones, removi `verifyAutoCalibration()`: a função
+  não enviava a consulta que dizia verificar, esperava 500 ms e interpretava bytes
+  residuais sem garantir que o buffer de resposta estivesse preenchido. Mantive o comando
+  de desativação da calibração automática e o descarte da resposta. As animações compactas
+  de CO₂, chama e ventilador foram restauradas. Compilação e gravação com verificação:
+  32.120/32.256 bytes de Flash (136 livres), 825/2.048 bytes de RAM.
