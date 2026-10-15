@@ -245,14 +245,16 @@ formatadas em ponto fixo para reduzir o uso de Flash no Uno.
 A linha `BOOT_COUNT` e o campo `boot_count`
 leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
 por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;
-ambos ficam fora do controle automático. `co2_valid=0` indica uma leitura indisponível;
-`co2_range_lock=1` identifica especificamente a trava persistente de faixa. Na tela,
-essa trava troca o cabeçalho `CO2 ppm` por `CO2 LOCK` e mostra `---` no lugar do valor.
-Uma leitura baixa sem trava continua numérica e traz `co2_valid=1`, desde que o sensor
-responda normalmente.
+ambos ficam fora do controle automático. `co2_valid=0` indica uma leitura indisponível
+ou invalidada pela trava; `co2_range_lock=1` identifica a trava persistente. Na tela,
+ela troca o cabeçalho por `BRUTO ppm`, mantém visível o número UART sem tratá-lo como
+concentração confiável e força a faixa de estado vertical para vermelho. A taxa ppm/min
+fica `---` enquanto as amostras não forem válidas. Uma leitura baixa sem trava continua
+numérica e traz `co2_valid=1`, desde que o sensor responda normalmente.
 
-As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
-temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
+A faixa lateral é vermelha quando a trava está ativa, mesmo que a temperatura esteja
+normal. Fora da trava, as cores representam as duas metas principais: vermelho quando CO₂
+e temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
 ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual

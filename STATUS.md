@@ -1323,11 +1323,12 @@ filamento/processo e 39 STL das demais peças preservados.
   caindo após o reinício; temperatura interna ficou em 30,6 °C, abaixo do limiar de 31 °C do
   ventilador, que permaneceu OFF.
 - A leitura serial bruta caiu de ~20.443 para ~20.218 ppm em ~67 s. Depois do upload, caiu de
-  ~19.994 para ~19.840 ppm em ~63 s. Apesar da porta aberta, o sinal não se aproximou de uma
-  leitura típica do ar ambiente. Como `co2_range_lock=1` e `co2_valid=0`, esses valores e sua
-  variação não medem a concentração real nem uma taxa real de vazamento. O ensaio aponta para
-  uma leitura/protocolo que ainda não acompanha a troca do ar, mas não distingue entre
-  condicionamento do sensor, variante/codificação do MH-Z16, alimentação ou comunicação.
+  ~19.994 para ~19.840 ppm em ~63 s. Como `co2_range_lock=1` e `co2_valid=0`, esses valores
+  e sua variação não medem concentração nem taxa real de vazamento. Naquele momento, a falta
+  de aproximação a 400 ppm pareceu inesperada; após o usuário informar que o rótulo indica
+  `1–10% VOL`, essa comparação deixou de ser válida sem confirmar se a variante mede abaixo
+  de 1%. O ensaio não isola defeito do sensor, escala, condicionamento, alimentação ou
+  comunicação.
 - A trava é uma proteção persistida pelo firmware: é acionada por leitura bruta a partir de
   60.000 ppm ou salto de pelo menos 15.000 ppm entre amostras; bloqueia o controle automático,
   não a leitura do sensor. A origem exata da trava atual antecede este trecho de log. A tela
@@ -1344,3 +1345,32 @@ filamento/processo e 39 STL das demais peças preservados.
   O valor continua identificado como `BRUTO ppm`. Compilado e gravado em BOOT_COUNT=160;
   `STATUS` confirmou `co2_range_lock=1`, aquecimento e CO₂ OFF, válvula fechada e ventilador
   OFF (sensor interno em 30,6 °C). Nova compilação: 32.182 bytes de Flash e 983 bytes de RAM.
+
+- Após novo ciclo de energia mais longo, BOOT_COUNT=164. A trava persistiu (`co2_range_lock=1`);
+  `STATUS` confirmou leitura inválida, CO₂ e aquecimento desabilitados, válvula fechada e
+  ventilador desligado. O sensor continuou respondendo: ~18.297 ppm em 13,5 s, caindo para
+  ~18.106 ppm em ~104 s. Um único registro de 500 ppm apareceu antes do BOOT_COUNT=162 causado
+  pela abertura do monitor; as amostras contínuas após esse reset voltaram perto de 19.063 ppm,
+  portanto o registro isolado não comprova estabilidade em 500 ppm. Um clique curto no botão
+  físico não alterou a trava nem a sequência de leituras.
+- O usuário informou que a etiqueta indica `1–10% VOL`; as fotos locais mostram o gabinete,
+  a câmara e o cilindro, mas não permitem ler a etiqueta. Não usar 400 ppm como referência até
+  confirmar a faixa mínima dessa variante. A leitura bruta de ~18k está acima de 1%, porém
+  continua inválida pelo bloqueio e não pode orientar dosagem.
+- O manual oficial v2.6 lista faixa selecionável até 50.000 ppm, extensão máxima de 150.000 ppm,
+  T90 <30 s e fonte de 5,0±0,1 V com pelo menos 150 mA. Ele não documenta a codificação UART
+  acima de 65.535 ppm; o manual v2.4 citado acima documenta dois bytes em ppm e opções de faixa
+  inconsistentes entre tabelas. O limite uint16 de ~6,55% é compatível com o relato do problema
+  perto de 6%, mas ainda não prova a causa nem confirma como esta unidade de 1–10% codifica a
+  resposta. A meta de 50.000 ppm permanece dentro do limite atual do decoder.
+- Próximas verificações: confirmar a identificação/faixa da unidade por foto legível e medir
+  5,0±0,1 V no próprio conector com o sensor operando. Manter a trava até esclarecer a UART e
+  estabelecer uma referência válida; não enviar calibração de zero ou `CO2 ACK` por causa de
+  um registro isolado.
+- Depois de ~3 min desde o BOOT_COUNT=164, a leitura bruta caiu de ~17.800 para ~14.784 ppm
+  ao longo de cerca de 2 min. O sensor segue respondendo, mas a leitura permanece inválida e a
+  trava ativa. A queda temporal pode coincidir com o pré-aquecimento de 3 min indicado em uma
+  revisão do manual; não demonstra calibração, retorno a uma concentração conhecida ou que o
+  clique físico causou a mudança.
+- Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
+  [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html).
