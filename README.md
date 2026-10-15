@@ -215,16 +215,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 32.070 bytes de Flash
-(99%) e 923 bytes de RAM global (45%), deixando 1.125 bytes para pilha e chamadas.
+serial antes de compilar/gravar. A última compilação para Uno usa 32.008 bytes de Flash
+(99%) e 926 bytes de RAM global (45%), deixando 1.122 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas
-sobem enquanto a válvula está aberta, a chama se move enquanto o aquecedor está
-energizado e o rotor gira enquanto o ventilador funciona. A animação redesenha somente
-a pequena área do ícone ativo; leituras sem alteração não redesenham os campos de texto.
+são mantidas por 3 s após um pulso para indicar doses breves; chama e ventilador são
+estáticos nesta revisão, preservando espaço de Flash para o controle térmico. Leituras
+sem alteração não redesenham os campos de texto.
 As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
-de DNA foi retirado para reservar espaço de firmware às animações dos controles.
+de DNA foi retirado para reservar espaço de firmware ao controle da incubadora.
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
