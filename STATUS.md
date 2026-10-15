@@ -446,3 +446,23 @@ filamento/processo e 39 STL das demais peças preservados.
   até completar uma janela válida de aproximadamente 60 s e então exibe a taxa com
   sinal. Ele é atualizado a cada janela, sem depender de o controle automático ter
   estabilizado ou alcançado a meta. O mesmo valor está disponível na telemetria serial.
+
+## Ciclo térmico limitado e nova semente de CO₂
+
+- 2026-10-15. Alterei o termostato para impor intervalo mínimo de 30 s entre mudanças
+  do relé, limitar cada ciclo ligado a 45 s e desligar imediatamente ao atingir 37,2 °C.
+  A histerese continua ligando abaixo de 36,5 °C e desligando em 36,7 °C. No primeiro
+  ciclo observado após a gravação, o relé desligou pelo limite de 45 s com leitura de
+  36,4 °C; a temperatura chegou a 36,9 °C e permaneceu entre 36,9–37,0 °C por cerca de
+  um minuto. É um resultado preliminar, ainda sem ciclo longo ou termômetro de referência.
+- Para compensar a perda observada, elevei a semente do pulso automático de 30 para
+  60 ms; a rampa limitada a 1,5× solicita 90 ms no primeiro ciclo. Um pulso de 90 ms
+  foi aplicado perto de 29.452 ppm e a leitura estava em 29.166 ppm cerca de 57 s depois.
+  O teste foi interrompido antes de completar a janela de resposta porque a porta seria
+  aberta para troca da vedação; portanto, esse ponto não mede a resposta do pulso.
+  O controle automático e o aquecedor foram desligados antes da intervenção.
+- Para manter a margem de Flash do Uno, os desenhos de ventilador, chama e bolhas foram
+  simplificados para ícones estáticos; as bolhas ainda aparecem por 3 s após um pulso.
+  A compilação e a gravação com verificação foram concluídas: 32.008/32.256 bytes de
+  Flash (248 bytes livres) e 926/2.048 bytes de RAM. A revisão do firmware e desta
+  documentação precisa ser enviada ao Git.

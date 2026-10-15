@@ -37,6 +37,9 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_STABLE_TIME_MS 30000UL
 #define HEATER_ON_TEMPERATURE 36.5
 #define HEATER_OFF_TEMPERATURE 36.7
+#define HEATER_MIN_SWITCH_MS 30000UL
+#define HEATER_MAX_ON_MS 45000UL
+#define HEATER_HARD_CUTOFF 37.2
 #define TEMPERATURE_GOOD_MIN 36.5
 #define TEMPERATURE_GOOD_MAX 37.5
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
@@ -57,6 +60,8 @@ int32_t lastCo2RawPpm = 0;
 uint16_t lastCo2PulseMs = 0;
 int32_t eeprom_contador_int = 0;
 int ventilador_status = 0;
+unsigned long heaterLastSwitchAt = 0;
+unsigned long heaterOnSince = 0;
 bool co2ReferenceReady = false;
 bool co2BaselineReady = false;
 bool co2TrendReady = false;
@@ -81,8 +86,6 @@ int8_t displayHeaterEnabled = -1;
 int8_t displayFanOn = -1;
 int8_t displayCo2Active = -1;
 int8_t displayHeaterActive = -1;
-uint8_t activityIconFrame = 0;
-unsigned long lastActivityIconFrameAt = 0;
 unsigned long co2AnimationUntil = 0;
 int32_t displayCo2RatePpmMin = 0;
 int8_t displayCo2RateReady = -1;
@@ -115,7 +118,7 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t delayProporcionalAnt = 30;    // Semente; rampa de 1,5x limita o primeiro pulso a 45 ms
+int32_t delayProporcionalAnt = 60;    // Semente; rampa de 1,5x limita o primeiro pulso a 90 ms
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -168,6 +171,7 @@ void setup()
     dhtint.begin();
     pinMode(HEATER,OUTPUT);
     digitalWrite(HEATER,HIGH);
+    heaterLastSwitchAt = millis();
     pinMode(CO2PUMP,OUTPUT);
     digitalWrite(CO2PUMP,HIGH);
 
@@ -453,10 +457,7 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    // Use separate switching thresholds; NaN compares false and turns heat off.
-    float heaterThreshold = digitalRead(HEATER) == LOW
-      ? HEATER_OFF_TEMPERATURE : HEATER_ON_TEMPERATURE;
-    digitalWrite(HEATER, botao_aquecedor_onoff == 1 && t <= heaterThreshold ? LOW : HIGH);
+    controlHeater(t, millis());
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
@@ -497,12 +498,9 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
     ucg.drawLine(x + 8, y + 7, x + 15, y + 10);
     return;
   }
-  for (uint8_t bubble = 0; bubble < 3; bubble++) {
-    uint8_t phase = (frame + bubble * 2) & 3;
-    uint8_t bx = x + 3 + bubble * 7 + ((phase == 1 || phase == 2) ? 1 : 0);
-    uint8_t by = y + 13 - phase * 3;
-    ucg.drawCircle(bx, by, bubble == 1 ? 2 : 1, UCG_DRAW_ALL);
-  }
+  ucg.drawCircle(x + 5, y + 11, 1, UCG_DRAW_ALL);
+  ucg.drawCircle(x + 11, y + 7, 2, UCG_DRAW_ALL);
+  ucg.drawCircle(x + 17, y + 3, 1, UCG_DRAW_ALL);
 }
 
 void playLoadingDots() {
@@ -521,38 +519,29 @@ void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t fr
   uint8_t red = enabled ? 255 : 135;
   uint8_t green = enabled ? 145 : 120;
   uint8_t blue = enabled ? 55 : 135;
-  if (heating && (frame & 1)) green = 185;
   ucg.setColor(0, red, green, blue);
-  int8_t sway = heating && (frame & 1) ? 2 : 0;
-  ucg.drawLine(x + 10 + sway, y + 1, x + 15, y + 7);
+  ucg.drawLine(x + 10, y + 1, x + 15, y + 7);
   ucg.drawLine(x + 15, y + 7, x + 17, y + 11);
   ucg.drawLine(x + 17, y + 11, x + 14, y + 14);
   ucg.drawLine(x + 14, y + 14, x + 6, y + 14);
   ucg.drawLine(x + 6, y + 14, x + 3, y + 11);
   ucg.drawLine(x + 3, y + 11, x + 5, y + 7);
-  ucg.drawLine(x + 5, y + 7, x + 8 + sway, y + 4);
-  ucg.drawLine(x + 8 + sway, y + 4, x + 7, y + 9);
-  ucg.drawLine(x + 7, y + 9, x + 10 + sway, y + 12);
-  ucg.drawLine(x + 10 + sway, y + 12, x + 13, y + 8);
-  ucg.drawLine(x + 13, y + 8, x + 10 + sway, y + 1);
+  ucg.drawLine(x + 5, y + 7, x + 8, y + 4);
+  ucg.drawLine(x + 8, y + 4, x + 7, y + 9);
+  ucg.drawLine(x + 7, y + 9, x + 10, y + 12);
+  ucg.drawLine(x + 10, y + 12, x + 13, y + 8);
+  ucg.drawLine(x + 13, y + 8, x + 10, y + 1);
 }
 
 void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 1, y - 1, 21, 17);
   ucg.setColor(0, enabled ? 75 : 130, enabled ? 195 : 145, enabled ? 255 : 160);
-  static const int8_t bladeX[12] PROGMEM = {0, 4, 6, 7, 6, 4, 0, -4, -6, -7, -6, -4};
-  static const int8_t bladeY[12] PROGMEM = {-7, -6, -4, 0, 4, 6, 7, 6, 4, 0, -4, -6};
   int16_t cx = x + 9;
   int16_t cy = y + 7;
-  uint8_t offset = spinning ? frame : 0;
-  for (uint8_t blade = 0; blade < 3; blade++) {
-    uint8_t index = (offset + blade * 4) % 12;
-    int8_t dx = (int8_t)pgm_read_byte(&bladeX[index]);
-    int8_t dy = (int8_t)pgm_read_byte(&bladeY[index]);
-    ucg.drawLine(cx, cy, cx + dx, cy + dy);
-    ucg.drawLine(cx + dx / 2, cy + dy / 2, cx + dx, cy + dy);
-  }
+  ucg.drawLine(cx, cy, cx, cy - 7);
+  ucg.drawLine(cx, cy, cx + 6, cy + 3);
+  ucg.drawLine(cx, cy, cx - 6, cy + 3);
   ucg.drawCircle(cx, cy, 2, UCG_DRAW_ALL);
 }
 
@@ -563,29 +552,18 @@ void updateActivityIcons() {
                     (co2AnimationUntil != 0 && (int32_t)(now - co2AnimationUntil) < 0);
   bool heating = digitalRead(HEATER) == LOW;
   bool fanSpinning = ventilador_status != 0;
-  uint8_t co2Frame = activityIconFrame & 3;
-  uint8_t heaterFrame = activityIconFrame & 3;
-  uint8_t fanFrame = activityIconFrame % 12;
-  if (co2Flowing || displayCo2Active != co2Flowing) {
-    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, co2Frame);
+  if (displayCo2Active != co2Flowing) {
+    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, 0);
     displayCo2Active = co2Flowing;
   }
-  if (heating || displayHeaterActive != heating) {
-    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, heaterFrame);
+  if (displayHeaterActive != heating) {
+    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, 0);
     displayHeaterActive = heating;
   }
-  if (fanSpinning || displayFanOn != fanSpinning) {
-    drawFanIcon(98, 120, fanSpinning, fanSpinning, fanFrame);
+  if (displayFanOn != fanSpinning) {
+    drawFanIcon(98, 120, fanSpinning, false, 0);
     displayFanOn = fanSpinning;
   }
-}
-
-void serviceActivityIconAnimation() {
-  unsigned long now = millis();
-  if (now - lastActivityIconFrameAt < 160UL) return;
-  lastActivityIconFrameAt = now;
-  activityIconFrame = (activityIconFrame + 1) % 12;
-  updateActivityIcons();
 }
 
 void setHealthColor() {
@@ -785,7 +763,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
 
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
-    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
+    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, 0);
     displayCo2Active = co2Flowing;
     ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 137, 38, 18);
     ucg.setColor(0, botao_co2_onoff ? 220 : 120, botao_co2_onoff ? 235 : 155, botao_co2_onoff ? 250 : 175);
@@ -794,7 +772,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
-    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, activityIconFrame & 3);
+    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, 0);
     displayHeaterActive = heating;
     ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(46, 137, 38, 18);
     ucg.setColor(0, botao_aquecedor_onoff ? 220 : 120, botao_aquecedor_onoff ? 235 : 155, botao_aquecedor_onoff ? 250 : 175);
@@ -802,7 +780,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
-    drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+    drawFanIcon(98, 120, ventilador_status, false, 0);
     ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(88, 137, 38, 18);
     ucg.setColor(0, ventilador_status ? 220 : 120, ventilador_status ? 235 : 155, ventilador_status ? 250 : 175);
     ucg.setPrintPos(98, 153); ucg.print(ventilador_status ? F("ON") : F("OFF"));
@@ -894,7 +872,7 @@ void setCo2Enabled(bool enabled) {
     botao_co2_onoff = newState;
     EEPROM.put(EEPROM_CO2, botao_co2_onoff);
   }
-  if (enabled) delayProporcionalAnt = 30;
+  if (enabled) delayProporcionalAnt = 60;
   else digitalWrite(CO2PUMP, HIGH);
 }
 
@@ -904,7 +882,35 @@ void setHeaterEnabled(bool enabled) {
     botao_aquecedor_onoff = newState;
     EEPROM.put(EEPROM_AQUECIMENTO, botao_aquecedor_onoff);
   }
-  if (!enabled) digitalWrite(HEATER, HIGH);
+  if (!enabled && digitalRead(HEATER) == LOW) {
+    digitalWrite(HEATER, HIGH);
+    heaterLastSwitchAt = millis();
+    heaterOnSince = 0;
+  }
+}
+
+void controlHeater(float temperature, unsigned long now) {
+  bool heaterOn = digitalRead(HEATER) == LOW;
+  if (botao_aquecedor_onoff != 1 || isnan(temperature)) {
+    if (heaterOn) digitalWrite(HEATER, HIGH);
+    return;
+  }
+
+  if (heaterOn) {
+    if (temperature >= HEATER_HARD_CUTOFF ||
+        (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
+         (temperature >= HEATER_OFF_TEMPERATURE ||
+          now - heaterOnSince >= HEATER_MAX_ON_MS))) {
+      digitalWrite(HEATER, HIGH);
+      heaterLastSwitchAt = now;
+      heaterOnSince = 0;
+    }
+  } else if (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
+             temperature <= HEATER_ON_TEMPERATURE) {
+    digitalWrite(HEATER, LOW);
+    heaterLastSwitchAt = now;
+    heaterOnSince = now;
+  }
 }
 
 void finishCo2ClickSequence() {
@@ -958,7 +964,6 @@ void serviceInputsForTwoSeconds() {
     finishCo2ClickSequenceIfExpired(now);
     bool co2Pressed = updateButtonState(BOTAO_CO2, co2ButtonStable, co2ButtonCandidate, co2ButtonDebounceCount);
     bool heaterPressed = updateButtonState(BOTAO_AQUECEDOR, heaterButtonStable, heaterButtonCandidate, heaterButtonDebounceCount);
-    serviceActivityIconAnimation();
     bool bothPressed = co2ButtonStable && heaterButtonStable;
     if (bothPressed && !bothButtonsStable) {
       Serial.println(F("EVENT,both_buttons_pressed"));

@@ -264,9 +264,11 @@ ALL OFF
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O aquecedor liga abaixo de 36,5 °C e corta em 36,7 °C para compensar a inércia
-térmica; a faixa visual esperada continua sendo 36,5–37,5 °C. Enquanto o CO₂ estiver
+térmica, com intervalo mínimo de 30 s entre mudanças do relé, limite de 45 s por ciclo
+ligado e corte de segurança em 37,2 °C. A faixa visual esperada continua sendo
+36,5–37,5 °C; esses limites ainda precisam de validação térmica prolongada. Enquanto o CO₂ estiver
 abaixo de 50.000 ppm, o automático inicia uma dose quando a leitura não está subindo
-rapidamente. A dose automática inicial é 45 ms. Depois de cada dose, o controle espera
+rapidamente. A dose automática inicial atual é 90 ms. Depois de cada dose, o controle espera
 ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
 300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
 esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
