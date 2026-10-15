@@ -173,6 +173,39 @@ Imprima as amostras de encaixe e vedação antes de comprometer a carcaça intei
 
 Os controles mostram a geometria; não substituem testes físicos.
 
+## Controle do Arduino pela USB
+
+O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
+cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
+ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
+estado do controle.
+
+Comandos disponíveis:
+
+```text
+HELP
+STATUS
+CO2 ON
+CO2 OFF
+CO2 PRIME
+HEAT ON
+HEAT OFF
+ALL OFF
+```
+
+`CO2 ON` habilita o controle automático já existente; `HEAT ON` habilita o termostato
+já existente. `ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na
+EEPROM, como os botões físicos. O aquecedor continua limitado pelo firmware a 37 °C.
+`CO2 PRIME` e três toques no botão CO₂ em até três segundos solicitam um pulso manual
+curto de 5 ms, mesmo durante a espera do controle automático. Se houver uma leitura de
+CO₂ no limite configurado ou acima, o pulso é recusado. Sem leitura disponível, o pulso
+é permitido e o firmware começa a aprender a resposta quando chegarem leituras válidas.
+O atalho mantém o modo automático no estado anterior à sequência; um toque simples
+continua alternando esse modo.
+Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
+resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
+direta da válvula.
+
 ## Gerar os arquivos
 
 Na pasta do repositório:
