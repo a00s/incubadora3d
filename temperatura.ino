@@ -196,7 +196,7 @@ void setup()
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
     contador_pomp = POMP_WAITING_TIME;
-    Serial.println(F("Wait 10 seconds for the sensor to start up"));
+    Serial.println(F("CO2 auto wait 180s sensor warmup"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM

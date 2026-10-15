@@ -968,3 +968,10 @@ filamento/processo e 39 STL das demais peças preservados.
   seções 4, 7 e 8. A própria documentação lista opções de faixa diferentes entre a tabela
   principal e a tabela de variantes; manter a leitura em 16 bits e não extrapolar o sensor
   para além do protocolo é deliberado até confirmação do fabricante para esta unidade.
+- O CSV local conecta somente UART do sensor de faixa 10k (TX→D12, RX→D5), sem sinal
+  analógico ou PWM para uma leitura independente. Isso impede validar o valor em alta
+  concentração por um segundo canal. A mensagem serial de inicialização foi atualizada
+  para indicar o bloqueio de 180 s em vez da antiga espera de 10 s.
+- A mensagem foi compilada e gravada: 32.202 bytes de Flash e 955 bytes de RAM. O CO₂
+  segue desligado conforme último `BOOT_COUNT=96`; o upload não altera esse valor da
+  EEPROM. Não abri outra sessão serial após gravar.
