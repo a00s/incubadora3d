@@ -42,10 +42,14 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
 #define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
 #define CO2_STABLE_TIME_MS 30000UL
-#define HEATER_ON_TEMPERATURE 36.7
-#define HEATER_OFF_TEMPERATURE 36.8
+#define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_SWITCH_MS 10000UL
-#define HEATER_MAX_ON_MS 30000UL
+#define HEATER_PID_PULSE_INTERVAL_MS 30000UL
+#define HEATER_PID_MAX_ON_MS 20000UL
+#define HEATER_TREND_WINDOW_MS 30000UL
+#define HEATER_PID_KP_MS_PER_C 20000.0f
+#define HEATER_PID_KI_MS_PER_C_MIN 6000.0f
+#define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
 #define HEATER_HARD_CUTOFF 37.1
 #define TEMPERATURE_GOOD_MIN 36.9
 #define TEMPERATURE_GOOD_MAX 37.1
@@ -68,7 +72,18 @@ uint16_t lastCo2PulseMs = 0;
 int32_t eeprom_contador_int = 0;
 int ventilador_status = 0;
 unsigned long heaterLastSwitchAt = 0;
-unsigned long heaterOnSince = 0;
+unsigned long heaterPidLastUpdateAt = 0;
+unsigned long heaterLastPulseStartedAt = 0;
+unsigned long heaterPulseStartedAt = 0;
+uint16_t heaterCurrentPulseMs = 0;
+bool heaterHasPulsed = false;
+unsigned long heaterTrendReferenceAt = 0;
+float heaterTrendReferenceC = 0.0f;
+float heaterTempRateCPerMin = 0.0f;
+float heaterPidIntegralMs = 0.0f;
+uint16_t heaterPidDemandMs = 0;
+bool heaterPidInitialized = false;
+bool heaterTrendReady = false;
 bool co2ReferenceReady = false;
 bool co2BaselineReady = false;
 bool co2TrendReady = false;
@@ -80,6 +95,7 @@ bool displayCacheValid = false;
 int32_t displayCo2Ppm = -2;
 int8_t displayCo2Quality = -1;
 int8_t displayTempQuality = -1;
+int8_t displayCo2RangeLock = -1;
 int16_t displayTempTenths = 32767;
 int16_t displayHumidityPercent = 32767;
 int16_t displayInternalTempTenths = 32767;
@@ -119,7 +135,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 1000;   // ms; limite superior do pulso automático
+const int DELAY_MAXIMO = 60;     // ms; teto por pulso automático para limitar overshoot
 const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
 const int CO2_BOOTSTRAP_PPM_PER_MS = 12; // Maior resposta observada nos ensaios: ~11,8 ppm/ms
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
@@ -494,7 +510,7 @@ void loop()
     controlHeater(t, millis());
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
-    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready"));
+    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready,heater_pid_demand_ms,heater_temp_rate_c_min,co2_range_lock"));
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
@@ -505,7 +521,7 @@ void loop()
     Serial.print(lastCo2PulseMs); Serial.print(',');
     printFixed(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
     printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
-    Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
+    Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(co2TrendReady && contador_pomp == 0 ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.println(co2RangeWrapLatched ? 1 : 0);
 
     if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
@@ -636,7 +652,7 @@ void drawHealthIndicator() {
   ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(11, 16); ucg.print(F("CO2 ppm"));
+  ucg.setPrintPos(11, 16); ucg.print(co2RangeWrapLatched ? F("CO2 LOCK") : F("CO2 ppm"));
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
@@ -746,8 +762,10 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   uint8_t conditionsAtTarget = (co2AtTarget ? 1 : 0) + (temperatureAtTarget ? 1 : 0);
   int8_t healthState = conditionsAtTarget == 0 ? DISPLAY_FAULT :
                        (conditionsAtTarget == 1 ? DISPLAY_WAIT : DISPLAY_READY);
-  if (healthState != displayHealthState) {
+  int8_t rangeLockState = co2RangeWrapLatched ? 1 : 0;
+  if (healthState != displayHealthState || rangeLockState != displayCo2RangeLock) {
     displayHealthState = healthState;
+    displayCo2RangeLock = rangeLockState;
     drawHealthIndicator();
   }
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
@@ -852,6 +870,7 @@ void printStatus(unsigned long now) {
   Serial.print(F("STATUS,ms=")); Serial.print(now);
   Serial.print(F(",co2_ppm=")); Serial.print(CO2i);
   Serial.print(F(",co2_valid=")); Serial.print(CO2i > 0 && CO2i <= CO2_SENSOR_PROTOCOL_MAX_PPM && !co2RangeWrapLatched ? 1 : 0);
+  Serial.print(F(",co2_range_lock=")); Serial.print(co2RangeWrapLatched ? 1 : 0);
   Serial.print(F(",boot_count=")); Serial.print(eeprom_contador_int);
   Serial.print(F(",temp_c=")); printFixed(dht.readTemperature(), 1);
   Serial.print(F(",humidity_pct=")); printFixed(dht.readHumidity(), 1);
@@ -861,6 +880,8 @@ void printStatus(unsigned long now) {
   Serial.print(F(",fan_on=")); Serial.print(ventilador_status);
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
+  Serial.print(F(",heater_pid_demand_ms=")); Serial.print(heaterPidDemandMs);
+  Serial.print(F(",heater_temp_rate_c_min=")); printFixed(heaterTempRateCPerMin, 2);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
   Serial.print(F(",rate_ppm_s=")); printFixed(co2Rate, 2);
   Serial.print(F(",rate_ppm_min_valid=")); Serial.print(co2RatePpmMinReady ? 1 : 0);
@@ -906,7 +927,7 @@ void handleSerialCommand() {
   if (strcmp_P(serialCommandBuffer, PSTR("STATUS")) == 0) {
     printStatus(millis());
   } else if (strcmp_P(serialCommandBuffer, PSTR("HELP")) == 0) {
-    Serial.println(F("CMD: STATUS, CO2 ON/OFF/PRIME/ACK, HEAT ON/OFF, ALL OFF"));
+    Serial.println(F("CMD: STATUS, CO2 ON/OFF/PRIME/LOCK/ACK, HEAT ON/OFF, ALL OFF"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ON")) == 0) {
     co2ClickCount = 0;
     if (setCo2Enabled(true)) Serial.println(F("ACK,CO2,ON"));
@@ -918,6 +939,11 @@ void handleSerialCommand() {
     co2RawReferenceReady = false;
     co2ReferenceReady = false;
     Serial.println(F("ACK,CO2,RANGE_UNLOCKED_AUTO_OFF"));
+  } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 LOCK")) == 0) {
+    setCo2Enabled(false);
+    co2RangeWrapLatched = true;
+    EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
+    Serial.println(F("ACK,CO2,RANGE_LOCKED_AUTO_OFF"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 OFF")) == 0 || strcmp_P(serialCommandBuffer, PSTR("ALL OFF")) == 0) {
     co2ClickCount = 0; setCo2Enabled(false);
     if (strcmp_P(serialCommandBuffer, PSTR("ALL OFF")) == 0) {
@@ -958,30 +984,87 @@ void setHeaterEnabled(bool enabled) {
   if (!enabled && digitalRead(HEATER) == LOW) {
     digitalWrite(HEATER, HIGH);
     heaterLastSwitchAt = millis();
-    heaterOnSince = 0;
+    heaterPidDemandMs = 0;
   }
+  if (!enabled) heaterPidIntegralMs = 0.0f;
 }
 
 void controlHeater(float temperature, unsigned long now) {
   bool heaterOn = digitalRead(HEATER) == LOW;
   if (botao_aquecedor_onoff != 1 || isnan(temperature)) {
-    if (heaterOn) digitalWrite(HEATER, HIGH);
+    if (heaterOn) {
+      digitalWrite(HEATER, HIGH);
+      heaterLastSwitchAt = now;
+    }
+    heaterPidDemandMs = 0;
+    heaterPidIntegralMs = 0.0f;
+    heaterPidInitialized = false;
+    heaterTrendReady = false;
     return;
   }
 
-  if (heaterOn) {
-    if (temperature >= HEATER_HARD_CUTOFF ||
-        temperature >= HEATER_OFF_TEMPERATURE ||
-        now - heaterOnSince >= HEATER_MAX_ON_MS) {
-      digitalWrite(HEATER, HIGH);
-      heaterLastSwitchAt = now;
-      heaterOnSince = 0;
+  if (!heaterPidInitialized) {
+    heaterPidInitialized = true;
+    heaterPidLastUpdateAt = now;
+    heaterTrendReferenceAt = now;
+    heaterTrendReferenceC = temperature;
+    heaterTempRateCPerMin = 0.0f;
+    heaterPidIntegralMs = 0.0f;
+    heaterTrendReady = false;
+  }
+
+  unsigned long elapsedMs = now - heaterPidLastUpdateAt;
+  if (now - heaterTrendReferenceAt >= HEATER_TREND_WINDOW_MS) {
+    unsigned long trendElapsedMs = now - heaterTrendReferenceAt;
+    float measuredRate = (temperature - heaterTrendReferenceC) * 60000.0f /
+                         (float)trendElapsedMs;
+    // Smooth the 30-second DHT22 trend so one 0.1 C quantization step does not
+    // make the relay chase measurement noise.
+    heaterTempRateCPerMin = heaterTrendReady
+      ? heaterTempRateCPerMin * 0.5f + measuredRate * 0.5f
+      : measuredRate;
+    heaterTrendReferenceAt = now;
+    heaterTrendReferenceC = temperature;
+    heaterTrendReady = true;
+  }
+
+  float errorC = HEATER_SETPOINT_C - temperature;
+  if (errorC <= 0.0f || temperature >= HEATER_HARD_CUTOFF) {
+    heaterPidIntegralMs = 0.0f;
+    heaterPidDemandMs = 0;
+  } else {
+    if (heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
+      heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
+                             ((float)elapsedMs / 60000.0f);
+      if (heaterPidIntegralMs > HEATER_PID_MAX_ON_MS) {
+        heaterPidIntegralMs = HEATER_PID_MAX_ON_MS;
+      }
     }
-  } else if (now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS &&
-             temperature <= HEATER_ON_TEMPERATURE) {
+    float derivativeMs = heaterTrendReady
+      ? -HEATER_PID_KD_MS_PER_C_MIN * heaterTempRateCPerMin
+      : 0.0f;
+    float demandMs = HEATER_PID_KP_MS_PER_C * errorC +
+                     heaterPidIntegralMs + derivativeMs;
+    if (demandMs < 0.0f) demandMs = 0.0f;
+    if (demandMs > HEATER_PID_MAX_ON_MS) demandMs = HEATER_PID_MAX_ON_MS;
+    heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);
+  }
+  heaterPidLastUpdateAt = now;
+
+  bool safeToHeat = temperature < HEATER_SETPOINT_C &&
+                    temperature < HEATER_HARD_CUTOFF;
+  if (heaterOn && (!safeToHeat || now - heaterPulseStartedAt >= heaterCurrentPulseMs)) {
+    digitalWrite(HEATER, HIGH);
+    heaterLastSwitchAt = now;
+  } else if (!heaterOn && safeToHeat && heaterPidDemandMs > 0 &&
+             (!heaterHasPulsed || now - heaterLastPulseStartedAt >= HEATER_PID_PULSE_INTERVAL_MS) &&
+             now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS) {
+    heaterCurrentPulseMs = heaterPidDemandMs;
+    heaterPulseStartedAt = now;
+    heaterLastPulseStartedAt = now;
+    heaterHasPulsed = true;
     digitalWrite(HEATER, LOW);
     heaterLastSwitchAt = now;
-    heaterOnSince = now;
   }
 }
 

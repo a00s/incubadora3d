@@ -232,9 +232,12 @@ de DNA foi retirado para reservar espaço de firmware às animações e ao contr
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
-ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
-estado do controle, incluindo `boot_count`. `rate_ppm_min` é a variação líquida de CO₂
-normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; o campo
+ciclo, com `co2_range_lock` como última coluna; `EVENT` registra transições e falhas, e
+`STATUS` consulta sensores, saídas e estado do controle, incluindo `boot_count`.
+`rate_ppm_min` é a variação líquida de CO₂
+normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; `heater_temp_rate_c_min`
+é a tendência de temperatura em °C/min; `heater_pid_demand_ms` é o tempo ligado pedido pelo PID
+em cada janela de controle de 30 s; o campo
 `rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
 tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
 A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
@@ -242,22 +245,33 @@ formatadas em ponto fixo para reduzir o uso de Flash no Uno.
 A linha `BOOT_COUNT` e o campo `boot_count`
 leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
 por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;
-ambos ficam fora do controle automático.
+ambos ficam fora do controle automático. `co2_valid=0` indica uma leitura indisponível;
+`co2_range_lock=1` identifica especificamente a trava persistente de faixa. Na tela,
+essa trava troca o cabeçalho `CO2 ppm` por `CO2 LOCK` e mostra `---` no lugar do valor.
+Uma leitura baixa sem trava continua numérica e traz `co2_valid=1`, desde que o sensor
+responda normalmente.
 
 As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
 temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
 ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
-de temperatura é 36,9–37,1 °C. O aquecedor
-liga em 36,9 °C e desliga em 37,0 °C, com corte de segurança em 37,1 °C. O valor
+de temperatura é 36,9–37,1 °C. O aquecedor liga ao cair para 36,9 °C e desliga ao chegar
+a 37,0 °C, com corte de segurança em 37,1 °C. O valor
 medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
-(até 65.535 ppm). Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
+(até 65.535 ppm); a biblioteca local `NDIRZ16` lê os dois bytes como `uint16_t`, conforme
+o exemplo de leitura `0x86` do manual. A página da Winsen também lista variantes de 0–10%Vol,
+mas não documenta nessa resposta UART como codificar valores acima de 65.535 ppm. Essa
+diferença precisa ser esclarecida para a variante instalada antes de confiar em leituras
+altas. Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
 rollover, o firmware desliga a injeção, grava uma trava de segurança na EEPROM e marca a
 leitura como inválida. A trava sobrevive a reinicializações e evita interpretar um valor
-baixo posterior como falta de CO₂. Ela só é apagada pelo comando `CO2 ACK`, após verificar
-o sensor; esse comando mantém o automático desligado. A gravação ocorre só na transição
-para a trava, sem gravações periódicas.
+baixo posterior como falta de CO₂. Ela só deve ser apagada pelo comando `CO2 ACK` depois de
+uma purga física conhecida para o ar ambiente; um valor baixo lido após rollover, sozinho,
+não comprova que o nível voltou ao normal. `CO2 ACK` mantém o automático desligado. O
+comando `CO2 LOCK` permite regravar a trava; ambos os comandos deixam a válvula fechada.
+A gravação ocorre só na transição para a trava ou em reconhecimento manual, sem gravações
+periódicas.
 
 Comandos disponíveis:
 
@@ -267,6 +281,7 @@ STATUS
 CO2 ON
 CO2 OFF
 CO2 PRIME
+CO2 LOCK
 CO2 ACK
 HEAT ON
 HEAT OFF
@@ -274,13 +289,18 @@ ALL OFF
 ```
 
 `CO2 ON` habilita o controle automático, exceto enquanto a trava de faixa estiver ativa;
-`CO2 ACK` limpa a trava e deixa o automático desligado. `HEAT ON` habilita o termostato.
+`CO2 ACK` limpa a trava após uma purga conhecida para o ar ambiente e deixa o automático
+desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato.
 `ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
-físicos. O termostato liga em 36,7 °C e desliga a partir de 36,8 °C,
-com pelo menos 10 s de espera antes de religar e limite de 30 s por acionamento.
-O corte de segurança fica em 37,1 °C. A banda de controle entre ligar e desligar é
-0,1 °C; a faixa visual esperada é 36,9–37,1 °C;
-esse controle ainda precisa de validação térmica prolongada. Enquanto o CO₂ estiver
+físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
+proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
+de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
+limitada a 20 s; o primeiro pulso começa assim que há demanda e os seguintes respeitam
+30 s entre inícios. O aquecedor desliga ao
+atingir 37,0 °C e tem corte independente em 37,1 °C. A telemetria inclui a demanda do PID e
+a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
+O ajuste inicial ainda precisa de validação térmica prolongada por causa da inércia observada.
+Enquanto o CO₂ estiver
 abaixo de 49.000 ppm, o automático inicia uma dose quando a leitura não está subindo
 rapidamente. Após reinício, a primeira dose é escalada pela distância à meta, com
 referência inicial conservadora de 12 ppm por ms e teto de 60 ms. Depois de cada dose, o controle espera
@@ -296,8 +316,8 @@ amostra determine a dose seguinte. O controle calcula a dose pela distância à 
 pela eficiência suavizada, aplicando inicialmente um sexto desse tempo proporcional por
 ciclo. Essa fração foi reduzida após um ensaio em que uma dose de 461 ms provocou subida
 atrasada suficiente para cruzar o limite de 65.535 ppm do protocolo e aparecer como
-leitura baixa por wraparound. O limite é 1.000 ms por pulso. A primeira dose após
-reinício usa a referência observada de 12 ppm/ms e fica limitada a 60 ms. O piso é 5 ms
+leitura baixa por wraparound. Todo pulso automático tem teto de 60 ms. A primeira dose
+após reinício usa a referência observada de 12 ppm/ms e fica limitada ao mesmo teto. O piso é 5 ms
 para evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
 empilhar pulsos durante a subida atrasada.
 O controle automático aguarda também 3 minutos após cada reinicialização, conforme o

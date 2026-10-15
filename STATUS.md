@@ -1085,3 +1085,75 @@ filamento/processo e 39 STL das demais peças preservados.
 - Referências de precisão profissional: [Thermo Fisher Heracell 150i/240i](https://www.thermofisher.com/TFS-Assets/LED/brochures/Heracell%20150i%20and%20240i%20CO2%200820%20Web.pdf),
   [Thermo Fisher Forma](https://www.thermofisher.com/in/en/home/life-science/lab-equipment/co2-incubators/models/direct-heat.html),
   [Memmert ICO50](https://www.memmert.com/en/products/incubators/co2-incubator/ico50-2).
+
+## Estado explícito da trava de CO₂
+
+- Depois de a leitura cair abaixo de 59.000 ppm, enviei `CO2 ACK` com o automático OFF e
+  observei leituras aparentemente suaves até 57.442 ppm, com taxas de −600 a −700 ppm/min.
+  O usuário apontou corretamente que, após um rollover, esses valores também podem ser
+  falsamente baixos; não provam retorno ao ar ambiente. Portanto, essa série não é aceita
+  como concentração real nem como medição definitiva do vazamento.
+- A trava deve permanecer até uma purga física conhecida para o ar ambiente. A revisão
+  acrescenta `CO2 LOCK` para gravá-la manualmente; o comando desliga o automático e mantém
+  a válvula fechada. `CO2 ACK` só deve ser usado após a purga verificada e também não liga
+  o automático. A confirmação física da purga ainda está pendente.
+- Para distinguir estados, `co2_range_lock` é a última coluna de `DATA` e aparece em
+  `STATUS`. Na tela, o cabeçalho passa a `CO2 LOCK` durante a trava. O comando manual
+  `CO2 LOCK` permite reaplicá-la sem liberar gás. Depois de habilitar a trava manualmente,
+  o monitor foi reaberto: em BOOT_COUNT=122 apareceu `co2_range_lock_restored_after_boot`;
+  a telemetria mostrou `co2_valid=0`, `co2_range_lock=1`, `co2_enabled=0` e `valve_open=0`.
+
+## Variante de 10% e limite da UART
+
+- O usuário identificou a unidade como MH-Z16 WinSen, marcada `1–10% VOL`, série
+  `20221103`. A página oficial da Winsen lista variantes até 10%Vol, mas a própria tabela de
+  especificação também cita faixa selecionável até 50.000 ppm (com extensão a 150.000 ppm).
+  O manual UART publicado descreve a leitura `0x86` como `HIGH × 256 + LOW`, isto é, um
+  valor direto de 16 bits.
+- A biblioteca local `NDIRZ16.cpp` faz exatamente isso: `ppm = (uint16_t)buf[2] << 8 | buf[3]`.
+  Assim, o parser não tem bits para representar diretamente 100.000 ppm. Trocar por outra
+  biblioteca só resolve se a variante 10% usar uma codificação alternativa documentada;
+  nenhuma foi encontrada nas instruções UART consultadas. O esquema desta montagem liga
+  UART RX/TX, sem um canal PWM/analógico conectado que permita comparação independente.
+- Esta discrepância pode explicar o rollover por volta de 6,55%, mas não prova o que a
+  variante instalada faz acima do valor. Mantida trava aos 60.000 ppm e CO₂ automático OFF.
+  Após `CO2 ACK`, a trava foi regravada com `CO2 LOCK`; o reinício BOOT_COUNT=122 restaurou-a.
+  A última leitura bruta próxima de 54.700 ppm segue inválida; não usar como concentração
+  real. A válvula permaneceu fechada.
+- A lógica automática teve o teto reduzido para 60 ms em todo pulso (antes, pulsos adaptativos
+  posteriores podiam chegar a 1.000 ms). O cálculo continua adaptativo abaixo do teto. Esta
+  alteração foi compilada e gravada; comportamento do doseador ainda não foi testado porque
+  a trava permanece ativa e a leitura ainda não foi validada após purga.
+- Referências: [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
+  [manual UART oficial](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
+
+## Pulsos térmicos antecipados
+
+- 2026-10-15, após abrir o monitor (BOOT_COUNT=124), a leitura térmica começou em
+  36,9–37,0 °C. Ao longo de cerca de 3 min, caiu até 36,5 °C; o firmware só acionou o
+  aquecedor ao chegar a 36,7 °C. O relé ficou ativo por aproximadamente 17 s, desligou
+  quando a leitura chegou a 36,8 °C e a temperatura continuou subindo por inércia até
+  37,1 °C. Na amostra final o relé estava desligado. A trava de CO₂ permaneceu ativa,
+  com `co2_valid=0`, `co2_enabled=0` e válvula fechada.
+- Alterei o controle para começar a corrigir em 36,9 °C e desligar em 37,0 °C. Para reduzir
+  a energia por acionamento perto da meta, os limites são 2 s entre 36,8–36,9 °C, 10 s
+  entre 36,6–36,8 °C e 20 s abaixo de 36,6 °C. O intervalo mínimo de 10 s entre transições
+  do relé e o corte em 37,1 °C foram mantidos.
+- A primeira versão foi compilada e gravada (31.082 bytes de Flash, 961 bytes de RAM). A
+  telemetria confirmou restauração da trava de CO₂ em BOOT_COUNT=126, com automático e
+  válvula desligados. Um pulso próximo à meta começou em 36,9 °C e a leitura atingiu 37,0 °C;
+  depois subiu residualmente até 37,2 °C. A revisão de 2 s mostrou uma limitação do
+  escalonamento por fase fixa: uma queda que começasse depois da fase de pulso podia esperar
+  até a janela seguinte.
+- O controle passou a calcular a duração pelo PID e iniciar o pulso assim que houver demanda,
+  com intervalo mínimo de 30 s entre inícios e desligamento antecipado ao alcançar 37,0 °C.
+  O corte de 37,1 °C e o mínimo de 10 s entre transições do relé continuam ativos. Compilado
+  e gravado em 2026-10-15 (32.088 bytes de Flash, 988 bytes de RAM); BOOT_COUNT=132 restaurou
+  a trava persistente de CO₂, com válvula fechada e automático desabilitado.
+- Em cerca de 3 min de telemetria após o boot, a temperatura ficou em 36,5–36,9 °C. A demanda
+  do PID variou de ~2 s perto de 36,9 °C a ~15,8 s quando a câmara permaneceu em 36,5–36,6 °C;
+  pulsos observados ficaram próximos da duração pedida, separados por ao menos 30 s entre
+  inícios. Não houve leitura acima de 37,0 °C nessa janela. O controle respondeu sem esperar
+  a próxima fase fixa, mas ainda não demonstrou alcançar e manter 37,0 °C. Repetir observação
+  por mais tempo antes de alterar ganhos; não usar a coluna CO₂ como concentração válida,
+  pois `co2_range_lock=1` e `co2_valid=0` durante todo o teste.
