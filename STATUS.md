@@ -316,5 +316,5 @@ filamento/processo e 39 STL das demais peças preservados.
   `R<n>` volta ao display. A leitura de CO₂ muda para vermelho fora da faixa e
   verde dentro; a temperatura muda para vermelho fora e mantém cor neutra dentro.
   Quando um pulso termina, as bolhas continuam animadas por 3 segundos para tornar
-  visíveis os pulsos curtos. Compilado para Uno: 32.214 bytes Flash (99%), 923 bytes
-  RAM (45%).
+  visíveis os pulsos curtos. Compilado e gravado para Uno: 32.214 bytes Flash (99%),
+  923 bytes RAM (45%). O reset de gravação incrementa o contador persistente uma vez.
