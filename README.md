@@ -431,3 +431,7 @@ No cabeçalho do display, a cor indica o estado geral e `R<n>` mostra a contagem
 boots. A leitura de CO₂ e a temperatura também mudam de cor individualmente quando
 saem da faixa. As bolhas permanecem animadas por 3 s após um pulso, mesmo quando a
 válvula ficou aberta por poucos milissegundos.
+
+Teste visual atual: o fundo do display está em preto puro (`RGB 0,0,0`) para
+comparação com o azul-marinho anterior. Cores de estado, leituras e ícones foram
+mantidas.

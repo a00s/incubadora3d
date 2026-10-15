@@ -318,3 +318,15 @@ filamento/processo e 39 STL das demais peças preservados.
   Quando um pulso termina, as bolhas continuam animadas por 3 segundos para tornar
   visíveis os pulsos curtos. Compilado e gravado para Uno: 32.214 bytes Flash (99%),
   923 bytes RAM (45%). O reset de gravação incrementa o contador persistente uma vez.
+
+## Teste visual do fundo preto e resposta após pulsos curtos
+
+- O código anterior usava azul-marinho `RGB 8,18,30`; o display não estava limitado
+  a preto. Para comparar no próprio equipamento, o fundo da intro, tela, valores e
+  áreas apagadas dos ícones foi trocado para `RGB 0,0,0`, mantendo os destaques.
+- Firmware compilado e gravado com `--verify`: Flash 32.132/32.256 bytes (99%),
+  RAM 923/2.048 bytes (45%). O upload causa um reboot e incrementa o contador uma vez.
+- Na telemetria anterior à gravação, o contador serial indicou 39 ao abrir o monitor.
+  Após uma janela de −159 ppm/min, a seguinte marcou +5 ppm/min perto de 26.628 ppm;
+  o controlador voltou a um pulso de 5 ms depois da dose de 15 ms. Temperatura em torno
+  de 37,5 °C, umidade 50,5% e ventilador ligado com sensor interno perto de 30 °C.

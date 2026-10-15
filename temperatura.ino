@@ -497,7 +497,7 @@ void drawDnaStroke(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
 }
 
 void playIntroDna() {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   static const int8_t strandA[] PROGMEM = {64, 82, 94, 96, 87, 70, 50, 36, 32, 40, 57, 77, 92, 96, 88, 70, 50};
   static const int8_t strandB[] PROGMEM = {64, 46, 34, 32, 41, 58, 78, 92, 96, 88, 71, 51, 36, 32, 40, 58, 78};
@@ -521,7 +521,7 @@ void playIntroDna() {
 }
 
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(x - 2, y - 1, 25, 17);
   ucg.setColor(0, enabled ? 180 : 105, enabled ? 225 : 130, enabled ? 255 : 150);
   if (!flowing) {
@@ -543,7 +543,7 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
 }
 
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(x - 1, y - 1, 23, 17);
   uint8_t red = enabled ? 255 : 135;
   uint8_t green = enabled ? 145 : 120;
@@ -565,7 +565,7 @@ void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t fr
 }
 
 void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(x - 1, y - 1, 21, 17);
   ucg.setColor(0, enabled ? 75 : 130, enabled ? 195 : 145, enabled ? 255 : 160);
   static const int8_t bladeX[12] PROGMEM = {0, 4, 6, 7, 6, 4, 0, -4, -6, -7, -6, -4};
@@ -623,12 +623,12 @@ void setHealthColor() {
 }
 
 void drawHealthIndicator() {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
   setHealthColor();
   ucg.drawBox(7, 3, 48, 17);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
@@ -639,7 +639,7 @@ void drawHealthIndicator() {
 
 void drawDisplayFrame() {
   ucg.clearScreen();
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, 0, 0, 0);
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
@@ -745,7 +745,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
-  const uint8_t bgR = 8, bgG = 18, bgB = 30;
+  const uint8_t bgR = 0, bgG = 0, bgB = 0;
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
   int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 : -1);
 
@@ -759,7 +759,7 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 0 ? 190 : 100);
     uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 0 ? 45 : 90);
     drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
-                    8, 18, 30, co2R, co2G, co2B);
+                    0, 0, 0, co2R, co2G, co2B);
     displayCo2Ppm = co2Valid ? CO2i : -1;
     displayCo2Quality = co2Quality;
   }
