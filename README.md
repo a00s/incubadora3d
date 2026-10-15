@@ -223,8 +223,18 @@ com `@epigeneticaemcasa`. Leituras sem alteração não redesenham seus campos.
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, `EVENT` registra transições e falhas, e `STATUS` consulta sensores, saídas e
-estado do controle. Falha de comunicação e leitura de 0 ppm são eventos separados;
+estado do controle, incluindo `boot_count`. A linha `BOOT_COUNT` e o campo `boot_count`
+leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
+por ciclo. Falha de comunicação e leitura de 0 ppm são eventos separados;
 ambos ficam fora do controle automático.
+
+As cores do indicador representam as duas metas principais: vermelho quando CO₂ e
+temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e verde quando
+ambas estão na faixa. As faixas atuais são 48.000–50.000 ppm e 36,5–37,5 °C. O valor
+medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
+(até 65.535 ppm). Uma queda de faixa compatível com rollover acima de 60.000 ppm trava
+a injeção e gera um evento, para não interpretar o valor baixo subsequente como falta de
+CO₂.
 
 Comandos disponíveis:
 
@@ -239,9 +249,12 @@ HEAT OFF
 ALL OFF
 ```
 
-`CO2 ON` habilita o controle automático já existente; `HEAT ON` habilita o termostato
-já existente. `ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na
-EEPROM, como os botões físicos. O aquecedor continua limitado pelo firmware a 37 °C.
+`CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
+desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
+físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
+abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. Começa
+com 5 ms, aguarda cerca de um minuto e dobra a dose até 60 ms se o aumento medido não
+passar de 8 ppm; depois usa a resposta observada no cálculo proporcional.
 `CO2 PRIME` e três toques no botão CO₂ em até três segundos solicitam um pulso manual
 curto de 5 ms, mesmo durante a espera do controle automático. Se houver uma leitura de
 CO₂ no limite configurado ou acima, o pulso é recusado. Sem leitura disponível, o pulso
@@ -251,7 +264,8 @@ intermediários na EEPROM. Um toque simples alterna esse modo ao fim da janela d
 segundos usada para reconhecer o atalho.
 Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
 resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
-direta da válvula.
+direta da válvula. O MH-Z16 não informa a faixa configurada por uma consulta UART; a
+antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar a faixa.
 
 ## Gerar os arquivos
 
