@@ -567,3 +567,19 @@ filamento/processo e 39 STL das demais peças preservados.
   ambiente, é ~0,0113/min. Continua na mesma ordem das referências com vedação antiga e
   nova; a leitura adicional não muda a conclusão de que a vedação da porta ainda não
   demonstrou redução clara. Após instalar o anel, repetir a janela perto de 37 °C.
+
+## Primeiro indício após instalar o anel do sensor (encaixe ainda frouxo)
+
+- 2026-10-15, após retirar e recolocar o sensor para experimentar o anel ainda com folga.
+  Os atuadores permaneceram desligados e a válvula fechada. A leitura caiu transitoriamente
+  de ~19.200 para ~2.000 ppm e depois subiu até ~16.260 ppm; toda essa recuperação foi
+  excluída da medição de perda.
+- Após a leitura se estabilizar perto de 16.260 ppm, uma janela completa caiu de cerca de
+  16.260 para 16.139 ppm em ~61 s: **−119 ppm/min**. A temperatura caiu de 34,2 para
+  33,5 °C durante a janela e RH subiu de 51,9 para 53,0%; o aquecimento estava desligado.
+- Normalização aproximada por excesso sobre 420 ppm: ~0,0076/min nesta janela, contra
+  ~0,0113/min antes do anel (−218 ppm/min perto de 19.610 ppm). Isso sugeriria ~33% menos
+  perda fracionária, mas a comparação não está controlada: a câmara foi aberta, o sensor
+  foi movido, a temperatura estava vários graus mais baixa e o encaixe ainda tem folga.
+  Tratar apenas como indício inicial; repetir com o anel justo e a temperatura estabilizada
+  perto de 37 °C antes de concluir se houve melhora.
