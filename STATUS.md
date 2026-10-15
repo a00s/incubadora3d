@@ -1406,6 +1406,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - Continuação da janela longa: de 14.444 ppm em 424,6 s até 13.559 ppm em 833,9 s, média de
   −130 ppm/min por ~6,8 min. A leitura não mostra platô nessa janela; permanece inválida pela
   trava firmware e não pode ser interpretada como concentração ou vazamento real.
+- Continuação: de 13.726 ppm em 756,3 s para 13.373 ppm em 913,7 s, média de −135 ppm/min em
+  ~2,6 min. `co2_valid=0`, `co2_range_lock=1` e todos os atuadores OFF permaneceram constantes;
+  a deriva UART segue monotônica sem representar uma taxa real de perda.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
