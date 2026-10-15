@@ -53,6 +53,7 @@ with zipfile.ZipFile(OUT/'vedacoes_eSUN_TPU_LW.3mf') as z:
         assert re.search(r'^; filament_flow_ratio = 0\.55(?:,|$)',data,re.M)
         assert not re.search(r'^T[1-9]\d*\s*$',data,re.M)
         assert 'M106 S255' in data
+        if pid in (5,6):assert ';TYPE:Sparse infill' in data,(pid,'30% infill override not applied')
         result=json.loads((path.parent/'result.json').read_text());assert result['return_code']==0
         warning=result['sliced_plates'][0]['warning_message']
         assert not warning,(pid,warning)

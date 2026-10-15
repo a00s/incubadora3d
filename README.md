@@ -423,6 +423,8 @@ rolha é Ø12,24 mm, com flange externa Ø16 × 1,5 mm e recuo interno de 0,3 mm
 No conjunto STEP e no visualizador, aparecem montadas na parede. No projeto
 completo, aquecedor na bandeja 11 e sensor na 12. Para imprimir uma metade
 por vez, usar o arquivo separado: sensor nas bandejas **5 e 6**, aquecedor 3/4.
+As metades do sensor usam 30% de preenchimento giroidal, 3 paredes e 4 camadas
+sólidas por face. Imprimir as bandejas 5 e 6 separadamente, uma metade por vez.
 Acomodar os fios nas canaletas, fechar as metades e conferir vedação na impressão.
 
 ### Revisão da bucha redonda para TPU 85A

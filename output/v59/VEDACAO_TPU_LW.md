@@ -90,6 +90,12 @@ e os encaixes rígidos são preservados.
   radial nominal passa de 0,08 para **0,15 mm**. Os centros dos três fios e a
   divisão das metades permanecem iguais; o trecho reto comprime os fios ao longo da rolha.
 
+As metades do sensor usam **30% de preenchimento giroidal**, com **3 paredes**
+e **4 camadas sólidas superiores/inferiores** de 0,2 mm (0,8 mm por face).
+As demais peças continuam com seus ajustes anteriores. As bandejas **5 e 6**
+contêm uma metade cada: fatiar e imprimir uma bandeja por vez. Isso evita
+imprimir as duas peças simultaneamente com TPU-LW sem retração.
+
 Assentar cada fio na meia canaleta, juntar as metades e inserir no furo
 existente. O TPU-LW deve comprimir os fios e as faces de união; conferir
 fechamento das metades e vedação no teste físico. Não trocar metades entre
@@ -135,8 +141,9 @@ TPU 85A fica salvo, mas sem nenhuma peça atribuída.
 - Retração normal, de camada e de troca: 0; wipe e Z-hop desativados.
 - Ventilador 100% após a primeira camada; ventilador auxiliar desligado;
   sem redução automática de velocidade por resfriamento; sem suportes.
-- Três paredes e preenchimento 100% no material da junta. A cavidade desenhada
-  continua vazia porque está no CAD, independentemente do preenchimento.
+- Três paredes. As duas metades do sensor de temperatura usam preenchimento
+  giroidal de 30%; as demais peças mantêm 100%. São quatro camadas sólidas por
+  face. As cavidades desenhadas no CAD continuam vazias em qualquer preenchimento.
 - Fluxo **0,55 a 270 °C**, estimativa entre os pares 256 °C/0,60 e
   280 °C/0,50 do gráfico enviado. A página atual eSUN recomenda 210–270 °C;
   este teste usa o limite recomendado, mantendo retração desativada.

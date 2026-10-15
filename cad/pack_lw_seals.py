@@ -33,6 +33,7 @@ SETTINGS.update(enable_support='0',layer_height='0.2',initial_layer_print_height
                 internal_bridge_speed='100%',extruder='4',
                 avoid_crossing_wall='1',ironing_type='no ironing')
 
+OBJECT_SETTINGS={'TPU_passagem_sensor':{'sparse_infill_density':'30%','sparse_infill_pattern':'gyroid'}}
 
 def setmeta(node,key,value):
     item=next((m for m in node.findall('metadata') if m.get('key')==key),None)
@@ -78,7 +79,7 @@ def patch(names=None):
             # override causes DynamicConfig::opt_float() to reject its type.
             for m in list(record.findall('metadata')):
                 if m.get('key')=='small_perimeter_speed':record.remove(m)
-            for key,value in SETTINGS.items():setmeta(record,key,value)
+            for key,value in (SETTINGS|OBJECT_SETTINGS.get(name,{})).items():setmeta(record,key,value)
             for part in record.findall('part'):
                 for m in list(part.findall('metadata')):
                     if m.get('key')=='extruder':m.set('value','4')

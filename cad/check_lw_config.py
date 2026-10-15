@@ -23,6 +23,12 @@ for path in (ROOT/'output/incubadora_CrealityPrint_7.2.1.3mf',
             name=next(m.get('value') for m in obj.findall('metadata') if m.get('key')=='name')
             if dedicated or name in NAMES:
                 assert not any(m.get('key')=='small_perimeter_speed' for m in obj.iter('metadata')),name
+                if name.startswith('TPU_passagem_sensor'):
+                    settings={m.get('key'):m.get('value') for m in obj.findall('metadata')}
+                    assert settings['sparse_infill_density']=='30%'
+                    assert settings['sparse_infill_pattern']=='gyroid'
+                    assert settings['wall_loops']=='3'
+                    assert settings['top_shell_layers']==settings['bottom_shell_layers']=='4'
                 count+=1
         if not dedicated:
             assert not any(m.get('key')=='extruder' and m.get('value')=='2' for o in config.findall('object') for m in o.iter('metadata')),'Legacy TPU still assigned'
