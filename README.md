@@ -252,20 +252,29 @@ ALL OFF
 `CO2 ON` habilita o controle automático; `HEAT ON` habilita o termostato. `ALL OFF`
 desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O aquecedor continua limitado pelo firmware a 37 °C. Enquanto o CO₂ estiver
-abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. Começa
-com 5 ms, aguarda cerca de um minuto e dobra a dose até 60 ms se o aumento medido não
-passar de 8 ppm; depois usa a resposta observada no cálculo proporcional.
-`CO2 PRIME` e três toques no botão CO₂ em até três segundos solicitam um pulso manual
-curto de 5 ms, mesmo durante a espera do controle automático. Se houver uma leitura de
-CO₂ no limite configurado ou acima, o pulso é recusado. Sem leitura disponível, o pulso
-é permitido e o firmware começa a aprender a resposta quando chegarem leituras válidas.
-O atalho mantém o modo automático no estado anterior à sequência sem gravar toques
-intermediários na EEPROM. Um toque simples alterna esse modo ao fim da janela de três
-segundos usada para reconhecer o atalho.
+abaixo de 50.000 ppm, o automático inicia uma dose mesmo com a leitura estável. A dose
+automática inicial agora é 60 ms; os testes mostraram aumento de concentração após essa
+dose, com variação e atraso entre ciclos. O controle observa a resposta por cerca de um
+minuto e limita cada aumento a no máximo o dobro do pulso anterior, até 1.000 ms. O
+cálculo proporcional usa a concentração medida após cada dose; ao se aproximar da meta,
+os pulsos ficam limitados a 250 ms nos
+últimos 10.000 ppm, 60 ms nos últimos 3.000 ppm e 20 ms nos últimos 1.000 ppm.
+`CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
+toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
+ou 4 toques saem ao fim da janela, para o firmware distinguir a sequência; o quinto
+toque dispara imediatamente. Isso permite uma dose manual progressiva enquanto o
+controle automático mantém o estado que já tinha. Se houver uma leitura de CO₂ no
+limite configurado (50.000 ppm) ou acima, o pulso é recusado. Sem leitura disponível,
+o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
+válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
+modo automático ao fim da janela de três segundos.
 Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
 resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
 direta da válvula. O MH-Z16 não informa a faixa configurada por uma consulta UART; a
 antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar a faixa.
+Na telemetria `DATA`, `next_pulse_ms` é o próximo valor calculado e `last_pulse_ms` é o
+tempo do pulso realmente aplicado; ambos são separados de `valve_open`, que mostra o
+estado instantâneo da saída.
 
 ## Gerar os arquivos
 
