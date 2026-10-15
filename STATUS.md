@@ -1353,6 +1353,11 @@ filamento/processo e 39 STL das demais peças preservados.
   pela abertura do monitor; as amostras contínuas após esse reset voltaram perto de 19.063 ppm,
   portanto o registro isolado não comprova estabilidade em 500 ppm. Um clique curto no botão
   físico não alterou a trava nem a sequência de leituras.
+- A origem conhecida da trava persistente desta sessão é o comando deliberado `CO2 LOCK`,
+  registrado em BOOT_COUNT=122; os boots seguintes apenas restauraram o marcador EEPROM. Isso
+  é uma trava de controle do firmware, não indicação de que o próprio sensor parou ou entrou
+  em modo de calibração. O manual define calibração zero no pino HD ao manter nível baixo por
+  mais de 7 s; o clique curto relatado não satisfaz essa condição.
 - O usuário informou que a etiqueta indica `1–10% VOL`; as fotos locais mostram o gabinete,
   a câmara e o cilindro, mas não permitem ler a etiqueta. Não usar 400 ppm como referência até
   confirmar a faixa mínima dessa variante. A leitura bruta de ~18k está acima de 1%, porém
