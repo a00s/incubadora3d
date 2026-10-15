@@ -1287,3 +1287,18 @@ filamento/processo e 39 STL das demais peças preservados.
   37 °C, mas ainda não prova uniformidade da câmara nem a precisão real do DHT22.
 - CO₂ permaneceu `co2_range_lock=1`, `co2_valid=0`, `co2_enabled=0`, `valve_open=0`; a leitura
   bruta do sensor continua inválida e não foi usada na análise.
+
+## Repetição térmica com inicialização quente
+
+- 2026-10-15, BOOT_COUNT=153, aproximadamente 4 min 48 s. A leitura inicial foi 37,1 °C;
+  após o reinício, caiu gradualmente até 36,7 °C durante o primeiro minuto. O PID ampliou
+  os pulsos conforme a queda; a leitura retornou a 37,0 °C após cerca de 2,5 min.
+- No restante da janela, a leitura ficou entre 36,9–37,1 °C, sem passar do corte. Em 37,0 °C,
+  a demanda de manutenção ficou aproximadamente em 1,4–2,7 s e foram observados pulsos curtos;
+  em 36,7–36,9 °C, pedidos ficaram entre ~2,4–10 s. A tendência no trecho final aproximou-se
+  de zero e a temperatura permaneceu em 36,9 °C.
+- O padrão confirma recuperação e manutenção dentro de ±0,1 °C no trecho estabilizado, mas o
+  vale pós-reinício chegou a 0,4 °C abaixo do alvo. O boot reinicializa a integral e os sensores
+  ainda têm precisão limitada; não interpretar o reinício como uma perturbação normal de uso.
+  CO₂ permaneceu travado/inválido (`co2_range_lock=1`, `co2_valid=0`), automático desligado e
+  válvula fechada.
