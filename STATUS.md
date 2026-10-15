@@ -344,7 +344,8 @@ filamento/processo e 39 STL das demais peças preservados.
   mesmo após esperar o ciclo de resposta. O critério de estabilidade de 30 s não
   deve bloquear o cálculo do tamanho da dose: a espera de aproximadamente 60 s já
   permite observar a resposta do sensor.
-- Revisão atual: dimensionar o próximo pulso usando a resposta observada após o
+- Revisão inicial (posteriormente revista após logs de subida atrasada): dimensionar
+  o próximo pulso usando a resposta observada após o
   intervalo, sem exigir que a inclinação instantânea esteja estável. A rampa continua
   limitada a 1,5× por ciclo e os limites por proximidade ao alvo são preservados.
   No teste anterior à troca da revisão, a resposta observada levou o próximo pulso de
@@ -385,3 +386,34 @@ filamento/processo e 39 STL das demais peças preservados.
   explícito de intervenção. Compilado e gravado com `--verify`: 32.084/32.256 bytes de
   Flash (172 bytes livres), 923/2.048 bytes de RAM. O automático está salvo como
   desligado; validar a nova espera com a próxima ativação monitorada.
+
+## Verificação da espera e da pressão da câmara
+
+- Após uma nova ativação monitorada em 47.230 ppm, foram aplicados pulsos de 45 ms e,
+  após o cooldown, 67 ms. A leitura do segundo pulso subiu de 46.161 para cerca de
+  46.947 ppm em aproximadamente 100 s; a máxima observada até então foi +786 ppm.
+  A próxima dose não saiu no fim dos 60 s: `trend_ready=0` enquanto a taxa ainda
+  passava de 300 ppm/min, confirmando o bloqueio por subida.
+- Depois que a subida desacelerou por 30 s, foi aplicado um pulso automático de 5 ms.
+  A auditoria do loop encontrou a causa: `contador_pomp` era impresso em zero e depois
+  decrementado para −1; no ciclo seguinte, o cálculo proporcional acontecia antes de
+  a correção para zero, tornando a estimativa inválida e selecionando o piso de 5 ms.
+  O CO₂ automático foi desligado em 46.295 ppm. A taxa líquida anterior foi
+  −589 ppm/min; este valor ainda não distingue fuga física de troca de ar/transiente.
+- Revisão gravada: o contador agora decrementa somente acima de zero, para que a
+  estimativa proporcional seja calculada no mesmo ciclo em que o cooldown termina.
+  Compilado e gravado com `--verify`: 32.070/32.256 bytes de Flash (186 bytes livres),
+  923/2.048 bytes de RAM. O CO₂ automático está salvo como desligado; validar a estimativa
+  corrigida na próxima ativação monitorada.
+- Referências de fabricante consultadas: [Thermo Fisher Steri-Cult manual](https://assets.thermofisher.com/TFS-Assets/LED/manuals/forma-stericult-co2-incubator-usermanual-7023307.pdf)
+  especifica ±0,1 °C de controle, ±0,2 °C de uniformidade e ±0,1% CO₂ a 5%;
+  [Memmert ICO105](https://www.memmert.com/en/products/incubators/co2-incubator/ico105-2/pdf)
+  lista sondas Pt100 redundantes, aquecimento em seis lados e calibração de fábrica
+  no centro da câmara a 37 °C/5% CO₂. O [manual Thermo Heracell](https://documents.thermofisher.com/TFS-Assets/LED/manuals/FILE-1907-718829-EN.pdf)
+  descreve leve pressurização e saída por compensação de pressão; o [manual Thermo BBD](https://tools.thermofisher.com/content/sfs/manuals/D21735~.pdf)
+  especifica um respiro para impedir acumulação indesejada de pressão.
+- Comparação prática: nossa leitura exterior variou de 36,1 a 37,5 °C no aquecimento,
+  com pico observado 0,5 °C acima da meta. Não há ainda calibração contra termômetro
+  rastreável nem mapa de uniformidade; portanto, não é possível comparar precisão real
+  com as especificações comerciais. A câmara deve permanecer ventilada/compensada, não
+  hermeticamente pressurizada.

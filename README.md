@@ -215,7 +215,7 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A última compilação para Uno usa 32.084 bytes de Flash
+serial antes de compilar/gravar. A última compilação para Uno usa 32.070 bytes de Flash
 (99%) e 923 bytes de RAM global (45%), deixando 1.125 bytes para pilha e chamadas.
 
 A tela usa ícones de CO₂, chama e ventilador com estado ligado/desligado. As bolhas

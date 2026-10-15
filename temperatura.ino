@@ -386,10 +386,6 @@ void loop()
        ventilador_status = 0;
     }
 
-    if(contador_pomp < 0){
-      contador_pomp = 0;
-    }
-    
     if(sensorReadOk && CO2i == 0){
       Serial.println(F("EVENT,co2_zero_reading,invalid_for_control"));
     }
@@ -476,7 +472,7 @@ void loop()
     printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
 
-    contador_pomp = contador_pomp -1;
+    if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
     // delay(60000);
 }
