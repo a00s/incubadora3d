@@ -295,9 +295,11 @@ desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato
 físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
 proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
 de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
-limitada a 20 s; o primeiro pulso começa assim que há demanda e os seguintes respeitam
-30 s entre inícios. O aquecedor desliga ao
-atingir 37,0 °C e tem corte independente em 37,1 °C. A telemetria inclui a demanda do PID e
+limitada a 20 s; um novo pulso pode começar após pelo menos 10 s desligado. O controle
+revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um pulso se a demanda
+cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
+necessária à manutenção. O aquecedor corta ao atingir 37,0 °C e tem limite independente de
+37,1 °C. A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O ajuste inicial ainda precisa de validação térmica prolongada por causa da inércia observada.
 Enquanto o CO₂ estiver

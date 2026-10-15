@@ -43,8 +43,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_STABLE_RATE_PPM_PER_SEC 5.0f
 #define CO2_STABLE_TIME_MS 30000UL
 #define HEATER_SETPOINT_C 37.0
-#define HEATER_MIN_SWITCH_MS 10000UL
-#define HEATER_PID_PULSE_INTERVAL_MS 30000UL
+#define HEATER_MIN_OFF_MS 10000UL
 #define HEATER_PID_MAX_ON_MS 20000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
 #define HEATER_PID_KP_MS_PER_C 20000.0f
@@ -71,12 +70,10 @@ int32_t lastCo2RawPpm = 0;
 uint16_t lastCo2PulseMs = 0;
 int32_t eeprom_contador_int = 0;
 int ventilador_status = 0;
-unsigned long heaterLastSwitchAt = 0;
 unsigned long heaterPidLastUpdateAt = 0;
-unsigned long heaterLastPulseStartedAt = 0;
+unsigned long heaterLastTransitionAt = 0;
 unsigned long heaterPulseStartedAt = 0;
 uint16_t heaterCurrentPulseMs = 0;
-bool heaterHasPulsed = false;
 unsigned long heaterTrendReferenceAt = 0;
 float heaterTrendReferenceC = 0.0f;
 float heaterTempRateCPerMin = 0.0f;
@@ -210,7 +207,6 @@ void setup()
     dhtint.begin();
     pinMode(HEATER,OUTPUT);
     digitalWrite(HEATER,HIGH);
-    heaterLastSwitchAt = millis();
     pinMode(CO2PUMP,OUTPUT);
     digitalWrite(CO2PUMP,HIGH);
 
@@ -524,7 +520,7 @@ void loop()
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(co2TrendReady && contador_pomp == 0 ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.println(co2RangeWrapLatched ? 1 : 0);
 
     if (contador_pomp > 0) contador_pomp--;
-    serviceInputsForTwoSeconds();
+    serviceInputsForTwoSeconds(t);
     // delay(60000);
 }
 
@@ -983,7 +979,7 @@ void setHeaterEnabled(bool enabled) {
   }
   if (!enabled && digitalRead(HEATER) == LOW) {
     digitalWrite(HEATER, HIGH);
-    heaterLastSwitchAt = millis();
+    heaterLastTransitionAt = millis();
     heaterPidDemandMs = 0;
   }
   if (!enabled) heaterPidIntegralMs = 0.0f;
@@ -994,7 +990,7 @@ void controlHeater(float temperature, unsigned long now) {
   if (botao_aquecedor_onoff != 1 || isnan(temperature)) {
     if (heaterOn) {
       digitalWrite(HEATER, HIGH);
-      heaterLastSwitchAt = now;
+      heaterLastTransitionAt = now;
     }
     heaterPidDemandMs = 0;
     heaterPidIntegralMs = 0.0f;
@@ -1029,17 +1025,17 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
+  if (errorC < 0.0f || heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
+    heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
+                           ((float)elapsedMs / 60000.0f);
+    if (heaterPidIntegralMs < 0.0f) heaterPidIntegralMs = 0.0f;
+    if (heaterPidIntegralMs > HEATER_PID_MAX_ON_MS) {
+      heaterPidIntegralMs = HEATER_PID_MAX_ON_MS;
+    }
+  }
   if (errorC <= 0.0f || temperature >= HEATER_HARD_CUTOFF) {
-    heaterPidIntegralMs = 0.0f;
     heaterPidDemandMs = 0;
   } else {
-    if (heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
-      heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
-                             ((float)elapsedMs / 60000.0f);
-      if (heaterPidIntegralMs > HEATER_PID_MAX_ON_MS) {
-        heaterPidIntegralMs = HEATER_PID_MAX_ON_MS;
-      }
-    }
     float derivativeMs = heaterTrendReady
       ? -HEATER_PID_KD_MS_PER_C_MIN * heaterTempRateCPerMin
       : 0.0f;
@@ -1050,21 +1046,21 @@ void controlHeater(float temperature, unsigned long now) {
     heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);
   }
   heaterPidLastUpdateAt = now;
+  if (heaterOn && heaterPidDemandMs < heaterCurrentPulseMs) {
+    heaterCurrentPulseMs = heaterPidDemandMs;
+  }
 
   bool safeToHeat = temperature < HEATER_SETPOINT_C &&
                     temperature < HEATER_HARD_CUTOFF;
   if (heaterOn && (!safeToHeat || now - heaterPulseStartedAt >= heaterCurrentPulseMs)) {
     digitalWrite(HEATER, HIGH);
-    heaterLastSwitchAt = now;
+    heaterLastTransitionAt = now;
   } else if (!heaterOn && safeToHeat && heaterPidDemandMs > 0 &&
-             (!heaterHasPulsed || now - heaterLastPulseStartedAt >= HEATER_PID_PULSE_INTERVAL_MS) &&
-             now - heaterLastSwitchAt >= HEATER_MIN_SWITCH_MS) {
+             now - heaterLastTransitionAt >= HEATER_MIN_OFF_MS) {
     heaterCurrentPulseMs = heaterPidDemandMs;
     heaterPulseStartedAt = now;
-    heaterLastPulseStartedAt = now;
-    heaterHasPulsed = true;
     digitalWrite(HEATER, LOW);
-    heaterLastSwitchAt = now;
+    heaterLastTransitionAt = now;
   }
 }
 
@@ -1111,10 +1107,11 @@ bool updateButtonState(int pin, bool &stable, bool &candidate, uint8_t &samples)
   return false;
 }
 
-void serviceInputsForTwoSeconds() {
+void serviceInputsForTwoSeconds(float temperature) {
   unsigned long started = millis();
   while (millis() - started < 2000UL) {
     unsigned long now = millis();
+    controlHeater(temperature, now);
     processSerialCommands();
     finishCo2ClickSequenceIfExpired(now);
     bool co2Pressed = updateButtonState(BOTAO_CO2, co2ButtonStable, co2ButtonCandidate, co2ButtonDebounceCount);

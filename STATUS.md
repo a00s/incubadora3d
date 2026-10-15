@@ -1157,3 +1157,34 @@ filamento/processo e 39 STL das demais peças preservados.
   a próxima fase fixa, mas ainda não demonstrou alcançar e manter 37,0 °C. Repetir observação
   por mais tempo antes de alterar ganhos; não usar a coluna CO₂ como concentração válida,
   pois `co2_range_lock=1` e `co2_valid=0` durante todo o teste.
+
+## PID térmico: resolução do relé e retenção da integral
+
+- Revisão compilada e gravada em 2026-10-15: o PID também é executado no laço de 20 ms usado
+  para processar botões, usando a última leitura do DHT22. Assim, pulsos subsegundo não ficam
+  presos à atualização de telemetria a cada ~2 s. Um pulso pode ser encurtado se a demanda
+  calculada cair enquanto ele está ativo.
+- O intervalo mínimo agora é 10 s desligado, contado da última transição. Com pulso máximo de
+  20 s isso limita a operação a 2/3 de ciclo no pior caso; para um aquecedor nominal de 10 W,
+  a potência média teórica máxima fica em ~6,7 W. A placa apresentada pelo usuário informa
+  12 V / 10 W (~0,83 A na potência nominal); tensão/corrente reais não foram medidas.
+- A integral deixou de ser zerada ao cruzar 37 °C: acumula enquanto há erro positivo e é
+  reduzida gradualmente quando a temperatura passa da meta, com limites para evitar acúmulo
+  durante a saturação. A motivação foi a telemetria anterior: após chegar à meta, a demanda
+  desaparecia e a temperatura depois caiu até 36,5 °C.
+- Upload verificado: 32.238 bytes de Flash (18 bytes livres) e 983 bytes de RAM. BOOT_COUNT=141
+  restaurou a trava de CO₂; automático desligado, `co2_valid=0`, válvula fechada em toda a
+  observação.
+- Em aproximadamente 5 min de telemetria, a leitura começou em 36,9 °C, chegou a 37,1 °C,
+  depois oscilou para baixo até 36,5 °C. A demanda cresceu gradualmente e os pulsos chegaram
+  a ~14 s ligado / 10 s desligado; a temperatura voltou a 37,0–37,1 °C por cerca de 1 min,
+  sem ultrapassar 37,1 °C. Depois caiu novamente a 36,7 °C com novos pulsos de ~12 s. A faixa
+  ainda não se manteve por toda a janela; são necessárias mais observações e não há espaço
+  suficiente na Flash para adicionar recursos sem otimização prévia.
+- Referências técnicas consultadas: [manual OMEGA CN Series](https://assets.omega.com/manuals/M4636.pdf)
+  descreve integral para erro persistente e derivada como antecipação baseada na taxa; o
+  [manual OMEGA CN2116](https://assets.omega.com/manuals/M2950.pdf) descreve ajuste de saída
+  (cutback) para limitar ultrapassagem; a [nota Watlow sobre posição do sensor](https://www.watlow.com/resources-and-support/engineering-tools/knowledge-base/sensor-placement-in-a-thermal-system)
+  explica que o atraso entre fonte térmica, sensor e carga altera a oscilação. Para esta
+  montagem, continuam desconhecidos a posição térmica exata do DHT, a tensão no aquecedor e
+  a perda de calor da câmara.
