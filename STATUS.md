@@ -293,3 +293,28 @@ filamento/processo e 39 STL das demais peças preservados.
   instável. O limite de rampa baseado em `1 + 1/2` impedia que a dose crescesse acima
   de 1 ms. Correção: piso automático de 5 ms e limite de rampa com incremento mínimo;
   compilada e gravada para a próxima dose.
+
+## Observação adaptativa de CO₂ e correção do indicador de boots
+
+- 2026-10-15, monitor USB aberto com o controle automático de CO₂ e aquecimento
+  habilitados. O contador serial `BOOT_COUNT` marcou 37 ao iniciar o monitor; abrir
+  a porta serial causa reset por DTR e também incrementa esse contador.
+- A leitura caiu de aproximadamente 25.265 ppm para 24.967 ppm; a taxa em janela
+  de 60 s foi −252 ppm/min. O controle aplicou 45 ms e depois 67 ms.
+- A resposta ao pulso de 67 ms foi atrasada: o pico registrado após o pulso foi
+  +1.006 ppm e a janela marcou +964 ppm/min. Depois o controle usou pulsos de 5 e
+  7 ms; a taxa voltou para −285 ppm/min. A rampa então subiu para 10 e 15 ms,
+  acompanhando a perda observada, sem extrapolar novamente para dezenas de ms.
+- As janelas subsequentes marcaram −257 e −125 ppm/min. A concentração ficou perto
+  de 25,2–25,5 mil ppm. Isso confirma que a dose útil muda com o tempo e que a
+  resposta tardia deve permanecer separada da taxa instantânea.
+- A temperatura externa variou de 36,7 a 37,7 °C com o aquecimento habilitado;
+  chegou momentaneamente a 37,7 °C e depois retornou a 37,0–37,1 °C. O ventilador
+  ligou quando a leitura interna chegou a 30,0 °C. CO₂, temperatura e umidade foram
+  reportados válidos durante a observação.
+- Corrigi o cabeçalho: a cor mantém o estado geral, sem “1 FORA/2 FORA”; o contador
+  `R<n>` volta ao display. A leitura de CO₂ muda para vermelho fora da faixa e
+  verde dentro; a temperatura muda para vermelho fora e mantém cor neutra dentro.
+  Quando um pulso termina, as bolhas continuam animadas por 3 segundos para tornar
+  visíveis os pulsos curtos. Compilado para Uno: 32.214 bytes Flash (99%), 923 bytes
+  RAM (45%).

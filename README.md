@@ -423,3 +423,8 @@ pontas que começavam suspensas nessa orientação. STL e STEP individuais estã
 nessa posição; o conjunto STEP e o visualizador mostram a posição montada.
 Suportes desativados somente para a bucha e suas duas amostras no 3MF. As outras
 configurações salvas foram preservadas. Conferir novamente o encaixe no TPU 85A.
+
+No cabeçalho do display, a cor indica o estado geral e `R<n>` mostra a contagem de
+boots. A leitura de CO₂ e a temperatura também mudam de cor individualmente quando
+saem da faixa. As bolhas permanecem animadas por 3 s após um pulso, mesmo quando a
+válvula ficou aberta por poucos milissegundos.
