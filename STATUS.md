@@ -1403,6 +1403,9 @@ filamento/processo e 39 STL das demais peças preservados.
   em 754,2 s, média de aproximadamente −130 ppm/min ao longo de 5,5 min. A deriva não estava
   estabilizando em 10.000 ppm nesse intervalo; como a trava permaneceu ativa, isso não informa
   a concentração real nem confirma que exista um limite inferior de 10.000 ppm.
+- Continuação da janela longa: de 14.444 ppm em 424,6 s até 13.559 ppm em 833,9 s, média de
+  −130 ppm/min por ~6,8 min. A leitura não mostra platô nessa janela; permanece inválida pela
+  trava firmware e não pode ser interpretada como concentração ou vazamento real.
 - Referências: [manual MH-Z16 v2.6](https://www.winsen-sensor.com/d/files/manual/mh-z16.pdf),
   [página oficial do MH-Z16](https://www.winsen-sensor.com/product/mh-z16.html),
   [manual MH-Z16 v2.4](https://www.winsen-sensor.com/d/files/MH-Z16.pdf).
