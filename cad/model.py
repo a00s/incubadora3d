@@ -56,7 +56,7 @@ FOOT=[(0.0,0.95),(0.9,0.95),(1.65,1.75),(2.8,1.75),(3.0,1.5)]
 LIP_CENTERS=[(0,.65),(-.7,1.1),(-2.5,2.4)]
 BODY_INNER_LIP_CENTERS=[(0,.65),(-.7,-.4),(-2.5,-.8)]
 LIP_WALL=.6
-P.update(gasket_material_hardness='TPU 95A',gasket_lip_count=2,gasket_lip_wall=.6,
+P.update(gasket_material_hardness='eSUN TPU-LW; calibrar dureza e fluxo',gasket_lip_count=2,gasket_lip_wall=.6,
          gasket_free_lip_depth=2.5,gasket_closed_face_gap=1,
          gasket_nominal_lip_deflection=1.5,gasket_leak_test='pending physical test')
 def rounded_wire(inset,y):
@@ -832,7 +832,7 @@ P.update(sensor_tpu_wall_mm=.6,sensor_tpu_inner_lip_mm=.55,
          sensor_tpu_outer_lip_mm=.5,sensor_tpu_inner_lip_count=2,
          sensor_tpu_outer_lip_count=2,sensor_tpu_sleeve_od_mm=19.8,
          sensor_tpu_core_id_mm=18.6,sensor_tpu_neck_wall_mm=1.7,
-         sensor_tpu_flange_overlap_mm=1.6,sensor_tpu_material='TPU 85A',
+         sensor_tpu_flange_overlap_mm=1.6,sensor_tpu_material='eSUN TPU-LW',
          sensor_tpu_print_face='outer collar on bed',sensor_tpu_fit_test='pending physical insertion and seal test')
 sensor_seal=sensor_grommet(P['sensor_seal_bore'])
 add('bucha_sensor_TPU',sensor_seal,'#45ae89','sensor_seal')
