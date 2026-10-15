@@ -428,6 +428,8 @@ void loop()
     float t = dht.readTemperature();
     float t_interna = dhtint.readTemperature();      
     processSerialCommands();
+    // Apply the heater safety cut before this loop can pulse the CO2 valve.
+    controlHeater(t, millis());
     if (validCo2) last_co2i = CO2i;
     // Serial.println(t_interna);
     if(t_interna >= MAX_INTERNAL_TEMP && ventilador_status == 0){
@@ -505,7 +507,6 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    controlHeater(t, millis());
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready,heater_pid_demand_ms,heater_temp_rate_c_min,co2_range_lock"));
