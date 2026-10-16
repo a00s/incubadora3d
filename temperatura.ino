@@ -134,7 +134,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 120;    // ms; teto absoluto após um pulso de 167 ms causar excesso
+const int DELAY_MAXIMO = 80;     // ms; limita o pulso enquanto a resposta da válvula se adapta
 const int DELAY_MINIMO = 20;      // ms; pulsos menores não geraram resposta confiável da válvula
 const int32_t CO2_INITIAL_GAIN_ESTIMATE_X100 = 1200L; // Só prior; recalibrado pela primeira resposta
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
@@ -514,10 +514,9 @@ void loop()
         Serial.print(F("EVENT,co2_pulse,calibration,ms,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
-          // Small compensated changes are dominated by sensor noise and
-          // leakage-model error; do not let them lower the gain estimate and
-          // create a much longer next pulse.
-          if (max_co2_increase >= 200) {
+          // Ignore responses below 50 ppm, where sensor noise and leak-model
+          // error dominate; larger responses update gain gradually.
+          if (max_co2_increase >= 50) {
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
             co2GainEstimatePpmPerMsX100 =
               (co2GainEstimatePpmPerMsX100 + observedGainX100 * 2L) / 3L;
