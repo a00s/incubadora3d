@@ -134,7 +134,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 250;    // ms; teto inicial, reduzido dinamicamente ao aproximar do alvo
+const int DELAY_MAXIMO = 120;    // ms; teto absoluto após um pulso de 167 ms causar excesso
 const int DELAY_MINIMO = 20;      // ms; pulsos menores não geraram resposta confiável da válvula
 const int32_t CO2_INITIAL_GAIN_ESTIMATE_X100 = 1200L; // Só prior; recalibrado pela primeira resposta
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
@@ -149,7 +149,7 @@ bool co2DoseResponsePending = false;
 bool co2GainValidatedThisBoot = false;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
-uint8_t co2ResponseLagSeconds = 60;
+uint8_t co2ResponseLagSeconds = CO2_RESPONSE_LAG_DEFAULT_MS / 1000UL;
 int32_t co2ProjectedPpm = 0;
 int32_t co2RateAtPulsePpmMin = 0;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
