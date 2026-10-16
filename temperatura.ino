@@ -147,6 +147,7 @@ int8_t displayHealthState = DISPLAY_WAIT;
 int32_t co2GainEstimatePpmPerMsX100 = CO2_INITIAL_GAIN_ESTIMATE_X100;
 bool co2DoseResponsePending = false;
 bool co2GainValidatedThisBoot = false;
+bool co2LastResponseWeak = false;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
 uint8_t co2ResponseLagSeconds = CO2_RESPONSE_LAG_DEFAULT_MS / 1000UL;
@@ -515,12 +516,17 @@ void loop()
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
           // Ignore responses below 50 ppm, where sensor noise and leak-model
-          // error dominate; larger responses update gain gradually.
+          // error dominate; larger responses update gain gradually. If a pulse
+          // produces no measurable rise, the next probe steps up gradually
+          // instead of repeating the same ineffective minimum pulse forever.
           if (max_co2_increase >= 50) {
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
             co2GainEstimatePpmPerMsX100 =
               (co2GainEstimatePpmPerMsX100 + observedGainX100 * 2L) / 3L;
             co2GainValidatedThisBoot = true;
+            co2LastResponseWeak = false;
+          } else {
+            co2LastResponseWeak = true;
           }
           if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
             co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
@@ -540,6 +546,9 @@ void loop()
         }
         pulseMs = calcularDelayProporcional(co2ProjectedPpm, CO2_TARGET_PPM,
                                             co2GainEstimatePpmPerMsX100, true, pulseLimit);
+        // Step the valve probe up by 5 ms after an unmeasurable response.
+        if (co2LastResponseWeak && pulseMs < lastCo2PulseMs + 5)
+          pulseMs = lastCo2PulseMs + 5;
         Serial.print(F("EVENT,co2_pulse,ms,"));
       }
       // After reboot the valve-flow estimate is only a generic prior. Keep
