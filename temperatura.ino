@@ -146,6 +146,7 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 int8_t displayHealthState = DISPLAY_WAIT;
 int32_t co2GainEstimatePpmPerMsX100 = CO2_INITIAL_GAIN_ESTIMATE_X100;
 bool co2DoseResponsePending = false;
+bool co2GainValidatedThisBoot = false;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
 uint8_t co2ResponseLagSeconds = 60;
@@ -519,9 +520,8 @@ void loop()
           if (max_co2_increase >= 100) {
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
             co2GainEstimatePpmPerMsX100 =
-              (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
-          } else {
-            co2GainEstimatePpmPerMsX100 -= co2GainEstimatePpmPerMsX100 >> 3;
+              (co2GainEstimatePpmPerMsX100 + observedGainX100 * 2L) / 3L;
+            co2GainValidatedThisBoot = true;
           }
           if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
             co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
@@ -543,6 +543,9 @@ void loop()
                                             co2GainEstimatePpmPerMsX100, true, pulseLimit);
         Serial.print(F("EVENT,co2_pulse,ms,"));
       }
+      // After reboot the valve-flow estimate is only a generic prior. Keep
+      // the first measured probe small until this tank/valve state responds.
+      if (!co2GainValidatedThisBoot && pulseMs > 20) pulseMs = 20;
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
       co2_before_pump = CO2i;
