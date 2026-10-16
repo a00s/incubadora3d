@@ -40,8 +40,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
 #define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
 #define CO2_STABLE_TIME_MS 30000UL
-#define CO2_RESPONSE_LAG_DEFAULT_MS 60000UL
-#define CO2_RESPONSE_LAG_MIN_MS 30000UL
+#define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
+#define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 10000UL
@@ -135,7 +135,7 @@ int32_t max_co2_increase = 0;
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
 const int DELAY_MAXIMO = 250;    // ms; teto inicial, reduzido dinamicamente ao aproximar do alvo
-const int DELAY_MINIMO = 5;       // ms; evita pulsos abaixo da resolução útil da válvula
+const int DELAY_MINIMO = 20;      // ms; pulsos menores não geraram resposta confiável da válvula
 const int32_t CO2_INITIAL_GAIN_ESTIMATE_X100 = 1200L; // Só prior; recalibrado pela primeira resposta
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
@@ -517,7 +517,7 @@ void loop()
           // Small compensated changes are dominated by sensor noise and
           // leakage-model error; do not let them lower the gain estimate and
           // create a much longer next pulse.
-          if (max_co2_increase >= 100) {
+          if (max_co2_increase >= 200) {
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
             co2GainEstimatePpmPerMsX100 =
               (co2GainEstimatePpmPerMsX100 + observedGainX100 * 2L) / 3L;
@@ -545,7 +545,7 @@ void loop()
       }
       // After reboot the valve-flow estimate is only a generic prior. Keep
       // the first measured probe small until this tank/valve state responds.
-      if (!co2GainValidatedThisBoot && pulseMs > 20) pulseMs = 20;
+      if (!co2GainValidatedThisBoot && pulseMs > 40) pulseMs = 40;
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
       co2_before_pump = CO2i;
