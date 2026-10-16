@@ -44,11 +44,11 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
 #define HEATER_SETPOINT_C 37.0
-#define HEATER_MIN_OFF_MS 10000UL
-#define HEATER_PID_MAX_ON_MS 20000UL
+#define HEATER_MIN_OFF_MS 3000UL
+#define HEATER_PID_MAX_ON_MS 12000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
-#define HEATER_PID_KP_MS_PER_C 32000.0f
-#define HEATER_PID_KI_MS_PER_C_MIN 6000.0f
+#define HEATER_PID_KP_MS_PER_C 18000.0f
+#define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
 #define HEATER_HARD_CUTOFF 37.1
 #define HEATER_EMERGENCY_CUTOFF 38.0
@@ -1131,7 +1131,9 @@ void controlHeater(float temperature, unsigned long now) {
     heaterCurrentPulseMs = heaterPidDemandMs;
   }
 
-  bool safeToHeat = temperature <= HEATER_SETPOINT_C &&
+  // DHT22 resolution is 0.1 C; allow controlled heating through the narrow
+  // deadband so a quantized 37.1 reading does not force a long coast downward.
+  bool safeToHeat = temperature <= HEATER_HARD_CUTOFF &&
                     temperature < HEATER_HARD_CUTOFF;
   if (heaterOn && (!safeToHeat || now - heaterPulseStartedAt >= heaterCurrentPulseMs)) {
     digitalWrite(HEATER, HIGH);
