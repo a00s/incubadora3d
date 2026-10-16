@@ -520,6 +520,8 @@ void loop()
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
             co2GainEstimatePpmPerMsX100 =
               (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
+          } else {
+            co2GainEstimatePpmPerMsX100 -= co2GainEstimatePpmPerMsX100 >> 3;
           }
           if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
             co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
@@ -568,7 +570,7 @@ void loop()
 
     renderDisplay(t, h, t_interna, validCo2);
     if (!serialHeaderPrinted) {
-    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,humidity_pct,internal_temp_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,max_co2_rise_since_pump_ppm,pump_wait_cycles,trend_ready,heater_pid_demand_ms,heater_temp_rate_c_min,co2_range_lock,co2_projected_ppm"));
+    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,dose_rise_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm"));
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
