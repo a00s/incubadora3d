@@ -513,9 +513,14 @@ void loop()
         Serial.print(F("EVENT,co2_pulse,calibration,ms,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
-          int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
-          co2GainEstimatePpmPerMsX100 =
-            (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
+          // Small compensated changes are dominated by sensor noise and
+          // leakage-model error; do not let them lower the gain estimate and
+          // create a much longer next pulse.
+          if (max_co2_increase >= 100) {
+            int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
+            co2GainEstimatePpmPerMsX100 =
+              (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
+          }
           if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
             co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
           }
