@@ -36,7 +36,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_SENSOR_PROTOCOL_MAX_PPM 65535L
 #define CO2_SENSOR_LOCK_PPM 60000L
 #define CO2_SENSOR_LOCK_MAGIC 0xA5
-#define CO2_SENSOR_WARMUP_MS 180000UL
+#define CO2_SENSOR_WARMUP_MS 60000UL
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
 #define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
 #define CO2_STABLE_TIME_MS 30000UL
@@ -221,7 +221,7 @@ void setup()
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
     contador_pomp = POMP_WAITING_TIME;
-    Serial.println(F("CO2 auto wait 180s sensor warmup"));
+    Serial.println(F("CO2 auto wait 60s sensor warmup"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
@@ -500,7 +500,11 @@ void loop()
 //    Serial.println(CO2i);  
 
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
-        co2ProjectedPpm < CO2_CONTROL_MIN_PPM && botao_co2_onoff == 1 &&
+        // Start replenishing halfway into the allowed band. Waiting for the
+        // lower edge and then dosing only a fraction of the deficit biased
+        // the measured steady state below the 5% setpoint.
+        co2ProjectedPpm < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
+        botao_co2_onoff == 1 &&
         doseResponseReady && co2ClickCount == 0) {
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
