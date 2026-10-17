@@ -1214,9 +1214,9 @@ void serviceInputsForTwoSeconds(float temperature) {
       Serial.println(F("EVENT,both_buttons_pressed"));
       if (co2ClickCount > 0) setCo2Enabled(co2ModeAtClickSequence);
       co2ClickCount = 0;
-      reinitializeScreen();
       eeprom_contador_int = 0;
       EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
+      drawHealthIndicator();
     } else if (!bothPressed) {
       if (co2Pressed) handleCo2ButtonClick(now);
       if (heaterPressed) {
