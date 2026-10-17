@@ -15,6 +15,7 @@
 //#define ERROR_LOG_ADDRESS 0 // EEPROM address to store error log
 #define EEPROM_CONTADOR 24
 #define EEPROM_CO2_RANGE_LOCK 28
+#define EEPROM_CONTROL_STATE 29
 
 #define DHTPIN 4
 #define DHT_TEMPERATURA_INT_PIN 2
@@ -123,6 +124,8 @@ uint8_t co2ButtonDebounceCount = 0, heaterButtonDebounceCount = 0;
 uint8_t co2ClickCount = 0;
 int co2ModeAtClickSequence = 0;
 unsigned long co2ClickSequenceStart = 0;
+uint8_t heaterClickCount = 0;
+unsigned long heaterClickSequenceStart = 0;
 bool bothButtonsStable = false;
 
 // Variáveis para calcular a taxa de aumento de CO2
@@ -178,11 +181,13 @@ void setup()
 
     co2RangeWrapLatched = EEPROM.read(EEPROM_CO2_RANGE_LOCK) == CO2_SENSOR_LOCK_MAGIC;
     mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
-    Serial.print(F("PreCO2: "));
-    Serial.print(botao_co2_onoff);
-    Serial.print(F(" PreTemp: "));
-    Serial.println(botao_aquecedor_onoff);
-
+    uint8_t controlState = EEPROM.read(EEPROM_CONTROL_STATE);
+    if (controlState <= 3) {
+      botao_co2_onoff = controlState & 0x01;
+      botao_aquecedor_onoff = (controlState >> 1) & 0x01;
+    }
+    // A persisted range fault always overrides a saved CO2 enable request.
+    if (co2RangeWrapLatched) botao_co2_onoff = 0;
     EEPROM.get(EEPROM_CONTADOR, eeprom_contador_int);
     eeprom_contador_int++;
     EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
@@ -228,7 +233,6 @@ void setup()
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
 //    }
-    playLoadingDots();
     // Disable auto-calibration
   disableAutoCalibration();
   // Reveal live readings only after sensor warm-up and configuration.
@@ -627,16 +631,6 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
   }
 }
 
-void playLoadingDots() {
-  ucg.setColor(0, 8, 18, 30);
-  ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
-  for (uint8_t frame = 0; frame < 60; frame++) {
-    drawCo2Icon(52, 72, true, true, frame & 3);
-    delay(160);
-  }
-  delay(400);
-}
-
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 1, y - 1, 23, 17);
@@ -717,14 +711,15 @@ void setHealthColor() {
 }
 
 void drawHealthIndicator() {
-  ucg.setColor(0, 8, 18, 30);
+  ucg.setColor(0, co2RangeWrapLatched ? 180 : 8,
+               co2RangeWrapLatched ? 20 : 18, co2RangeWrapLatched ? 30 : 30);
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
   setHealthColor();
   ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(co2RangeWrapLatched ? 5 : 11, 16);
-  ucg.print(co2RangeWrapLatched ? F("BRUTO ppm") : F("CO2 ppm"));
+  ucg.setColor(0, co2RangeWrapLatched ? 255 : 130, co2RangeWrapLatched ? 255 : 190, 215);
+  ucg.setPrintPos(11, 16);
+  ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") : F("CO2 ppm"));
   char bootCountText[12];
   bootCountText[0] = 'R';
   ltoa(eeprom_contador_int, bootCountText + 1, 10);
@@ -835,9 +830,11 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   int8_t healthState = conditionsAtTarget == 0 ? DISPLAY_FAULT :
                        (conditionsAtTarget == 1 ? DISPLAY_WAIT : DISPLAY_READY);
   int8_t rangeLockState = co2RangeWrapLatched ? 1 : 0;
-  if (healthState != displayHealthState || rangeLockState != displayCo2RangeLock) {
+  bool lockChanged = rangeLockState != displayCo2RangeLock;
+  if (healthState != displayHealthState || lockChanged) {
     displayHealthState = healthState;
     displayCo2RangeLock = rangeLockState;
+    if (lockChanged) displayCo2RateReady = -1;
     drawHealthIndicator();
   }
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
@@ -952,13 +949,8 @@ void printStatus(unsigned long now) {
   Serial.print(F(",fan_on=")); Serial.print(ventilador_status);
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
-  Serial.print(F(",heater_pid_demand_ms=")); Serial.print(heaterPidDemandMs);
-  Serial.print(F(",heater_temp_rate_c_min=")); printFixed(heaterTempRateCPerMin, 2);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
-  Serial.print(F(",rate_ppm_s=")); printFixed(co2Rate, 2);
-  Serial.print(F(",rate_ppm_min_valid=")); Serial.print(co2RatePpmMinReady ? 1 : 0);
-  Serial.print(F(",rate_ppm_min=")); Serial.print(co2RatePpmMin);
-  Serial.print(F(",trend_ready=")); Serial.println(co2TrendReady && contador_pomp == 0 ? 1 : 0);
+  Serial.println(F(",see DATA for rates"));
 }
 
 bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) {
@@ -1009,13 +1001,7 @@ void handleSerialCommand() {
     if (setCo2Enabled(true)) Serial.println(F("ACK,CO2,ON"));
     else Serial.println(F("ERR,CO2_RANGE_LOCKED; send CO2 ACK after external verification"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ACK")) == 0) {
-    setCo2Enabled(false);
-    EEPROM.update(EEPROM_CO2_RANGE_LOCK, 0);
-    co2RangeWrapLatched = false;
-    mySensorCO2.rawLoggingEnabled = false;
-    co2RawReferenceReady = false;
-    co2ReferenceReady = false;
-    Serial.println(F("ACK,CO2,RANGE_UNLOCKED_AUTO_OFF"));
+    clearCo2RangeLock();
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 LOCK")) == 0) {
     setCo2Enabled(false);
     co2RangeWrapLatched = true;
@@ -1044,18 +1030,16 @@ void handleSerialCommand() {
 bool setCo2Enabled(bool enabled) {
   if (enabled && co2RangeWrapLatched) return false;
   int newState = enabled ? 1 : 0;
-  if (botao_co2_onoff != newState) {
-    botao_co2_onoff = newState;
-  }
+  botao_co2_onoff = newState;
+  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
   if (!enabled) digitalWrite(CO2PUMP, HIGH);
   return true;
 }
 
 void setHeaterEnabled(bool enabled) {
   int newState = enabled ? 1 : 0;
-  if (botao_aquecedor_onoff != newState) {
-    botao_aquecedor_onoff = newState;
-  }
+  botao_aquecedor_onoff = newState;
+  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
   if (!enabled && digitalRead(HEATER) == LOW) {
     digitalWrite(HEATER, HIGH);
     heaterLastTransitionAt = millis();
@@ -1171,6 +1155,31 @@ void finishCo2ClickSequence() {
   setCo2Enabled(targetState);
 }
 
+void clearCo2RangeLock() {
+  setCo2Enabled(false);
+  EEPROM.update(EEPROM_CO2_RANGE_LOCK, 0);
+  co2RangeWrapLatched = false;
+  mySensorCO2.rawLoggingEnabled = false;
+  co2RawReferenceReady = false;
+  co2ReferenceReady = false;
+  Serial.println(F("ACK,CO2,RANGE_UNLOCKED_AUTO_OFF"));
+}
+
+void finishHeaterClickSequence() {
+  uint8_t clicks = heaterClickCount;
+  heaterClickCount = 0;
+  if (clicks >= 3 && co2RangeWrapLatched) {
+    clearCo2RangeLock();
+    Serial.println(F("EVENT,co2_lock_cleared,heater_three_clicks"));
+  } else if (clicks & 1) setHeaterEnabled(!botao_aquecedor_onoff);
+}
+
+void handleHeaterButtonClick(unsigned long now) {
+  if (heaterClickCount == 0) heaterClickSequenceStart = now;
+  if (heaterClickCount < 3) heaterClickCount++;
+  if (heaterClickCount == 3 && co2RangeWrapLatched) finishHeaterClickSequence();
+}
+
 void handleCo2ButtonClick(unsigned long now) {
   if (co2ClickCount == 0) {
     co2ClickSequenceStart = now;
@@ -1220,8 +1229,8 @@ void serviceInputsForTwoSeconds(float temperature) {
     } else if (!bothPressed) {
       if (co2Pressed) handleCo2ButtonClick(now);
       if (heaterPressed) {
-        setHeaterEnabled(!botao_aquecedor_onoff);
-        Serial.print(F("EVENT,heater_toggle,button,")); Serial.println(botao_aquecedor_onoff);
+        if (co2RangeWrapLatched) handleHeaterButtonClick(now);
+        else setHeaterEnabled(!botao_aquecedor_onoff);
       }
     }
     bothButtonsStable = bothPressed;
@@ -1231,6 +1240,7 @@ void serviceInputsForTwoSeconds(float temperature) {
 
 void finishCo2ClickSequenceIfExpired(unsigned long now) {
   if (co2ClickCount > 0 && now - co2ClickSequenceStart >= 3000UL) finishCo2ClickSequence();
+  if (heaterClickCount > 0 && now - heaterClickSequenceStart >= 1500UL) finishHeaterClickSequence();
 }
 
 void processSerialCommands() {
