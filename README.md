@@ -227,8 +227,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual usa 32.124 bytes de Flash (99%) e
-1.010 bytes de RAM global (49%), deixando 132 bytes de Flash e 1.038 bytes de RAM para
+serial antes de compilar/gravar. A compilação atual usa 32.174 bytes de Flash (99%) e
+1.010 bytes de RAM global (49%), deixando 82 bytes de Flash e 1.038 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
@@ -288,7 +288,10 @@ mas não documenta nessa resposta UART como codificar valores acima de 65.535 pp
 diferença precisa ser esclarecida para a variante instalada antes de confiar em leituras
 altas. Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
 rollover, o firmware desliga a injeção, grava uma trava de segurança na EEPROM e marca a
-leitura como inválida. A trava sobrevive a reinicializações e evita interpretar um valor
+leitura como inválida. A detecção de variações começa após três minutos de aquecimento e
+usa a primeira leitura desse período como referência, ignorando o valor transitório de
+500 ppm que pode aparecer após uma falta de energia. O limite absoluto de 60.000 ppm
+continua ativo durante todo o aquecimento. A trava sobrevive a reinicializações e evita interpretar um valor
 baixo posterior como falta de CO₂. Ela só deve ser apagada pelo comando `CO2 ACK` depois de
 uma purga física conhecida para o ar ambiente; um valor baixo lido após rollover, sozinho,
 não comprova que o nível voltou ao normal. `CO2 ACK` mantém o automático desligado. O

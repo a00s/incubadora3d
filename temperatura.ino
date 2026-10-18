@@ -38,7 +38,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_SENSOR_PROTOCOL_MAX_PPM 65535L
 #define CO2_SENSOR_LOCK_PPM 60000L
 #define CO2_SENSOR_LOCK_MAGIC 0xA5
-#define CO2_SENSOR_WARMUP_MS 60000UL
+#define CO2_SENSOR_WARMUP_MS 180000UL
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
 #define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
 #define CO2_STABLE_TIME_MS 30000UL
@@ -338,7 +338,6 @@ void loop()
     bool sensorReadOk = sensorPpm >= 0;
     if (sensorReadOk) {
       CO2i = sensorPpm;
-      int32_t rawCo2Jump = sensorPpm - lastCo2RawPpm;
       if (sensorPpm >= CO2_SENSOR_LOCK_PPM && !co2RangeWrapLatched) {
         co2RangeWrapLatched = true;
         mySensorCO2.rawLoggingEnabled = true;
@@ -346,17 +345,26 @@ void loop()
         setCo2Enabled(false);
         Serial.println(F("EVENT,co2_near_protocol_limit,auto_locked_persistently"));
       }
-      if (co2RawReferenceReady && (rawCo2Jump >= 15000 || rawCo2Jump <= -15000)) {
-        co2RangeWrapLatched = true;
-        mySensorCO2.rawLoggingEnabled = true;
-        EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
-        setCo2Enabled(false);
-        Serial.print(F("EVENT,co2_protocol_jump_suspected,delta_ppm,"));
-        Serial.print(rawCo2Jump);
-        Serial.println(F(",control_locked_until_restart"));
+      if (millis() < CO2_SENSOR_WARMUP_MS) {
+        lastCo2RawPpm = sensorPpm;
+        co2RawReferenceReady = false;
+      } else if (!co2RawReferenceReady) {
+        // Treat the first post-warmup value as baseline; MH-Z16 may report 500 ppm at boot.
+        lastCo2RawPpm = sensorPpm;
+        co2RawReferenceReady = true;
+      } else {
+        int32_t rawCo2Jump = sensorPpm - lastCo2RawPpm;
+        if (rawCo2Jump >= 15000 || rawCo2Jump <= -15000) {
+          co2RangeWrapLatched = true;
+          mySensorCO2.rawLoggingEnabled = true;
+          EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
+          setCo2Enabled(false);
+          Serial.print(F("EVENT,co2_protocol_jump_suspected,delta_ppm,"));
+          Serial.print(rawCo2Jump);
+          Serial.println(F(",control_locked_until_restart"));
+        }
+        lastCo2RawPpm = sensorPpm;
       }
-      lastCo2RawPpm = sensorPpm;
-      co2RawReferenceReady = true;
     } else {
       CO2i = -1;
       Serial.println(F("EVENT,co2_sensor_read_failed"));
