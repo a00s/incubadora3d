@@ -227,16 +227,16 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual usa 32.180 bytes de Flash (99%) e
-1.003 bytes de RAM global (48%), deixando 76 bytes de Flash e 1.045 bytes de RAM para
+serial antes de compilar/gravar. A compilação atual usa 32.124 bytes de Flash (99%) e
+1.010 bytes de RAM global (49%), deixando 132 bytes de Flash e 1.038 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
 variação do CO₂, mantendo os ícones animados e os estados ON/OFF na faixa inferior.
 O cabeçalho mantém a cor de estado e o contador de reinicializações. As bolhas sobem
 por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor
-gira enquanto o ventilador funciona. Leituras sem alteração não redesenham os campos
-de texto.
+gira enquanto o ventilador funciona. Ao mudar uma leitura, o campo correspondente é
+redesenhado.
 
 As cores de fundo indicam falha, espera ou operação normal. Durante o aquecimento do
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
@@ -272,9 +272,15 @@ percentual), alinhada à precisão declarada por fabricantes de incubadoras prof
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
 de temperatura é 36,9–37,1 °C. O aquecedor liga ao cair para 36,9 °C e desliga ao chegar
 a 37,0 °C, com corte de segurança em 37,1 °C.
-Se a leitura de temperatura falhar (`NaN`), o firmware desabilita o aquecedor e registra
-`EVT,SAFE_OFF`, mas preserva o estado do automático de CO₂. Uma temperatura igual ou
-superior a 38,0 °C também desliga o automático de CO₂.
+Se a leitura de temperatura falhar (`NaN`), o firmware desliga temporariamente a saída do
+aquecedor e preserva os estados habilitados do aquecedor e do CO₂. Quando a leitura volta a
+ser válida, o controle do aquecedor retoma sozinho. Se a falha persistir por 60 s, o firmware
+registra `EVT,SAFE_OFF` e desliga ambos os controles. A tela mostra o motivo do corte no
+cabeçalho em vermelho; os ícones inferiores mostram quais controles ficaram desligados. Uma
+temperatura igual ou superior a 38,0 °C aciona `EVT,SAFE_OFF` imediatamente e desliga ambos.
+Durante a falha curta, o cabeçalho mostra `TEMP LOST` e o aquecedor mostra `WAIT`; no corte
+persistente, o cabeçalho mostra `SENSOR FAIL`; no corte por calor excessivo, mostra `TEMP TOO HOT`.
+O motivo do corte fica salvo até o usuário reativar um controle.
 O valor medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
 (até 65.535 ppm); a biblioteca local `NDIRZ16` lê os dois bytes como `uint16_t`, conforme
 o exemplo de leitura `0x86` do manual. A página da Winsen também lista variantes de 0–10%Vol,

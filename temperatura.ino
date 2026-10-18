@@ -16,6 +16,7 @@
 #define EEPROM_CONTADOR 24
 #define EEPROM_CO2_RANGE_LOCK 28
 #define EEPROM_CONTROL_STATE 29
+#define EEPROM_SAFETY_FAULT 30
 
 #define DHTPIN 4
 #define DHT_TEMPERATURA_INT_PIN 2
@@ -75,6 +76,7 @@ int32_t eeprom_contador_int = 0;
 int ventilador_status = 0;
 unsigned long heaterPidLastUpdateAt = 0;
 unsigned long heaterLastTransitionAt = 0;
+unsigned long heaterSensorFaultSince = 0;
 unsigned long heaterPulseStartedAt = 0;
 uint16_t heaterCurrentPulseMs = 0;
 unsigned long heaterTrendReferenceAt = 0;
@@ -96,6 +98,8 @@ int32_t displayCo2Ppm = -2;
 int8_t displayCo2Quality = -1;
 int8_t displayTempQuality = -1;
 int8_t displayCo2RangeLock = -1;
+int8_t displaySafetyAlert = -1;
+uint8_t safetyFault = 0;
 int16_t displayTempTenths = 32767;
 int16_t displayHumidityPercent = 32767;
 int16_t displayInternalTempTenths = 32767;
@@ -106,6 +110,7 @@ char displayInternalTempText[8] = "";
 char displayCo2RateText[8] = "";
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
+int8_t displayHeaterPaused = -1;
 int8_t displayFanOn = -1;
 int8_t displayCo2Active = -1;
 int8_t displayHeaterActive = -1;
@@ -180,6 +185,8 @@ void setup()
     // -------------------- DEBUG --------------------------
 
     co2RangeWrapLatched = EEPROM.read(EEPROM_CO2_RANGE_LOCK) == CO2_SENSOR_LOCK_MAGIC;
+    uint8_t savedSafetyFault = EEPROM.read(EEPROM_SAFETY_FAULT);
+    safetyFault = savedSafetyFault == 0xC1 ? 1 : (savedSafetyFault == 0xC2 ? 2 : 0);
     mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
     uint8_t controlState = EEPROM.read(EEPROM_CONTROL_STATE);
     if (controlState <= 3) {
@@ -705,27 +712,34 @@ void serviceActivityIconAnimation() {
 }
 
 void setHealthColor() {
-  if (co2RangeWrapLatched || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
+  if (displaySafetyAlert || co2RangeWrapLatched || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
   else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
   else ucg.setColor(0, 50, 220, 125);
 }
 
 void drawHealthIndicator() {
-  ucg.setColor(0, co2RangeWrapLatched ? 180 : 8,
-               co2RangeWrapLatched ? 20 : 18, co2RangeWrapLatched ? 30 : 30);
+  uint8_t fault = co2RangeWrapLatched || displaySafetyAlert;
+  ucg.setColor(0, fault ? 180 : 8, fault ? 20 : 18, 30);
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
-  setHealthColor();
+  if (fault || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
+  else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
+  else ucg.setColor(0, 50, 220, 125);
   ucg.drawBox(2, 3, 5, 17);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, co2RangeWrapLatched ? 255 : 130, co2RangeWrapLatched ? 255 : 190, 215);
+  ucg.setColor(0, fault ? 255 : 130, fault ? 255 : 190, 215);
   ucg.setPrintPos(11, 16);
-  ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") : F("CO2 ppm"));
-  char bootCountText[12];
-  bootCountText[0] = 'R';
-  ltoa(eeprom_contador_int, bootCountText + 1, 10);
-  ucg.setColor(0, 230, 235, 240);
-  ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 16);
-  ucg.print(bootCountText);
+  if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
+  else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
+  else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
+  else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") : F("CO2 ppm"));
+  if (!displaySafetyAlert) {
+    char bootCountText[12];
+    bootCountText[0] = 'R';
+    ltoa(eeprom_contador_int, bootCountText + 1, 10);
+    ucg.setColor(0, 230, 235, 240);
+    ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 16);
+    ucg.print(bootCountText);
+  }
 }
 
 void drawDisplayFrame() {
@@ -787,37 +801,11 @@ void drawTextChanges(char *previous, const char *next, uint8_t x, uint8_t baseli
                      uint8_t fieldTop, uint8_t fieldHeight, uint8_t fieldWidth,
                      uint8_t bgR, uint8_t bgG, uint8_t bgB,
                      uint8_t fgR, uint8_t fgG, uint8_t fgB) {
-  uint8_t oldLength = strlen(previous);
-  uint8_t newLength = strlen(next);
-  bool redrawWhole = !displayCacheValid || oldLength != newLength ||
-                     ucg.getStrWidth(previous) != ucg.getStrWidth(next);
-  if (redrawWhole) {
-    ucg.setColor(0, bgR, bgG, bgB);
-    ucg.drawBox(x - 1, fieldTop, fieldWidth, fieldHeight);
-    ucg.setColor(0, fgR, fgG, fgB);
-    ucg.setPrintPos(x, baseline);
-    ucg.print(next);
-  } else {
-    char prefix[8];
-    char glyph[2] = {' ', '\0'};
-    for (uint8_t i = 0; i < newLength; i++) {
-      if (previous[i] == next[i]) continue;
-      memcpy(prefix, next, i);
-      prefix[i] = '\0';
-      glyph[0] = previous[i];
-      ucg_int_t oldWidth = ucg.getStrWidth(glyph);
-      glyph[0] = next[i];
-      ucg_int_t newWidth = ucg.getStrWidth(glyph);
-      ucg_int_t cellWidth = oldWidth > newWidth ? oldWidth : newWidth;
-      if (cellWidth < 1) cellWidth = 1;
-      ucg_int_t glyphX = x + ucg.getStrWidth(prefix);
-      ucg.setColor(0, bgR, bgG, bgB);
-      ucg.drawBox(glyphX, fieldTop, cellWidth + 1, fieldHeight);
-      ucg.setColor(0, fgR, fgG, fgB);
-      ucg.setPrintPos(glyphX, baseline);
-      ucg.print(next[i]);
-    }
-  }
+  ucg.setColor(0, bgR, bgG, bgB);
+  ucg.drawBox(x - 1, fieldTop, fieldWidth, fieldHeight);
+  ucg.setColor(0, fgR, fgG, fgB);
+  ucg.setPrintPos(x, baseline);
+  ucg.print(next);
   strncpy(previous, next, 7);
   previous[7] = '\0';
 }
@@ -829,11 +817,13 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
   uint8_t conditionsAtTarget = (co2AtTarget ? 1 : 0) + (temperatureAtTarget ? 1 : 0);
   int8_t healthState = conditionsAtTarget == 0 ? DISPLAY_FAULT :
                        (conditionsAtTarget == 1 ? DISPLAY_WAIT : DISPLAY_READY);
+  uint8_t safetyAlert = safetyFault ? safetyFault : (isnan(temperature) ? 3 : 0);
   int8_t rangeLockState = co2RangeWrapLatched ? 1 : 0;
   bool lockChanged = rangeLockState != displayCo2RangeLock;
-  if (healthState != displayHealthState || lockChanged) {
+  if (healthState != displayHealthState || lockChanged || safetyAlert != displaySafetyAlert) {
     displayHealthState = healthState;
     displayCo2RangeLock = rangeLockState;
+    displaySafetyAlert = safetyAlert;
     if (lockChanged) displayCo2RateReady = -1;
     drawHealthIndicator();
   }
@@ -915,14 +905,20 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     ucg.setPrintPos(8, 153); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
     displayCo2Enabled = botao_co2_onoff;
   }
-  if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
+  bool heaterPaused = isnan(temperature) && botao_aquecedor_onoff;
+  if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff ||
+      displayHeaterPaused != heaterPaused) {
     bool heating = digitalRead(HEATER) == LOW;
     drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
     ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(46, 137, 38, 18);
-    ucg.setColor(0, botao_aquecedor_onoff ? 220 : 120, botao_aquecedor_onoff ? 235 : 155, botao_aquecedor_onoff ? 250 : 175);
-    ucg.setPrintPos(52, 153); ucg.print(botao_aquecedor_onoff ? F("ON") : F("OFF"));
+    ucg.setColor(0, heaterPaused ? 255 : (botao_aquecedor_onoff ? 220 : 120),
+                 heaterPaused ? 190 : (botao_aquecedor_onoff ? 235 : 155),
+                 heaterPaused ? 45 : (botao_aquecedor_onoff ? 250 : 175));
+    ucg.setPrintPos(52, 153);
+    ucg.print(heaterPaused ? F("WAIT") : (botao_aquecedor_onoff ? F("ON") : F("OFF")));
     displayHeaterEnabled = botao_aquecedor_onoff;
+    displayHeaterPaused = heaterPaused;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
     drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
@@ -1029,6 +1025,10 @@ void handleSerialCommand() {
 
 bool setCo2Enabled(bool enabled) {
   if (enabled && co2RangeWrapLatched) return false;
+  if (enabled && safetyFault) {
+    safetyFault = 0;
+    EEPROM.update(EEPROM_SAFETY_FAULT, 0);
+  }
   int newState = enabled ? 1 : 0;
   botao_co2_onoff = newState;
   EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
@@ -1037,6 +1037,10 @@ bool setCo2Enabled(bool enabled) {
 }
 
 void setHeaterEnabled(bool enabled) {
+  if (enabled && safetyFault) {
+    safetyFault = 0;
+    EEPROM.update(EEPROM_SAFETY_FAULT, 0);
+  }
   int newState = enabled ? 1 : 0;
   botao_aquecedor_onoff = newState;
   EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
@@ -1051,16 +1055,33 @@ void setHeaterEnabled(bool enabled) {
 void controlHeater(float temperature, unsigned long now) {
   bool heaterOn = digitalRead(HEATER) == LOW;
   bool emergencyOvertemperature = temperature >= HEATER_EMERGENCY_CUTOFF;
-  bool temperatureFault = isnan(temperature) || emergencyOvertemperature;
-  if (temperatureFault &&
-      (botao_aquecedor_onoff != 0 ||
-       (emergencyOvertemperature && botao_co2_onoff != 0) || heaterOn)) {
+  bool temperatureSensorFault = isnan(temperature);
+  if (emergencyOvertemperature &&
+      (botao_aquecedor_onoff != 0 || botao_co2_onoff != 0 || heaterOn)) {
+    safetyFault = 2;
+    EEPROM.update(EEPROM_SAFETY_FAULT, 0xC2);
     Serial.println(F("EVT,SAFE_OFF"));
     setHeaterEnabled(false);
-    if (emergencyOvertemperature) setCo2Enabled(false);
+    setCo2Enabled(false);
     heaterOn = false;
+  } else if (temperatureSensorFault) {
+    if (heaterSensorFaultSince == 0) heaterSensorFaultSince = now;
+    if (heaterSensorFaultSince != 0 &&
+        now - heaterSensorFaultSince >= 60000UL &&
+        (botao_aquecedor_onoff != 0 || botao_co2_onoff != 0)) {
+      safetyFault = 1;
+      EEPROM.update(EEPROM_SAFETY_FAULT, 0xC1);
+      Serial.println(F("EVT,SAFE_OFF"));
+      setHeaterEnabled(false);
+      setCo2Enabled(false);
+    } else if (heaterOn) {
+      digitalWrite(HEATER, HIGH);
+      heaterLastTransitionAt = now;
+    }
+  } else {
+    heaterSensorFaultSince = 0;
   }
-  if (botao_aquecedor_onoff != 1 || temperatureFault) {
+  if (botao_aquecedor_onoff != 1 || temperatureSensorFault || emergencyOvertemperature) {
     if (heaterOn) {
       digitalWrite(HEATER, HIGH);
       heaterLastTransitionAt = now;
