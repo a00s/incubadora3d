@@ -288,7 +288,7 @@ mas não documenta nessa resposta UART como codificar valores acima de 65.535 pp
 diferença precisa ser esclarecida para a variante instalada antes de confiar em leituras
 altas. Ao atingir 60.000 ppm ou detectar uma variação abrupta compatível com
 rollover, o firmware desliga a injeção, grava uma trava de segurança na EEPROM e marca a
-leitura como inválida. A detecção de variações começa após três minutos de aquecimento e
+leitura como inválida. A detecção de variações começa após dois minutos de aquecimento e
 usa a primeira leitura desse período como referência, ignorando o valor transitório de
 500 ppm que pode aparecer após uma falta de energia. O limite absoluto de 60.000 ppm
 continua ativo durante todo o aquecimento. A trava sobrevive a reinicializações e evita interpretar um valor
@@ -348,7 +348,7 @@ leitura baixa por wraparound. Todo pulso automático tem teto de 60 ms. A primei
 após reinício usa a referência observada de 12 ppm/ms e fica limitada ao mesmo teto. O piso é 5 ms
 para evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
 empilhar pulsos durante a subida atrasada.
-O controle automático aguarda também 3 minutos após cada reinicialização, conforme o
+O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4
 toques 10 ms e 5 toques 20 ms, dentro de uma janela de três segundos. Os pulsos de 3
