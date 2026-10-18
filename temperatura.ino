@@ -1050,13 +1050,14 @@ void setHeaterEnabled(bool enabled) {
 
 void controlHeater(float temperature, unsigned long now) {
   bool heaterOn = digitalRead(HEATER) == LOW;
-  bool temperatureFault = isnan(temperature) ||
-                          temperature >= HEATER_EMERGENCY_CUTOFF;
+  bool emergencyOvertemperature = temperature >= HEATER_EMERGENCY_CUTOFF;
+  bool temperatureFault = isnan(temperature) || emergencyOvertemperature;
   if (temperatureFault &&
-      (botao_aquecedor_onoff != 0 || botao_co2_onoff != 0 || heaterOn)) {
+      (botao_aquecedor_onoff != 0 ||
+       (emergencyOvertemperature && botao_co2_onoff != 0) || heaterOn)) {
     Serial.println(F("EVT,SAFE_OFF"));
     setHeaterEnabled(false);
-    setCo2Enabled(false);
+    if (emergencyOvertemperature) setCo2Enabled(false);
     heaterOn = false;
   }
   if (botao_aquecedor_onoff != 1 || temperatureFault) {

@@ -227,8 +227,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual usa 31.978 bytes de Flash (99%) e
-825 bytes de RAM global (40%), deixando 278 bytes de Flash e 1.223 bytes de RAM para
+serial antes de compilar/gravar. A compilação atual usa 32.180 bytes de Flash (99%) e
+1.003 bytes de RAM global (48%), deixando 76 bytes de Flash e 1.045 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
@@ -271,8 +271,11 @@ ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0%
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
 de temperatura é 36,9–37,1 °C. O aquecedor liga ao cair para 36,9 °C e desliga ao chegar
-a 37,0 °C, com corte de segurança em 37,1 °C. O valor
-medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
+a 37,0 °C, com corte de segurança em 37,1 °C.
+Se a leitura de temperatura falhar (`NaN`), o firmware desabilita o aquecedor e registra
+`EVT,SAFE_OFF`, mas preserva o estado do automático de CO₂. Uma temperatura igual ou
+superior a 38,0 °C também desliga o automático de CO₂.
+O valor medido é separado da meta: o protocolo UART do MH-Z16 entrega ppm em um campo de 16 bits
 (até 65.535 ppm); a biblioteca local `NDIRZ16` lê os dois bytes como `uint16_t`, conforme
 o exemplo de leitura `0x86` do manual. A página da Winsen também lista variantes de 0–10%Vol,
 mas não documenta nessa resposta UART como codificar valores acima de 65.535 ppm. Essa
