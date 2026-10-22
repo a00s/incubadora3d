@@ -12,6 +12,7 @@ colors = source[source.index("void setDisplayBackground()"):source.index("void d
 alert = re.search(r"bool alert = (.*);", source).group(1)
 harness = r'''
 #include <stdint.h>
+#include <initializer_list>
 #include <assert.h>
 #define CO2_SENSOR_WARMUP_MS 120000UL
 unsigned long clockMs = 0;
@@ -20,7 +21,15 @@ unsigned long co2LastPulseAt = 0;
 bool co2RatePpmMinReady = true, co2TrendReady = true;
 int32_t co2RatePpmMin = -100;
 uint8_t co2ResponseLagSeconds = 120;
+uint8_t co2RateHistoryNext = 0;
+unsigned long co2RateHistoryTime[16] = {};
 '''+constants+function+r'''
+void measure(unsigned long now, unsigned long windowMs = 30000UL) {
+  clockMs = now;
+  co2RateHistoryTime[co2RateHistoryNext] = now - windowMs;
+  updateCo2Loss(true);
+}
+
 struct ColorRecorder {
   uint8_t r, g, b;
   void setColor(int, uint8_t red, uint8_t green, uint8_t blue) {r=red;g=green;b=blue;}
@@ -48,48 +57,67 @@ int main() {
   displayAlert = false;
   setDisplayBackground(); assert(ucg.r==8 && ucg.g==18 && ucg.b==30);
 
-  clockMs = 100000; updateCo2Loss(true);
+  measure(100000);
   assert(lossCm3Hour == -1 && !lossStable);
-  clockMs = 120000; updateCo2Loss(true);
+  // A window crossing the response boundary cannot produce even a provisional value.
+  measure(120000);
+  assert(lossCm3Hour == -1 && lossWindows == 0);
+  measure(149999);
+  assert(lossCm3Hour == -1 && lossWindows == 0);
+  measure(150000);
   assert(lossCm3Hour == 11 && !lossStable && lossWindows == 1);
-  // Correlated readings within one rolling window do not add confidence.
-  clockMs = 122000; updateCo2Loss(true);
+  measure(152000);
+  assert(!lossStable && lossWindows == 1); // Overlapping window.
+  // Actual 45-second windows cannot count again after only 30 seconds.
+  measure(180000,45000);
   assert(!lossStable && lossWindows == 1);
-  clockMs = 150000; updateCo2Loss(true);
+  measure(195000,45000);
   assert(!lossStable && lossWindows == 2);
-  clockMs = 180000; updateCo2Loss(true);
+  measure(225000);
   assert(lossStable && lossWindows == 3);
-  // A large change restarts evidence collection.
-  clockMs = 182000; co2RatePpmMin = -300; updateCo2Loss(true);
+  co2RatePpmMin = -300; measure(227000);
   assert(lossCm3Hour == 33 && !lossStable && lossWindows == 1);
-  // Repeated replenishment for over an hour retains a usable estimate.
+  // Forty frequent doses never produce confidence from contaminated windows.
   for (int i=0; i<40; ++i) {
     co2LastPulseAt = clockMs;
-    clockMs += 2000; updateCo2Loss(true);
-    assert(lossCm3Hour >= 0 && !lossStable && lossWindows == 0);
-    clockMs = co2LastPulseAt + 32000; updateCo2Loss(true);
-    assert(!lossStable && lossWindows == 1);
-    clockMs += 30000; updateCo2Loss(true);
-    assert(!lossStable && lossWindows == 2);
-    clockMs += 30000; updateCo2Loss(true);
-    assert(!lossStable && lossWindows == 3); // Still awaiting valve response.
-    clockMs = co2LastPulseAt + 122000; updateCo2Loss(true);
-    assert(lossCm3Hour == 33 && lossStable);
+    measure(co2LastPulseAt + 2000);
+    assert(!lossStable && lossWindows == 0);
+    measure(co2LastPulseAt + 32000);
+    assert(!lossStable && lossWindows == 0);
+    measure(co2LastPulseAt + 120000);
+    assert(!lossStable && lossWindows == 0);
   }
-  co2RatePpmMin = 100; clockMs += 2000; updateCo2Loss(true);
-  assert(lossCm3Hour == 33 && !lossStable && lossWindows == 0);
-  clockMs += 600001; updateCo2Loss(true);
-  assert(lossCm3Hour == -1 && !lossStable);
-  co2RatePpmMin = 0; updateCo2Loss(true);
+  // Retained estimates expire if frequent doses prevent clean measurements.
+  assert(lossCm3Hour == -1);
+  for (uint8_t lag : {90,120,180}) {
+    co2ResponseLagSeconds = lag;
+    co2LastPulseAt = clockMs;
+    measure(co2LastPulseAt + 2000);
+    measure(co2LastPulseAt + lag*1000UL + 29999);
+    assert(lossCm3Hour == -1 && lossWindows == 0);
+    measure(co2LastPulseAt + lag*1000UL + 30000);
+    assert(lossCm3Hour == 33 && !lossStable && lossWindows == 1);
+    measure(clockMs + 30000);
+    assert(!lossStable && lossWindows == 2);
+    measure(clockMs + 30000);
+    assert(lossStable && lossWindows == 3);
+    updateCo2Loss(false);
+    assert(lossCm3Hour == -1 && !lossStable && lossWindows == 0);
+  }
+  co2RatePpmMin = 0; measure(clockMs + 30000);
   assert(lossCm3Hour == 0 && !lossStable);
-  clockMs += 30000; updateCo2Loss(true);
-  clockMs += 30000; updateCo2Loss(true);
-  assert(lossCm3Hour == 0 && lossStable);
-  // Confidence depends on sample consistency, not the control's ready flag.
-  co2TrendReady = false; updateCo2Loss(true);
+  measure(clockMs + 30000); measure(clockMs + 30000);
   assert(lossStable);
-  updateCo2Loss(false);
-  assert(lossCm3Hour == -1 && !lossStable && lossWindows == 0);
+  co2TrendReady = false; measure(clockMs + 2000);
+  assert(lossStable); // Independent of the controller's ready state.
+  co2RatePpmMin = 100; measure(clockMs + 2000);
+  assert(lossCm3Hour == 0 && !lossStable && lossWindows == 0);
+  measure(clockMs + 600001);
+  assert(lossCm3Hour == -1 && !lossStable);
+  co2RatePpmMinReady = false; co2RatePpmMin = -100;
+  measure(clockMs + 2000);
+  assert(lossCm3Hour == -1 && lossWindows == 0);
+
 }
 
 '''

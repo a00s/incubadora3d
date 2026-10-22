@@ -900,9 +900,13 @@ void updateCo2Loss(bool valid) {
   }
   // Expire held estimates; never retain a measurement indefinitely.
   if (now - lossUpdatedAt > 600000UL) lossCm3Hour = -1;
-  // The rolling slope spans ~30 s. Exclude the valve pulse from that window.
-  // Remaining mixing/response uncertainty is shown in yellow, not as settled.
-  if (now - co2LastPulseAt < 30000UL || !co2RatePpmMinReady || co2RatePpmMin > 0) {
+  // Use the actual oldest timestamp: the entire slope window must begin
+  // after the last dose's response delay, even if loop timing varies.
+  unsigned long windowAge = now - co2RateHistoryTime[co2RateHistoryNext];
+  unsigned long pulseAge = now - co2LastPulseAt;
+  if (!co2RatePpmMinReady || pulseAge < windowAge ||
+      pulseAge - windowAge < (unsigned long)co2ResponseLagSeconds * 1000UL ||
+      co2RatePpmMin > 0) {
     lossWindows = 0;
     return;
   }
@@ -916,13 +920,12 @@ void updateCo2Loss(bool valid) {
   uint16_t tolerance = lossReference / 4;
   if (tolerance < 2) tolerance = 2;
   if (difference > tolerance) lossWindows = 0;
-  if (!lossWindows || now - lossConfidenceAt >= 30000UL) {
+  if (!lossWindows || now - lossConfidenceAt >= windowAge) {
     if (!lossWindows) lossReference = lossCm3Hour;
     if (lossWindows < 3) lossWindows++;
     lossConfidenceAt = now;
   }
-  lossStable = lossWindows >= 3 && now - co2LastPulseAt >=
-    (unsigned long)co2ResponseLagSeconds * 1000UL;
+  lossStable = lossWindows >= 3;
 }
 
 void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,

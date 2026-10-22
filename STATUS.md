@@ -1604,3 +1604,11 @@ filamento/processo e 39 STL das demais peças preservados.
 - Ao mudar o modo, redesenha tela e invalida caches dos campos. Áreas apagadas durante animação usam o mesmo fundo; ao sair da faixa vermelha restaura fundo e cores normais. Alerta prioriza branco também na perda; amarelo/branco de confiança aparecem no modo normal.
 - Layout e controles preservados. Removidos caches de strings sem uso e centralizadas cores para caber no Uno: 32132 bytes flash, 1001 bytes RAM.
 - Testes incluem ativação do alerta com um único sensor vermelho, leitura inválida, falha de segurança ou bloqueio; faixas verde/amarela sem alerta e cores de entrada/saída. Compilação e gravação com verificação concluídas.
+
+## Perda somente em janelas limpas após a dose — 2026-10-23
+
+- Corrigida a estimativa que antes aceitava quedas apenas 30 s após o pulso, ainda durante sua resposta atrasada. Agora a leitura mais antiga da janela móvel deve ser posterior ao tempo de resposta adaptativo (90–180 s) da última dose. Compara timestamps reais, inclusive janelas mais longas por variação do ciclo; rejeita janela que atravesse a injeção.
+- Aplica a regra a toda estimativa nova, não apenas à cor de confiança. Durante reposição/mistura mantém última estimativa amarela, sem dados anteriores mostra ---; após dez minutos sem renovação expira. Não usa duração do pulso nem pressão para inferir volume injetado.
+- Confiança exige três janelas limpas e consistentes. A separação entre amostras usa a duração real da janela para evitar contar janelas sobrepostas como independentes. Se não houver intervalo limpo suficiente entre doses, não mostra confiança.
+- Primeira estimativa pode ocorrer cerca de 120–210 s após uma dose (resposta adaptativa + janela de ~30 s); confiança requer mais duas janelas consistentes. Isso reduz a interferência conhecida da dose, mas não comprova homogeneidade física da mistura. Volume nominal de 1850 cm³, layout, alertas e controle mantidos.
+- Regressões cobrem fronteira exata da resposta, janela atravessando dose, janela real de 45 s, quarenta doses frequentes sem confiança indevida, expiração, resposta adaptativa de 90/120/180 s, dados insuficientes, zero, subida, falha de sensor e cores de alerta. Compilação Uno: 32194 bytes flash, 1001 bytes RAM.
