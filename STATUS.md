@@ -1520,3 +1520,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - Temperatura da câmara e interna lado a lado na linha antes ocupada por TEMP/UMID.
 - Taxa de CO₂ usa a linha abaixo, com unidade à esquerda e valor à direita.
 - Divisor entre temperaturas e taxa; CO₂ principal e controles mantidos.
+
+## Hierarquia das leituras no visor — 2026-10-22
+
+- CO₂ e temperatura da câmara usam a mesma fonte numérica grande em linhas próprias.
+- Temperatura interna e variação de ppm permanecem menores na faixa inferior,
+  acima dos controles. Unidade C separada para manter a fonte numérica.
