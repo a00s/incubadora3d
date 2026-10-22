@@ -164,7 +164,6 @@ char displayInternalTempText[8] = "";
 char displayCo2RateText[8] = "";
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
-int8_t displayHeaterPaused = -1;
 int8_t displayFanOn = -1;
 int8_t displayCo2Active = -1;
 int8_t displayHeaterActive = -1;
@@ -684,6 +683,7 @@ void reinitializeScreen() {
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 2, y - 1, 25, 17);
+  if (!enabled && !flowing) return;
   ucg.setColor(0, enabled ? 75 : 105, enabled ? 195 : 130, enabled ? 255 : 150);
   if (!flowing) {
     ucg.drawCircle(x + 5, y + 5, 3, UCG_DRAW_ALL);
@@ -704,6 +704,7 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 1, y - 1, 23, 17);
+  if (!enabled && !heating) return;
   uint8_t red = enabled ? 255 : 135;
   uint8_t green = enabled ? 145 : 120;
   uint8_t blue = enabled ? 55 : 135;
@@ -966,31 +967,16 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
     drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 137, 38, 18);
-    ucg.setColor(0, botao_co2_onoff ? 75 : 120, botao_co2_onoff ? 195 : 155, botao_co2_onoff ? 255 : 175);
-    ucg.setPrintPos(8, 153); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
     displayCo2Enabled = botao_co2_onoff;
   }
-  bool heaterPaused = isnan(temperature) && botao_aquecedor_onoff;
-  if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff ||
-      displayHeaterPaused != heaterPaused) {
+  if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
     drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(46, 137, 38, 18);
-    ucg.setColor(0, heaterPaused ? 255 : (botao_aquecedor_onoff ? 220 : 120),
-                 heaterPaused ? 190 : (botao_aquecedor_onoff ? 235 : 155),
-                 heaterPaused ? 45 : (botao_aquecedor_onoff ? 250 : 175));
-    ucg.setPrintPos(52, 153);
-    ucg.print(heaterPaused ? F("WAIT") : (botao_aquecedor_onoff ? F("ON") : F("OFF")));
     displayHeaterEnabled = botao_aquecedor_onoff;
-    displayHeaterPaused = heaterPaused;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
     drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
-    ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(88, 137, 38, 18);
-    ucg.setColor(0, ventilador_status ? 220 : 120, ventilador_status ? 235 : 155, ventilador_status ? 250 : 175);
-    ucg.setPrintPos(98, 153); ucg.print(ventilador_status ? F("ON") : F("OFF"));
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;

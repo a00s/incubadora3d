@@ -1536,3 +1536,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Janela de 180 s, iniciada após aquecimento do sensor e pelo menos 180 s desde a última dose. Injeção ou leitura inválida apagam o resultado e reiniciam a janela. Concentração crescente mostra ---; queda nula mostra zero.
 - Fórmula: volume × queda_ppm × 3,6 / intervalo_ms, arredondada para cm³/h inteiro. Abertura da porta e absorção também afetam a estimativa; medir com porta fechada e mistura equilibrada.
 - Compilação Uno: 32160 bytes flash, 1022 bytes RAM. Nenhuma peça ou geometria alterada.
+
+## Controles do visor apenas com ícones — 2026-10-22
+
+- Removidos textos ON/OFF e WAIT da linha inferior, liberando a área abaixo dos ícones. Alertas de temperatura permanecem no cabeçalho.
+- CO₂ e aquecimento ficam invisíveis quando desabilitados e sem atuação; habilitados aparecem parados e animam durante atuação. Pulso manual de CO₂ também mantém ícone visível durante a animação.
+- Ventilador permanece visível, parado quando desligado e animado quando em movimento.
+- Compilação Uno: 31698 bytes flash e 1022 bytes RAM. Nenhuma alteração de peças ou geometria.
