@@ -163,6 +163,7 @@ int16_t displayTempTenths = 32767;
 int16_t displayInternalTempTenths = 32767;
 int32_t displayLossCm3Hour = -2;
 int8_t displayLossStable = -1;
+int8_t displayLossHeld = -1;
 bool displayAlert = false;
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
@@ -232,7 +233,7 @@ bool co2RatePpmMinReady = false;
 // Nominal CAD gas envelope: chamber 1576 + mixer 274 cm3.
 // Contents displace gas: this is an estimate, not a calibrated leak flow meter.
 const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
-unsigned long lossUpdatedAt = 0;
+bool lossFresh = false;
 int32_t lossCm3Hour = -1;
 bool lossStable = false;
 unsigned long lossConfidenceAt = 0;
@@ -893,13 +894,13 @@ void formatPpmPerMinute(int32_t value, bool valid, char *text) {
 void updateCo2Loss(bool valid) {
   unsigned long now = millis();
   lossStable = false;
+  lossFresh = false;
   if (!valid || now < CO2_SENSOR_WARMUP_MS) {
-    lossCm3Hour = -1;
     lossWindows = 0;
     return;
   }
-  // Expire held estimates; never retain a measurement indefinitely.
-  if (now - lossUpdatedAt > 600000UL) lossCm3Hour = -1;
+  // Keep the last measured value through pauses and sensor faults.
+  // The display marks held values explicitly; only a reboot clears history.
   // Use the actual oldest timestamp: the entire slope window must begin
   // after the last dose's response delay, even if loop timing varies.
   unsigned long windowAge = now - co2RateHistoryTime[co2RateHistoryNext];
@@ -912,7 +913,7 @@ void updateCo2Loss(bool valid) {
   }
   // 1850 cm3 * ppm/min * 60 / 1e6; rounded to whole cm3/h.
   lossCm3Hour = (-co2RatePpmMin * (CO2_GAS_VOLUME_CM3 * 6L / 100) + 500) / 1000;
-  lossUpdatedAt = now;
+  lossFresh = true;
   // Confidence requires three non-overlapping, consistent slope windows.
   // A divergent reading immediately returns the result to provisional.
   int16_t difference = (int16_t)lossCm3Hour - lossReference;
@@ -1000,19 +1001,23 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayCo2RateReady = co2RateValid;
   }
 
-  bool shownLossStable = lossStable &&
-    millis() - co2LastPulseAt >= (unsigned long)co2ResponseLagSeconds * 1000UL;
+  bool responseComplete = millis() - co2LastPulseAt >=
+    (unsigned long)co2ResponseLagSeconds * 1000UL;
+  bool shownLossStable = lossStable && responseComplete;
+  bool lossHeld = lossCm3Hour >= 0 && (!lossFresh || !responseComplete);
   if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour ||
-      displayLossStable != shownLossStable) {
+      displayLossStable != shownLossStable || displayLossHeld != lossHeld) {
     char nextLossText[8];
     if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
     else strcpy_P(nextLossText, PSTR("---"));
+    if (lossHeld) strcat_P(nextLossText, PSTR("*"));
     ucg.setFont(ucg_font_7x13_mr);
     drawTextChanges(nextLossText, 73, 120, 110, 12, 54,
                     shownLossStable ? 230 : 255,
                     shownLossStable ? 235 : 190, shownLossStable ? 240 : 45);
     displayLossCm3Hour = lossCm3Hour;
     displayLossStable = shownLossStable;
+    displayLossHeld = lossHeld;
   }
 
   ucg.setFont(ucg_font_7x13_mr);

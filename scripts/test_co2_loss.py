@@ -87,14 +87,14 @@ int main() {
     measure(co2LastPulseAt + 120000);
     assert(!lossStable && lossWindows == 0);
   }
-  // Retained estimates expire if frequent doses prevent clean measurements.
-  assert(lossCm3Hour == -1);
+  // Frequent doses retain the last measurement, marked as held rather than fresh.
+  assert(lossCm3Hour == 33 && !lossFresh && !lossStable);
   for (uint8_t lag : {90,120,180}) {
     co2ResponseLagSeconds = lag;
     co2LastPulseAt = clockMs;
     measure(co2LastPulseAt + 2000);
     measure(co2LastPulseAt + lag*1000UL + 29999);
-    assert(lossCm3Hour == -1 && lossWindows == 0);
+    assert(lossCm3Hour == 33 && !lossFresh && lossWindows == 0);
     measure(co2LastPulseAt + lag*1000UL + 30000);
     assert(lossCm3Hour == 33 && !lossStable && lossWindows == 1);
     measure(clockMs + 30000);
@@ -102,7 +102,7 @@ int main() {
     measure(clockMs + 30000);
     assert(lossStable && lossWindows == 3);
     updateCo2Loss(false);
-    assert(lossCm3Hour == -1 && !lossStable && lossWindows == 0);
+    assert(lossCm3Hour == 33 && !lossFresh && !lossStable && lossWindows == 0);
   }
   co2RatePpmMin = 0; measure(clockMs + 30000);
   assert(lossCm3Hour == 0 && !lossStable);
@@ -113,10 +113,10 @@ int main() {
   co2RatePpmMin = 100; measure(clockMs + 2000);
   assert(lossCm3Hour == 0 && !lossStable && lossWindows == 0);
   measure(clockMs + 600001);
-  assert(lossCm3Hour == -1 && !lossStable);
+  assert(lossCm3Hour == 0 && !lossFresh && !lossStable);
   co2RatePpmMinReady = false; co2RatePpmMin = -100;
   measure(clockMs + 2000);
-  assert(lossCm3Hour == -1 && lossWindows == 0);
+  assert(lossCm3Hour == 0 && !lossFresh && lossWindows == 0);
 
 }
 

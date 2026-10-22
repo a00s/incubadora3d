@@ -1612,3 +1612,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Confiança exige três janelas limpas e consistentes. A separação entre amostras usa a duração real da janela para evitar contar janelas sobrepostas como independentes. Se não houver intervalo limpo suficiente entre doses, não mostra confiança.
 - Primeira estimativa pode ocorrer cerca de 120–210 s após uma dose (resposta adaptativa + janela de ~30 s); confiança requer mais duas janelas consistentes. Isso reduz a interferência conhecida da dose, mas não comprova homogeneidade física da mistura. Volume nominal de 1850 cm³, layout, alertas e controle mantidos.
 - Regressões cobrem fronteira exata da resposta, janela atravessando dose, janela real de 45 s, quarenta doses frequentes sem confiança indevida, expiração, resposta adaptativa de 90/120/180 s, dados insuficientes, zero, subida, falha de sensor e cores de alerta. Compilação Uno: 32194 bytes flash, 1001 bytes RAM.
+
+## Preservação da última estimativa de perda — 2026-10-23
+
+- Removido apagamento da perda após dez minutos sem janela limpa e em falhas temporárias de leitura. O valor medido fica disponível até uma nova medição válida ou reinicialização da placa. --- significa que ainda não houve medição desde o boot.
+- Valor retido aparece amarelo com asterisco (ex.: 11*); asterisco identifica histórico inclusive no modo de alerta vermelho, que exige textos brancos. Estimativa nova sem confiança fica amarela sem asterisco; três janelas limpas consistentes permitem branco.
+- Estado de retenção faz parte do cache de redesenho, para adicionar/remover asterisco mesmo que o número não mude. Dosagem, volume, regras de janela limpa e layout preservados.
+- Regressões confirmam retenção por quarenta reposições frequentes, pausa superior a dez minutos, leitura inválida e tendência indisponível. Compilação Uno: 32176 bytes flash, 1000 bytes RAM. Nenhuma alteração de peças ou geometria.
