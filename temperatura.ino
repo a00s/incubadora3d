@@ -161,12 +161,9 @@ int8_t displaySafetyAlert = -1;
 uint8_t safetyFault = 0;
 int16_t displayTempTenths = 32767;
 int16_t displayInternalTempTenths = 32767;
-char displayCo2Text[8] = "";
-char displayTempText[8] = "";
-char displayInternalTempText[8] = "";
-char displayCo2RateText[8] = "";
-char displayLossText[8] = "";
 int32_t displayLossCm3Hour = -2;
+int8_t displayLossStable = -1;
+bool displayAlert = false;
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
 int8_t displayFanOn = -1;
@@ -232,6 +229,17 @@ uint8_t co2RateHistoryCount = 0;
 uint8_t co2RateHistoryNext = 0;
 bool co2RatePpmMinReady = false;
 
+// Nominal CAD gas envelope: chamber 1576 + mixer 274 cm3.
+// Contents displace gas: this is an estimate, not a calibrated leak flow meter.
+const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
+unsigned long lossUpdatedAt = 0;
+int32_t lossCm3Hour = -1;
+bool lossStable = false;
+unsigned long lossConfidenceAt = 0;
+uint16_t lossReference = 0;
+uint8_t lossWindows = 0;
+
+
 // Variáveis globais para aprendizado adaptativo
 // float media_eficiencia = 0.0;
 // int contagem_aberturas = 0;
@@ -293,7 +301,7 @@ void setup()
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
     contador_pomp = POMP_WAITING_TIME;
-    Serial.println(F("CO2 auto wait 60s sensor warmup"));
+    Serial.println(F("CO2 warmup 120s"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
@@ -579,6 +587,8 @@ void loop()
 //    Serial.print("\tCO2: ");
 //    Serial.println(CO2i);  
 
+    // Capture the falling trend before a replenishment pulse resets its state.
+    updateCo2Loss(validCo2);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         // Start replenishing halfway into the allowed band. Waiting for the
         // lower edge and then dosing only a fraction of the deficit biased
@@ -685,11 +695,20 @@ void reinitializeScreen() {
     drawDisplayFrame();
 }
 
+void setDisplayBackground() {
+  ucg.setColor(0, displayAlert ? 160 : 8, displayAlert ? 8 : 18, displayAlert ? 12 : 30);
+}
+
+void setDisplayForeground(uint8_t r, uint8_t g, uint8_t b) {
+  if (displayAlert) ucg.setColor(0, 255, 255, 255);
+  else ucg.setColor(0, r, g, b);
+}
+
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  setDisplayBackground();
   ucg.drawBox(x - 2, y - 1, 25, 17);
   if (!enabled && !flowing) return;
-  ucg.setColor(0, enabled ? 75 : 105, enabled ? 195 : 130, enabled ? 255 : 150);
+  setDisplayForeground(enabled ? 75 : 105, enabled ? 195 : 130, enabled ? 255 : 150);
   if (!flowing) {
     ucg.drawCircle(x + 5, y + 5, 3, UCG_DRAW_ALL);
     ucg.drawCircle(x + 15, y + 2, 2, UCG_DRAW_ALL);
@@ -707,14 +726,14 @@ void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame
 }
 
 void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  setDisplayBackground();
   ucg.drawBox(x - 1, y - 1, 23, 17);
   if (!enabled && !heating) return;
   uint8_t red = enabled ? 255 : 135;
   uint8_t green = enabled ? 145 : 120;
   uint8_t blue = enabled ? 55 : 135;
   if (heating && (frame & 1)) green = 185;
-  ucg.setColor(0, red, green, blue);
+  setDisplayForeground(red, green, blue);
   int8_t sway = heating && (frame & 1) ? 2 : 0;
   ucg.drawLine(x + 10 + sway, y + 1, x + 15, y + 7);
   ucg.drawLine(x + 15, y + 7, x + 17, y + 11);
@@ -730,9 +749,9 @@ void drawHeaterIcon(uint8_t x, uint8_t y, bool enabled, bool heating, uint8_t fr
 }
 
 void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t frame) {
-  ucg.setColor(0, 8, 18, 30);
+  setDisplayBackground();
   ucg.drawBox(x - 1, y - 1, 21, 17);
-  ucg.setColor(0, enabled ? 75 : 130, enabled ? 195 : 145, enabled ? 255 : 160);
+  setDisplayForeground(enabled ? 75 : 130, enabled ? 195 : 145, enabled ? 255 : 160);
   static const int8_t bladeX[12] PROGMEM = {0, 4, 6, 7, 6, 4, 0, -4, -6, -7, -6, -4};
   static const int8_t bladeY[12] PROGMEM = {-7, -6, -4, 0, 4, 6, 7, 6, 4, 0, -4, -6};
   int16_t cx = x + 9;
@@ -781,21 +800,21 @@ void serviceActivityIconAnimation() {
 }
 
 void setHealthColor() {
-  if (displaySafetyAlert || co2RangeWrapLatched || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
-  else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
-  else ucg.setColor(0, 50, 220, 125);
+  if (displaySafetyAlert || co2RangeWrapLatched || displayHealthState == DISPLAY_FAULT) setDisplayForeground(245, 65, 75);
+  else if (displayHealthState == DISPLAY_WAIT) setDisplayForeground(255, 190, 45);
+  else setDisplayForeground(50, 220, 125);
 }
 
 void drawHealthIndicator() {
   uint8_t fault = co2RangeWrapLatched || displaySafetyAlert;
-  ucg.setColor(0, fault ? 180 : 8, fault ? 20 : 18, 30);
+  setDisplayBackground();
   ucg.drawBox(0, 0, ucg.getWidth(), 21);
-  if (fault || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
-  else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
-  else ucg.setColor(0, 50, 220, 125);
+  if (fault || displayHealthState == DISPLAY_FAULT) setDisplayForeground(245, 65, 75);
+  else if (displayHealthState == DISPLAY_WAIT) setDisplayForeground(255, 190, 45);
+  else setDisplayForeground(50, 220, 125);
   ucg.drawBox(2, 5, 5, 11);
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, fault ? 255 : 130, fault ? 255 : 190, 215);
+  setDisplayForeground(fault ? 255 : 130, fault ? 255 : 190, 215);
   ucg.setPrintPos(11, 14);
   if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
@@ -805,7 +824,7 @@ void drawHealthIndicator() {
     char bootCountText[12];
     bootCountText[0] = 'R';
     ltoa(eeprom_contador_int, bootCountText + 1, 10);
-    ucg.setColor(0, 230, 235, 240);
+    setDisplayForeground(230, 235, 240);
     ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 14);
     ucg.print(bootCountText);
   }
@@ -813,21 +832,21 @@ void drawHealthIndicator() {
 
 void drawDisplayFrame() {
   ucg.clearScreen();
-  ucg.setColor(0, 8, 18, 30);
+  setDisplayBackground();
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
-  ucg.setColor(0, 130, 190, 215);
+  setDisplayForeground(130, 190, 215);
   ucg.setPrintPos(5, 101); ucg.print(F("ppm/min"));
-  ucg.setColor(0, 150, 200, 225);
+  setDisplayForeground(150, 200, 225);
   ucg.setPrintPos(5, 57); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 57); ucg.print(F("INT"));
   ucg.setPrintPos(5, 120); ucg.print(F("cm3/h"));
   // Visible bounds: header 5..15, CO2 24..39, labels 48..56,
   // temperatures 65..74, line 83, rate 92..102, loss 111..119,
   // line 128, icons 137..151. Eight blank pixel rows between blocks.
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 83, 112);
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 128, 112);
+  setDisplayForeground(45, 65, 82); ucg.drawHLine(8, 83, 112);
+  setDisplayForeground(45, 65, 82); ucg.drawHLine(8, 128, 112);
   drawCo2Icon(11, 137, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 136, botao_aquecedor_onoff, false, 0);
   drawFanIcon(98, 137, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
@@ -871,46 +890,49 @@ void formatPpmPerMinute(int32_t value, bool valid, char *text) {
 }
 
 
-// Nominal CAD gas envelope: chamber 1576 + mixer 274 cm3.
-// Contents displace gas: this is an estimate, not a calibrated leak flow meter.
-const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
-unsigned long lossSampleAt = 0;
-uint16_t lossSamplePpm = 0;
-int32_t lossCm3Hour = -1;
-
 void updateCo2Loss(bool valid) {
   unsigned long now = millis();
-  if (!valid || now < CO2_SENSOR_WARMUP_MS ||
-      now - co2LastPulseAt < CO2_RESPONSE_LAG_MAX_MS) {
-    lossSampleAt = 0;
+  lossStable = false;
+  if (!valid || now < CO2_SENSOR_WARMUP_MS) {
     lossCm3Hour = -1;
+    lossWindows = 0;
     return;
   }
-  if (!lossSampleAt) {
-    lossSampleAt = now;
-    lossSamplePpm = CO2i;
+  // Expire held estimates; never retain a measurement indefinitely.
+  if (now - lossUpdatedAt > 600000UL) lossCm3Hour = -1;
+  // The rolling slope spans ~30 s. Exclude the valve pulse from that window.
+  // Remaining mixing/response uncertainty is shown in yellow, not as settled.
+  if (now - co2LastPulseAt < 30000UL || !co2RatePpmMinReady || co2RatePpmMin > 0) {
+    lossWindows = 0;
+    return;
   }
-  unsigned long elapsed = now - lossSampleAt;
-  if (elapsed >= 180000UL) {
-    int32_t drop = (int32_t)lossSamplePpm - CO2i;
-    lossCm3Hour = drop < 0 ? -1 :
-      (drop * (CO2_GAS_VOLUME_CM3 * 36L / 10) + elapsed / 2) / elapsed;
-    lossSampleAt = now;
-    lossSamplePpm = CO2i;
+  // 1850 cm3 * ppm/min * 60 / 1e6; rounded to whole cm3/h.
+  lossCm3Hour = (-co2RatePpmMin * (CO2_GAS_VOLUME_CM3 * 6L / 100) + 500) / 1000;
+  lossUpdatedAt = now;
+  // Confidence requires three non-overlapping, consistent slope windows.
+  // A divergent reading immediately returns the result to provisional.
+  int16_t difference = (int16_t)lossCm3Hour - lossReference;
+  if (difference < 0) difference = -difference;
+  uint16_t tolerance = lossReference / 4;
+  if (tolerance < 2) tolerance = 2;
+  if (difference > tolerance) lossWindows = 0;
+  if (!lossWindows || now - lossConfidenceAt >= 30000UL) {
+    if (!lossWindows) lossReference = lossCm3Hour;
+    if (lossWindows < 3) lossWindows++;
+    lossConfidenceAt = now;
   }
+  lossStable = lossWindows >= 3 && now - co2LastPulseAt >=
+    (unsigned long)co2ResponseLagSeconds * 1000UL;
 }
 
-void drawTextChanges(char *previous, const char *next, uint8_t x, uint8_t baseline,
+void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,
                      uint8_t fieldTop, uint8_t fieldHeight, uint8_t fieldWidth,
-                     uint8_t bgR, uint8_t bgG, uint8_t bgB,
                      uint8_t fgR, uint8_t fgG, uint8_t fgB) {
-  ucg.setColor(0, bgR, bgG, bgB);
+  setDisplayBackground();
   ucg.drawBox(x - 1, fieldTop, fieldWidth, fieldHeight);
-  ucg.setColor(0, fgR, fgG, fgB);
+  setDisplayForeground(fgR, fgG, fgB);
   ucg.setPrintPos(x, baseline);
   ucg.print(next);
-  strncpy(previous, next, 7);
-  previous[7] = '\0';
 }
 
 void renderDisplay(float temperature, float internalTemperature, bool co2Valid) {
@@ -932,7 +954,6 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   }
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
-  const uint8_t bgR = 8, bgG = 18, bgB = 30;
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 :
     (CO2i >= CO2_TARGET_PPM - CO2_DISPLAY_NEAR_TOLERANCE_PPM &&
      CO2i <= CO2_TARGET_PPM + CO2_DISPLAY_NEAR_TOLERANCE_PPM ? 2 : -1));
@@ -940,18 +961,23 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     (temperature >= TEMPERATURE_DISPLAY_NEAR_MIN &&
      temperature <= TEMPERATURE_DISPLAY_NEAR_MAX ? 2 : -1));
 
+  bool alert = co2Quality <= 0 || tempQuality <= 0 || safetyAlert || co2RangeWrapLatched;
+  if (alert != displayAlert) {
+    displayAlert = alert;
+    drawDisplayFrame();
+  }
+
   if (!displayCacheValid || displayCo2Ppm != CO2i || displayCo2Quality != co2Quality) {
     // Mantém os ppm grandes com a fonte numérica compacta do Uno.
     ucg.setFont(ucg_font_inr16_mn);
     char nextCo2Text[8];
     if (CO2i >= 0) ltoa(CO2i, nextCo2Text, 10);
     else strcpy_P(nextCo2Text, PSTR("---"));
-    if (displayCo2Quality != co2Quality) displayCo2Text[0] = '\0';
     uint8_t co2R = co2Quality == 1 ? 70 : 255;
     uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 2 ? 190 : 65);
     uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 2 ? 45 : 75);
-    drawTextChanges(displayCo2Text, nextCo2Text, 5, 40, 23, 18, 120,
-                    bgR, bgG, bgB, co2R, co2G, co2B);
+    drawTextChanges(nextCo2Text, 5, 40, 23, 18, 120,
+                    co2R, co2G, co2B);
     displayCo2Ppm = CO2i;
     displayCo2Quality = co2Quality;
   }
@@ -965,33 +991,36 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(displayCo2RateText, nextRateText, 73, 101, 91, 13, 54,
-                    bgR, bgG, bgB, rateR, rateG, rateB);
+    drawTextChanges(nextRateText, 73, 101, 91, 13, 54,
+                    rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
   }
 
-  updateCo2Loss(co2Valid);
-  if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour) {
+  bool shownLossStable = lossStable &&
+    millis() - co2LastPulseAt >= (unsigned long)co2ResponseLagSeconds * 1000UL;
+  if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour ||
+      displayLossStable != shownLossStable) {
     char nextLossText[8];
     if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
     else strcpy_P(nextLossText, PSTR("---"));
     ucg.setFont(ucg_font_7x13_mr);
-    drawTextChanges(displayLossText, nextLossText, 73, 120, 110, 12, 54,
-                    bgR, bgG, bgB, 145, 195, 225);
+    drawTextChanges(nextLossText, 73, 120, 110, 12, 54,
+                    shownLossStable ? 230 : 255,
+                    shownLossStable ? 235 : 190, shownLossStable ? 240 : 45);
     displayLossCm3Hour = lossCm3Hour;
+    displayLossStable = shownLossStable;
   }
 
   ucg.setFont(ucg_font_7x13_mr);
   if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
-    if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
     uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
-    drawTextChanges(displayTempText, nextTempText, 5, 74, 64, 12, 58,
-                    bgR, bgG, bgB, tempR, tempG, tempB);
+    drawTextChanges(nextTempText, 5, 74, 64, 12, 58,
+                    tempR, tempG, tempB);
     // Bold overprint keeps the compact font and its fixed field width on the Uno.
     ucg.setPrintPos(6, 74);
     ucg.print(nextTempText);
@@ -1001,8 +1030,8 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
     formatTenths(internalTempTenths, nextInternalTempText);
-    drawTextChanges(displayInternalTempText, nextInternalTempText, 66, 74, 64, 12, 59,
-                    bgR, bgG, bgB, 230, 235, 240);
+    drawTextChanges(nextInternalTempText, 66, 74, 64, 12, 59,
+                    230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
   }
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
@@ -1040,7 +1069,9 @@ void printStatus(unsigned long now) {
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
-  Serial.println(F(",see DATA for rates"));
+  Serial.print(F(",loss_cm3_h=")); Serial.print(lossCm3Hour);
+  Serial.print(F(",loss_ok=")); Serial.print(displayLossStable == 1 ? 1 : 0);
+  Serial.println();
 }
 
 bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) {

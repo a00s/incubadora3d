@@ -1588,3 +1588,19 @@ filamento/processo e 39 STL das demais peças preservados.
 - Faixas visuais nominais: cabeçalho Y5–15; CO₂ Y24–39; títulos TEMP/INT Y48–56; temperaturas Y65–74; divisória Y83; tendência Y92–102; perda Y111–119; divisória Y128; ícones Y137–151. Oito pixels vazios entre cada faixa, margem inferior preservada.
 - Ajustados todos os caminhos de redesenho e áreas de limpeza; verificação dos limites de todos os caracteres numéricos e unidades e prévia raster com as próprias fontes. Ícones conferidos incluindo extremos das animações. Traços de leitura indisponível e números individuais têm a altura própria dos glifos.
 - Cores por proximidade mantidas. Compilação Uno: 31968 bytes flash, 1034 bytes RAM. Nenhuma alteração de peças ou geometria.
+
+## Correção da estimativa de perda e confiança — 2026-10-23
+
+- Causa do campo sempre indisponível: algoritmo anterior exigia 180 s após cada injeção mais 180 s de amostragem; reposições frequentes reiniciavam essa janela e apagavam o resultado.
+- Estimativa usa tendência móvel existente de aproximadamente 30 s em ppm/min, convertida para cm³/h com volume nominal 1850 cm³. Capturada antes da dose automática, mantida durante reposição e apagada se leitura inválida ou se passar dez minutos sem renovação. Subida não é tratada como perda nula; zero é exibido somente quando a tendência medida é nula.
+- Após aquecimento do sensor, exclui os primeiros 30 s após pulso. Resultado provisório amarelo. Branco exige três janelas não sobrepostas, separadas por 30 s, dentro de ±25% da referência (tolerância mínima 2 cm³/h), além do tempo de resposta adaptativo da válvula (90–180 s). Divergência, subida ou pulso reiniciam a coleta de confiança. Critério independe da concentração estar no alvo.
+- Branco indica consistência da estimativa, não calibração do volume nem vazão comprovada de vazamento; absorção, conteúdo e mistura afetam o resultado.
+- STATUS serial inclui loss_cm3_h (-1 indisponível) e loss_ok (confiança suficiente). Corrigido texto de boot para informar aquecimento de 120 s.
+- Teste scripts/test_co2_loss.py compila a função real em harness C++ e cobre aquecimento, amostras correlacionadas que não aumentam a confiança, divergência imediata, reposições por mais de uma hora simulada, retenção, confiança, subida, expiração, zero e falha de sensor.
+
+## Fundo de alerta — 2026-10-23
+
+- Tela toda vermelha com textos, divisórias e ícones brancos quando temperatura ou CO₂ estiverem na faixa vermelha, leitura inválida/bloqueada ou houver falha de segurança. Faixa amarela sozinha não aciona fundo vermelho.
+- Ao mudar o modo, redesenha tela e invalida caches dos campos. Áreas apagadas durante animação usam o mesmo fundo; ao sair da faixa vermelha restaura fundo e cores normais. Alerta prioriza branco também na perda; amarelo/branco de confiança aparecem no modo normal.
+- Layout e controles preservados. Removidos caches de strings sem uso e centralizadas cores para caber no Uno: 32132 bytes flash, 1001 bytes RAM.
+- Testes incluem ativação do alerta com um único sensor vermelho, leitura inválida, falha de segurança ou bloqueio; faixas verde/amarela sem alerta e cores de entrada/saída. Compilação e gravação com verificação concluídas.
