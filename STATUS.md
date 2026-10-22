@@ -1581,3 +1581,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Temperatura da câmara: verde 36,9–37,1 °C; amarelo 36,5–37,5 °C fora do verde; vermelho fora dessas faixas ou sem leitura. Mantido negrito.
 - CO₂: verde 49000–51000 ppm; amarelo 45000–55000 ppm fora do verde; vermelho fora dessas faixas ou leitura inválida/bloqueada. Limites inclusivos.
 - Faixas adicionais são apenas visuais; controle, cortes de segurança e indicador geral mantidos. Compilação Uno: 31968 bytes flash, 1034 bytes RAM.
+
+## Ritmo visual uniforme desde o CO₂ — 2026-10-22
+
+- Corrigida a medição: agora usa pixels visíveis das fontes Ucglib, incluindo ponto decimal e descendentes de ppm/min, em vez de centralizar apenas os retângulos de limpeza.
+- Faixas visuais nominais: cabeçalho Y5–15; CO₂ Y24–39; títulos TEMP/INT Y48–56; temperaturas Y65–74; divisória Y83; tendência Y92–102; perda Y111–119; divisória Y128; ícones Y137–151. Oito pixels vazios entre cada faixa, margem inferior preservada.
+- Ajustados todos os caminhos de redesenho e áreas de limpeza; verificação dos limites de todos os caracteres numéricos e unidades e prévia raster com as próprias fontes. Ícones conferidos incluindo extremos das animações. Traços de leitura indisponível e números individuais têm a altura própria dos glifos.
+- Cores por proximidade mantidas. Compilação Uno: 31968 bytes flash, 1034 bytes RAM. Nenhuma alteração de peças ou geometria.

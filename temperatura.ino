@@ -759,15 +759,15 @@ void updateActivityIcons() {
   uint8_t heaterFrame = activityIconFrame & 3;
   uint8_t fanFrame = activityIconFrame % 12;
   if (co2Flowing || displayCo2Active != co2Flowing) {
-    drawCo2Icon(11, 138, botao_co2_onoff, co2Flowing, co2Frame);
+    drawCo2Icon(11, 137, botao_co2_onoff, co2Flowing, co2Frame);
     displayCo2Active = co2Flowing;
   }
   if (heating || displayHeaterActive != heating) {
-    drawHeaterIcon(53, 139, botao_aquecedor_onoff, heating, heaterFrame);
+    drawHeaterIcon(53, 136, botao_aquecedor_onoff, heating, heaterFrame);
     displayHeaterActive = heating;
   }
   if (fanSpinning || displayFanOn != fanSpinning) {
-    drawFanIcon(98, 138, fanSpinning, fanSpinning, fanFrame);
+    drawFanIcon(98, 137, fanSpinning, fanSpinning, fanFrame);
     displayFanOn = fanSpinning;
   }
 }
@@ -793,10 +793,10 @@ void drawHealthIndicator() {
   if (fault || displayHealthState == DISPLAY_FAULT) ucg.setColor(0, 245, 65, 75);
   else if (displayHealthState == DISPLAY_WAIT) ucg.setColor(0, 255, 190, 45);
   else ucg.setColor(0, 50, 220, 125);
-  ucg.drawBox(2, 3, 5, 17);
+  ucg.drawBox(2, 5, 5, 11);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, fault ? 255 : 130, fault ? 255 : 190, 215);
-  ucg.setPrintPos(11, 16);
+  ucg.setPrintPos(11, 14);
   if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
   else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
@@ -806,7 +806,7 @@ void drawHealthIndicator() {
     bootCountText[0] = 'R';
     ltoa(eeprom_contador_int, bootCountText + 1, 10);
     ucg.setColor(0, 230, 235, 240);
-    ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 16);
+    ucg.setPrintPos(ucg.getWidth() - ucg.getStrWidth(bootCountText) - 5, 14);
     ucg.print(bootCountText);
   }
 }
@@ -818,17 +818,19 @@ void drawDisplayFrame() {
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(5, 104); ucg.print(F("ppm/min"));
+  ucg.setPrintPos(5, 101); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
-  ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
-  ucg.setPrintPos(66, 59); ucg.print(F("INT"));
-  ucg.setPrintPos(5, 124); ucg.print(F("cm3/h"));
-  // Four blank pixel rows on each side of both separators.
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 84, 112);
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 132, 112);
-  drawCo2Icon(11, 138, botao_co2_onoff, false, 0);
-  drawHeaterIcon(53, 139, botao_aquecedor_onoff, false, 0);
-  drawFanIcon(98, 138, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+  ucg.setPrintPos(5, 57); ucg.print(F("TEMP"));
+  ucg.setPrintPos(66, 57); ucg.print(F("INT"));
+  ucg.setPrintPos(5, 120); ucg.print(F("cm3/h"));
+  // Visible bounds: header 5..15, CO2 24..39, labels 48..56,
+  // temperatures 65..74, line 83, rate 92..102, loss 111..119,
+  // line 128, icons 137..151. Eight blank pixel rows between blocks.
+  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 83, 112);
+  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 128, 112);
+  drawCo2Icon(11, 137, botao_co2_onoff, false, 0);
+  drawHeaterIcon(53, 136, botao_aquecedor_onoff, false, 0);
+  drawFanIcon(98, 137, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setFont(ucg_font_inr16_mn);
   displayCacheValid = false;
@@ -948,7 +950,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t co2R = co2Quality == 1 ? 70 : 255;
     uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 2 ? 190 : 65);
     uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 2 ? 45 : 75);
-    drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
+    drawTextChanges(displayCo2Text, nextCo2Text, 5, 40, 23, 18, 120,
                     bgR, bgG, bgB, co2R, co2G, co2B);
     displayCo2Ppm = CO2i;
     displayCo2Quality = co2Quality;
@@ -963,7 +965,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(displayCo2RateText, nextRateText, 73, 104, 89, 18, 54,
+    drawTextChanges(displayCo2RateText, nextRateText, 73, 101, 91, 13, 54,
                     bgR, bgG, bgB, rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
@@ -975,7 +977,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
     else strcpy_P(nextLossText, PSTR("---"));
     ucg.setFont(ucg_font_7x13_mr);
-    drawTextChanges(displayLossText, nextLossText, 73, 124, 110, 18, 54,
+    drawTextChanges(displayLossText, nextLossText, 73, 120, 110, 12, 54,
                     bgR, bgG, bgB, 145, 195, 225);
     displayLossCm3Hour = lossCm3Hour;
   }
@@ -988,10 +990,10 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
     uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
-    drawTextChanges(displayTempText, nextTempText, 5, 77, 62, 18, 58,
+    drawTextChanges(displayTempText, nextTempText, 5, 74, 64, 12, 58,
                     bgR, bgG, bgB, tempR, tempG, tempB);
     // Bold overprint keeps the compact font and its fixed field width on the Uno.
-    ucg.setPrintPos(6, 77);
+    ucg.setPrintPos(6, 74);
     ucg.print(nextTempText);
     displayTempTenths = tempTenths;
     displayTempQuality = tempQuality;
@@ -999,24 +1001,24 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
     formatTenths(internalTempTenths, nextInternalTempText);
-    drawTextChanges(displayInternalTempText, nextInternalTempText, 66, 77, 62, 18, 59,
+    drawTextChanges(displayInternalTempText, nextInternalTempText, 66, 74, 64, 12, 59,
                     bgR, bgG, bgB, 230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
   }
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
-    drawCo2Icon(11, 138, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
+    drawCo2Icon(11, 137, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
     displayCo2Enabled = botao_co2_onoff;
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
-    drawHeaterIcon(53, 139, botao_aquecedor_onoff, heating, activityIconFrame & 3);
+    drawHeaterIcon(53, 136, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
-    drawFanIcon(98, 138, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+    drawFanIcon(98, 137, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
