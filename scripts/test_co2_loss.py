@@ -63,7 +63,8 @@ int main() {
   co2RatePpmMin = 100; measure(120000);
   assert(lossStartAt == 0 && lossCm3Hour == -1);
   co2RatePpmMin = -100; co2TrendReady = false; measure(130000);
-  assert(lossStartAt == 0);
+  assert(lossStartAt == 130000);
+  finishCo2Loss();
   co2TrendReady = true;
   // Three completed 60-second declines build evidence across doses.
   // The next dose comes only 80 s after the previous one: no long wait needed.
@@ -72,7 +73,7 @@ int main() {
     CO2i = 50000; co2LastPulseAt = start - 20000; measure(start);
     assert(lossStartAt == start);
     CO2i = 49990; measure(start + 6000);
-    assert(!lossFresh); // Too short, even though falling.
+    assert(lossFresh && lossCm3Hour == 11); // No fixed minimum duration.
     CO2i = 49980; measure(start + 12000);
     assert(lossFresh && !lossStable);
     CO2i = 49900; measure(start + 60000);
@@ -91,10 +92,19 @@ int main() {
   CO2i = 49700; measure(460000);
   assert(lossCm3Hour == 33 && !lossStable && lossWindows == 0);
   finishCo2Loss(); assert(lossWindows == 1 && !lossFresh);
-  // A short partial interval does not count as a completed evidence cycle.
+  // A short interval with enough observed drop counts; duration is not the gate.
   CO2i = 50000; measure(480000);
-  CO2i = 49980; measure(492000); finishCo2Loss();
-  assert(lossWindows == 1 && lossStartAt == 0);
+  CO2i = 49940; measure(492000); finishCo2Loss();
+  assert(lossWindows == 2 && lossStartAt == 0);
+  // A tiny drop remains provisional regardless of duration.
+  CO2i = 50000; measure(500000);
+  CO2i = 49999; measure(560000); finishCo2Loss();
+  assert(lossWindows == 2);
+  // Even a two-second observed decline is measured with its actual duration.
+  CO2i = 50000; measure(570000);
+  CO2i = 49990; measure(572000);
+  assert(lossCm3Hour == 33 && lossFresh);
+  finishCo2Loss();
   // Invalid readings, rising concentration and unavailable trend retain history.
   updateCo2Loss(false); assert(lossCm3Hour >= 0 && !lossFresh && lossWindows == 0);
   co2RatePpmMin = 1000; measure(1200000);

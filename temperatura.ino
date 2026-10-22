@@ -902,7 +902,7 @@ void updateCo2Loss(bool valid) {
     return;
   }
   // Start from observed stabilization/decline, rather than a fixed dose delay.
-  if (!co2RatePpmMinReady || !co2TrendReady || co2RatePpmMin > 0) {
+  if (!co2RatePpmMinReady || co2RatePpmMin > 0) {
     lossStartAt = 0;
     return;
   }
@@ -911,7 +911,7 @@ void updateCo2Loss(bool valid) {
     lossStartPpm = CO2i;
   }
   unsigned long elapsed = now - lossStartAt;
-  if (elapsed < 10000UL) return;
+  if (!elapsed) return;
   int32_t drop = (int32_t)lossStartPpm - CO2i;
   // Nominal gas volume * concentration drop / actual elapsed time.
   lossCm3Hour = (drop * (CO2_GAS_VOLUME_CM3 * 36L / 10) + elapsed / 2) / elapsed;
@@ -920,13 +920,13 @@ void updateCo2Loss(bool valid) {
   if (difference < 0) difference = -difference;
   uint16_t tolerance = lossReference / 4;
   if (tolerance < 2) tolerance = 2;
-  if (elapsed >= 30000UL && difference > tolerance) lossWindows = 0;
-  lossStable = lossWindows >= 3 && elapsed >= 30000UL;
+  if (drop >= 20 && difference > tolerance) lossWindows = 0;
+  lossStable = lossWindows >= 3 && drop >= 20;
 }
 
 void finishCo2Loss() {
   // Only completed pre-dose decline segments build confidence across cycles.
-  if (lossFresh && millis() - lossStartAt >= 30000UL) {
+  if (lossFresh && (int32_t)lossStartPpm - CO2i >= 20) {
     if (!lossWindows) lossReference = lossCm3Hour;
     if (lossWindows < 3) lossWindows++;
   }

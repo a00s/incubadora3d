@@ -1629,3 +1629,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Critério de estabilização observa o sensor: não prova mistura homogênea nem elimina interferência residual da dose; continua sendo estimativa. Sem doses subsequentes, o primeiro longo trecho permite estimativa contínua mas ainda não três ciclos de confiança.
 - Regressões cobrem queda antes de doses a cada 80 s, exclusão do salto injetado, três ciclos consistentes, trechos curtos, perda de confiança por divergência, falta de leitura/tendência, pausa prolongada, zero, intervalo de 45 s e retomada por subida. Layout, alerta e controle da válvula preservados; nenhuma peça alterada.
 - Compilação Uno: 32226 bytes flash e 1002 bytes RAM; gravação USB com verificação concluída.
+
+## Coleta sem duração mínima prefixada — 2026-10-23
+
+- Removidos mínimos de 10 s para exibir e 30 s para contar um trecho de queda, além da dependência do temporizador co2TrendReady. A tendência móvel existente só filtra a direção da concentração; não define a duração do trecho medido.
+- Com duas leituras e tempo decorrido positivo, estima pela queda e duração reais, até a próxima dose. Reinicia origem quando a tendência sobe ou a concentração supera a origem; toda dose continua encerrando a coleta antes de abrir a válvula. Não usa tamanho da subida nem tempo de válvula para estimar gás injetado.
+- Confiança usa evidência de concentração: trecho com pelo menos 20 ppm de queda e três ciclos consistentes dentro da tolerância existente. Limiar de 20 ppm é heurística conservadora de software, não uma calibração da precisão do sensor. Pequena queda pode aparecer como estimativa sem ganhar confiança, independentemente de sua duração.
+- Testes cobrem medição em 2 s, confiança com queda suficiente em 12 s, queda de 1 ppm em 60 s sem confiança extra, tempo real de 45 s, dose com subida e direção de tendência. Compilação Uno: 32188 bytes flash, 1002 bytes RAM. Layout e controle preservados; nenhuma peça alterada.
