@@ -1508,3 +1508,9 @@ filamento/processo e 39 STL das demais peças preservados.
   Mantidos corpo Ø12,24 mm e flange Ø16 × 1,5 mm. Flange na mesa.
 - STL/STEP, conjunto e visualizador atualizados; peça única na bandeja 12.
   Configurações do projeto salvo preservadas. Validar encaixe e vedação físicos.
+
+## Visor sem umidade — 2026-10-22
+
+- Removidos o título UMID, o valor e o cache de umidade da tela.
+- Temperaturas, CO₂, taxa e controles mantêm suas posições. Campo da serial
+  preservado como indisponível para compatibilidade com os registros.

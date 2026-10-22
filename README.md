@@ -187,8 +187,8 @@ O DHT22 em D2 continua medindo a temperatura do compartimento eletrônico.
 O DS18B20 opera em 12 bits, com conversões assíncronas de pelo menos 800 ms
 para manter o atendimento dos relés. Leitura desconectada, CRC inválido ou
 valor de inicialização de 85 °C vira falha de temperatura e bloqueia o aquecimento
-pelas proteções existentes. A umidade da câmara fica indisponível (`-- %` no
-visor e `nan` na serial), pois a sonda não mede umidade. A serial informa a
+pelas proteções existentes. A umidade da câmara foi removida do visor e permanece indisponível (`nan`
+na serial), pois a sonda não mede umidade. A serial informa a
 temperatura com duas casas; isso não representa garantia de precisão de 0,01 °C.
 Use somente uma sonda no D4 nesta configuração.
 
@@ -248,7 +248,7 @@ serial antes de compilar/gravar. A compilação atual usa 32.174 bytes de Flash 
 1.010 bytes de RAM global (49%), deixando 82 bytes de Flash e 1.038 bytes de RAM para
 pilha e chamadas.
 
-A tela numérica fixa mostra CO₂, temperatura, umidade, temperatura interna e taxa de
+A tela numérica fixa mostra CO₂, temperatura, temperatura interna e taxa de
 variação do CO₂, mantendo os ícones animados e os estados ON/OFF na faixa inferior.
 O cabeçalho mantém a cor de estado e o contador de reinicializações. As bolhas sobem
 por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor

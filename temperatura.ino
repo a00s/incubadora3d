@@ -157,11 +157,9 @@ int8_t displayCo2RangeLock = -1;
 int8_t displaySafetyAlert = -1;
 uint8_t safetyFault = 0;
 int16_t displayTempTenths = 32767;
-int16_t displayHumidityPercent = 32767;
 int16_t displayInternalTempTenths = 32767;
 char displayCo2Text[8] = "";
 char displayTempText[8] = "";
-char displayHumidityText[8] = "";
 char displayInternalTempText[8] = "";
 char displayCo2RateText[8] = "";
 int8_t displayCo2Enabled = -1;
@@ -655,7 +653,7 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    renderDisplay(t, h, t_interna, validCo2);
+    renderDisplay(t, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,dose_rise_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm"));
       serialHeaderPrinted = true;
@@ -817,7 +815,6 @@ void drawDisplayFrame() {
   ucg.setPrintPos(73, 91); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
-  ucg.setPrintPos(66, 59); ucg.print(F("UMID"));
   ucg.setPrintPos(5, 91); ucg.print(F("INT"));
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
   drawCo2Icon(11, 120, botao_co2_onoff, false, 0);
@@ -875,7 +872,7 @@ void drawTextChanges(char *previous, const char *next, uint8_t x, uint8_t baseli
   previous[7] = '\0';
 }
 
-void renderDisplay(float temperature, float humidity, float internalTemperature, bool co2Valid) {
+void renderDisplay(float temperature, float internalTemperature, bool co2Valid) {
   bool co2AtTarget = co2Valid && CO2i >= CO2_CONTROL_MIN_PPM && CO2i <= CO2_CONTROL_MAX_PPM;
   bool temperatureAtTarget = !isnan(temperature) &&
                              temperature >= TEMPERATURE_GOOD_MIN && temperature <= TEMPERATURE_GOOD_MAX;
@@ -893,7 +890,6 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
     drawHealthIndicator();
   }
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
-  int16_t humidityPercent = isnan(humidity) ? -32768 : (int16_t)(humidity + (humidity >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
   const uint8_t bgR = 8, bgG = 18, bgB = 30;
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
@@ -942,17 +938,6 @@ void renderDisplay(float temperature, float humidity, float internalTemperature,
                     bgR, bgG, bgB, tempR, tempG, tempB);
     displayTempTenths = tempTenths;
     displayTempQuality = tempQuality;
-  }
-  if (!displayCacheValid || displayHumidityPercent != humidityPercent) {
-    char nextHumidityText[8];
-    if (humidityPercent == -32768) strcpy_P(nextHumidityText, PSTR("-- %"));
-    else {
-      itoa(humidityPercent, nextHumidityText, 10);
-      strcat_P(nextHumidityText, PSTR(" %"));
-    }
-    drawTextChanges(displayHumidityText, nextHumidityText, 66, 77, 62, 18, 59,
-                    bgR, bgG, bgB, 230, 235, 240);
-    displayHumidityPercent = humidityPercent;
   }
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
