@@ -756,15 +756,15 @@ void updateActivityIcons() {
   uint8_t heaterFrame = activityIconFrame & 3;
   uint8_t fanFrame = activityIconFrame % 12;
   if (co2Flowing || displayCo2Active != co2Flowing) {
-    drawCo2Icon(11, 143, botao_co2_onoff, co2Flowing, co2Frame);
+    drawCo2Icon(11, 138, botao_co2_onoff, co2Flowing, co2Frame);
     displayCo2Active = co2Flowing;
   }
   if (heating || displayHeaterActive != heating) {
-    drawHeaterIcon(53, 144, botao_aquecedor_onoff, heating, heaterFrame);
+    drawHeaterIcon(53, 139, botao_aquecedor_onoff, heating, heaterFrame);
     displayHeaterActive = heating;
   }
   if (fanSpinning || displayFanOn != fanSpinning) {
-    drawFanIcon(98, 143, fanSpinning, fanSpinning, fanFrame);
+    drawFanIcon(98, 138, fanSpinning, fanSpinning, fanFrame);
     displayFanOn = fanSpinning;
   }
 }
@@ -819,12 +819,10 @@ void drawDisplayFrame() {
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 84, 112);
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
   ucg.setPrintPos(5, 132); ucg.print(F("~cm3/h"));
-  drawCo2Icon(11, 143, botao_co2_onoff, false, 0);
-  drawHeaterIcon(53, 144, botao_aquecedor_onoff, false, 0);
-  drawFanIcon(98, 143, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+  drawCo2Icon(11, 138, botao_co2_onoff, false, 0);
+  drawHeaterIcon(53, 139, botao_aquecedor_onoff, false, 0);
+  drawFanIcon(98, 138, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setFont(ucg_font_inr16_mn);
   displayCacheValid = false;
@@ -997,18 +995,18 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   }
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
-    drawCo2Icon(11, 143, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
+    drawCo2Icon(11, 138, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
     displayCo2Enabled = botao_co2_onoff;
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
-    drawHeaterIcon(53, 144, botao_aquecedor_onoff, heating, activityIconFrame & 3);
+    drawHeaterIcon(53, 139, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
-    drawFanIcon(98, 143, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+    drawFanIcon(98, 138, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;

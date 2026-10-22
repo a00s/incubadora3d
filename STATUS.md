@@ -1549,3 +1549,8 @@ filamento/processo e 39 STL das demais peças preservados.
 - Restaurada variação de CO₂ em ppm/min com suas cores. Perda estimada ~cm3/h é informação adicional na linha abaixo. Mede redução líquida de CO₂, não volume total de ar vazado.
 - Ícones baixados para o rodapé, abaixo da nova linha de perda; extremos ficam dentro dos 160 pixels do visor. Sem ON/OFF: CO₂ e aquecimento aparecem habilitados e animam na atuação; ventilador sempre visível.
 - Compilação Uno: 31894 bytes flash, 1034 bytes RAM.
+
+## Respiro no rodapé do visor — 2026-10-22
+
+- Ícones elevados em 5 pixels, deixando margem inferior de 6 pixels inclusive na área de limpeza da animação.
+- Removidas as duas linhas divisórias horizontais. Campos de temperatura, tendência e perda permanecem nas mesmas posições, sem sobreposição com as animações.
