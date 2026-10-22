@@ -812,7 +812,7 @@ void drawDisplayFrame() {
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(5, 103); ucg.print(F("ppm/min"));
+  ucg.setPrintPos(5, 103); ucg.print(F("~cm3/h"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
@@ -844,19 +844,32 @@ void formatTenths(int16_t value, char *text) {
   text[index] = '\0';
 }
 
-void formatPpmPerMinute(int32_t value, bool valid, char *text) {
-  if (!valid) {
-    strcpy_P(text, PSTR("---"));
+// Nominal CAD gas envelope: chamber 1576 + mixer 274 cm3.
+// Contents displace gas: this is an estimate, not a calibrated leak flow meter.
+const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
+unsigned long lossSampleAt = 0;
+uint16_t lossSamplePpm = 0;
+int32_t lossCm3Hour = -1;
+
+void updateCo2Loss(bool valid) {
+  unsigned long now = millis();
+  if (!valid || now < CO2_SENSOR_WARMUP_MS ||
+      now - co2LastPulseAt < CO2_RESPONSE_LAG_MAX_MS) {
+    lossSampleAt = 0;
+    lossCm3Hour = -1;
     return;
   }
-  if (value > 99999 || value < -99999) {
-    ltoa(value / 1000, text, 10);
-    strcat_P(text, PSTR("k"));
-  } else if (value > 0) {
-    text[0] = '+';
-    ltoa(value, text + 1, 10);
-  } else {
-    ltoa(value, text, 10);
+  if (!lossSampleAt) {
+    lossSampleAt = now;
+    lossSamplePpm = CO2i;
+  }
+  unsigned long elapsed = now - lossSampleAt;
+  if (elapsed >= 180000UL) {
+    int32_t drop = (int32_t)lossSamplePpm - CO2i;
+    lossCm3Hour = drop < 0 ? -1 :
+      (drop * (CO2_GAS_VOLUME_CM3 * 36L / 10) + elapsed / 2) / elapsed;
+    lossSampleAt = now;
+    lossSamplePpm = CO2i;
   }
 }
 
@@ -912,17 +925,16 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayCo2Quality = co2Quality;
   }
 
-  bool co2RateValid = co2RatePpmMinReady;
-  int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
+  updateCo2Loss(co2Valid);
+  bool co2RateValid = lossCm3Hour >= 0;
+  int32_t shownCo2Rate = lossCm3Hour;
   if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
     char nextRateText[8];
-    formatPpmPerMinute(shownCo2Rate, co2RateValid, nextRateText);
+    if (co2RateValid) ltoa(shownCo2Rate, nextRateText, 10);
+    else strcpy_P(nextRateText, PSTR("---"));
     ucg.setFont(ucg_font_7x13_mr);
-    uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
-    uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
-    uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
     drawTextChanges(displayCo2RateText, nextRateText, 73, 103, 88, 18, 54,
-                    bgR, bgG, bgB, rateR, rateG, rateB);
+                    bgR, bgG, bgB, 145, 195, 225);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
   }

@@ -1528,3 +1528,11 @@ filamento/processo e 39 STL das demais peças preservados.
 - Ícone e texto ON do controle de CO₂ em azul quando habilitado.
 - Compilação Uno: 31.938 bytes de flash e 1.012 bytes de RAM. Placa não conectada para gravação.
 - Visualizador regenerado e cópia local atualizada; nenhuma alteração de peças ou geometria.
+
+## Estimativa de perda de CO₂ — 2026-10-22
+
+- Visor substitui ppm/min por ~cm3/h; tendência em ppm/min permanece na serial e no controle.
+- Volume nominal de gás: 1850 cm³ (câmara com liner e cantos: 1575,87; misturador CAD: 273,99). Não desconta conteúdo, sensor, bandejas e água; estimativa de redução líquida, não vazão calibrada de vazamento.
+- Janela de 180 s, iniciada após aquecimento do sensor e pelo menos 180 s desde a última dose. Injeção ou leitura inválida apagam o resultado e reiniciam a janela. Concentração crescente mostra ---; queda nula mostra zero.
+- Fórmula: volume × queda_ppm × 3,6 / intervalo_ms, arredondada para cm³/h inteiro. Abertura da porta e absorção também afetam a estimativa; medir com porta fechada e mistura equilibrada.
+- Compilação Uno: 32160 bytes flash, 1022 bytes RAM. Nenhuma peça ou geometria alterada.
