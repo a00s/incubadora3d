@@ -1558,3 +1558,7 @@ filamento/processo e 39 STL das demais peças preservados.
 ## Separação dos ícones — 2026-10-22
 
 - Adicionada uma única linha horizontal discreta em Y136 acima dos ícones; mantém o respiro inferior e fica fora das áreas de limpeza dos valores e animações.
+
+## Rótulo de perda simplificado — 2026-10-22
+
+- Removido o til antes de cm3/h no visor; cálculo continua sendo uma estimativa pelo volume nominal de gás.

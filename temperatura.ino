@@ -819,7 +819,7 @@ void drawDisplayFrame() {
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
-  ucg.setPrintPos(5, 132); ucg.print(F("~cm3/h"));
+  ucg.setPrintPos(5, 132); ucg.print(F("cm3/h"));
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 136, 112);
   drawCo2Icon(11, 138, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 139, botao_aquecedor_onoff, false, 0);
