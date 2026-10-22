@@ -1575,3 +1575,9 @@ filamento/processo e 39 STL das demais peças preservados.
 
 - Ambas as divisórias têm quatro linhas de pixels vazias de cada lado em relação às áreas dos blocos: temperaturas terminam em Y79, linha Y84, tendência começa em Y89; perda termina em Y127, linha Y132, ícones começam em Y137.
 - Baselines ppm/min Y104 e cm3/h Y124; ícones e margem inferior preservados. Conferência aritmética dos quatro intervalos concluída.
+
+## Cores por proximidade do alvo — 2026-10-22
+
+- Temperatura da câmara: verde 36,9–37,1 °C; amarelo 36,5–37,5 °C fora do verde; vermelho fora dessas faixas ou sem leitura. Mantido negrito.
+- CO₂: verde 49000–51000 ppm; amarelo 45000–55000 ppm fora do verde; vermelho fora dessas faixas ou leitura inválida/bloqueada. Limites inclusivos.
+- Faixas adicionais são apenas visuais; controle, cortes de segurança e indicador geral mantidos. Compilação Uno: 31968 bytes flash, 1034 bytes RAM.

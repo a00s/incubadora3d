@@ -89,6 +89,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 
 #define CO2_TARGET_PPM 50000L
 #define CO2_TOLERANCE_PPM 1000L
+#define CO2_DISPLAY_NEAR_TOLERANCE_PPM 5000L
 #define CO2_CONTROL_MIN_PPM (CO2_TARGET_PPM - CO2_TOLERANCE_PPM)
 #define CO2_CONTROL_MAX_PPM (CO2_TARGET_PPM + CO2_TOLERANCE_PPM)
 #define CO2_SENSOR_PROTOCOL_MAX_PPM 65535L
@@ -112,6 +113,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_EMERGENCY_CUTOFF 38.0
 #define TEMPERATURE_GOOD_MIN 36.9
 #define TEMPERATURE_GOOD_MAX 37.1
+#define TEMPERATURE_DISPLAY_NEAR_MIN 36.5
+#define TEMPERATURE_DISPLAY_NEAR_MAX 37.5
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
 #define MAX_INTERNAL_TEMP 31 // Liga fan acima de 31 C; desliga abaixo de 30 C
 
@@ -928,8 +931,12 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
   const uint8_t bgR = 8, bgG = 18, bgB = 30;
-  int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 : -1);
-  int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 : -1);
+  int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 :
+    (CO2i >= CO2_TARGET_PPM - CO2_DISPLAY_NEAR_TOLERANCE_PPM &&
+     CO2i <= CO2_TARGET_PPM + CO2_DISPLAY_NEAR_TOLERANCE_PPM ? 2 : -1));
+  int8_t tempQuality = isnan(temperature) ? 0 : (temperatureAtTarget ? 1 :
+    (temperature >= TEMPERATURE_DISPLAY_NEAR_MIN &&
+     temperature <= TEMPERATURE_DISPLAY_NEAR_MAX ? 2 : -1));
 
   if (!displayCacheValid || displayCo2Ppm != CO2i || displayCo2Quality != co2Quality) {
     // Mantém os ppm grandes com a fonte numérica compacta do Uno.
@@ -938,9 +945,9 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     if (CO2i >= 0) ltoa(CO2i, nextCo2Text, 10);
     else strcpy_P(nextCo2Text, PSTR("---"));
     if (displayCo2Quality != co2Quality) displayCo2Text[0] = '\0';
-    uint8_t co2R = co2Quality == 1 ? 70 : (co2Quality == 0 ? 255 : 255);
-    uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 0 ? 190 : 100);
-    uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 0 ? 45 : 90);
+    uint8_t co2R = co2Quality == 1 ? 70 : 255;
+    uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 2 ? 190 : 65);
+    uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 2 ? 45 : 75);
     drawTextChanges(displayCo2Text, nextCo2Text, 5, 45, 20, 30, 120,
                     bgR, bgG, bgB, co2R, co2G, co2B);
     displayCo2Ppm = CO2i;
@@ -979,8 +986,8 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     formatTenths(tempTenths, nextTempText);
     if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
-    uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 0 ? 190 : 100);
-    uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 0 ? 45 : 90);
+    uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
+    uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
     drawTextChanges(displayTempText, nextTempText, 5, 77, 62, 18, 58,
                     bgR, bgG, bgB, tempR, tempG, tempB);
     // Bold overprint keeps the compact font and its fixed field width on the Uno.
