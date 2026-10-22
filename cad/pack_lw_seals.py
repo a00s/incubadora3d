@@ -138,7 +138,7 @@ def make_print_project(path):
         component=wrapper.find('m:components/m:component',NS)
         target=component.get(f'{{{PROD}}}path').lstrip('/')
         owner=ET.fromstring(entries[target][1]);meshobj=next(o for o in owner.find('m:resources',NS) if o.get('id')==component.get('objectid'))
-        for half in (('A','B') if name.startswith('TPU_passagem') else (None,)):
+        for half in (('A','B') if name=='TPU_passagem_aquecedor' else (None,)):
             record=copy.deepcopy(saved);wrap=copy.deepcopy(wrapper);bi=copy.deepcopy(item);mo=copy.deepcopy(meshobj)
             filename=name+f'_metade_{half}' if half else name
             if half=='B':

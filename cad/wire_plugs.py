@@ -1,7 +1,7 @@
-"""Split compression cable plugs in eSUN TPU-LW for the existing Ø12 × 14 mm wall passages.
+"""Cable plugs: single hollow sensor plug in TPU 85A; split heater plug in TPU-LW for the existing Ø12 × 14 mm wall passages.
 
 Local Z points outward. Z=0 is the inner wall, Z=14 the outer wall.
-Both plugs use a contoured cradle/cap around the wire axes.
+The heater uses a contoured cradle/cap around the wire axes.
 """
 import cadquery as cq
 
@@ -15,6 +15,8 @@ RADIAL_INTERFERENCE={'sensor':.15,'aquecedor':.08}
 LEAD_IN_RADIAL={'sensor':.15,'aquecedor':.3}
 
 def build_wire_plug(name):
+    if name == 'sensor':
+        return (build_sensor_cable_plug(),)
     diameter, positions = SPECS[name]
     # Foam compresses over the entire bore and along each cable. The oversized
     # body also presses the two mating faces together inside the rigid Ø12 bore.
@@ -50,6 +52,8 @@ def compound(halves):
 
 
 def print_pair(halves):
+    if len(halves) == 1:
+        return halves[0].rotate((0,0,0),(1,0,0),180).translate((0,0,15.5))
     # Flat outer flanges on the bed; 4 mm between actual part envelopes.
     flats=tuple(h.rotate((0,0,0),(1,0,0),180).translate((0,0,15.5)) for h in halves)
     extra=flats[0].val().BoundingBox().xmax
@@ -58,6 +62,8 @@ def print_pair(halves):
 
 
 def check_wire_plug(name, halves):
+    if name == 'sensor':
+        return check_sensor_cable_plug(halves)
     diameter, positions = SPECS[name]
     q = compound(halves)
     bb = q.val().BoundingBox()
@@ -96,3 +102,54 @@ def check_wire_plug(name, halves):
                   centros_canais_mm=list(positions),passo_canais_mm=round(positions[1]-positions[0],2),espaco_nominal_entre_fios_mm=round(positions[1]-positions[0]-diameter,2),
                   boca_lateral_minima_mm=.8,entrada_lateral_funil_mm=1.6,espessura_nominal_labios_mm=round(1.15-(diameter/2-RADIAL_INTERFERENCE[name]),2))
     return report
+
+
+SENSOR_CABLE_DIAMETER = 4.58
+SENSOR_CABLE_OFFSET = 3.0  # Halfway from the centre to the existing Ø12 perimeter.
+
+
+def build_sensor_cable_plug():
+    """Single sealed hollow TPU 85A plug; eccentric cable tube, no split seam.
+
+    The closed air cavity leaves 0.6 mm outer/tube skins and end membranes.
+    The flange prints flat; the cavity roof bridges at most 7 mm.
+    """
+    r = SENSOR_CABLE_DIAMETER / 2
+    q = cq.Workplane('XY', origin=(0,0,.3)).circle(6.12).extrude(13.7)
+    q = q.union(cq.Workplane('XY',origin=(0,0,14)).circle(8).extrude(1.5))
+    cavity = cq.Workplane('XY',origin=(0,0,.9)).circle(5.52).extrude(13.7)
+    tube = cq.Workplane('XY',origin=(0,SENSOR_CABLE_OFFSET,0)).circle(r+.6).extrude(16)
+    q = q.cut(cavity.cut(tube))
+    bore = cq.Workplane('XY',origin=(0,SENSOR_CABLE_OFFSET,0)).circle(r).extrude(16)
+    q = q.cut(bore)
+    for z,ra,rb in ((.3,r+.15,r),(15.2,r,r+.15)):
+        q = q.cut(cq.Solid.makeCone(ra,rb,.3,cq.Vector(0,SENSOR_CABLE_OFFSET,z)))
+    return q
+
+
+def check_sensor_cable_plug(parts):
+    q = parts[0]
+    assert len(parts)==1 and q.val().isValid() and len(q.solids().vals())==1
+    assert abs(q.val().BoundingBox().zmin-.3)<1e-5
+    assert abs(q.val().BoundingBox().zmax-15.5)<1e-5
+    for z in (1,7,14):
+        assert not q.val().isInside((0,SENSOR_CABLE_OFFSET,z))
+        assert q.val().isInside((0,SENSOR_CABLE_OFFSET-2.59,z))
+        assert not q.val().isInside((0,-3,z))
+        assert q.val().isInside((0,-5.8,z))
+    flat=print_pair(parts)
+    assert abs(flat.val().BoundingBox().zmin)<1e-5
+    assert all(v<lim for v,lim in zip((16,16,15.2),(210,210,250)))
+    envelope=cq.Workplane('XY',origin=(0,0,.3)).circle(6.12).extrude(13.7)
+    envelope=envelope.union(cq.Workplane('XY',origin=(0,0,14)).circle(8).extrude(1.5))
+    removed=1-q.val().Volume()/envelope.val().Volume()
+    assert removed>.55
+    return dict(material='TPU 85A',metades=1,fios=1,diametro_cabo_mm=4.58,
+                diametro_livre_canal_mm=4.58,centro_canal_local_mm=[0,3],
+                furo_existente_mm=12,diametro_corpo_mm=12.24,
+                parede_existente_mm=14,recuo_interno_mm=.3,
+                diametro_flange_mm=16,flange_externa_mm=1.5,
+                espessura_paredes_mm=.6,cavidade_fechada=True,
+                fracao_vazada=round(removed,3),solidos=1,
+                dimensoes_impressao_mm=[16,16,15.2],
+                encaixe_e_vedacao_fisicos_pendentes=True)

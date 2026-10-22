@@ -252,8 +252,8 @@
   "body_insulation_rear_transverse_partitions": 0,
   "front_corner_cap_depth": 3,
   "closed_corner_channels": 4,
-  "sensor_wire_diameter": 1.4,
-  "sensor_seal_channel_diameter": 1.1,
+  "sensor_wire_diameter": 4.58,
+  "sensor_seal_channel_diameter": 4.58,
   "heater_wire_diameter": 1.42,
   "heater_seal_channel_diameter": 1.26,
   "pcb_length": 43.12,
@@ -584,8 +584,8 @@
   "sensor_tpu_lower_bulb_bore_mm": 15.0,
   "sensor_tpu_lower_bulb_skin_mm": 0.55,
   "sensor_tpu_upper_geometry_preserved_from_z_mm": 5.32,
-  "sensor_wire_channel_pitch_mm": 3.3,
-  "sensor_wire_carrier": "A cradle with retention lips; B compression cap",
+  "sensor_wire_carrier": "Single hollow TPU 85A plug with eccentric bore",
   "heater_wire_channel_pitch_mm": 5.0,
-  "heater_wire_carrier": "A cradle with retention lips; B compression cap"
+  "heater_wire_carrier": "A cradle with retention lips; B compression cap",
+  "sensor_wire_offset_mm": 3.0
 }

@@ -1499,3 +1499,12 @@ filamento/processo e 39 STL das demais peças preservados.
   continuam iguais; como a cauda pode superar 60 s, validar em ciclos curtos e interromper se a
   leitura subir rápido. Build passou em 32.210 bytes de 32.256; sem teste de hardware porque o
   processo ainda não tem acesso a `/dev/ttyACM0`.
+
+## Passagem lateral do sensor: cabo único e TPU 85A — 2026-10-22
+
+- Substituído o par de três canais por uma peça única com canal Ø4,58 mm,
+  centro a 3 mm do eixo do furo Ø12 mm. Alinhamento por rotação da rolha.
+- Corpo oco com paredes de 0,6 mm e cavidade fechada; 63,6% de vazio.
+  Mantidos corpo Ø12,24 mm e flange Ø16 × 1,5 mm. Flange na mesa.
+- STL/STEP, conjunto e visualizador atualizados; peça única na bandeja 12.
+  Configurações do projeto salvo preservadas. Validar encaixe e vedação físicos.

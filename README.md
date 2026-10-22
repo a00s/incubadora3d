@@ -487,32 +487,27 @@ No projeto completo, bucha na bandeja 15 e amostras 23/24. Começar pela peça
 principal. Encaixe e vedação precisam ser confirmados na impressão em TPU-LW.
 [Corte da bucha](output/v59/corte_bucha_CO2_TPU_LW.svg).
 
-### Passagens dos fios em TPU-LW, divididas ao meio
+### Passagens dos cabos
 
-[TPU do aquecedor — STL](output/v59/TPU_passagem_aquecedor.stl) ·
-[STEP](output/v59/TPU_passagem_aquecedor.step) ·
-[TPU do sensor lateral — STL](output/v59/TPU_passagem_sensor.stl) ·
+[Sensor lateral — STL](output/v59/TPU_passagem_sensor.stl) ·
 [STEP](output/v59/TPU_passagem_sensor.step).
-Cada arquivo contém duas metades separadas por 4 mm, com a borda externa plana
-na mesa. A divisão passa pelo eixo de todos os fios: acomodar os fios nas
-canaletas abertas, juntar as metades e inserir a rolha pelo lado externo.
-Aquecedor: dois fios Ø1,42 mm, canais Ø1,26 mm, agora com berço A de
-dois alojamentos com lábios e tampa B de compressão. Centros a 5 mm; encaixar
-um fio por alojamento antes de fechar. Mantidos os diâmetros de vedação.
-Sensor lateral de umidade/temperatura: três fios Ø1,40 mm, em canais Ø1,10 mm.
-A peça A é um berço com três alojamentos e lábios de retenção; a B é uma tampa
-com apoios individuais de compressão. As bocas laterais em funil permitem
-encaixar um fio de cada vez antes de fechar. Centros a 3,30 mm, com 1,90 mm
-entre as superfícies nominais dos fios. Entradas axiais Ø1,40 mm.
+Peça única para TPU 85A, com canal Ø4,58 mm deslocado 3 mm do centro
+(metade do raio do furo existente). Girar a rolha para alinhar o cabo antes de
+inserir. Corpo oco com paredes de 0,6 mm e cavidade fechada para evitar uma
+passagem livre de ar; 63,6% do envelope externo vazio. Passar o cabo pelo canal
+antes de inserir a peça. Imprimir com a flange plana na mesa, 16 × 16 × 15,2 mm.
+Encaixe e vedação ainda dependem do ensaio físico com o cabo real.
 
-Os furos Ø12 mm, a parede de 14 mm, o corpo Ø12,24 mm e a flange Ø16 × 1,5 mm
-são preservados. No projeto completo, aquecedor na bandeja 11 e sensor na 12. Para imprimir uma
-peça por vez, usar o arquivo separado: **aquecedor A na 3 e B na 4; sensor A na 5 e B na 6**.
-As quatro peças usam 30% giroidal, 3 paredes e 4 camadas sólidas por face. Assentar cada
-fio no berço fora da caixa, fechar a tampa e inserir no furo existente. Não
-misturar com metades da revisão anterior. Montagem e vedação precisam do teste físico.
-[Corte do sensor](output/v59/corte_rolha_sensor_berco_tampa.svg) ·
-[Corte do aquecedor](output/v59/corte_rolha_aquecedor_berco_tampa.svg).
+O furo Ø12 mm, a parede de 14 mm, o corpo Ø12,24 mm e a flange Ø16 × 1,5 mm
+foram preservados. Sensor na bandeja 12 do projeto completo; configurações salvas
+preservadas. Selecionar o TPU 85A usado na impressora ao fatiar.
+
+[Aquecedor — STL](output/v59/TPU_passagem_aquecedor.stl) ·
+[STEP](output/v59/TPU_passagem_aquecedor.step).
+Mantém as duas metades em TPU-LW, dois canais Ø1,26 mm para fios Ø1,42 mm,
+centros a 5 mm, com berço A e tampa B. Bandeja 11 do projeto completo.
+Os arquivos antigos de metades do sensor e o projeto separado TPU-LW são
+referências da revisão anterior; usar o STL único ou a bandeja 12 atual.
 
 ### Revisão da bucha redonda para TPU 85A
 

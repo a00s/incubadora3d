@@ -1,0 +1,16 @@
+{
+  "peca": "TPU_passagem_sensor",
+  "bandejas_afetadas": [
+    12
+  ],
+  "pecas_sensor": 1,
+  "malha_fechada": true,
+  "limites_k1c_com_margem_5mm": true,
+  "dimensoes_mm": [
+    16.0,
+    15.995026588439941,
+    15.199999809265138
+  ],
+  "configuracoes_demais_objetos_preservadas": true,
+  "perfis_salvos_preservados": true
+}

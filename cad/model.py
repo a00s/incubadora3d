@@ -416,9 +416,9 @@ for zprobe in [20,60,135]:
 from wire_plugs import build_wire_plug, compound, print_pair, check_wire_plug
 wire_plug_halves={}
 wire_plug_reports={}
-P.update(sensor_wire_diameter=1.40,sensor_seal_channel_diameter=1.10,
+P.update(sensor_wire_diameter=4.58,sensor_seal_channel_diameter=4.58,
          heater_wire_diameter=1.42,heater_seal_channel_diameter=1.26,
-         sensor_wire_channel_pitch_mm=3.3,sensor_wire_carrier='A cradle with retention lips; B compression cap',
+         sensor_wire_offset_mm=3.0,sensor_wire_carrier='Single hollow TPU 85A plug with eccentric bore',
          heater_wire_channel_pitch_mm=5.0,heater_wire_carrier='A cradle with retention lips; B compression cap',
          wire_plug_inner_recess_mm=.3,wire_plug_split_plane='heater and sensor contoured cradle and cap')
 def cable_port(name,origin,rear,wire_diameter,positions):
@@ -1117,7 +1117,7 @@ for name,halves in wire_plug_halves.items():
 (OUT/'wire_plugs_report.json').write_text(json.dumps(wire_plug_reports,indent=2,ensure_ascii=False)+'\n')
 
 for name,halves in wire_plug_halves.items():
-    for label,half in zip(('A','B'),halves):
+    for label,half in zip(('A','B') if len(halves)==2 else (),halves):
         flat=half.rotate((0,0,0),(1,0,0),180).translate((0,0,15.5))
         for ext in ('stl','step'):cq.exporters.export(flat,str(OUT/f'TPU_passagem_{name}_metade_{label}.{ext}'))
 
