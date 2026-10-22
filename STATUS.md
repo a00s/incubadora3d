@@ -1562,3 +1562,7 @@ filamento/processo e 39 STL das demais peças preservados.
 ## Rótulo de perda simplificado — 2026-10-22
 
 - Removido o til antes de cm3/h no visor; cálculo continua sendo uma estimativa pelo volume nominal de gás.
+
+## Espaçamento da perda e dos ícones — 2026-10-22
+
+- Linha cm3/h e valor elevados em 6 pixels; divisória elevada em 4 pixels, aumentando o espaço até os ícones sem reduzir a margem inferior. Área de limpeza do valor termina em Y129, divisória em Y132 e limpeza dos ícones começa em Y137.

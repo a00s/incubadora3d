@@ -819,8 +819,8 @@ void drawDisplayFrame() {
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
-  ucg.setPrintPos(5, 132); ucg.print(F("cm3/h"));
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 136, 112);
+  ucg.setPrintPos(5, 126); ucg.print(F("cm3/h"));
+  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 132, 112);
   drawCo2Icon(11, 138, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 139, botao_aquecedor_onoff, false, 0);
   drawFanIcon(98, 138, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
@@ -966,7 +966,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
     else strcpy_P(nextLossText, PSTR("---"));
     ucg.setFont(ucg_font_7x13_mr);
-    drawTextChanges(displayLossText, nextLossText, 73, 132, 118, 18, 54,
+    drawTextChanges(displayLossText, nextLossText, 73, 126, 112, 18, 54,
                     bgR, bgG, bgB, 145, 195, 225);
     displayLossCm3Hour = lossCm3Hour;
   }
