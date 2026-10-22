@@ -248,7 +248,8 @@ serial antes de compilar/gravar. A compilação atual usa 32.174 bytes de Flash 
 1.010 bytes de RAM global (49%), deixando 82 bytes de Flash e 1.038 bytes de RAM para
 pilha e chamadas.
 
-A tela numérica fixa mostra CO₂, temperatura, temperatura interna e taxa de
+A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
+lado a lado, e uma linha própria para a taxa de
 variação do CO₂, mantendo os ícones animados e os estados ON/OFF na faixa inferior.
 O cabeçalho mantém a cor de estado e o contador de reinicializações. As bolhas sobem
 por 3 s após um pulso, a chama oscila enquanto o aquecedor está energizado e o rotor

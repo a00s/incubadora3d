@@ -1514,3 +1514,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - Removidos o título UMID, o valor e o cache de umidade da tela.
 - Temperaturas, CO₂, taxa e controles mantêm suas posições. Campo da serial
   preservado como indisponível para compatibilidade com os registros.
+
+## Reorganização do visor sem umidade — 2026-10-22
+
+- Temperatura da câmara e interna lado a lado na linha antes ocupada por TEMP/UMID.
+- Taxa de CO₂ usa a linha abaixo, com unidade à esquerda e valor à direita.
+- Divisor entre temperaturas e taxa; CO₂ principal e controles mantidos.
