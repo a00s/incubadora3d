@@ -23,13 +23,19 @@ case "$ACTION" in
   setup)
     "$CLI" core update-index
     "$CLI" core install arduino:avr@1.8.8
-    "$CLI" lib install 'Ucglib@1.5.2' 'DHT sensor library@1.4.7' 'Adafruit Unified Sensor@1.1.15'
+    "$CLI" lib install 'Ucglib@1.5.2' 'DHT sensor library@1.4.7' 'Adafruit Unified Sensor@1.1.15' 'OneWire@2.3.8'
     ;;
   compile)
-    "$CLI" compile --fqbn "$FQBN" --libraries "$LIBRARIES" --build-path "$BUILD" "$SKETCH"
+    "$CLI" compile --fqbn "$FQBN" \
+      --build-property compiler.c.extra_flags=-mcall-prologues \
+      --build-property compiler.cpp.extra_flags=-mcall-prologues \
+      --build-property compiler.c.elf.extra_flags=-Wl,--relax --libraries "$LIBRARIES" --build-path "$BUILD" "$SKETCH"
     ;;
   upload)
-    "$CLI" compile --fqbn "$FQBN" --libraries "$LIBRARIES" --build-path "$BUILD" \
+    "$CLI" compile --fqbn "$FQBN" \
+      --build-property compiler.c.extra_flags=-mcall-prologues \
+      --build-property compiler.cpp.extra_flags=-mcall-prologues \
+      --build-property compiler.c.elf.extra_flags=-Wl,--relax --libraries "$LIBRARIES" --build-path "$BUILD" \
       --upload --verify --port "$PORT" "$SKETCH"
     ;;
   monitor)

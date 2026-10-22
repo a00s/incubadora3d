@@ -11,6 +11,7 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <OneWire.h>
 
 //#define ERROR_LOG_ADDRESS 0 // EEPROM address to store error log
 #define EEPROM_CONTADOR 24
@@ -18,11 +19,66 @@
 #define EEPROM_CONTROL_STATE 29
 #define EEPROM_SAFETY_FAULT 30
 
-#define DHTPIN 4
+#define CHAMBER_TEMPERATURE_PIN 4
 #define DHT_TEMPERATURA_INT_PIN 2
 #define DHTTYPE DHT22
 
-DHT dht(DHTPIN, DHTTYPE);
+OneWire chamberOneWire(CHAMBER_TEMPERATURE_PIN);
+uint8_t chamberSensorAddress[8];
+bool chamberSensorFound = false;
+float chamberTemperatureC = NAN;
+unsigned long chamberConversionStartedAt = 0;
+
+void startChamberConversion() {
+  if (chamberOneWire.reset()) {
+    chamberOneWire.select(chamberSensorAddress);
+    chamberOneWire.write(0x44); // Convert T; external 5 V supply, no parasite mode.
+  }
+  chamberConversionStartedAt = millis();
+}
+
+void beginChamberTemperature() {
+  chamberConversionStartedAt = millis();
+  // Read ROM is intentionally limited to one sensor on this bus.
+  if (!chamberOneWire.reset()) return;
+  chamberOneWire.write(0x33);
+  for (uint8_t i = 0; i < 8; i++) chamberSensorAddress[i] = chamberOneWire.read();
+  chamberSensorFound = chamberSensorAddress[0] == 0x28 &&
+    OneWire::crc8(chamberSensorAddress, 7) == chamberSensorAddress[7];
+  if (!chamberSensorFound) return;
+  chamberOneWire.reset();
+  chamberOneWire.select(chamberSensorAddress);
+  chamberOneWire.write(0x4E); // Write scratchpad, without writing sensor EEPROM.
+  chamberOneWire.write(0); // Alarm TH (unused).
+  chamberOneWire.write(0); // Alarm TL (unused).
+  chamberOneWire.write(0x7F); // 12-bit resolution.
+  startChamberConversion();
+}
+
+// Do not block relay servicing during the DS18B20's 750 ms conversion.
+void serviceChamberTemperature() {
+  if (!chamberSensorFound) {
+    chamberTemperatureC = NAN;
+    if (millis() - chamberConversionStartedAt >= 2000UL) beginChamberTemperature();
+    return;
+  }
+  if (millis() - chamberConversionStartedAt < 800UL) return;
+  chamberTemperatureC = NAN;
+  if (chamberOneWire.reset()) {
+    chamberOneWire.select(chamberSensorAddress);
+    chamberOneWire.write(0xBE); // Read scratchpad including CRC.
+    uint8_t scratch[9];
+    for (uint8_t i = 0; i < 9; i++) scratch[i] = chamberOneWire.read();
+    int16_t raw = (int16_t)((uint16_t)scratch[1] << 8 | scratch[0]);
+    // Configuration check rejects all-zero responses and unexpected resolution settings.
+    // 85 C is the power-on value; never use it as a control measurement.
+    if (OneWire::crc8(scratch, 8) == scratch[8] && scratch[4] == 0x7F &&
+        raw >= -880 && raw <= 2000 && raw != 1360) {
+      chamberTemperatureC = raw / 16.0f;
+    }
+  }
+  startChamberConversion();
+}
 DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 
 #define HEATER 6
@@ -217,7 +273,7 @@ void setup()
     
     // -------------------------------------------
     mySerialCO2.begin(9600);
-    dht.begin();
+    beginChamberTemperature();
     dhtint.begin();
     pinMode(HEATER,OUTPUT);
     digitalWrite(HEATER,HIGH);
@@ -480,8 +536,9 @@ void loop()
       : DELAY_MINIMO;
 
     
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
+    serviceChamberTemperature();
+    float h = NAN; // DS18B20 measures temperature only; do not display stale RH.
+    float t = chamberTemperatureC;
     float t_interna = dhtint.readTemperature();      
     processSerialCommands();
     // Apply the heater safety cut before automatic CO2 dosing in this loop.
@@ -604,7 +661,7 @@ void loop()
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
-    Serial.print(','); printFixed(t, 1); Serial.print(','); printFixed(h, 1); Serial.print(','); printFixed(t_interna, 1);
+    Serial.print(','); printFixed(t, 2); Serial.print(','); printFixed(h, 1); Serial.print(','); printFixed(t_interna, 1);
     Serial.print(','); Serial.print(botao_co2_onoff); Serial.print(','); Serial.print(botao_aquecedor_onoff); Serial.print(',');
     Serial.print(digitalRead(HEATER) == LOW ? 1 : 0); Serial.print(','); Serial.print(ventilador_status); Serial.print(',');
     Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0); Serial.print(','); Serial.print(delayProporcional); Serial.print(',');
@@ -614,7 +671,7 @@ void loop()
     Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(co2TrendReady && contador_pomp == 0 ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println(co2ProjectedPpm);
 
     if (contador_pomp > 0) contador_pomp--;
-    serviceInputsForTwoSeconds(t);
+    serviceInputsForTwoSeconds();
     // delay(60000);
 }
 
@@ -945,8 +1002,8 @@ void printStatus(unsigned long now) {
   Serial.print(F(",co2_valid=")); Serial.print(CO2i > 0 && CO2i <= CO2_SENSOR_PROTOCOL_MAX_PPM && !co2RangeWrapLatched ? 1 : 0);
   Serial.print(F(",co2_range_lock=")); Serial.print(co2RangeWrapLatched ? 1 : 0);
   Serial.print(F(",boot_count=")); Serial.print(eeprom_contador_int);
-  Serial.print(F(",temp_c=")); printFixed(dht.readTemperature(), 1);
-  Serial.print(F(",humidity_pct=")); printFixed(dht.readHumidity(), 1);
+  Serial.print(F(",temp_c=")); printFixed(chamberTemperatureC, 2);
+  Serial.print(F(",humidity_pct=")); printFixed(NAN, 1);
   Serial.print(F(",internal_temp_c=")); printFixed(dhtint.readTemperature(), 1);
   Serial.print(F(",co2_enabled=")); Serial.print(botao_co2_onoff);
   Serial.print(F(",heater_enabled=")); Serial.print(botao_aquecedor_onoff);
@@ -1116,7 +1173,7 @@ void controlHeater(float temperature, unsigned long now) {
     unsigned long trendElapsedMs = now - heaterTrendReferenceAt;
     float measuredRate = (temperature - heaterTrendReferenceC) * 60000.0f /
                          (float)trendElapsedMs;
-    // Smooth the 30-second DHT22 trend so one 0.1 C quantization step does not
+    // Smooth the 30-second sensor trend so one quantization step does not
     // make the relay chase measurement noise.
     heaterTempRateCPerMin = heaterTrendReady
       ? heaterTempRateCPerMin * 0.5f + measuredRate * 0.5f
@@ -1154,7 +1211,7 @@ void controlHeater(float temperature, unsigned long now) {
     heaterCurrentPulseMs = heaterPidDemandMs;
   }
 
-  // DHT22 resolution is 0.1 C; allow controlled heating through the narrow
+  // Allow controlled heating through the narrow
   // deadband so a quantized 37.1 reading does not force a long coast downward.
   bool safeToHeat = temperature <= HEATER_HARD_CUTOFF &&
                     temperature < HEATER_HARD_CUTOFF;
@@ -1238,11 +1295,12 @@ bool updateButtonState(int pin, bool &stable, bool &candidate, uint8_t &samples)
   return false;
 }
 
-void serviceInputsForTwoSeconds(float temperature) {
+void serviceInputsForTwoSeconds() {
   unsigned long started = millis();
   while (millis() - started < 2000UL) {
     unsigned long now = millis();
-    controlHeater(temperature, now);
+    serviceChamberTemperature();
+    controlHeater(chamberTemperatureC, now);
     processSerialCommands();
     finishCo2ClickSequenceIfExpired(now);
     bool co2Pressed = updateButtonState(BOTAO_CO2, co2ButtonStable, co2ButtonCandidate, co2ButtonDebounceCount);

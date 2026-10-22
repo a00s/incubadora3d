@@ -177,12 +177,29 @@ Os controles mostram a geometria; não substituem testes físicos.
 
 ## Controle do Arduino pela USB
 
+### Sensor de temperatura da câmara
+
+A câmara usa uma sonda DS18B20 alimentada por três fios: VCC em 5V, GND em
+GND e DATA em D4. O resistor existente de aproximadamente 5,1 kΩ permanece
+entre DATA e 5V. Confirme as cores no manual da sonda antes de conectar.
+O DHT22 em D2 continua medindo a temperatura do compartimento eletrônico.
+
+O DS18B20 opera em 12 bits, com conversões assíncronas de pelo menos 800 ms
+para manter o atendimento dos relés. Leitura desconectada, CRC inválido ou
+valor de inicialização de 85 °C vira falha de temperatura e bloqueia o aquecimento
+pelas proteções existentes. A umidade da câmara fica indisponível (`-- %` no
+visor e `nan` na serial), pois a sonda não mede umidade. A serial informa a
+temperatura com duas casas; isso não representa garantia de precisão de 0,01 °C.
+Use somente uma sonda no D4 nesta configuração.
+
 ### Preparar, compilar e gravar
 
 A placa usada é Arduino Uno R3 (`arduino:avr:uno`). O código fonte permanece em
 [temperatura.ino](temperatura.ino); a pasta [firmware/incubadora](firmware/incubadora)
 é a entrada de sketch exigida pelo Arduino CLI. A biblioteca `NDIRZ16` está incluída
 em `arduino-libraries/`; as outras versões ficam fixadas no script.
+O script usa `-mcall-prologues` e relaxação do linker para o firmware com
+DS18B20 caber na memória flash do Uno, sem remover funções de controle.
 
 Instale o [Arduino CLI](https://arduino.github.io/arduino-cli/latest/installation/)
 1.5.1 no Linux:
