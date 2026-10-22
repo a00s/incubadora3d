@@ -1570,3 +1570,8 @@ filamento/processo e 39 STL das demais peças preservados.
 ## Separação das temperaturas e tendência — 2026-10-22
 
 - Linha ppm/min e valor baixados em 3 pixels, para baseline Y106. Segunda divisória em Y87 separa temperaturas e tendência; permanece fora das áreas de limpeza. Mantida a divisória acima dos ícones.
+
+## Espaçamento uniforme das divisórias — 2026-10-22
+
+- Ambas as divisórias têm quatro linhas de pixels vazias de cada lado em relação às áreas dos blocos: temperaturas terminam em Y79, linha Y84, tendência começa em Y89; perda termina em Y127, linha Y132, ícones começam em Y137.
+- Baselines ppm/min Y104 e cm3/h Y124; ícones e margem inferior preservados. Conferência aritmética dos quatro intervalos concluída.

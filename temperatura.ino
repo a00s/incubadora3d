@@ -815,12 +815,13 @@ void drawDisplayFrame() {
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(5, 106); ucg.print(F("ppm/min"));
+  ucg.setPrintPos(5, 104); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
-  ucg.setPrintPos(5, 126); ucg.print(F("cm3/h"));
-  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 87, 112);
+  ucg.setPrintPos(5, 124); ucg.print(F("cm3/h"));
+  // Four blank pixel rows on each side of both separators.
+  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 84, 112);
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 132, 112);
   drawCo2Icon(11, 138, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 139, botao_aquecedor_onoff, false, 0);
@@ -955,7 +956,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(displayCo2RateText, nextRateText, 73, 106, 91, 18, 54,
+    drawTextChanges(displayCo2RateText, nextRateText, 73, 104, 89, 18, 54,
                     bgR, bgG, bgB, rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
@@ -967,7 +968,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
     else strcpy_P(nextLossText, PSTR("---"));
     ucg.setFont(ucg_font_7x13_mr);
-    drawTextChanges(displayLossText, nextLossText, 73, 126, 112, 18, 54,
+    drawTextChanges(displayLossText, nextLossText, 73, 124, 110, 18, 54,
                     bgR, bgG, bgB, 145, 195, 225);
     displayLossCm3Hour = lossCm3Hour;
   }
