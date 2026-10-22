@@ -1543,3 +1543,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - CO₂ e aquecimento ficam invisíveis quando desabilitados e sem atuação; habilitados aparecem parados e animam durante atuação. Pulso manual de CO₂ também mantém ícone visível durante a animação.
 - Ventilador permanece visível, parado quando desligado e animado quando em movimento.
 - Compilação Uno: 31698 bytes flash e 1022 bytes RAM. Nenhuma alteração de peças ou geometria.
+
+## Tendência e perda simultâneas; ícones no rodapé — 2026-10-22
+
+- Restaurada variação de CO₂ em ppm/min com suas cores. Perda estimada ~cm3/h é informação adicional na linha abaixo. Mede redução líquida de CO₂, não volume total de ar vazado.
+- Ícones baixados para o rodapé, abaixo da nova linha de perda; extremos ficam dentro dos 160 pixels do visor. Sem ON/OFF: CO₂ e aquecimento aparecem habilitados e animam na atuação; ventilador sempre visível.
+- Compilação Uno: 31894 bytes flash, 1034 bytes RAM.

@@ -162,6 +162,8 @@ char displayCo2Text[8] = "";
 char displayTempText[8] = "";
 char displayInternalTempText[8] = "";
 char displayCo2RateText[8] = "";
+char displayLossText[8] = "";
+int32_t displayLossCm3Hour = -2;
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
 int8_t displayFanOn = -1;
@@ -754,15 +756,15 @@ void updateActivityIcons() {
   uint8_t heaterFrame = activityIconFrame & 3;
   uint8_t fanFrame = activityIconFrame % 12;
   if (co2Flowing || displayCo2Active != co2Flowing) {
-    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, co2Frame);
+    drawCo2Icon(11, 143, botao_co2_onoff, co2Flowing, co2Frame);
     displayCo2Active = co2Flowing;
   }
   if (heating || displayHeaterActive != heating) {
-    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, heaterFrame);
+    drawHeaterIcon(53, 144, botao_aquecedor_onoff, heating, heaterFrame);
     displayHeaterActive = heating;
   }
   if (fanSpinning || displayFanOn != fanSpinning) {
-    drawFanIcon(98, 120, fanSpinning, fanSpinning, fanFrame);
+    drawFanIcon(98, 143, fanSpinning, fanSpinning, fanFrame);
     displayFanOn = fanSpinning;
   }
 }
@@ -813,15 +815,16 @@ void drawDisplayFrame() {
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(5, 103); ucg.print(F("~cm3/h"));
+  ucg.setPrintPos(5, 103); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 59); ucg.print(F("INT"));
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 84, 112);
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
-  drawCo2Icon(11, 120, botao_co2_onoff, false, 0);
-  drawHeaterIcon(53, 121, botao_aquecedor_onoff, false, 0);
-  drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+  ucg.setPrintPos(5, 132); ucg.print(F("~cm3/h"));
+  drawCo2Icon(11, 143, botao_co2_onoff, false, 0);
+  drawHeaterIcon(53, 144, botao_aquecedor_onoff, false, 0);
+  drawFanIcon(98, 143, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setFont(ucg_font_inr16_mn);
   displayCacheValid = false;
@@ -844,6 +847,23 @@ void formatTenths(int16_t value, char *text) {
   text[index++] = 'C';
   text[index] = '\0';
 }
+
+void formatPpmPerMinute(int32_t value, bool valid, char *text) {
+  if (!valid) {
+    strcpy_P(text, PSTR("---"));
+    return;
+  }
+  if (value > 99999 || value < -99999) {
+    ltoa(value / 1000, text, 10);
+    strcat_P(text, PSTR("k"));
+  } else if (value > 0) {
+    text[0] = '+';
+    ltoa(value, text + 1, 10);
+  } else {
+    ltoa(value, text, 10);
+  }
+}
+
 
 // Nominal CAD gas envelope: chamber 1576 + mixer 274 cm3.
 // Contents displace gas: this is an estimate, not a calibrated leak flow meter.
@@ -926,18 +946,30 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayCo2Quality = co2Quality;
   }
 
-  updateCo2Loss(co2Valid);
-  bool co2RateValid = lossCm3Hour >= 0;
-  int32_t shownCo2Rate = lossCm3Hour;
+  bool co2RateValid = co2RatePpmMinReady;
+  int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
   if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
     char nextRateText[8];
-    if (co2RateValid) ltoa(shownCo2Rate, nextRateText, 10);
-    else strcpy_P(nextRateText, PSTR("---"));
+    formatPpmPerMinute(shownCo2Rate, co2RateValid, nextRateText);
     ucg.setFont(ucg_font_7x13_mr);
+    uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
+    uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
+    uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
     drawTextChanges(displayCo2RateText, nextRateText, 73, 103, 88, 18, 54,
-                    bgR, bgG, bgB, 145, 195, 225);
+                    bgR, bgG, bgB, rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
+  }
+
+  updateCo2Loss(co2Valid);
+  if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour) {
+    char nextLossText[8];
+    if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
+    else strcpy_P(nextLossText, PSTR("---"));
+    ucg.setFont(ucg_font_7x13_mr);
+    drawTextChanges(displayLossText, nextLossText, 73, 132, 118, 18, 54,
+                    bgR, bgG, bgB, 145, 195, 225);
+    displayLossCm3Hour = lossCm3Hour;
   }
 
   ucg.setFont(ucg_font_7x13_mr);
@@ -965,18 +997,18 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   }
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
-    drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
+    drawCo2Icon(11, 143, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
     displayCo2Enabled = botao_co2_onoff;
   }
   if (!displayCacheValid || displayHeaterEnabled != botao_aquecedor_onoff) {
     bool heating = digitalRead(HEATER) == LOW;
-    drawHeaterIcon(53, 121, botao_aquecedor_onoff, heating, activityIconFrame & 3);
+    drawHeaterIcon(53, 144, botao_aquecedor_onoff, heating, activityIconFrame & 3);
     displayHeaterActive = heating;
     displayHeaterEnabled = botao_aquecedor_onoff;
   }
   if (!displayCacheValid || displayFanOn != ventilador_status) {
-    drawFanIcon(98, 120, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
+    drawFanIcon(98, 143, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
