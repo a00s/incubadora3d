@@ -1566,3 +1566,7 @@ filamento/processo e 39 STL das demais peças preservados.
 ## Espaçamento da perda e dos ícones — 2026-10-22
 
 - Linha cm3/h e valor elevados em 6 pixels; divisória elevada em 4 pixels, aumentando o espaço até os ícones sem reduzir a margem inferior. Área de limpeza do valor termina em Y129, divisória em Y132 e limpeza dos ícones começa em Y137.
+
+## Separação das temperaturas e tendência — 2026-10-22
+
+- Linha ppm/min e valor baixados em 3 pixels, para baseline Y106. Segunda divisória em Y87 separa temperaturas e tendência; permanece fora das áreas de limpeza. Mantida a divisória acima dos ícones.
