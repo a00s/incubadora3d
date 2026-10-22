@@ -1520,3 +1520,11 @@ filamento/processo e 39 STL das demais peças preservados.
 - Temperatura da câmara e interna lado a lado na linha antes ocupada por TEMP/UMID.
 - Taxa de CO₂ usa a linha abaixo, com unidade à esquerda e valor à direita.
 - Divisor entre temperaturas e taxa; CO₂ principal e controles mantidos.
+
+## Destaque da temperatura e CO₂ ligado — 2026-10-22
+
+- Temperatura da câmara em negrito por sobreposição de um pixel, sem carregar outra fonte no Uno.
+- Leitura verde entre 36,9 e 37,1 °C; demais estados mantêm as cores de alerta.
+- Ícone e texto ON do controle de CO₂ em azul quando habilitado.
+- Compilação Uno: 31.938 bytes de flash e 1.012 bytes de RAM. Placa não conectada para gravação.
+- Visualizador regenerado e cópia local atualizada; nenhuma alteração de peças ou geometria.

@@ -684,7 +684,7 @@ void reinitializeScreen() {
 void drawCo2Icon(uint8_t x, uint8_t y, bool enabled, bool flowing, uint8_t frame) {
   ucg.setColor(0, 8, 18, 30);
   ucg.drawBox(x - 2, y - 1, 25, 17);
-  ucg.setColor(0, enabled ? 180 : 105, enabled ? 225 : 130, enabled ? 255 : 150);
+  ucg.setColor(0, enabled ? 75 : 105, enabled ? 195 : 130, enabled ? 255 : 150);
   if (!flowing) {
     ucg.drawCircle(x + 5, y + 5, 3, UCG_DRAW_ALL);
     ucg.drawCircle(x + 15, y + 2, 2, UCG_DRAW_ALL);
@@ -932,11 +932,14 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
     if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
-    uint8_t tempR = tempQuality == 1 ? 230 : 255;
+    uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 0 ? 190 : 100);
-    uint8_t tempB = tempQuality == 1 ? 240 : (tempQuality == 0 ? 45 : 90);
+    uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 0 ? 45 : 90);
     drawTextChanges(displayTempText, nextTempText, 5, 77, 62, 18, 58,
                     bgR, bgG, bgB, tempR, tempG, tempB);
+    // Bold overprint keeps the compact font and its fixed field width on the Uno.
+    ucg.setPrintPos(6, 77);
+    ucg.print(nextTempText);
     displayTempTenths = tempTenths;
     displayTempQuality = tempQuality;
   }
@@ -952,7 +955,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     drawCo2Icon(11, 120, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
     displayCo2Active = co2Flowing;
     ucg.setColor(0, bgR, bgG, bgB); ucg.drawBox(4, 137, 38, 18);
-    ucg.setColor(0, botao_co2_onoff ? 220 : 120, botao_co2_onoff ? 235 : 155, botao_co2_onoff ? 250 : 175);
+    ucg.setColor(0, botao_co2_onoff ? 75 : 120, botao_co2_onoff ? 195 : 155, botao_co2_onoff ? 255 : 175);
     ucg.setPrintPos(8, 153); ucg.print(botao_co2_onoff ? F("ON") : F("OFF"));
     displayCo2Enabled = botao_co2_onoff;
   }
