@@ -20,6 +20,7 @@ unsigned long millis() { return clockMs; }
 unsigned long co2LastPulseAt = 0;
 bool co2RatePpmMinReady = true, co2TrendReady = true;
 int32_t co2RatePpmMin = -100;
+int32_t CO2i = 50000;
 uint8_t co2ResponseLagSeconds = 120;
 uint8_t co2RateHistoryNext = 0;
 unsigned long co2RateHistoryTime[16] = {};
@@ -58,65 +59,58 @@ int main() {
   setDisplayBackground(); assert(ucg.r==8 && ucg.g==18 && ucg.b==30);
 
   measure(100000);
-  assert(lossCm3Hour == -1 && !lossStable);
-  // A window crossing the response boundary cannot produce even a provisional value.
-  measure(120000);
-  assert(lossCm3Hour == -1 && lossWindows == 0);
-  measure(149999);
-  assert(lossCm3Hour == -1 && lossWindows == 0);
-  measure(150000);
-  assert(lossCm3Hour == 11 && !lossStable && lossWindows == 1);
-  measure(152000);
-  assert(!lossStable && lossWindows == 1); // Overlapping window.
-  // Actual 45-second windows cannot count again after only 30 seconds.
-  measure(180000,45000);
-  assert(!lossStable && lossWindows == 1);
-  measure(195000,45000);
-  assert(!lossStable && lossWindows == 2);
-  measure(225000);
-  assert(lossStable && lossWindows == 3);
-  co2RatePpmMin = -300; measure(227000);
-  assert(lossCm3Hour == 33 && !lossStable && lossWindows == 1);
-  // Forty frequent doses never produce confidence from contaminated windows.
-  for (int i=0; i<40; ++i) {
-    co2LastPulseAt = clockMs;
-    measure(co2LastPulseAt + 2000);
-    assert(!lossStable && lossWindows == 0);
-    measure(co2LastPulseAt + 32000);
-    assert(!lossStable && lossWindows == 0);
-    measure(co2LastPulseAt + 120000);
-    assert(!lossStable && lossWindows == 0);
+  assert(lossCm3Hour == -1 && !lossFresh);
+  co2RatePpmMin = 100; measure(120000);
+  assert(lossStartAt == 0 && lossCm3Hour == -1);
+  co2RatePpmMin = -100; co2TrendReady = false; measure(130000);
+  assert(lossStartAt == 0);
+  co2TrendReady = true;
+  // Three completed 60-second declines build evidence across doses.
+  // The next dose comes only 80 s after the previous one: no long wait needed.
+  for (int i=0; i<3; ++i) {
+    unsigned long start = 140000UL + i*80000UL;
+    CO2i = 50000; co2LastPulseAt = start - 20000; measure(start);
+    assert(lossStartAt == start);
+    CO2i = 49990; measure(start + 6000);
+    assert(!lossFresh); // Too short, even though falling.
+    CO2i = 49980; measure(start + 12000);
+    assert(lossFresh && !lossStable);
+    CO2i = 49900; measure(start + 60000);
+    assert(lossCm3Hour == 11 && lossFresh && !lossStable);
+    finishCo2Loss();
+    assert(lossWindows == i+1 && !lossFresh && lossStartAt == 0);
+    // Injected rise is never included in the next decline.
+    co2RatePpmMin = 1000; CO2i = 51000; measure(start + 62000);
+    assert(lossCm3Hour == 11 && !lossFresh && lossWindows == i+1);
+    co2RatePpmMin = -100;
   }
-  // Frequent doses retain the last measurement, marked as held rather than fresh.
-  assert(lossCm3Hour == 33 && !lossFresh && !lossStable);
-  for (uint8_t lag : {90,120,180}) {
-    co2ResponseLagSeconds = lag;
-    co2LastPulseAt = clockMs;
-    measure(co2LastPulseAt + 2000);
-    measure(co2LastPulseAt + lag*1000UL + 29999);
-    assert(lossCm3Hour == 33 && !lossFresh && lossWindows == 0);
-    measure(co2LastPulseAt + lag*1000UL + 30000);
-    assert(lossCm3Hour == 33 && !lossStable && lossWindows == 1);
-    measure(clockMs + 30000);
-    assert(!lossStable && lossWindows == 2);
-    measure(clockMs + 30000);
-    assert(lossStable && lossWindows == 3);
-    updateCo2Loss(false);
-    assert(lossCm3Hour == 33 && !lossFresh && !lossStable && lossWindows == 0);
-  }
-  co2RatePpmMin = 0; measure(clockMs + 30000);
-  assert(lossCm3Hour == 0 && !lossStable);
-  measure(clockMs + 30000); measure(clockMs + 30000);
-  assert(lossStable);
-  co2TrendReady = false; measure(clockMs + 2000);
-  assert(lossStable); // Independent of the controller's ready state.
-  co2RatePpmMin = 100; measure(clockMs + 2000);
-  assert(lossCm3Hour == 0 && !lossStable && lossWindows == 0);
-  measure(clockMs + 600001);
-  assert(lossCm3Hour == 0 && !lossFresh && !lossStable);
-  co2RatePpmMinReady = false; co2RatePpmMin = -100;
-  measure(clockMs + 2000);
-  assert(lossCm3Hour == 0 && !lossFresh && lossWindows == 0);
+  CO2i = 50000; measure(400000);
+  CO2i = 49950; measure(430000);
+  assert(lossCm3Hour == 11 && lossStable && lossFresh);
+  // Divergent new decline removes confidence rather than reusing old certainty.
+  CO2i = 49700; measure(460000);
+  assert(lossCm3Hour == 33 && !lossStable && lossWindows == 0);
+  finishCo2Loss(); assert(lossWindows == 1 && !lossFresh);
+  // A short partial interval does not count as a completed evidence cycle.
+  CO2i = 50000; measure(480000);
+  CO2i = 49980; measure(492000); finishCo2Loss();
+  assert(lossWindows == 1 && lossStartAt == 0);
+  // Invalid readings, rising concentration and unavailable trend retain history.
+  updateCo2Loss(false); assert(lossCm3Hour >= 0 && !lossFresh && lossWindows == 0);
+  co2RatePpmMin = 1000; measure(1200000);
+  assert(lossCm3Hour >= 0 && !lossFresh);
+  co2RatePpmMinReady = false; measure(1300000);
+  assert(lossCm3Hour >= 0 && lossStartAt == 0);
+  co2RatePpmMinReady = true; co2RatePpmMin = 0;
+  CO2i = 50000; measure(1400000); measure(1430000);
+  assert(lossCm3Hour == 0 && lossFresh);
+  // Actual elapsed duration, not a fixed sampling interval, sets the rate.
+  finishCo2Loss(); CO2i = 50000; co2RatePpmMin = -100; measure(1500000);
+  CO2i = 49900; measure(1545000);
+  assert(lossCm3Hour == 15);
+  // An increase beyond the segment origin restarts the decline anchor.
+  CO2i = 50100; measure(1547000);
+  assert(!lossFresh && lossStartPpm == 50100 && lossStartAt == 1547000);
 
 }
 

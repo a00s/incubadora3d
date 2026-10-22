@@ -1619,3 +1619,13 @@ filamento/processo e 39 STL das demais peças preservados.
 - Valor retido aparece amarelo com asterisco (ex.: 11*); asterisco identifica histórico inclusive no modo de alerta vermelho, que exige textos brancos. Estimativa nova sem confiança fica amarela sem asterisco; três janelas limpas consistentes permitem branco.
 - Estado de retenção faz parte do cache de redesenho, para adicionar/remover asterisco mesmo que o número não mude. Dosagem, volume, regras de janela limpa e layout preservados.
 - Regressões confirmam retenção por quarenta reposições frequentes, pausa superior a dez minutos, leitura inválida e tendência indisponível. Compilação Uno: 32176 bytes flash, 1000 bytes RAM. Nenhuma alteração de peças ou geometria.
+
+## Estimativa pelo trecho de queda até a próxima dose — 2026-10-23
+
+- Substituída a espera fixa pós-dose pelo início observado da queda: tendência móvel disponível, controle de tendência estabilizado (30 s sem subida rápida) e inclinação não positiva. A concentração e o horário nesse ponto viram a origem da coleta.
+- Durante a coleta usa queda líquida desde a origem e duração real: cm³/h = queda_ppm × 1850 × 3,6 / intervalo_ms. Primeira atualização após 10 s; coleta até a leitura anterior à próxima injeção. Não estima volume injetado, não soma subidas e não exige chegar a 5%.
+- Antes de toda dose automática/manual encerra o trecho e limpa a origem, impedindo que o salto da injeção entre no próximo cálculo. Subida da tendência, concentração acima da origem ou leitura inválida também reiniciam a origem. Mantém valor anterior com * durante pausas/reposição.
+- Confiança passa a usar ciclos: trechos concluídos de pelo menos 30 s contam como evidência; três trechos com resultados dentro de ±25% da referência (mínimo 2 cm³/h) permitem branco numa coleta atual com pelo menos 30 s. Trechos curtos não aumentam confiança; divergência em trecho de 30 s reinicia evidência. Branco não depende da concentração estar em 5%.
+- Critério de estabilização observa o sensor: não prova mistura homogênea nem elimina interferência residual da dose; continua sendo estimativa. Sem doses subsequentes, o primeiro longo trecho permite estimativa contínua mas ainda não três ciclos de confiança.
+- Regressões cobrem queda antes de doses a cada 80 s, exclusão do salto injetado, três ciclos consistentes, trechos curtos, perda de confiança por divergência, falta de leitura/tendência, pausa prolongada, zero, intervalo de 45 s e retomada por subida. Layout, alerta e controle da válvula preservados; nenhuma peça alterada.
+- Compilação Uno: 32226 bytes flash e 1002 bytes RAM; gravação USB com verificação concluída.

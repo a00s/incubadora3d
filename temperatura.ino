@@ -236,7 +236,8 @@ const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
 bool lossFresh = false;
 int32_t lossCm3Hour = -1;
 bool lossStable = false;
-unsigned long lossConfidenceAt = 0;
+unsigned long lossStartAt = 0;
+uint16_t lossStartPpm = 0;
 uint16_t lossReference = 0;
 uint8_t lossWindows = 0;
 
@@ -649,6 +650,7 @@ void loop()
       co2BaselineReady = true;
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
+      finishCo2Loss();
       digitalWrite(CO2PUMP, LOW);
       delay(pulseMs);
       digitalWrite(CO2PUMP, HIGH);
@@ -893,40 +895,43 @@ void formatPpmPerMinute(int32_t value, bool valid, char *text) {
 
 void updateCo2Loss(bool valid) {
   unsigned long now = millis();
-  lossStable = false;
-  lossFresh = false;
+  lossStable = lossFresh = false;
   if (!valid || now < CO2_SENSOR_WARMUP_MS) {
+    lossStartAt = 0;
     lossWindows = 0;
     return;
   }
-  // Keep the last measured value through pauses and sensor faults.
-  // The display marks held values explicitly; only a reboot clears history.
-  // Use the actual oldest timestamp: the entire slope window must begin
-  // after the last dose's response delay, even if loop timing varies.
-  unsigned long windowAge = now - co2RateHistoryTime[co2RateHistoryNext];
-  unsigned long pulseAge = now - co2LastPulseAt;
-  if (!co2RatePpmMinReady || pulseAge < windowAge ||
-      pulseAge - windowAge < (unsigned long)co2ResponseLagSeconds * 1000UL ||
-      co2RatePpmMin > 0) {
-    lossWindows = 0;
+  // Start from observed stabilization/decline, rather than a fixed dose delay.
+  if (!co2RatePpmMinReady || !co2TrendReady || co2RatePpmMin > 0) {
+    lossStartAt = 0;
     return;
   }
-  // 1850 cm3 * ppm/min * 60 / 1e6; rounded to whole cm3/h.
-  lossCm3Hour = (-co2RatePpmMin * (CO2_GAS_VOLUME_CM3 * 6L / 100) + 500) / 1000;
+  if (!lossStartAt || CO2i > lossStartPpm) {
+    lossStartAt = now;
+    lossStartPpm = CO2i;
+  }
+  unsigned long elapsed = now - lossStartAt;
+  if (elapsed < 10000UL) return;
+  int32_t drop = (int32_t)lossStartPpm - CO2i;
+  // Nominal gas volume * concentration drop / actual elapsed time.
+  lossCm3Hour = (drop * (CO2_GAS_VOLUME_CM3 * 36L / 10) + elapsed / 2) / elapsed;
   lossFresh = true;
-  // Confidence requires three non-overlapping, consistent slope windows.
-  // A divergent reading immediately returns the result to provisional.
-  int16_t difference = (int16_t)lossCm3Hour - lossReference;
+  int32_t difference = lossCm3Hour - lossReference;
   if (difference < 0) difference = -difference;
   uint16_t tolerance = lossReference / 4;
   if (tolerance < 2) tolerance = 2;
-  if (difference > tolerance) lossWindows = 0;
-  if (!lossWindows || now - lossConfidenceAt >= windowAge) {
+  if (elapsed >= 30000UL && difference > tolerance) lossWindows = 0;
+  lossStable = lossWindows >= 3 && elapsed >= 30000UL;
+}
+
+void finishCo2Loss() {
+  // Only completed pre-dose decline segments build confidence across cycles.
+  if (lossFresh && millis() - lossStartAt >= 30000UL) {
     if (!lossWindows) lossReference = lossCm3Hour;
     if (lossWindows < 3) lossWindows++;
-    lossConfidenceAt = now;
   }
-  lossStable = lossWindows >= 3;
+  lossStartAt = 0;
+  lossStable = lossFresh = false;
 }
 
 void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,
@@ -1001,10 +1006,8 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayCo2RateReady = co2RateValid;
   }
 
-  bool responseComplete = millis() - co2LastPulseAt >=
-    (unsigned long)co2ResponseLagSeconds * 1000UL;
-  bool shownLossStable = lossStable && responseComplete;
-  bool lossHeld = lossCm3Hour >= 0 && (!lossFresh || !responseComplete);
+  bool shownLossStable = lossStable;
+  bool lossHeld = lossCm3Hour >= 0 && !lossFresh;
   if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour ||
       displayLossStable != shownLossStable || displayLossHeld != lossHeld) {
     char nextLossText[8];
@@ -1110,6 +1113,8 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   if (co2RateAtPulsePpmMin > 5000) co2RateAtPulsePpmMin = 5000;
   co2DoseResponsePending = co2BaselineReady;
   maxRate = 0;
+  if (!freshReading) lossFresh = false;
+  finishCo2Loss();
   digitalWrite(CO2PUMP, LOW);
   delay(pulseMs);
   digitalWrite(CO2PUMP, HIGH);
