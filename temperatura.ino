@@ -812,11 +812,11 @@ void drawDisplayFrame() {
   drawHealthIndicator();
   ucg.setFont(ucg_font_7x13_mr);
   ucg.setColor(0, 130, 190, 215);
-  ucg.setPrintPos(73, 99); ucg.print(F("ppm/min"));
+  ucg.setPrintPos(5, 103); ucg.print(F("ppm/min"));
   ucg.setColor(0, 150, 200, 225);
   ucg.setPrintPos(5, 59); ucg.print(F("TEMP"));
-  ucg.setPrintPos(5, 99); ucg.print(F("INT"));
-  ucg.setPrintPos(110, 82); ucg.print(F("C"));
+  ucg.setPrintPos(66, 59); ucg.print(F("INT"));
+  ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 84, 112);
   ucg.setColor(0, 45, 65, 82); ucg.drawHLine(8, 116, 112);
   drawCo2Icon(11, 120, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 121, botao_aquecedor_onoff, false, 0);
@@ -921,33 +921,29 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(displayCo2RateText, nextRateText, 73, 113, 101, 14, 54,
+    drawTextChanges(displayCo2RateText, nextRateText, 73, 103, 88, 18, 54,
                     bgR, bgG, bgB, rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
   }
 
-  ucg.setFont(ucg_font_inr16_mn);
+  ucg.setFont(ucg_font_7x13_mr);
   if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
-    // Numeric font matches CO2; the unit is drawn separately in the frame.
-    char *unit = strchr(nextTempText, ' ');
-    if (unit) *unit = '\0';
     if (displayTempQuality != tempQuality) displayTempText[0] = '\0';
     uint8_t tempR = tempQuality == 1 ? 230 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 0 ? 190 : 100);
     uint8_t tempB = tempQuality == 1 ? 240 : (tempQuality == 0 ? 45 : 90);
-    drawTextChanges(displayTempText, nextTempText, 5, 84, 60, 28, 103,
+    drawTextChanges(displayTempText, nextTempText, 5, 77, 62, 18, 58,
                     bgR, bgG, bgB, tempR, tempG, tempB);
     displayTempTenths = tempTenths;
     displayTempQuality = tempQuality;
   }
-  ucg.setFont(ucg_font_7x13_mr);
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
     formatTenths(internalTempTenths, nextInternalTempText);
-    drawTextChanges(displayInternalTempText, nextInternalTempText, 5, 113, 101, 14, 58,
+    drawTextChanges(displayInternalTempText, nextInternalTempText, 66, 77, 62, 18, 59,
                     bgR, bgG, bgB, 230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
   }
