@@ -1554,3 +1554,7 @@ filamento/processo e 39 STL das demais peças preservados.
 
 - Ícones elevados em 5 pixels, deixando margem inferior de 6 pixels inclusive na área de limpeza da animação.
 - Removidas as duas linhas divisórias horizontais. Campos de temperatura, tendência e perda permanecem nas mesmas posições, sem sobreposição com as animações.
+
+## Separação dos ícones — 2026-10-22
+
+- Adicionada uma única linha horizontal discreta em Y136 acima dos ícones; mantém o respiro inferior e fica fora das áreas de limpeza dos valores e animações.
