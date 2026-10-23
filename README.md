@@ -363,18 +363,18 @@ Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio du
 subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
 suficiente nem estabilidade da concentração.
-Para sinalizar uma abertura, desligue o CO₂ antes de abrir. Assim que o desligamento
-for confirmado (após a janela dos cliques), aparece uma porta grande com CO2 PAUSADO,
-sem esperar queda de sensores. Uma queda de pelo menos 2.000 ppm, ou de 500 ppm junto
-de queda térmica de 0,2 °C, muda o aviso para PORTA ABERTA. A tela mantém CO₂ e
-temperaturas. Não há sensor físico para confirmar a posição. Ao fechar, religue o CO₂:
-se reconheceu abertura, aparece RECUPERANDO e o cálculo pede uma fração maior do déficit,
-mantendo teto de 80 ms, aprendizado, espera entre doses e bloqueio durante subida.
-Ao atingir 49.000 ppm volta ao modo normal. A média de perda fica retida desde o
-desligamento até terminar a recuperação, excluindo a queda da porta. Desligar sem
-queda mostra CO2 PAUSADO e não arma recuperação; religar restaura a tela normal.
-Se abrir com CO₂ ligado, não há garantia de reconhecimento nem de exclusão desse
-evento da média.
+Para sinalizar uma abertura, desligue o CO₂ antes de abrir. Desligar apenas arma a
+observação: não mostra porta nem afirma abertura. O aviso PORTA ABERTA aparece com
+queda >=2.000 ppm acompanhada de tendência rápida (<-1.000 ppm/min), ou queda >=500 ppm
+junto de queda térmica >=0,2 °C. Uma queda lenta de CO₂ sozinha não dispara o aviso.
+A tela mantém CO₂ e temperaturas e mostra a incubadora com a folha abrindo para a
+esquerda, pega à esquerda e dobradiças à direita, conforme o CAD. Não há sensor físico
+para confirmar a posição. Ao fechar, religue o CO₂: após abertura presumida, aparece
+RECUPERANDO e o cálculo pede uma fração maior do déficit, mantendo teto de 80 ms,
+aprendizado, espera entre doses e bloqueio durante subida. Ao atingir 49.000 ppm volta
+ao modo normal. A média de perda fica retida desde o desligamento até terminar a
+recuperação, excluindo a queda da porta. Se abrir com CO₂ ligado, não há garantia de
+reconhecimento nem de exclusão desse evento da média.
 
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.

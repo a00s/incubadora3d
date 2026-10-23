@@ -1678,3 +1678,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Reconhecimento: queda >=2000 ppm independente da temperatura, ou >=500 ppm acompanhada de queda térmica >=0,2 °C. Não depende da prontidão da tendência móvel. Ao religar, atualiza a inferência antes da transição para não perder leitura já disponível entre ciclos. Não representa confirmação física da posição da porta.
 - Regressão usa função de desenho real e condição de visibilidade extraída do firmware: modo normal não mostra, desligado mostra CO2 PAUSADO, aberto mostra PORTA ABERTA, recuperação remove desenho. Coordenadas verificadas dentro de 128x160. Testa também queda só de CO₂, queda menor com temperatura, detecção ao religar, bloqueios e retorno à faixa. Demais testes de CO₂ e perda passaram.
 - Compilação Uno: 32202 bytes flash, 1023 bytes RAM. README e gerador de fonte atualizados; glifos adicionais já pertenciam ao subconjunto existente. Nenhuma peça ou geometria alterada.
+
+## Aviso somente por abertura inferida; ícone conforme o CAD — 2026-10-23
+
+- Corrigida interpretação da interface: desligar CO₂ apenas arma a observação e não mostra desenho de porta nem aviso CO2 PAUSADO. O aviso depende das leituras: queda >=2000 ppm e tendência <-1000 ppm/min, ou queda >=500 ppm e temperatura pelo menos 0,2 °C abaixo da referência. Queda lenta de CO₂ sozinha não indica abertura. Ainda é inferência; não há sensor físico.
+- Redesenhado ícone com corpo/câmara, pega à esquerda, dobradiças à direita e folha abrindo para a esquerda, conforme CAD (hinge_axis_x=130; latch_axis_x=-13). Prévia raster gerada das coordenadas reais e conferida dentro do visor 128x160.
+- Regressão exige ausência de aviso em modo normal/desligado/recuperação, desenho somente em abertura inferida, borda livre à esquerda do corpo e eixo de articulação na direita. Cobre também porta presumidamente fechada com CO₂ desligado e queda lenta de 3000 ppm, sem disparar aviso. Recuperação, aprendizado e média preservados.
+- Compilação Uno: 32192 bytes flash, 1023 bytes RAM. Nenhuma peça ou geometria alterada.

@@ -257,7 +257,7 @@ float doorTemperatureBefore = NAN;
 void updateDoorState(float temperature, bool valid) {
   if (!valid) return;
   int32_t drop = doorCo2Before - CO2i;
-  if (co2DoorMode == 1 && (drop >= 2000 ||
+  if (co2DoorMode == 1 && ((drop >= 2000 && co2RatePpmMin < -1000) ||
       (drop >= 500 && doorTemperatureBefore - temperature >= 0.2f)))
     co2DoorMode = 2;
   if (co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
@@ -788,7 +788,7 @@ void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t fram
 }
 
 void updateActivityIcons() {
-  if (!displayCacheValid || co2DoorMode == 1 || co2DoorMode == 2) return;
+  if (!displayCacheValid || co2DoorMode == 2) return;
   unsigned long now = millis();
   bool co2Flowing = digitalRead(CO2PUMP) == LOW ||
                     (co2AnimationUntil != 0 && (int32_t)(now - co2AnimationUntil) < 0);
@@ -960,12 +960,16 @@ void drawDoorNotice() {
   setDisplayForeground(255, 190, 45);
   ucg.setFont(incubadora_font_7x13);
   ucg.setPrintPos(22, 97);
-  ucg.print(co2DoorMode == 2 ? F("PORTA ABERTA") : F("CO2 PAUSADO"));
-  ucg.drawFrame(43, 106, 42, 45);
-  ucg.drawLine(43, 106, 70, 101);
-  ucg.drawLine(70, 101, 70, 145);
-  ucg.drawLine(70, 145, 43, 150);
-  ucg.drawBox(64, 124, 3, 3);
+  ucg.print(F("PORTA ABERTA"));
+  // Chamber body, right hinges, and the door's free edge opening to the left.
+  ucg.drawFrame(54, 106, 40, 45);
+  ucg.drawFrame(59, 111, 29, 35);
+  ucg.drawBox(94, 112, 3, 7);
+  ucg.drawBox(94, 136, 3, 7);
+  ucg.drawLine(93, 106, 28, 100);
+  ucg.drawLine(28, 100, 28, 144);
+  ucg.drawLine(28, 144, 93, 150);
+  ucg.drawBox(33, 119, 3, 10);
 }
 
 void renderDisplay(float temperature, float internalTemperature, bool co2Valid) {
@@ -1090,7 +1094,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
-  if (co2DoorMode == 1 || co2DoorMode == 2) drawDoorNotice();
+  if (co2DoorMode == 2) drawDoorNotice();
   updateActivityIcons();
 }
 

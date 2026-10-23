@@ -40,13 +40,14 @@ int32_t co2_before_pump = 45000, max_co2_increase = 0;
 unsigned long co2MaxRiseAt = 0;
 '''+inference+setter+pulse+r'''
 const char *label = nullptr;
+int bodyLeft=-1, bodyRight=-1, openLeft=128, hingeX=-1;
 struct Display {
   void setFont(int) {}
   void setPrintPos(int,int) {}
   void print(const char *text) { label = text; }
   void drawBox(int x,int y,int w,int h) {assert(x>=0 && y>=0 && x+w<=128 && y+h<=160);}
-  void drawFrame(int x,int y,int w,int h) {drawBox(x,y,w,h);}
-  void drawLine(int x,int y,int a,int b) {assert(x>=0 && x<128 && a>=0 && a<128 && y>=0 && y<160 && b>=0 && b<160);}
+  void drawFrame(int x,int y,int w,int h) {drawBox(x,y,w,h); if(bodyLeft<0) {bodyLeft=x;bodyRight=x+w-1;}}
+  void drawLine(int x,int y,int a,int b) {if(hingeX<0) hingeX=x; if(x<openLeft)openLeft=x; if(a<openLeft)openLeft=a; assert(x>=0 && x<128 && a>=0 && a<128 && y>=0 && y<160 && b>=0 && b<160);}
 } ucg;
 void setDisplayBackground() {}
 void setDisplayForeground(int,int,int) {}
@@ -57,8 +58,9 @@ void observeRise(unsigned long currentTime) { '''+rise+''' }
 '''+r'''
 int main() {
   co2DoorMode = 0; drawVisibleNotice(); assert(label == nullptr);
-  co2DoorMode = 1; drawVisibleNotice(); assert(strcmp(label,"CO2 PAUSADO")==0);
+  co2DoorMode = 1; drawVisibleNotice(); assert(label == nullptr);
   co2DoorMode = 2; drawVisibleNotice(); assert(strcmp(label,"PORTA ABERTA")==0);
+  assert(openLeft < bodyLeft && hingeX == bodyRight);
   label = nullptr; co2DoorMode = 3; drawVisibleNotice(); assert(label == nullptr);
   co2DoorMode = 0;
 
@@ -81,9 +83,12 @@ int main() {
   assert(calcularDelayProporcional(47000,50000,10000,false,80) == 20);
   CO2i = 49000; updateDoorState(37,true); assert(co2DoorMode == 0);
   assert(calcularDelayProporcional(47000,50000,10000,true,80) == 20);
-  // A strong drop confirms even if temperature has not responded yet.
+  // Slow CO2 decline with unchanged temperature must not claim an open door.
   CO2i = 50000; chamberTemperatureC = 37; setCo2Enabled(false);
-  CO2i = 47000; co2RatePpmMin = 0;
+  CO2i = 47000; co2RatePpmMin = -400;
+  updateDoorState(37,true); assert(co2DoorMode == 1);
+  // A rapid drop can confirm even before temperature responds.
+  co2RatePpmMin = -1200;
   updateDoorState(37,false); assert(co2DoorMode == 1);
   updateDoorState(37,true); assert(co2DoorMode == 2);
   // Smaller drop plus temperature fall also confirms, without a ready slope.
@@ -97,7 +102,7 @@ int main() {
   setCo2Enabled(true); assert(co2DoorMode == 3);
   // Re-enable can recognize the latest drop even before the next main-loop check.
   CO2i = 50000; chamberTemperatureC = 37; setCo2Enabled(false);
-  CO2i = 47000; setCo2Enabled(true); assert(co2DoorMode == 3);
+  CO2i = 47000; co2RatePpmMin = -1200; setCo2Enabled(true); assert(co2DoorMode == 3);
   // Door-opening fall must not invent dose gain or delay the observed peak.
   CO2i = 44000; observeRise(60000); assert(max_co2_increase == 0);
   CO2i = 45100; observeRise(70000);
