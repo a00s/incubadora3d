@@ -7,6 +7,7 @@ import tempfile
 
 source = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
 function = source[source.index('bool co2ResponseWaitComplete('):source.index('void setup()')]
+admission = re.search(r'if \((validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS.*?)\) \{\s*int32_t pulseMs;',source,re.S).group(1)
 gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
 weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
 start = source.index('      if (pulseMs > pulseLimit)')
@@ -17,6 +18,9 @@ harness = r'''
 #include <initializer_list>
 #include <assert.h>
 #define CO2_CONTROL_MIN_PPM 49000L
+#define CO2_SENSOR_WARMUP_MS 120000UL
+#define CO2_TARGET_PPM 50000L
+#define CO2_TOLERANCE_PPM 1000L
 #define DELAY_MINIMO 20
 bool co2GainValidatedThisBoot = false, co2LastResponseWeak = false;
 int32_t lastCo2PulseMs = 0;
@@ -30,12 +34,23 @@ int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
 '''+caps+'''
   return pulseMs;
 }
+bool admit(uint8_t doorButtonStep, bool botao_co2_onoff=true, bool validCo2=true) {
+  unsigned long currentTime=120000;
+  int32_t co2ProjectedPpm=47000;
+  bool doseResponseReady=true;
+  uint8_t co2ClickCount=0;
+  return '''+admission+''';
+}
 bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendReady) {
   bool responseWaitComplete = co2ResponseWaitComplete(now);
   return '''+gate+''';
 }
 '''+r'''
 int main() {
+  assert(admit(0));
+  assert(!admit(1) && !admit(2)); // No automatic dose during a pending door gesture.
+  assert(!admit(0,false) && !admit(0,true,false));
+
   // Restart near target: the first probe stays small, then escapes the old 40 ms cap.
   assert(boundedProbe(80,80) == 20);
   lastCo2PulseMs = 20;

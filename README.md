@@ -363,18 +363,26 @@ Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio du
 subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
 suficiente nem estabilidade da concentração.
-Para sinalizar uma abertura, desligue o CO₂ antes de abrir. Desligar apenas arma a
-observação: não mostra porta nem afirma abertura. O aviso PORTA ABERTA aparece com
-queda >=2.000 ppm acompanhada de tendência rápida (<-1.000 ppm/min), ou queda >=500 ppm
-junto de queda térmica >=0,2 °C. Uma queda lenta de CO₂ sozinha não dispara o aviso.
-A tela mantém CO₂ e temperaturas e mostra a incubadora com a folha abrindo para a
-esquerda, pega à esquerda e dobradiças à direita, conforme o CAD. Não há sensor físico
-para confirmar a posição. Ao fechar, religue o CO₂: após abertura presumida, aparece
-RECUPERANDO e o cálculo pede uma fração maior do déficit, mantendo teto de 80 ms,
-aprendizado, espera entre doses e bloqueio durante subida. Ao atingir 49.000 ppm volta
-ao modo normal. A média de perda fica retida desde o desligamento até terminar a
-recuperação, excluindo a queda da porta. Se abrir com CO₂ ligado, não há garantia de
-reconhecimento nem de exclusão desse evento da média.
+A porta usa comando explícito: amarelo (CO₂) → vermelho (aquecimento) → amarelo,
+com toques separados dentro de três segundos. A primeira sequência marca PORTA ABERTA,
+desliga imediatamente aquecimento e CO₂ e mostra o ícone da incubadora com abertura
+à esquerda. Não existe mais detecção automática de abertura por queda de sensores.
+Os dois primeiros toques ficam reservados: uma sequência completa não executa os
+comandos individuais desses botões.
+
+Após fechar fisicamente, repita amarelo → vermelho → amarelo. O aviso sai, os dois
+controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm. Não restaura
+um estado anterior desligado: os dois são solicitados ligados, conforme o comando de
+fechamento. Falha de segurança impede religamento automático; trava de faixa continua
+impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
+
+A pausa fica salva na EEPROM. Se reiniciar marcada como aberta, ambos continuam
+desligados e o aviso permanece. Com porta marcada aberta, pulsos manuais e comandos
+individuais de ligar também não furam a pausa. A média de perda fica retida durante
+abertura e recuperação. Fora da sequência reservada, cliques simples e pulsos de
+3/4/5 toques amarelos permanecem; sequência incompleta/expirada volta a ser interpretada
+como comandos normais. Solte cada botão antes de apertar o seguinte; pressioná-los
+juntos mantém a função anterior de reset do contador e cancela a sequência pendente.
 
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.

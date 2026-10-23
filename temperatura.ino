@@ -125,8 +125,8 @@ SoftwareSerial mySerialCO2(12,5);
 NDIRZ16 mySensorCO2 = NDIRZ16(&mySerialCO2);
 Ucglib_ST7735_18x128x160_HWSPI ucg(/*cd=*/ 9, /*cs=*/ 10, /*reset=*/ 8);
 
-int botao_co2_onoff = 0;
-int botao_aquecedor_onoff = 0;
+bool botao_co2_onoff = false;
+bool botao_aquecedor_onoff = false;
 int32_t last_co2i = 0;
 int contador_pomp;
 int32_t CO2i = 0;
@@ -185,11 +185,14 @@ bool co2ButtonStable = false, co2ButtonCandidate = false;
 bool heaterButtonStable = false, heaterButtonCandidate = false;
 uint8_t co2ButtonDebounceCount = 0, heaterButtonDebounceCount = 0;
 uint8_t co2ClickCount = 0;
-int co2ModeAtClickSequence = 0;
+bool co2ModeAtClickSequence = false;
 unsigned long co2ClickSequenceStart = 0;
 uint8_t heaterClickCount = 0;
 unsigned long heaterClickSequenceStart = 0;
 bool bothButtonsStable = false;
+uint8_t doorButtonStep = 0;
+unsigned long doorButtonAt = 0;
+unsigned long doorRedAt = 0;
 
 // Variáveis para calcular a taxa de aumento de CO2
 float co2Rate = 0; // Armazena a taxa de aumento do CO2
@@ -244,23 +247,15 @@ float lossDropTotal = 0, lossTimeTotal = 0;
 uint16_t lossSegmentDrop = 0;
 unsigned long lossSegmentMs = 0;
 uint8_t lossWindows = 0;
-// 0 normal, 1 CO2 off/watching, 2 inferred open, 3 recovery after re-enable.
+// Explicit door state: 0 normal, 2 open, 3 closed/recovering.
 uint8_t co2DoorMode = 0;
-int32_t doorCo2Before = 0;
-float doorTemperatureBefore = NAN;
-
 
 // Variáveis globais para aprendizado adaptativo
 // float media_eficiencia = 0.0;
 // int contagem_aberturas = 0;
 
-void updateDoorState(float temperature, bool valid) {
-  if (!valid) return;
-  int32_t drop = doorCo2Before - CO2i;
-  if (co2DoorMode == 1 && ((drop >= 2000 && co2RatePpmMin < -1000) ||
-      (drop >= 500 && doorTemperatureBefore - temperature >= 0.2f)))
-    co2DoorMode = 2;
-  if (co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
+void updateDoorState(bool valid) {
+  if (valid && co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
 }
 
 bool co2ResponseWaitComplete(unsigned long now) {
@@ -282,9 +277,13 @@ void setup()
     safetyFault = savedSafetyFault == 0xC1 ? 1 : (savedSafetyFault == 0xC2 ? 2 : 0);
     mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
     uint8_t controlState = EEPROM.read(EEPROM_CONTROL_STATE);
-    if (controlState <= 3) {
+    if (controlState <= 7) {
       botao_co2_onoff = controlState & 0x01;
       botao_aquecedor_onoff = (controlState >> 1) & 0x01;
+      if (controlState & 4) {
+        co2DoorMode = 2;
+        botao_co2_onoff = botao_aquecedor_onoff = 0;
+      }
     }
     // A persisted range fault always overrides a saved CO2 enable request.
     if (co2RangeWrapLatched) botao_co2_onoff = 0;
@@ -608,7 +607,7 @@ void loop()
 //    Serial.println(CO2i);  
 
     // Capture the falling trend before a replenishment pulse resets its state.
-    updateDoorState(t, validCo2);
+    updateDoorState(validCo2);
     updateCo2Loss(validCo2 && co2DoorMode == 0);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         // Start replenishing halfway into the allowed band. Waiting for the
@@ -616,7 +615,7 @@ void loop()
         // the measured steady state below the 5% setpoint.
         co2ProjectedPpm < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
         botao_co2_onoff == 1 &&
-        doseResponseReady && co2ClickCount == 0) {
+        doseResponseReady && co2ClickCount == 0 && doorButtonStep == 0) {
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
         // Calibrate from this valve/tank state before using learned gain.
@@ -1119,6 +1118,10 @@ void printStatus(unsigned long now) {
 }
 
 bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) {
+  if (co2DoorMode == 2) {
+    Serial.println(F("ERR,DOOR_OPEN"));
+    return false;
+  }
   unsigned long now = millis();
   bool freshReading = lastCo2ReadingValid && now - lastValidCo2Time <= 5000UL;
   if ((CO2i > 0 && CO2i >= CO2_CONTROL_MAX_PPM) || digitalRead(CO2PUMP) == LOW) {
@@ -1166,7 +1169,8 @@ void handleSerialCommand() {
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ON")) == 0) {
     co2ClickCount = 0;
     if (setCo2Enabled(true)) Serial.println(F("ACK,CO2,ON"));
-    else Serial.println(F("ERR,CO2_RANGE_LOCKED; send CO2 ACK after external verification"));
+    else Serial.println(co2DoorMode == 2 ? F("ERR,DOOR_OPEN") :
+                        F("ERR,CO2_RANGE_LOCKED; send CO2 ACK after external verification"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ACK")) == 0) {
     clearCo2RangeLock();
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 LOCK")) == 0) {
@@ -1185,7 +1189,7 @@ void handleSerialCommand() {
     if (manualCo2Pulse("serial")) Serial.println(F("ACK,CO2,PRIME"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("HEAT ON")) == 0) {
     setHeaterEnabled(true);
-    Serial.println(F("ACK,HEAT,ON"));
+    Serial.println(botao_aquecedor_onoff ? F("ACK,HEAT,ON") : F("ERR,DOOR_OPEN"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("HEAT OFF")) == 0) {
     setHeaterEnabled(false);
     Serial.println(F("ACK,HEAT,OFF"));
@@ -1194,39 +1198,31 @@ void handleSerialCommand() {
   }
 }
 
+void saveControlState() {
+  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1) | (co2DoorMode == 2 ? 4 : 0));
+}
+
 bool setCo2Enabled(bool enabled) {
-  if (enabled && co2RangeWrapLatched) return false;
+  if (enabled && (co2RangeWrapLatched || co2DoorMode == 2)) return false;
   if (enabled && safetyFault) {
     safetyFault = 0;
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
   }
-  if (enabled) updateDoorState(chamberTemperatureC, lastCo2ReadingValid);
-  if (enabled != (botao_co2_onoff != 0)) {
-    if (!enabled && !co2RangeWrapLatched && !safetyFault) {
-      co2DoorMode = 1;
-      doorCo2Before = CO2i;
-      doorTemperatureBefore = chamberTemperatureC;
-    } else {
-      co2DoorMode = enabled && co2DoorMode == 2 ? 3 : 0;
-      co2DoseResponsePending = false;
-    }
-    finishCo2Loss();
-  }
-  int newState = enabled ? 1 : 0;
-  botao_co2_onoff = newState;
-  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
+  if (!enabled && co2DoorMode == 3) co2DoorMode = 0;
+  botao_co2_onoff = enabled;
+  saveControlState();
   if (!enabled) digitalWrite(CO2PUMP, HIGH);
   return true;
 }
 
 void setHeaterEnabled(bool enabled) {
+  if (enabled && co2DoorMode == 2) return;
   if (enabled && safetyFault) {
     safetyFault = 0;
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
   }
-  int newState = enabled ? 1 : 0;
-  botao_aquecedor_onoff = newState;
-  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1));
+  botao_aquecedor_onoff = enabled;
+  saveControlState();
   if (!enabled && digitalRead(HEATER) == LOW) {
     digitalWrite(HEATER, HIGH);
     heaterLastTransitionAt = millis();
@@ -1398,6 +1394,65 @@ void handleCo2ButtonClick(unsigned long now) {
   }
 }
 
+void toggleDoorMode() {
+  co2ClickCount = heaterClickCount = 0;
+  co2DoseResponsePending = false;
+  finishCo2Loss();
+  if (co2DoorMode == 2) {
+    co2DoorMode = 3;
+    if (!safetyFault) {
+      setHeaterEnabled(true);
+      setCo2Enabled(true);
+    }
+    if (!botao_co2_onoff) co2DoorMode = 0;
+  } else {
+    co2DoorMode = 2;
+    setCo2Enabled(false);
+    setHeaterEnabled(false);
+  }
+  saveControlState();
+  displayCacheValid = false;
+  Serial.print(F("EVENT,door,"));
+  Serial.println(co2DoorMode == 2 ? F("open") : F("closed"));
+}
+
+void dispatchHeaterClick(unsigned long now) {
+  if (co2RangeWrapLatched) handleHeaterButtonClick(now);
+  else setHeaterEnabled(!botao_aquecedor_onoff);
+}
+
+void flushDoorButtons() {
+  uint8_t pending = doorButtonStep;
+  doorButtonStep = 0;
+  if (pending) handleCo2ButtonClick(doorButtonAt);
+  if (pending == 2) dispatchHeaterClick(doorRedAt);
+}
+
+void handleControlButton(bool yellow, unsigned long now) {
+  if (doorButtonStep == 2 && yellow) {
+    doorButtonStep = 0;
+    toggleDoorMode();
+    return;
+  }
+  if (doorButtonStep == 1 && !yellow) {
+    doorButtonStep = 2;
+    doorRedAt = now;
+    return;
+  }
+  flushDoorButtons();
+  if (yellow && co2ClickCount == 4) handleCo2ButtonClick(now);
+  else if (yellow) {
+    doorButtonStep = 1;
+    doorButtonAt = now;
+  } else dispatchHeaterClick(now);
+}
+
+void serviceDoorButtons(unsigned long now) {
+  if (doorButtonStep && (now - doorButtonAt >= 3000UL ||
+      (co2ClickCount && now - co2ClickSequenceStart >= 3000UL))) flushDoorButtons();
+  finishCo2ClickSequenceIfExpired(now);
+}
+
 bool updateButtonState(int pin, bool &stable, bool &candidate, uint8_t &samples) {
   bool raw = analogRead(pin) > 500;
   if (raw == candidate) {
@@ -1420,24 +1475,22 @@ void serviceInputsForTwoSeconds() {
     serviceChamberTemperature();
     controlHeater(chamberTemperatureC, now);
     processSerialCommands();
-    finishCo2ClickSequenceIfExpired(now);
+    serviceDoorButtons(now);
     bool co2Pressed = updateButtonState(BOTAO_CO2, co2ButtonStable, co2ButtonCandidate, co2ButtonDebounceCount);
     bool heaterPressed = updateButtonState(BOTAO_AQUECEDOR, heaterButtonStable, heaterButtonCandidate, heaterButtonDebounceCount);
     serviceActivityIconAnimation();
     bool bothPressed = co2ButtonStable && heaterButtonStable;
     if (bothPressed && !bothButtonsStable) {
       Serial.println(F("EVENT,both_buttons_pressed"));
+      doorButtonStep = 0;
       if (co2ClickCount > 0) setCo2Enabled(co2ModeAtClickSequence);
       co2ClickCount = 0;
       eeprom_contador_int = 0;
       EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
       drawHealthIndicator();
     } else if (!bothPressed) {
-      if (co2Pressed) handleCo2ButtonClick(now);
-      if (heaterPressed) {
-        if (co2RangeWrapLatched) handleHeaterButtonClick(now);
-        else setHeaterEnabled(!botao_aquecedor_onoff);
-      }
+      if (co2Pressed) handleControlButton(true, now);
+      if (heaterPressed) handleControlButton(false, now);
     }
     bothButtonsStable = bothPressed;
     delay(20);
