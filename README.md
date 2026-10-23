@@ -244,8 +244,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A compilação atual usa 32.174 bytes de Flash (99%) e
-1.010 bytes de RAM global (49%), deixando 82 bytes de Flash e 1.038 bytes de RAM para
+serial antes de compilar/gravar. A compilação atual usa 32.056 bytes de Flash (99%) e
+1.012 bytes de RAM global (49%), deixando 200 bytes de Flash e 1.036 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -371,7 +371,9 @@ ficam ocultos, enquanto CO₂ e temperaturas continuam atualizando acima do dese
 Não há detecção automática por sensores nem sequência de cliques curtos para porta.
 
 Após fechar fisicamente, solte e segure novamente o vermelho por 2 segundos. O aviso
-sai, os dois controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm.
+sai e cada controle volta ao estado que tinha antes da abertura. Se o CO₂ estava
+habilitado, entra em RECUPERANDO até atingir 49.000 ppm; se estava desligado, permanece
+desligado, sem recuperação. O aquecimento também só volta se estava habilitado.
 Com sensor já aquecido, leitura válida, CO₂ abaixo de 49.000 e sem subida rápida,
 a primeira dose não espera o contador/tendência antigos. Depois dela, concentração parada ou caindo
 em recuperação permite nova dose após 60 s, mesmo que o contador normal ainda não tenha
@@ -379,13 +381,13 @@ zerado. Subida rápida bloqueia, e fora dessa condição valem as esperas normai
 A duração usa o ganho aprendido da válvula (ppm por milissegundo), não uma leitura de
 pressão: menor resposta observada pede mais tempo, sempre até 80 ms. Sem ganho validado,
 mantém sonda/progressão conservadora. Na recuperação usa déficit atual, sem extrapolar
-para o futuro a queda brusca da porta. Não restaura
-um estado anterior desligado: os dois são solicitados ligados, conforme o comando de
-fechamento. Falha de segurança impede religamento automático; trava de faixa continua
+para o futuro a queda brusca da porta. Falha de segurança impede religamento automático; trava de faixa continua
 impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
 
 A pausa fica salva na EEPROM. Se reiniciar marcada como aberta, ambos continuam
-desligados e o aviso permanece. Com porta marcada aberta, pulsos manuais e comandos
+desligados e o aviso permanece; os estados anteriores também ficam salvos para o
+fechamento. Uma pausa salva pelo firmware antigo não contém esses estados: nesse
+caso, fechar mantém ambos desligados. Com porta marcada aberta, pulsos manuais e comandos
 individuais de ligar também não furam a pausa. A média de perda fica retida durante
 o toque vermelho pendente, abertura e recuperação: nem a queda nem esse tempo entram
 no acumulado de cm³/h. Clique curto vermelho alterna aquecimento ao soltar; cliques

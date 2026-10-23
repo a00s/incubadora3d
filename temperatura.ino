@@ -247,6 +247,8 @@ unsigned long lossSegmentMs = 0;
 uint8_t lossWindows = 0;
 // Door: 0 normal, 2 open, 3 recovering, 4 first recovery dose pending.
 uint8_t co2DoorMode = 0;
+// Enable requests captured before the door pause (CO2 bit 0, heater bit 1).
+uint8_t doorResumeControls = 0;
 
 // Variáveis globais para aprendizado adaptativo
 // float media_eficiencia = 0.0;
@@ -275,11 +277,12 @@ void setup()
     safetyFault = savedSafetyFault == 0xC1 ? 1 : (savedSafetyFault == 0xC2 ? 2 : 0);
     mySensorCO2.rawLoggingEnabled = co2RangeWrapLatched;
     uint8_t controlState = EEPROM.read(EEPROM_CONTROL_STATE);
-    if (controlState <= 7) {
+    if (controlState <= 31) {
       botao_co2_onoff = controlState & 0x01;
       botao_aquecedor_onoff = (controlState >> 1) & 0x01;
       if (controlState & 4) {
         co2DoorMode = 2;
+        doorResumeControls = (controlState >> 3) & 3;
         botao_co2_onoff = botao_aquecedor_onoff = 0;
       }
     }
@@ -1211,7 +1214,8 @@ void handleSerialCommand() {
 }
 
 void saveControlState() {
-  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1) | (co2DoorMode == 2 ? 4 : 0));
+  EEPROM.update(EEPROM_CONTROL_STATE, botao_co2_onoff | (botao_aquecedor_onoff << 1) |
+    (co2DoorMode == 2 ? 4 | (doorResumeControls << 3) : 0));
 }
 
 bool setCo2Enabled(bool enabled) {
@@ -1413,11 +1417,12 @@ void toggleDoorMode() {
   if (co2DoorMode == 2) {
     co2DoorMode = 4;
     if (!safetyFault) {
-      setHeaterEnabled(true);
-      setCo2Enabled(true);
+      setHeaterEnabled(doorResumeControls & 2);
+      setCo2Enabled(doorResumeControls & 1);
     }
     if (!botao_co2_onoff) co2DoorMode = 0;
   } else {
+    doorResumeControls = botao_co2_onoff | (botao_aquecedor_onoff << 1);
     co2DoorMode = 2;
     setCo2Enabled(false);
     setHeaterEnabled(false);

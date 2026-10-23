@@ -23,7 +23,7 @@ functions=[function(n) for n in names]
 prototypes='\n'.join(re.sub(r' = MANUAL_CO2_PULSE_MS','',f[:f.index('{')].strip())+';' for f in functions)
 notice=function('void drawDoorNotice(')
 visible='co2DoorMode == 2'
-restore=function('    if (controlState <= 7)')
+restore=function('    if (controlState <= 31)')
 rise=re.search(r'int32_t increaseSincePump =.*?if \(increaseSincePump > max_co2_increase\) \{.*?\n        \}',source,re.S).group(0)
 harness=r'''
 #include <stdint.h>
@@ -56,6 +56,7 @@ unsigned long clockMs=0, heaterLastTransitionAt=0, co2LastPulseAt=0, co2MaxRiseA
 unsigned long lastValidCo2Time=0, co2StableSince=0, co2AnimationUntil=0;
 unsigned long heaterPressedAt=0, co2ClickSequenceStart=0, heaterClickSequenceStart=0;
 uint8_t co2ClickCount=0, heaterClickCount=0, co2DoorMode=0;
+uint8_t doorResumeControls=0;
 bool heaterPressPending=false, heaterButtonStable=false;
 uint8_t co2ResponseLagSeconds=120;
 bool botao_co2_onoff=true, botao_aquecedor_onoff=true, co2ModeAtClickSequence=false;
@@ -113,7 +114,7 @@ int main() {
   assert(co2DoorMode==0 && botao_co2_onoff && botao_aquecedor_onoff);
   redPoll(3000);
   assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
-  assert(pins[HEATER]==HIGH && pins[CO2PUMP]==HIGH && EEPROM.read(29)==4);
+  assert(pins[HEATER]==HIGH && pins[CO2PUMP]==HIGH && EEPROM.read(29)==28);
   assert(co2ClickCount==0 && heaterClickCount==0 && !co2DoseResponsePending);
   redPoll(8000);assert(co2DoorMode==2); // Still held: must not toggle again.
   redUp(8100);assert(co2DoorMode==2 && !botao_aquecedor_onoff);
@@ -157,10 +158,26 @@ int main() {
   holdRed(58000);safetyFault=2;holdRed(62000);
   assert(co2DoorMode==0 && safetyFault==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
   assert(!(EEPROM.read(29)&4));safetyFault=0;
+  botao_co2_onoff=botao_aquecedor_onoff=true;
   holdRed(66000);co2RangeWrapLatched=true;holdRed(70000);
   assert(co2RangeWrapLatched && !botao_co2_onoff && botao_aquecedor_onoff);
   tapRed(74000);tapRed(74200);tapRed(74400);
   assert(!co2RangeWrapLatched && !botao_co2_onoff);
+  // Every pre-door combination is restored independently, including after reboot.
+  for (int reboot=0;reboot<2;reboot++) for (uint8_t mask=0;mask<4;mask++) {
+    co2DoorMode=0;botao_co2_onoff=mask&1;botao_aquecedor_onoff=(mask>>1)&1;
+    toggleDoorMode();
+    assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
+    assert(EEPROM.read(29)==(4|(mask<<3)));
+    if (reboot) {doorResumeControls=0;co2DoorMode=0;restoreControls();}
+    toggleDoorMode();
+    assert(botao_co2_onoff==bool(mask&1) && botao_aquecedor_onoff==bool(mask&2));
+    assert(co2DoorMode==((mask&1)?4:0));
+    assert(EEPROM.read(29)==mask);
+  }
+  // Old firmware stored no resume requests: keep both off on legacy paused boot.
+  EEPROM.update(29,4);restoreControls();toggleDoorMode();
+  assert(!botao_co2_onoff && !botao_aquecedor_onoff && co2DoorMode==0);
   // Recovery dose math stays bounded; learning ignores fictitious door compensation.
   co2DoorMode=4;co2RatePpmMin=0;
   assert(calcularDelayProporcional(47000,50000,5000,true,80)==60);
