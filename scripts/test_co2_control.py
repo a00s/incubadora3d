@@ -8,20 +8,49 @@ import tempfile
 source = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
 function = source[source.index('bool co2ResponseWaitComplete('):source.index('void setup()')]
 gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
+weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
+start = source.index('      if (pulseMs > pulseLimit)')
+caps = source[start:source.index('      co2_before_pump', start)]
+initial = re.search(r'if \(lastCo2PulseMs == 0\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
 harness = r'''
 #include <stdint.h>
+#include <initializer_list>
 #include <assert.h>
 #define CO2_CONTROL_MIN_PPM 49000L
+#define DELAY_MINIMO 20
+bool co2GainValidatedThisBoot = false, co2LastResponseWeak = false;
+int32_t lastCo2PulseMs = 0;
 int32_t CO2i = 47700, co2RatePpmMin = -200;
 unsigned long co2LastPulseAt = 100000;
 uint8_t co2ResponseLagSeconds = 180;
 '''+function+'''
+int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
+  if (!lastCo2PulseMs) pulseMs = '''+initial+''';
+  else { '''+weak_probe+''' }
+'''+caps+'''
+  return pulseMs;
+}
 bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendReady) {
   bool responseWaitComplete = co2ResponseWaitComplete(now);
   return '''+gate+''';
 }
 '''+r'''
 int main() {
+  // Restart near target: the first probe stays small, then escapes the old 40 ms cap.
+  assert(boundedProbe(80,80) == 20);
+  lastCo2PulseMs = 20;
+  for (int expected : {40,60,80,80}) {
+    co2LastResponseWeak = true;
+    lastCo2PulseMs = boundedProbe(20,80);
+    assert(lastCo2PulseMs == expected);
+  }
+  assert(boundedProbe(80,25) == 25); // A small deficit still limits the pulse.
+  co2GainValidatedThisBoot = true; co2LastResponseWeak = false;
+  assert(boundedProbe(35,80) == 35);
+  assert(boundedProbe(100,80) == 80);
+  assert(boundedProbe(5,80) == 20);
+  co2LastResponseWeak = true; lastCo2PulseMs = 40;
+  assert(boundedProbe(20,80) == 60);
   assert(!ready(159999, true, 0, true));
   assert(ready(160000, true, 0, true)); // Falling at 47,700: no 180 s wait.
   assert(!ready(160000, false, 0, true));

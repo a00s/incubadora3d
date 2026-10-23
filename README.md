@@ -356,9 +356,11 @@ Próximo do alvo ou durante subida, a espera adaptativa permanece.
 
 A primeira dose é uma sonda de 20 ms. Depois, a duração se adapta à resposta observada,
 ao déficit projetado e à tendência de perda, acompanhando mudanças de vazão sem medir
-a pressão diretamente. Pulsos automáticos vão de 20 a 80 ms; enquanto o ganho não foi
-validado, o teto adicional é 40 ms. Esses limites e o bloqueio durante subida foram
-mantidos para evitar empilhar doses com efeito atrasado. A resposta física após esta
+a pressão diretamente. Pulsos automáticos vão de 20 a 80 ms. A primeira sonda é
+20 ms; sem ganho validado ou após resposta fraca, a próxima sonda cresce 20 ms em
+relação à anterior, sempre limitada pelo déficit e pelo teto absoluto de 80 ms.
+Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio durante
+subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
 suficiente nem estabilidade da concentração.
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o

@@ -644,14 +644,12 @@ void loop()
         }
         pulseMs = calcularDelayProporcional(co2ProjectedPpm, CO2_TARGET_PPM,
                                             co2GainEstimatePpmPerMsX100, true, pulseLimit);
-        // Step the valve probe up by 5 ms after an unmeasurable response.
-        if (co2LastResponseWeak && pulseMs < lastCo2PulseMs + 5)
-          pulseMs = lastCo2PulseMs + 5;
+        // Weak probes must escape the startup cap and keep adapting.
+        if (!co2GainValidatedThisBoot || co2LastResponseWeak)
+          pulseMs = lastCo2PulseMs + 20;
         Serial.print(F("EVENT,co2_pulse,"));
       }
-      // After reboot the valve-flow estimate is only a generic prior. Keep
-      // the first measured probe small until this tank/valve state responds.
-      if (!co2GainValidatedThisBoot && pulseMs > 40) pulseMs = 40;
+      // First probe stays small; subsequent unvalidated probes grow gradually.
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
       co2_before_pump = CO2i;
