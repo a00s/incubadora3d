@@ -12,6 +12,7 @@ colors = source[source.index("void setDisplayBackground()"):source.index("void d
 alert = re.search(r"bool alert = (.*);", source).group(1)
 harness = r'''
 #include <stdint.h>
+#include <cmath>
 #include <initializer_list>
 #include <assert.h>
 #define CO2_SENSOR_WARMUP_MS 120000UL

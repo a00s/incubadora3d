@@ -363,6 +363,18 @@ Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio du
 subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
 suficiente nem estabilidade da concentração.
+Para sinalizar uma abertura, desligue o CO₂ antes de abrir e espere o ícone sumir.
+Com o CO₂ desligado, uma queda de pelo menos 2.000 ppm acompanhada de queda térmica de
+0,2 °C ou tendência inferior a -1.000 ppm/min indica abertura presumida. A tela mantém
+CO₂ e temperaturas e mostra uma porta grande com PORTA ABERTA. Não há sensor físico
+para confirmar a posição. Ao fechar, religue o CO₂: aparece RECUPERANDO e o cálculo
+pede uma fração maior do déficit, mantendo teto de 80 ms, aprendizado, espera entre
+doses e bloqueio durante subida. Ao atingir 49.000 ppm volta ao modo normal. A média
+de perda fica retida enquanto o fluxo de abertura/recuperação estiver ativo, excluindo
+a queda da porta. Desligar sem queda não mostra porta aberta nem arma recuperação;
+nesse período a média também fica retida. Se abrir com CO₂ ligado, não há garantia de
+reconhecimento nem de exclusão desse evento da média.
+
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4

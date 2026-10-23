@@ -2,6 +2,7 @@
 #include <SoftwareSerial.h>     
 #include <SPI.h>
 #include "Ucglib.h"
+#include "display_font.h"
 #include <NDIRZ16.h>
 #include <avr/wdt.h>
 #include <EEPROM.h>
@@ -165,6 +166,7 @@ int32_t displayLossCm3Hour = -2;
 int8_t displayLossStable = -1;
 int8_t displayLossHeld = -1;
 bool displayAlert = false;
+int8_t displayDoorMode = -1;
 int8_t displayCo2Enabled = -1;
 int8_t displayHeaterEnabled = -1;
 int8_t displayFanOn = -1;
@@ -242,11 +244,23 @@ float lossDropTotal = 0, lossTimeTotal = 0;
 uint16_t lossSegmentDrop = 0;
 unsigned long lossSegmentMs = 0;
 uint8_t lossWindows = 0;
+// 0 normal, 1 CO2 off/watching, 2 inferred open, 3 recovery after re-enable.
+uint8_t co2DoorMode = 0;
+int32_t doorCo2Before = 0;
+float doorTemperatureBefore = NAN;
 
 
 // Variáveis globais para aprendizado adaptativo
 // float media_eficiencia = 0.0;
 // int contagem_aberturas = 0;
+
+void updateDoorState(float temperature, bool valid) {
+  if (!valid) return;
+  if (co2DoorMode == 1 && doorCo2Before - CO2i >= 2000 &&
+      (doorTemperatureBefore - temperature >= 0.2f || co2RatePpmMin < -1000))
+    co2DoorMode = 2;
+  if (co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
+}
 
 bool co2ResponseWaitComplete(unsigned long now) {
   // Confirmed decline below the good band can replenish after the minimum
@@ -504,13 +518,8 @@ void loop()
       }
       if (co2BaselineReady) {
         int32_t increaseSincePump = CO2i - co2_before_pump;
-        unsigned long elapsedSincePulseMs = currentTime - co2LastPulseAt;
-        if (elapsedSincePulseMs > CO2_RESPONSE_LAG_MAX_MS) {
-          elapsedSincePulseMs = CO2_RESPONSE_LAG_MAX_MS;
-        }
-        int32_t expectedAmbientChange = co2RateAtPulsePpmMin *
-          (int32_t)elapsedSincePulseMs / 60000L;
-        increaseSincePump -= expectedAmbientChange;
+        // Learn from the actual net rise. Extrapolating a door-opening decline
+        // beyond closure invents dose gain and biases later pulses too small.
         if (increaseSincePump > max_co2_increase) {
           max_co2_increase = increaseSincePump;
           co2MaxRiseAt = currentTime;
@@ -598,7 +607,8 @@ void loop()
 //    Serial.println(CO2i);  
 
     // Capture the falling trend before a replenishment pulse resets its state.
-    updateCo2Loss(validCo2);
+    updateDoorState(t, validCo2);
+    updateCo2Loss(validCo2 && co2DoorMode == 0);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         // Start replenishing halfway into the allowed band. Waiting for the
         // lower edge and then dosing only a fraction of the deficit biased
@@ -777,7 +787,7 @@ void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t fram
 }
 
 void updateActivityIcons() {
-  if (!displayCacheValid) return;
+  if (!displayCacheValid || co2DoorMode == 2) return;
   unsigned long now = millis();
   bool co2Flowing = digitalRead(CO2PUMP) == LOW ||
                     (co2AnimationUntil != 0 && (int32_t)(now - co2AnimationUntil) < 0);
@@ -822,13 +832,14 @@ void drawHealthIndicator() {
   else if (displayHealthState == DISPLAY_WAIT) setDisplayForeground(255, 190, 45);
   else setDisplayForeground(50, 220, 125);
   ucg.drawBox(2, 5, 5, 11);
-  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setFont(incubadora_font_7x13);
   setDisplayForeground(fault ? 255 : 130, fault ? 255 : 190, 215);
   ucg.setPrintPos(11, 14);
   if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
   else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
-  else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") : F("CO2 ppm"));
+  else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") :
+                 (co2DoorMode == 3 ? F("RECUPERANDO") : F("CO2 ppm")));
   if (!displaySafetyAlert) {
     char bootCountText[12];
     bootCountText[0] = 'R';
@@ -844,7 +855,7 @@ void drawDisplayFrame() {
   setDisplayBackground();
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
-  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setFont(incubadora_font_7x13);
   setDisplayForeground(130, 190, 215);
   ucg.setPrintPos(5, 101); ucg.print(F("ppm/min"));
   setDisplayForeground(150, 200, 225);
@@ -943,6 +954,18 @@ void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,
   ucg.print(next);
 }
 
+void drawDoorNotice() {
+  setDisplayBackground(); ucg.drawBox(0, 83, 128, 77);
+  setDisplayForeground(255, 190, 45);
+  ucg.setFont(incubadora_font_7x13);
+  ucg.setPrintPos(22, 97); ucg.print(F("PORTA ABERTA"));
+  ucg.drawFrame(43, 106, 42, 45);
+  ucg.drawLine(43, 106, 70, 101);
+  ucg.drawLine(70, 101, 70, 145);
+  ucg.drawLine(70, 145, 43, 150);
+  ucg.drawBox(64, 124, 3, 3);
+}
+
 void renderDisplay(float temperature, float internalTemperature, bool co2Valid) {
   bool co2AtTarget = co2Valid && CO2i >= CO2_CONTROL_MIN_PPM && CO2i <= CO2_CONTROL_MAX_PPM;
   bool temperatureAtTarget = !isnan(temperature) &&
@@ -970,14 +993,15 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
      temperature <= TEMPERATURE_DISPLAY_NEAR_MAX ? 2 : -1));
 
   bool alert = co2Quality <= 0 || tempQuality <= 0 || safetyAlert || co2RangeWrapLatched;
-  if (alert != displayAlert) {
+  if (alert != displayAlert || displayDoorMode != co2DoorMode) {
     displayAlert = alert;
+    displayDoorMode = co2DoorMode;
     drawDisplayFrame();
   }
 
   if (!displayCacheValid || displayCo2Ppm != CO2i || displayCo2Quality != co2Quality) {
     // Mantém os ppm grandes com a fonte numérica compacta do Uno.
-    ucg.setFont(ucg_font_inr16_mn);
+    ucg.setFont(incubadora_font_inr16);
     char nextCo2Text[8];
     if (CO2i >= 0) ltoa(CO2i, nextCo2Text, 10);
     else strcpy_P(nextCo2Text, PSTR("---"));
@@ -995,7 +1019,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
     char nextRateText[8];
     formatPpmPerMinute(shownCo2Rate, co2RateValid, nextRateText);
-    ucg.setFont(ucg_font_7x13_mr);
+    ucg.setFont(incubadora_font_7x13);
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
@@ -1016,7 +1040,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     }
     else strcpy_P(nextLossText, PSTR("---"));
     if (lossHeld) strcat_P(nextLossText, PSTR("*"));
-    ucg.setFont(ucg_font_7x13_mr);
+    ucg.setFont(incubadora_font_7x13);
     drawTextChanges(nextLossText, 73, 120, 110, 12, 54,
                     shownLossStable ? 230 : 255,
                     shownLossStable ? 235 : 190, shownLossStable ? 240 : 45);
@@ -1025,7 +1049,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayLossHeld = lossHeld;
   }
 
-  ucg.setFont(ucg_font_7x13_mr);
+  ucg.setFont(incubadora_font_7x13);
   if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
     char nextTempText[8];
     formatTenths(tempTenths, nextTempText);
@@ -1064,6 +1088,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
+  if (co2DoorMode == 2) drawDoorNotice();
   updateActivityIcons();
 }
 
@@ -1168,6 +1193,17 @@ bool setCo2Enabled(bool enabled) {
   if (enabled && safetyFault) {
     safetyFault = 0;
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
+  }
+  if (enabled != (botao_co2_onoff != 0)) {
+    if (!enabled && !co2RangeWrapLatched && !safetyFault) {
+      co2DoorMode = 1;
+      doorCo2Before = CO2i;
+      doorTemperatureBefore = chamberTemperatureC;
+    } else {
+      co2DoorMode = enabled && co2DoorMode == 2 ? 3 : 0;
+      co2DoseResponsePending = false;
+    }
+    finishCo2Loss();
   }
   int newState = enabled ? 1 : 0;
   botao_co2_onoff = newState;
@@ -1455,8 +1491,9 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   if (lossRate > 0) lossRate = 0;
   if (lossRate < -5000) lossRate = -5000;
   int32_t lossPerResponse = -lossRate * co2ResponseLagSeconds / 60L;
-  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3;
-  if (lossPerResponse > CO2_TOLERANCE_PPM / 2) {
+  uint8_t fractionDenominator = co2DoorMode == 3 ? 1 :
+    (ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3);
+  if (co2DoorMode != 3 && lossPerResponse > CO2_TOLERANCE_PPM / 2) {
     fractionDenominator = 1 + CO2_TOLERANCE_PPM / lossPerResponse;
   }
   int32_t tempoValvula = ppmNecessario * 100L /
