@@ -16,8 +16,7 @@ names=[
     'void setHeaterEnabled(', 'bool manualCo2Pulse(', 'void clearCo2RangeLock(',
     'void finishHeaterClickSequence(', 'void handleHeaterButtonClick(',
     'void finishCo2ClickSequence(', 'void handleCo2ButtonClick(',
-    'void toggleDoorMode(', 'void dispatchHeaterClick(', 'void flushDoorButtons(',
-    'void handleControlButton(', 'void serviceDoorButtons(',
+    'void toggleDoorMode(', 'void dispatchHeaterClick(', 'void serviceHeaterButton(',
     'void finishCo2ClickSequenceIfExpired(', 'int32_t calcularDelayProporcional(',
 ]
 functions=[function(n) for n in names]
@@ -55,8 +54,9 @@ struct Logger {template<class T> void print(T) {} template<class T> void println
 struct Sensor {bool rawLoggingEnabled=false;} mySensorCO2;
 unsigned long clockMs=0, heaterLastTransitionAt=0, co2LastPulseAt=0, co2MaxRiseAt=0;
 unsigned long lastValidCo2Time=0, co2StableSince=0, co2AnimationUntil=0;
-unsigned long doorButtonAt=0, doorRedAt=0, co2ClickSequenceStart=0, heaterClickSequenceStart=0;
-uint8_t doorButtonStep=0, co2ClickCount=0, heaterClickCount=0, co2DoorMode=0;
+unsigned long heaterPressedAt=0, co2ClickSequenceStart=0, heaterClickSequenceStart=0;
+uint8_t co2ClickCount=0, heaterClickCount=0, co2DoorMode=0;
+bool heaterPressPending=false, heaterButtonStable=false;
 uint8_t co2ResponseLagSeconds=120;
 bool botao_co2_onoff=true, botao_aquecedor_onoff=true, co2ModeAtClickSequence=false;
 bool co2RangeWrapLatched=false, co2DoseResponsePending=true, displayCacheValid=true;
@@ -74,9 +74,17 @@ void digitalWrite(int pin,int state) {pins[pin]=state; if(pin==CO2PUMP && state=
 int digitalRead(int pin) {return pins[pin];}
 void finishCo2Loss() {finished++;lossFresh=false;}
 '''+prototypes+'\n'+'\n'.join(functions)+r'''
-void press(bool yellow,unsigned long now) {clockMs=now;serviceDoorButtons(now);handleControlButton(yellow,now);}
-void tick(unsigned long now) {clockMs=now;serviceDoorButtons(now);}
-void sequence(unsigned long at) {press(true,at);press(false,at+200);press(true,at+400);}
+void yellow(unsigned long now) {clockMs=now;finishCo2ClickSequenceIfExpired(now);handleCo2ButtonClick(now);}
+void redDown(unsigned long now) {clockMs=now;heaterButtonStable=true;serviceHeaterButton(true,false,now);}
+void redPoll(unsigned long now,bool both=false) {clockMs=now;finishCo2ClickSequenceIfExpired(now);serviceHeaterButton(false,both,now);}
+void redUp(unsigned long now) {clockMs=now;heaterButtonStable=false;serviceHeaterButton(false,false,now);}
+void tapRed(unsigned long now) {redDown(now);redUp(now+100);}
+void holdRed(unsigned long now) {
+  uint8_t before=co2DoorMode;
+  redDown(now);redPoll(now+1999);assert(co2DoorMode==before);
+  redPoll(now+2000);redUp(now+2200);
+}
+void tick(unsigned long now) {clockMs=now;finishCo2ClickSequenceIfExpired(now);}
 void restoreControls() {uint8_t controlState=EEPROM.read(EEPROM_CONTROL_STATE);
 '''+restore+'''
 }
@@ -95,67 +103,63 @@ void setDisplayBackground() {} void setDisplayForeground(int,int,int) {}
 void drawVisibleNotice() {if ('''+visible+''') drawDoorNotice();}
 '''+r'''
 int main() {
-  // No actuation from the first two taps of the reserved sequence.
+  // Short red acts only on release, preserving heating control.
+  redDown(100);assert(botao_aquecedor_onoff && heaterPressPending);
+  redUp(300);assert(!botao_aquecedor_onoff && co2DoorMode==0);
+  tapRed(500);assert(botao_aquecedor_onoff);
+  // A hold fires at 2 seconds once, never as a short click as well.
   pins[HEATER]=LOW;
-  press(true,100); press(false,300);
-  assert(botao_co2_onoff && botao_aquecedor_onoff && gasPulses==0);
-  press(true,500);
+  redDown(1000);redPoll(2999);
+  assert(co2DoorMode==0 && botao_co2_onoff && botao_aquecedor_onoff);
+  redPoll(3000);
   assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
   assert(pins[HEATER]==HIGH && pins[CO2PUMP]==HIGH && EEPROM.read(29)==4);
   assert(co2ClickCount==0 && heaterClickCount==0 && !co2DoseResponsePending);
-  tick(5000); assert(co2DoorMode==2 && gasPulses==0); // No deferred toggles.
-  drawVisibleNotice(); assert(strcmp(label,"PORTA ABERTA")==0);
+  redPoll(8000);assert(co2DoorMode==2); // Still held: must not toggle again.
+  redUp(8100);assert(co2DoorMode==2 && !botao_aquecedor_onoff);
+  drawVisibleNotice();assert(strcmp(label,"PORTA ABERTA")==0);
   assert(openRight>bodyRight && hingeX==bodyRight);
-  // Neither manual gas nor independent enable commands bypass the pause.
+  // Independent enable commands and manual pulses cannot bypass the pause.
   assert(!manualCo2Pulse("test",5) && gasPulses==0);
-  assert(!setCo2Enabled(true)); setHeaterEnabled(true);
+  assert(!setCo2Enabled(true));tapRed(8300);
   assert(!botao_co2_onoff && !botao_aquecedor_onoff);
-  press(true,5100);press(true,5300);press(true,5500);tick(8100);
+  yellow(8500);yellow(8700);yellow(8900);tick(11500);
   assert(gasPulses==0 && co2DoorMode==2);
-  // Persisted explicit-open state restores both outputs disabled after reset.
   co2DoorMode=0;botao_co2_onoff=botao_aquecedor_onoff=true;
   restoreControls();assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
-  sequence(9000);
+  holdRed(12000);
   assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff && EEPROM.read(29)==3);
-  tick(10000);assert(co2DoorMode==4 && gasPulses==0);
+  tick(15000);assert(co2DoorMode==4 && gasPulses==0);
   updateDoorState(true);assert(co2DoorMode==4);
   CO2i=49000;updateDoorState(true);assert(co2DoorMode==0);
   label=nullptr;drawVisibleNotice();assert(label==nullptr);
-  // A manual first recovery shot consumes the pending-kick state too.
   co2DoorMode=4;CO2i=47000;
-  assert(manualCo2Pulse("test",5) && co2DoorMode==3);
-  co2DoorMode=0;
-  // Three/four/five yellow taps still give their original manual pulse sizes.
-  CO2i=47000;
+  assert(manualCo2Pulse("test",5) && co2DoorMode==3);co2DoorMode=0;
+  // Original 3/4/5 yellow pulses are unchanged; fifth still emits immediately.
   for(int clicks=3;clicks<=5;clicks++) {
-    unsigned long at=12000+(clicks-3)*5000;
-    int before=gasPulses;
-    for(int i=0;i<clicks;i++)press(true,at+i*200);
-    assert(gasPulses==before+(clicks==5 ? 1 : 0));
-    tick(at+3000);
+    unsigned long at=17000+(clicks-3)*5000;int before=gasPulses;
+    for(int i=0;i<clicks;i++)yellow(at+i*200);
+    assert(gasPulses==before+(clicks==5?1:0));tick(at+3000);
     assert(gasPulses==before+1 && pulseDuration==(clicks==3?5:(clicks==4?10:20)));
     assert(co2DoorMode==0 && botao_aquecedor_onoff);
   }
-  // Single yellow retains normal on/off; single red retains heater toggle.
-  press(true,28000);tick(31000);assert(!botao_co2_onoff && co2DoorMode==0);
-  press(false,32000);assert(!botao_aquecedor_onoff);
-  press(true,33000);tick(36000);assert(botao_co2_onoff && co2DoorMode==0);
-  // Timed-out/incomplete and wrongly ordered sequences are not door commands.
-  press(true,38000);press(false,41500);press(true,42000);tick(45000);
-  assert(co2DoorMode==0);
-  // Opening stops both; closing reactivates both, even if one was previously off.
-  sequence(47000);assert(co2DoorMode==2);
-  sequence(50000);assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff);
-  // Safety fault cannot be cleared by the close gesture; persistence still closes.
-  sequence(54000);safetyFault=2;sequence(58000);
+  yellow(33000);tick(36000);assert(!botao_co2_onoff && co2DoorMode==0);
+  tapRed(37000);assert(!botao_aquecedor_onoff);
+  yellow(38000);tick(41000);assert(botao_co2_onoff);
+  // Old yellow/red/yellow pattern now only invokes normal short-click commands.
+  yellow(42000);tapRed(42200);yellow(42400);tick(45000);assert(co2DoorMode==0);
+  // Releasing after the threshold still counts as long if a poll was missed.
+  redDown(46000);redUp(48000);assert(co2DoorMode==2);
+  holdRed(49000);assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff);
+  // Simultaneous-button reset gesture cancels a pending hold, not a door toggle.
+  redDown(52000);redPoll(53000,true);redPoll(56000);redUp(56100);
+  assert(co2DoorMode==4);
+  holdRed(58000);safetyFault=2;holdRed(62000);
   assert(co2DoorMode==0 && safetyFault==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
-  assert(!(EEPROM.read(29)&4));
-  safetyFault=0;
-  // A CO2 range lock prevents gas reactivation but does not unlock itself.
-  sequence(62000);co2RangeWrapLatched=true;sequence(66000);
+  assert(!(EEPROM.read(29)&4));safetyFault=0;
+  holdRed(66000);co2RangeWrapLatched=true;holdRed(70000);
   assert(co2RangeWrapLatched && !botao_co2_onoff && botao_aquecedor_onoff);
-  // Existing three-red-click acknowledgement remains available outside the gesture.
-  press(false,70000);press(false,70200);press(false,70400);
+  tapRed(74000);tapRed(74200);tapRed(74400);
   assert(!co2RangeWrapLatched && !botao_co2_onoff);
   // Recovery dose math stays bounded; learning ignores fictitious door compensation.
   co2DoorMode=4;co2RatePpmMin=0;
@@ -175,4 +179,4 @@ with tempfile.TemporaryDirectory(prefix='incubadora-door-') as folder:
     cpp=Path(folder)/'door.cpp'; binary=Path(folder)/'door-test'; cpp.write_text(harness)
     subprocess.run(['g++','-std=c++11','-Wall','-Wextra','-Werror',str(cpp),'-o',str(binary)],check=True)
     subprocess.run([str(binary)],check=True)
-print('Explicit door gesture, GPIO pause, persistence, recovery and manual-button checks passed.')
+print('Long-press door, short-click isolation, persistence and legacy-button checks passed.')

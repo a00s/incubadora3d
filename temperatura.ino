@@ -190,9 +190,8 @@ unsigned long co2ClickSequenceStart = 0;
 uint8_t heaterClickCount = 0;
 unsigned long heaterClickSequenceStart = 0;
 bool bothButtonsStable = false;
-uint8_t doorButtonStep = 0;
-unsigned long doorButtonAt = 0;
-unsigned long doorRedAt = 0;
+bool heaterPressPending = false;
+unsigned long heaterPressedAt = 0;
 
 // Variáveis para calcular a taxa de aumento de CO2
 float co2Rate = 0; // Armazena a taxa de aumento do CO2
@@ -611,14 +610,14 @@ void loop()
 
     // Capture the falling trend before a replenishment pulse resets its state.
     updateDoorState(validCo2);
-    updateCo2Loss(validCo2 && co2DoorMode == 0 && doorButtonStep == 0);
+    updateCo2Loss(validCo2 && co2DoorMode == 0 && !heaterPressPending);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         // Start replenishing halfway into the allowed band. Waiting for the
         // lower edge and then dosing only a fraction of the deficit biased
         // the measured steady state below the 5% setpoint.
         co2ProjectedPpm < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
         botao_co2_onoff == 1 &&
-        doseResponseReady && co2ClickCount == 0 && doorButtonStep == 0 &&
+        doseResponseReady && co2ClickCount == 0 && !heaterPressPending &&
         millis() - co2LastPulseAt >= 1000UL) {
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
@@ -1434,36 +1433,23 @@ void dispatchHeaterClick(unsigned long now) {
   else setHeaterEnabled(!botao_aquecedor_onoff);
 }
 
-void flushDoorButtons() {
-  uint8_t pending = doorButtonStep;
-  doorButtonStep = 0;
-  if (pending) handleCo2ButtonClick(doorButtonAt);
-  if (pending == 2) dispatchHeaterClick(doorRedAt);
-}
-
-void handleControlButton(bool yellow, unsigned long now) {
-  if (doorButtonStep == 2 && yellow) {
-    doorButtonStep = 0;
+void serviceHeaterButton(bool pressedEdge, bool bothPressed, unsigned long now) {
+  if (bothPressed) {
+    heaterPressPending = false;
+    return;
+  }
+  if (pressedEdge) {
+    heaterPressPending = true;
+    heaterPressedAt = now;
+  }
+  if (!heaterPressPending) return;
+  if (now - heaterPressedAt >= 2000UL) {
+    heaterPressPending = false;
     toggleDoorMode();
-    return;
+  } else if (!heaterButtonStable) {
+    heaterPressPending = false;
+    dispatchHeaterClick(now);
   }
-  if (doorButtonStep == 1 && !yellow) {
-    doorButtonStep = 2;
-    doorRedAt = now;
-    return;
-  }
-  flushDoorButtons();
-  if (yellow && co2ClickCount == 4) handleCo2ButtonClick(now);
-  else if (yellow) {
-    doorButtonStep = 1;
-    doorButtonAt = now;
-  } else dispatchHeaterClick(now);
-}
-
-void serviceDoorButtons(unsigned long now) {
-  if (doorButtonStep && (now - doorButtonAt >= 3000UL ||
-      (co2ClickCount && now - co2ClickSequenceStart >= 3000UL))) flushDoorButtons();
-  finishCo2ClickSequenceIfExpired(now);
 }
 
 bool updateButtonState(int pin, bool &stable, bool &candidate, uint8_t &samples) {
@@ -1488,23 +1474,23 @@ void serviceInputsForTwoSeconds() {
     serviceChamberTemperature();
     controlHeater(chamberTemperatureC, now);
     processSerialCommands();
-    serviceDoorButtons(now);
+    finishCo2ClickSequenceIfExpired(now);
     bool co2Pressed = updateButtonState(BOTAO_CO2, co2ButtonStable, co2ButtonCandidate, co2ButtonDebounceCount);
     bool heaterPressed = updateButtonState(BOTAO_AQUECEDOR, heaterButtonStable, heaterButtonCandidate, heaterButtonDebounceCount);
     serviceActivityIconAnimation();
     bool bothPressed = co2ButtonStable && heaterButtonStable;
     if (bothPressed && !bothButtonsStable) {
       Serial.println(F("EVENT,both_buttons_pressed"));
-      doorButtonStep = 0;
+      heaterPressPending = false;
       if (co2ClickCount > 0) setCo2Enabled(co2ModeAtClickSequence);
       co2ClickCount = 0;
       eeprom_contador_int = 0;
       EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
       drawHealthIndicator();
     } else if (!bothPressed) {
-      if (co2Pressed) handleControlButton(true, now);
-      if (heaterPressed) handleControlButton(false, now);
+      if (co2Pressed) handleCo2ButtonClick(now);
     }
+    serviceHeaterButton(heaterPressed, bothPressed, now);
     bothButtonsStable = bothPressed;
     delay(20);
   }

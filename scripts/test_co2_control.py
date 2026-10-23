@@ -40,7 +40,7 @@ int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
 '''+caps+'''
   return pulseMs;
 }
-bool admit(uint8_t doorButtonStep, bool botao_co2_onoff=true, bool validCo2=true, unsigned long currentTime=120000) {
+bool admit(bool heaterPressPending, bool botao_co2_onoff=true, bool validCo2=true, unsigned long currentTime=120000) {
   actualNow=currentTime;
   int32_t co2ProjectedPpm=47000;
   bool doseResponseReady=true;
@@ -57,7 +57,7 @@ bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendRea
 void markDoseSent() { '''+advance+''' }
 int main() {
   assert(admit(0));
-  assert(!admit(1) && !admit(2)); // No automatic dose during a pending door gesture.
+  assert(!admit(true)); // No automatic dose while a possible long press is pending.
   assert(!admit(0,false) && !admit(0,true,false));
 
   co2LastPulseAt=119500;assert(!admit(0)); // A fresh manual pulse prevents a duplicate automatic shot.

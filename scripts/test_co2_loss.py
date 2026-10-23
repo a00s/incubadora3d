@@ -18,7 +18,7 @@ harness = r'''
 #include <assert.h>
 #define CO2_SENSOR_WARMUP_MS 120000UL
 unsigned long clockMs = 0;
-uint8_t doorButtonStep=0;
+bool heaterPressPending=false;
 unsigned long millis() { return clockMs; }
 unsigned long co2LastPulseAt = 0;
 bool co2RatePpmMinReady = true, co2TrendReady = true;
@@ -130,12 +130,12 @@ int main() {
     assert(lossDropTotal==beforeDrop && lossTimeTotal==beforeTime && !lossFresh);
   }
   co2DoorMode=0;
-  for (int step : {1,2}) {
-    doorButtonStep=step;CO2i=1000;measure(clockMs+60000);
+  {
+    heaterPressPending=true;CO2i=1000;measure(clockMs+60000);
     assert(lossDropTotal==beforeDrop && lossTimeTotal==beforeTime && !lossFresh);
   }
   // Resume with a new anchor: neither the big door drop nor paused time is counted.
-  doorButtonStep=0;CO2i=50000;measure(clockMs+2000);
+  heaterPressPending=false;CO2i=50000;measure(clockMs+2000);
   CO2i=49900;measure(clockMs+60000);finishCo2Loss();
   assert(lossDropTotal==beforeDrop+100 && lossTimeTotal==beforeTime+60000);
 

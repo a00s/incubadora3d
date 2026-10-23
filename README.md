@@ -363,16 +363,15 @@ Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio du
 subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
 suficiente nem estabilidade da concentração.
-A porta usa comando explícito: amarelo (CO₂) → vermelho (aquecimento) → amarelo,
-com toques separados dentro de três segundos. A primeira sequência marca PORTA ABERTA,
-desliga imediatamente aquecimento e CO₂ e mostra o ícone da incubadora com a folha da porta
-à direita. Nesse modo, ppm/min, cm³/h e ícones de atividade ficam ocultos; CO₂ e
-temperaturas continuam atualizando acima do desenho. Não existe mais detecção automática de abertura por queda de sensores.
-Os dois primeiros toques ficam reservados: uma sequência completa não executa os
-comandos individuais desses botões.
+A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
+2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o
+ícone com a folha à direita. Manter pressionado não repete o comando; soltar após o
+toque longo não executa clique curto. Nesse modo, ppm/min, cm³/h e ícones de atividade
+ficam ocultos, enquanto CO₂ e temperaturas continuam atualizando acima do desenho.
+Não há detecção automática por sensores nem sequência de cliques curtos para porta.
 
-Após fechar fisicamente, repita amarelo → vermelho → amarelo. O aviso sai, os dois
-controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm.
+Após fechar fisicamente, solte e segure novamente o vermelho por 2 segundos. O aviso
+sai, os dois controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm.
 Com sensor já aquecido, leitura válida, CO₂ abaixo de 49.000 e sem subida rápida,
 a primeira dose não espera o contador/tendência antigos. Depois dela, concentração parada ou caindo
 em recuperação permite nova dose após 60 s, mesmo que o contador normal ainda não tenha
@@ -388,11 +387,11 @@ impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
 A pausa fica salva na EEPROM. Se reiniciar marcada como aberta, ambos continuam
 desligados e o aviso permanece. Com porta marcada aberta, pulsos manuais e comandos
 individuais de ligar também não furam a pausa. A média de perda fica retida durante
-a sequência pendente, abertura e recuperação: nem a queda nem esse tempo entram no
-acumulado de cm³/h. Fora da sequência reservada, cliques simples e pulsos de
-3/4/5 toques amarelos permanecem; sequência incompleta/expirada volta a ser interpretada
-como comandos normais. Solte cada botão antes de apertar o seguinte; pressioná-los
-juntos mantém a função anterior de reset do contador e cancela a sequência pendente.
+o toque vermelho pendente, abertura e recuperação: nem a queda nem esse tempo entram
+no acumulado de cm³/h. Clique curto vermelho alterna aquecimento ao soltar; cliques
+amarelos simples e pulsos de 3/4/5 toques continuam funcionando. Três cliques curtos
+vermelhos ainda reconhecem a trava de faixa quando ela está ativa. Pressionar os dois
+botões juntos mantém o reset do contador e cancela o toque longo pendente.
 
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
