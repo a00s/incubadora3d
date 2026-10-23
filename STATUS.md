@@ -1645,3 +1645,11 @@ filamento/processo e 39 STL das demais peças preservados.
 - Branco usa critério heurístico de quantidade de dados: pelo menos três trechos concluídos e queda acumulada de 100 ppm; não é intervalo estatístico de confiança nem prova de vazamento. Durante retenção mantém amarelo com *. Observação continua sujeita a ruído, absorção, volume ocupado e mistura residual.
 - STATUS serial usa loss_x10 em décimos de cm³/h (-1 indisponível). Removidas duas chamadas redundantes de fonte para caber no Uno; compilação: 32250 bytes flash, 1014 bytes RAM.
 - Regressões verificam ponderação por tempo, exclusão do salto de dose, ausência de dupla contagem, média que não zera por amostra plana, queda pequena em trecho curto, retenção em falhas, amortecimento após cem ciclos e resolução de 0,1 cm³/h. Nenhuma peça ou geometria alterada.
+
+## Reposição antecipada durante queda confirmada — 2026-10-23
+
+- Diagnóstico USB: automático ligado, sensor válido e desbloqueado, concentração abaixo da faixa e caindo (~47000 ppm); abrir a serial reiniciou a placa, tornando visível também o aquecimento inicial de 120 s. A primeira sonda de 20 ms ocorreu após o aquecimento. Código anterior exigia o atraso adaptativo inteiro de 90–180 s mesmo durante queda.
+- Nova regra de espera: abaixo de 49000 ppm com inclinação menor que -50 ppm/min, admite reposição após 60 s. Ainda exige sensor válido, contador de 30 ciclos zerado e tendência sustentada por 30 s. Por isso o intervalo real pode superar 60 s. Próximo do alvo, plano ou em subida, mantém espera adaptativa.
+- Tetos de dose, ganho adaptativo, bloqueio de faixa e aquecimento inicial preservados. Não foi alterada a quantidade de gás por pulso; resposta/vazão e estabilidade física após a mudança não foram comprovadas em ensaio prolongado.
+- Extraída a condição temporal para teste da função real. Regressões cobrem queda a 47700, fronteira de 60 s, subida, faixa próxima do alvo, pequenas variações, atraso de 90/180 s, sensor inválido, contador e tendência não prontos. Testes da perda e das cores também passaram.
+- Para caber na flash, removida mensagem redundante de aquecimento no boot e compactados eventos seriais para EVENT,co2_probe,<ms> e EVENT,co2_pulse,<ms>. README atualizado. Compilação Uno: 32254 bytes flash e 1014 bytes RAM. Gravação USB com verificação concluída. Nenhuma alteração de peças ou geometria.

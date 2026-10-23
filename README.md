@@ -346,26 +346,21 @@ necessária à manutenção. O aquecedor corta ao atingir 37,0 °C e tem limite 
 37,1 °C. A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O ajuste inicial ainda precisa de validação térmica prolongada por causa da inércia observada.
-Enquanto o CO₂ estiver
-abaixo de 49.000 ppm, o automático inicia uma dose quando a leitura não está subindo
-rapidamente. Após reinício, a primeira dose é escalada pela distância à meta, com
-referência inicial conservadora de 12 ppm por ms e teto de 60 ms. Depois de cada dose, o controle espera
-ao menos cerca de um minuto e só libera outra dose depois que a subida ficar abaixo de
-300 ppm/min por 30 s contínuos. A telemetria mostrou resposta atrasada além do minuto;
-esse intervalo adicional evita somar pulsos enquanto o CO₂ ainda está subindo. Uma
-leitura em queda não bloqueia a correção.
-O tempo é recalibrado pela elevação máxima de ppm observada após cada pulso, então
-acompanha mudanças na vazão causadas pela pressão do reservatório ou pelo ajuste manual
-da válvula. Como a pressão não é medida diretamente e a resposta do sensor é atrasada,
-cada resposta atualiza em um terço a eficiência estimada; isso evita que uma única
-amostra determine a dose seguinte. O controle calcula a dose pela distância à meta e
-pela eficiência suavizada, aplicando inicialmente um sexto desse tempo proporcional por
-ciclo. Essa fração foi reduzida após um ensaio em que uma dose de 461 ms provocou subida
-atrasada suficiente para cruzar o limite de 65.535 ppm do protocolo e aparecer como
-leitura baixa por wraparound. Todo pulso automático tem teto de 60 ms. A primeira dose
-após reinício usa a referência observada de 12 ppm/ms e fica limitada ao mesmo teto. O piso é 5 ms
-para evitar pulsos abaixo da resolução prática da válvula. O bloqueio de tendência evita
-empilhar pulsos durante a subida atrasada.
+O automático considera reposição quando a concentração projetada cai abaixo de
+49.500 ppm. Entre doses, mantém o contador mínimo de 30 ciclos e exige tendência
+abaixo de 300 ppm/min durante 30 s. Em geral respeita o tempo de resposta aprendido
+entre 90 e 180 s. Se a leitura estiver abaixo de 49.000 ppm e a tendência indicar
+queda superior a 50 ppm/min, pode repor após 60 s, ainda respeitando o contador e a
+tendência sustentada. Isso evita esperar todo o atraso adaptativo enquanto o gás cai.
+Próximo do alvo ou durante subida, a espera adaptativa permanece.
+
+A primeira dose é uma sonda de 20 ms. Depois, a duração se adapta à resposta observada,
+ao déficit projetado e à tendência de perda, acompanhando mudanças de vazão sem medir
+a pressão diretamente. Pulsos automáticos vão de 20 a 80 ms; enquanto o ganho não foi
+validado, o teto adicional é 40 ms. Esses limites e o bloqueio durante subida foram
+mantidos para evitar empilhar doses com efeito atrasado. A resposta física após esta
+alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
+suficiente nem estabilidade da concentração.
 O controle automático aguarda também 2 minutos após cada reinicialização, conforme o
 pré-aquecimento indicado no manual do MH-Z16; o pulso manual permanece disponível.
 `CO2 PRIME` solicita um pulso manual de 5 ms. No botão, 3 toques solicitam 5 ms, 4

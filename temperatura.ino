@@ -248,6 +248,14 @@ uint8_t lossWindows = 0;
 // float media_eficiencia = 0.0;
 // int contagem_aberturas = 0;
 
+bool co2ResponseWaitComplete(unsigned long now) {
+  // Confirmed decline below the good band can replenish after the minimum
+  // cooldown; a rise or near-target reading retains the learned response wait.
+  uint8_t seconds = CO2i < CO2_CONTROL_MIN_PPM && co2RatePpmMin < -50
+    ? 60 : co2ResponseLagSeconds;
+  return now - co2LastPulseAt >= (unsigned long)seconds * 1000UL;
+}
+
 void setup()
 {  
     Serial.begin(9600);                                     // Device to serial monitor feedback
@@ -305,7 +313,6 @@ void setup()
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
     contador_pomp = POMP_WAITING_TIME;
-    Serial.println(F("CO2 warmup 120s"));
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
@@ -524,8 +531,7 @@ void loop()
     // Keep the minimum cooldown, then wait for a sustained slowdown before
     // another automatic dose. Live telemetry showed the chamber response can
     // keep rising well beyond 60 s; dosing during that rise stacked pulses.
-    bool responseWaitComplete = currentTime - co2LastPulseAt >=
-      (unsigned long)co2ResponseLagSeconds * 1000UL;
+    bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
     bool doseResponseReady = validCo2 && responseWaitComplete &&
                              contador_pomp == 0 && co2TrendReady;
     co2ProjectedPpm = CO2i;
@@ -604,7 +610,7 @@ void loop()
       if (lastCo2PulseMs == 0) {
         // Calibrate from this valve/tank state before using learned gain.
         pulseMs = DELAY_MINIMO;
-        Serial.print(F("EVENT,co2_pulse,calibration,ms,"));
+        Serial.print(F("EVENT,co2_probe,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
           // Ignore responses below 50 ppm, where sensor noise and leak-model
@@ -641,7 +647,7 @@ void loop()
         // Step the valve probe up by 5 ms after an unmeasurable response.
         if (co2LastResponseWeak && pulseMs < lastCo2PulseMs + 5)
           pulseMs = lastCo2PulseMs + 5;
-        Serial.print(F("EVENT,co2_pulse,ms,"));
+        Serial.print(F("EVENT,co2_pulse,"));
       }
       // After reboot the valve-flow estimate is only a generic prior. Keep
       // the first measured probe small until this tank/valve state responds.
