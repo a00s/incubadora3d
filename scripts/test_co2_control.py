@@ -8,6 +8,8 @@ import tempfile
 source = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
 function = source[source.index('bool co2ResponseWaitComplete('):source.index('void setup()')]
 admission = re.search(r'if \((validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS.*?)\) \{\s*int32_t pulseMs;',source,re.S).group(1)
+recovery = re.search(r'bool recoveryReady = (.*?);',source,re.S).group(1)
+advance = re.search(r'if \(co2DoorMode == 4\) co2DoorMode = 3;',source).group(0)
 gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
 weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
 start = source.index('      if (pulseMs > pulseLimit)')
@@ -22,10 +24,14 @@ harness = r'''
 #define CO2_TARGET_PPM 50000L
 #define CO2_TOLERANCE_PPM 1000L
 #define DELAY_MINIMO 20
+#define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
+uint8_t co2DoorMode=0;
+bool co2RatePpmMinReady=true;
 bool co2GainValidatedThisBoot = false, co2LastResponseWeak = false;
 int32_t lastCo2PulseMs = 0;
 int32_t CO2i = 47700, co2RatePpmMin = -200;
-unsigned long co2LastPulseAt = 100000;
+unsigned long co2LastPulseAt = 100000, actualNow=120000;
+unsigned long millis() {return actualNow;}
 uint8_t co2ResponseLagSeconds = 180;
 '''+function+'''
 int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
@@ -34,23 +40,42 @@ int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
 '''+caps+'''
   return pulseMs;
 }
-bool admit(uint8_t doorButtonStep, bool botao_co2_onoff=true, bool validCo2=true) {
-  unsigned long currentTime=120000;
+bool admit(uint8_t doorButtonStep, bool botao_co2_onoff=true, bool validCo2=true, unsigned long currentTime=120000) {
+  actualNow=currentTime;
   int32_t co2ProjectedPpm=47000;
   bool doseResponseReady=true;
   uint8_t co2ClickCount=0;
   return '''+admission+''';
 }
 bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendReady) {
-  bool responseWaitComplete = co2ResponseWaitComplete(now);
+  unsigned long currentTime=now;
+  bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
+  bool recoveryReady = '''+recovery+''';
   return '''+gate+''';
 }
 '''+r'''
+void markDoseSent() { '''+advance+''' }
 int main() {
   assert(admit(0));
   assert(!admit(1) && !admit(2)); // No automatic dose during a pending door gesture.
   assert(!admit(0,false) && !admit(0,true,false));
 
+  co2LastPulseAt=119500;assert(!admit(0)); // A fresh manual pulse prevents a duplicate automatic shot.
+  co2LastPulseAt=100000;
+  assert(!admit(0,true,true,119999)); // Sensor warmup is never bypassed.
+  co2DoorMode=4; CO2i=47700; co2RatePpmMin=-200;
+  assert(ready(100001,true,30,false)); // First close dose: no stale counter/trend wait.
+  assert(!ready(100001,false,30,false));
+  co2RatePpmMin=500; assert(!ready(100001,true,30,false));
+  co2RatePpmMin=-200; CO2i=49000; assert(!ready(100001,true,30,false));
+  CO2i=47700; markDoseSent(); assert(co2DoorMode==3);
+  assert(!ready(159999,true,30,false)); // No repeated immediate recovery dose.
+  assert(ready(160000,true,30,false)); // Falling recovery ignores obsolete counter.
+  co2RatePpmMin=0; assert(ready(160000,true,30,false));
+  assert(!ready(159999,true,30,false));
+  co2RatePpmMin=10; assert(!ready(160000,true,30,false));
+  co2RatePpmMin=500; assert(!ready(160000,true,30,false));
+  co2RatePpmMin=-200; co2DoorMode=0;
   // Restart near target: the first probe stays small, then escapes the old 40 ms cap.
   assert(boundedProbe(80,80) == 20);
   lastCo2PulseMs = 20;

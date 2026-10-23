@@ -1699,3 +1699,21 @@ filamento/processo e 39 STL das demais peças preservados.
 
 - Atendendo à correção visual do usuário, folha da porta passa para o lado direito. Desenho da câmara e das dobradiças preservado; conjunto centralizado horizontalmente no visor.
 - Regressão exige borda livre à direita do corpo e articulação ainda na borda direita da câmara. Comandos, pausa e recuperação não alterados; nenhuma peça ou geometria CAD alterada.
+
+## Primeira reposição ao fechar e recuperação ativa por queda — 2026-10-23
+
+- Relato: após fechar pela sequência, RECUPERANDO ainda herdava contador e tendência do modo normal e atrasava a primeira dose. Novo estado interno 4 marca primeira dose pendente; cabeçalho e coleta de perda o tratam como recuperação.
+- Ao fechar, sensor válido/aquecido, CO₂ <49000 e ausência de subida rápida (>300 ppm/min) permitem primeira dose no próximo ciclo sem aguardar contador/tendência. Depois da emissão muda uma única vez para estado 3. Subsequentes doses de recuperação com concentração plana/caindo (<=0 ppm/min) e tendência móvel pronta usam espera mínima de 60 s, sem bloqueio adicional do contador/tendência antigos. Demais casos mantêm controle normal.
+- Primeira dose não ignora aquecimento inicial de 120 s, sensor inválido/travado, modo aberto, botões pendentes ou CO₂ já na faixa. Pulso continua calculado pelo ganho aprendido ou pela sonda/progressão quando ganho desconhecido, com teto de 80 ms. Pressão é inferida pela resposta da dose, não medida diretamente.
+- Durante recuperação usa déficit observado, sem projeção da queda brusca de abertura para o futuro; isso evita exagerar a quantidade calculada por extrapolar um evento transitório. Temperatura e desenho da porta à direita preservados.
+- Removido estado antigo de compensação ambiente que já não tinha leitores. Contador de pulsos reduzido a uint8_t (valores 0–30) e estado do ventilador a bool (0/1), sem mudança de comportamento.
+- Regressões cobrem primeira dose sem espera antiga, invalidade/warmup/faixa/subida bloqueando, consumo único do estado inicial, proibição de repetição antes de 60 s, reposição por queda com contador ainda ativo, ganho alto/baixo gerando duração proporcional, teto de 80 ms e fluxos de botões/pausa/EEPROM. Compilação Uno: 32034 bytes flash, 1015 bytes RAM. Recuperação física prolongada ainda requer observação. Nenhuma peça alterada.
+- Pulso manual inicial também consome o estado pendente; guarda de 1 s antes de dose automática evita duplicar imediatamente um pulso manual no mesmo ciclo. Regra de aquecimento e demais intertravamentos permanecem.
+- Porta aberta, recuperação (estados 3/4) e sequência pendente suspendem a estatística. Teste apresenta queda grande de abertura e pausa extensa e verifica que nem numerador (ppm acumulados) nem denominador (tempo observado) incorporam o evento; ao voltar, a origem é nova. Apenas o trecho válido anterior à abertura é consolidado uma vez.
+
+## Isolamento da tela de porta aberta — 2026-10-23
+
+- Relato: ppm/min aparecia sobre o desenho. O renderizador atualizava os campos inferiores para depois limpar e redesenhar a porta; isso permitia escritas transitórias na mesma área.
+- Tela de porta aberta agora tem caminho exclusivo: o frame não desenha títulos/linhas/ícones inferiores, e renderDisplay atualiza CO₂/temperaturas e retorna antes de qualquer valor ppm/min ou cm³/h. Desenho não precisa ser refeito a cada mudança de taxa. Fechamento invalida caches e restaura campos normais completos.
+- Regressão compila o renderizador real e registra todas as escritas, inclusive as posteriormente apagadas. Verifica ausência de valores/títulos inferiores e animações durante abertura, atualização de CO₂ e temperaturas, mudanças de alerta, leitura inválida, reconstrução direta de frame, restauração em recuperação e nova abertura.
+- Versão final com recuperação inicial, média excluindo porta e isolamento de tela: 32188 bytes flash e 1015 bytes RAM. Nenhuma peça ou geometria alterada.

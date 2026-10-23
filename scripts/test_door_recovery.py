@@ -23,7 +23,7 @@ names=[
 functions=[function(n) for n in names]
 prototypes='\n'.join(re.sub(r' = MANUAL_CO2_PULSE_MS','',f[:f.index('{')].strip())+';' for f in functions)
 notice=function('void drawDoorNotice(')
-visible=re.search(r'if \((co2DoorMode.*?)\) drawDoorNotice\(\);',source).group(1)
+visible='co2DoorMode == 2'
 restore=function('    if (controlState <= 7)')
 rise=re.search(r'int32_t increaseSincePump =.*?if \(increaseSincePump > max_co2_increase\) \{.*?\n        \}',source,re.S).group(0)
 harness=r'''
@@ -116,11 +116,15 @@ int main() {
   co2DoorMode=0;botao_co2_onoff=botao_aquecedor_onoff=true;
   restoreControls();assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
   sequence(9000);
-  assert(co2DoorMode==3 && botao_co2_onoff && botao_aquecedor_onoff && EEPROM.read(29)==3);
-  tick(10000);assert(co2DoorMode==3 && gasPulses==0);
-  updateDoorState(true);assert(co2DoorMode==3);
+  assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff && EEPROM.read(29)==3);
+  tick(10000);assert(co2DoorMode==4 && gasPulses==0);
+  updateDoorState(true);assert(co2DoorMode==4);
   CO2i=49000;updateDoorState(true);assert(co2DoorMode==0);
   label=nullptr;drawVisibleNotice();assert(label==nullptr);
+  // A manual first recovery shot consumes the pending-kick state too.
+  co2DoorMode=4;CO2i=47000;
+  assert(manualCo2Pulse("test",5) && co2DoorMode==3);
+  co2DoorMode=0;
   // Three/four/five yellow taps still give their original manual pulse sizes.
   CO2i=47000;
   for(int clicks=3;clicks<=5;clicks++) {
@@ -141,7 +145,7 @@ int main() {
   assert(co2DoorMode==0);
   // Opening stops both; closing reactivates both, even if one was previously off.
   sequence(47000);assert(co2DoorMode==2);
-  sequence(50000);assert(co2DoorMode==3 && botao_co2_onoff && botao_aquecedor_onoff);
+  sequence(50000);assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff);
   // Safety fault cannot be cleared by the close gesture; persistence still closes.
   sequence(54000);safetyFault=2;sequence(58000);
   assert(co2DoorMode==0 && safetyFault==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
@@ -154,7 +158,10 @@ int main() {
   press(false,70000);press(false,70200);press(false,70400);
   assert(!co2RangeWrapLatched && !botao_co2_onoff);
   // Recovery dose math stays bounded; learning ignores fictitious door compensation.
-  co2DoorMode=3;co2RatePpmMin=0;
+  co2DoorMode=4;co2RatePpmMin=0;
+  assert(calcularDelayProporcional(47000,50000,5000,true,80)==60);
+  assert(calcularDelayProporcional(47000,50000,20000,true,80)==20);
+  co2DoorMode=3;
   assert(calcularDelayProporcional(47000,50000,10000,true,80)==30);
   assert(calcularDelayProporcional(30000,50000,10000,true,80)==80);
   co2DoorMode=0;assert(calcularDelayProporcional(47000,50000,10000,true,80)==20);

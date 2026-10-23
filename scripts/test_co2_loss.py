@@ -10,6 +10,7 @@ constants = source[source.index('const uint16_t CO2_GAS_VOLUME_CM3'):source.inde
 function = source[source.index('void finishCo2Loss()'):source.index('\nvoid drawTextChanges')]
 colors = source[source.index("void setDisplayBackground()"):source.index("void drawCo2Icon(")]
 alert = re.search(r"bool alert = (.*);", source).group(1)
+statistics_gate = re.search(r'updateCo2Loss\((validCo2 && co2DoorMode.*?)\);',source).group(1)
 harness = r'''
 #include <stdint.h>
 #include <cmath>
@@ -17,6 +18,7 @@ harness = r'''
 #include <assert.h>
 #define CO2_SENSOR_WARMUP_MS 120000UL
 unsigned long clockMs = 0;
+uint8_t doorButtonStep=0;
 unsigned long millis() { return clockMs; }
 unsigned long co2LastPulseAt = 0;
 bool co2RatePpmMinReady = true, co2TrendReady = true;
@@ -29,7 +31,8 @@ unsigned long co2RateHistoryTime[16] = {};
 void measure(unsigned long now, unsigned long windowMs = 30000UL) {
   clockMs = now;
   co2RateHistoryTime[co2RateHistoryNext] = now - windowMs;
-  updateCo2Loss(true);
+  bool validCo2=true;
+  updateCo2Loss('''+statistics_gate+''');
 }
 
 struct ColorRecorder {
@@ -116,6 +119,26 @@ int main() {
   assert(lossCm3HourX10 == 1); // Display 0.1, not 0.
   co2RatePpmMin = 100; measure(11062000);
   assert(lossDropTotal == 1 && lossTimeTotal == 60000 && !lossFresh);
+  // Complete normal observation preceding the opening, then present a huge drop.
+  co2RatePpmMin=-100;CO2i=50000;measure(12000000);
+  CO2i=49900;measure(12060000);
+  float beforeDrop=lossDropTotal+lossSegmentDrop, beforeTime=lossTimeTotal+lossSegmentMs;
+  co2DoorMode=2;CO2i=1000;measure(12062000);
+  assert(lossDropTotal==beforeDrop && lossTimeTotal==beforeTime && !lossFresh);
+  for (int mode : {3,4}) {
+    co2DoorMode=mode;CO2i=30000;measure(clockMs+60000);
+    assert(lossDropTotal==beforeDrop && lossTimeTotal==beforeTime && !lossFresh);
+  }
+  co2DoorMode=0;
+  for (int step : {1,2}) {
+    doorButtonStep=step;CO2i=1000;measure(clockMs+60000);
+    assert(lossDropTotal==beforeDrop && lossTimeTotal==beforeTime && !lossFresh);
+  }
+  // Resume with a new anchor: neither the big door drop nor paused time is counted.
+  doorButtonStep=0;CO2i=50000;measure(clockMs+2000);
+  CO2i=49900;measure(clockMs+60000);finishCo2Loss();
+  assert(lossDropTotal==beforeDrop+100 && lossTimeTotal==beforeTime+60000);
+
 
 }
 

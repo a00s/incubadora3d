@@ -366,12 +366,21 @@ suficiente nem estabilidade da concentração.
 A porta usa comando explícito: amarelo (CO₂) → vermelho (aquecimento) → amarelo,
 com toques separados dentro de três segundos. A primeira sequência marca PORTA ABERTA,
 desliga imediatamente aquecimento e CO₂ e mostra o ícone da incubadora com a folha da porta
-à direita. Não existe mais detecção automática de abertura por queda de sensores.
+à direita. Nesse modo, ppm/min, cm³/h e ícones de atividade ficam ocultos; CO₂ e
+temperaturas continuam atualizando acima do desenho. Não existe mais detecção automática de abertura por queda de sensores.
 Os dois primeiros toques ficam reservados: uma sequência completa não executa os
 comandos individuais desses botões.
 
 Após fechar fisicamente, repita amarelo → vermelho → amarelo. O aviso sai, os dois
-controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm. Não restaura
+controles são religados e o CO₂ entra em RECUPERANDO até atingir 49.000 ppm.
+Com sensor já aquecido, leitura válida, CO₂ abaixo de 49.000 e sem subida rápida,
+a primeira dose não espera o contador/tendência antigos. Depois dela, concentração parada ou caindo
+em recuperação permite nova dose após 60 s, mesmo que o contador normal ainda não tenha
+zerado. Subida rápida bloqueia, e fora dessa condição valem as esperas normais.
+A duração usa o ganho aprendido da válvula (ppm por milissegundo), não uma leitura de
+pressão: menor resposta observada pede mais tempo, sempre até 80 ms. Sem ganho validado,
+mantém sonda/progressão conservadora. Na recuperação usa déficit atual, sem extrapolar
+para o futuro a queda brusca da porta. Não restaura
 um estado anterior desligado: os dois são solicitados ligados, conforme o comando de
 fechamento. Falha de segurança impede religamento automático; trava de faixa continua
 impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
@@ -379,7 +388,8 @@ impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
 A pausa fica salva na EEPROM. Se reiniciar marcada como aberta, ambos continuam
 desligados e o aviso permanece. Com porta marcada aberta, pulsos manuais e comandos
 individuais de ligar também não furam a pausa. A média de perda fica retida durante
-abertura e recuperação. Fora da sequência reservada, cliques simples e pulsos de
+a sequência pendente, abertura e recuperação: nem a queda nem esse tempo entram no
+acumulado de cm³/h. Fora da sequência reservada, cliques simples e pulsos de
 3/4/5 toques amarelos permanecem; sequência incompleta/expirada volta a ser interpretada
 como comandos normais. Solte cada botão antes de apertar o seguinte; pressioná-los
 juntos mantém a função anterior de reset do contador e cancela a sequência pendente.

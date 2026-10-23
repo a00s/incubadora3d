@@ -128,12 +128,12 @@ Ucglib_ST7735_18x128x160_HWSPI ucg(/*cd=*/ 9, /*cs=*/ 10, /*reset=*/ 8);
 bool botao_co2_onoff = false;
 bool botao_aquecedor_onoff = false;
 int32_t last_co2i = 0;
-int contador_pomp;
+uint8_t contador_pomp;
 int32_t CO2i = 0;
 int32_t lastCo2RawPpm = 0;
 uint16_t lastCo2PulseMs = 0;
 int32_t eeprom_contador_int = 0;
-int ventilador_status = 0;
+bool ventilador_status = false;
 unsigned long heaterPidLastUpdateAt = 0;
 unsigned long heaterLastTransitionAt = 0;
 unsigned long heaterSensorFaultSince = 0;
@@ -221,7 +221,6 @@ unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
 uint8_t co2ResponseLagSeconds = CO2_RESPONSE_LAG_DEFAULT_MS / 1000UL;
 int32_t co2ProjectedPpm = 0;
-int32_t co2RateAtPulsePpmMin = 0;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -247,7 +246,7 @@ float lossDropTotal = 0, lossTimeTotal = 0;
 uint16_t lossSegmentDrop = 0;
 unsigned long lossSegmentMs = 0;
 uint8_t lossWindows = 0;
-// Explicit door state: 0 normal, 2 open, 3 closed/recovering.
+// Door: 0 normal, 2 open, 3 recovering, 4 first recovery dose pending.
 uint8_t co2DoorMode = 0;
 
 // Variáveis globais para aprendizado adaptativo
@@ -255,7 +254,7 @@ uint8_t co2DoorMode = 0;
 // int contagem_aberturas = 0;
 
 void updateDoorState(bool valid) {
-  if (valid && co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
+  if (valid && co2DoorMode >= 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
 }
 
 bool co2ResponseWaitComplete(unsigned long now) {
@@ -541,10 +540,14 @@ void loop()
     // another automatic dose. Live telemetry showed the chamber response can
     // keep rising well beyond 60 s; dosing during that rise stacked pulses.
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
-    bool doseResponseReady = validCo2 && responseWaitComplete &&
-                             contador_pomp == 0 && co2TrendReady;
+    bool recoveryReady = co2DoorMode >= 3 && CO2i < CO2_CONTROL_MIN_PPM &&
+      co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN &&
+      (co2DoorMode == 4 || (co2RatePpmMinReady && co2RatePpmMin <= 0 &&
+       currentTime - co2LastPulseAt >= 60000UL));
+    bool doseResponseReady = validCo2 && (recoveryReady ||
+      (responseWaitComplete && contador_pomp == 0 && co2TrendReady));
     co2ProjectedPpm = CO2i;
-    if (validCo2 && co2RatePpmMinReady && co2RatePpmMin < 0) {
+    if (validCo2 && co2DoorMode < 3 && co2RatePpmMinReady && co2RatePpmMin < 0) {
       int32_t boundedRate = co2RatePpmMin;
       if (boundedRate < -5000) boundedRate = -5000;
       int32_t projected = CO2i + boundedRate * co2ResponseLagSeconds / 60L;
@@ -608,14 +611,15 @@ void loop()
 
     // Capture the falling trend before a replenishment pulse resets its state.
     updateDoorState(validCo2);
-    updateCo2Loss(validCo2 && co2DoorMode == 0);
+    updateCo2Loss(validCo2 && co2DoorMode == 0 && doorButtonStep == 0);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
         // Start replenishing halfway into the allowed band. Waiting for the
         // lower edge and then dosing only a fraction of the deficit biased
         // the measured steady state below the 5% setpoint.
         co2ProjectedPpm < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
         botao_co2_onoff == 1 &&
-        doseResponseReady && co2ClickCount == 0 && doorButtonStep == 0) {
+        doseResponseReady && co2ClickCount == 0 && doorButtonStep == 0 &&
+        millis() - co2LastPulseAt >= 1000UL) {
       int32_t pulseMs;
       if (lastCo2PulseMs == 0) {
         // Calibrate from this valve/tank state before using learned gain.
@@ -667,6 +671,7 @@ void loop()
       lastCo2PulseMs = pulseMs;
       Serial.println(pulseMs);
       finishCo2Loss();
+      if (co2DoorMode == 4) co2DoorMode = 3;
       digitalWrite(CO2PUMP, LOW);
       delay(pulseMs);
       digitalWrite(CO2PUMP, HIGH);
@@ -675,9 +680,7 @@ void loop()
       max_co2_increase = 0;
       co2LastPulseAt = millis();
       co2MaxRiseAt = co2LastPulseAt;
-      co2RateAtPulsePpmMin = co2RatePpmMinReady ? co2RatePpmMin : 0;
-      if (co2RateAtPulsePpmMin < -5000) co2RateAtPulsePpmMin = -5000;
-      if (co2RateAtPulsePpmMin > 5000) co2RateAtPulsePpmMin = 5000;
+
       co2StableSince = 0;
       co2TrendReady = false;
       contador_pomp = POMP_WAITING_TIME;
@@ -839,7 +842,7 @@ void drawHealthIndicator() {
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
   else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
   else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") :
-                 (co2DoorMode == 3 ? F("RECUPERANDO") : F("CO2 ppm")));
+                 (co2DoorMode >= 3 ? F("RECUPERANDO") : F("CO2 ppm")));
   if (!displaySafetyAlert) {
     char bootCountText[12];
     bootCountText[0] = 'R';
@@ -856,11 +859,17 @@ void drawDisplayFrame() {
   ucg.drawBox(0, 0, ucg.getWidth(), ucg.getHeight());
   drawHealthIndicator();
   ucg.setFont(incubadora_font_7x13);
-  setDisplayForeground(130, 190, 215);
-  ucg.setPrintPos(5, 101); ucg.print(F("ppm/min"));
   setDisplayForeground(150, 200, 225);
   ucg.setPrintPos(5, 57); ucg.print(F("TEMP"));
   ucg.setPrintPos(66, 57); ucg.print(F("INT"));
+  if (co2DoorMode == 2) {
+    drawDoorNotice();
+    displayCacheValid = false;
+    return;
+  }
+  setDisplayForeground(130, 190, 215);
+  ucg.setPrintPos(5, 101); ucg.print(F("ppm/min"));
+  setDisplayForeground(150, 200, 225);
   ucg.setPrintPos(5, 120); ucg.print(F("cm3/h"));
   // Visible bounds: header 5..15, CO2 24..39, labels 48..56,
   // temperatures 65..74, line 83, rate 92..102, loss 111..119,
@@ -1019,6 +1028,34 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayCo2Quality = co2Quality;
   }
 
+  ucg.setFont(incubadora_font_7x13);
+  if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
+    char nextTempText[8];
+    formatTenths(tempTenths, nextTempText);
+    uint8_t tempR = tempQuality == 1 ? 70 : 255;
+    uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
+    uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
+    drawTextChanges(nextTempText, 5, 74, 64, 12, 58,
+                    tempR, tempG, tempB);
+    // Bold overprint keeps the compact font and its fixed field width on the Uno.
+    ucg.setPrintPos(6, 74);
+    ucg.print(nextTempText);
+    displayTempTenths = tempTenths;
+    displayTempQuality = tempQuality;
+  }
+  if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
+    char nextInternalTempText[8];
+    formatTenths(internalTempTenths, nextInternalTempText);
+    drawTextChanges(nextInternalTempText, 66, 74, 64, 12, 59,
+                    230, 235, 240);
+    displayInternalTempTenths = internalTempTenths;
+  }
+  if (co2DoorMode == 2) {
+    if (!displayCacheValid) drawDoorNotice();
+    displayCacheValid = true;
+    return;
+  }
+
   bool co2RateValid = co2RatePpmMinReady;
   int32_t shownCo2Rate = co2RateValid ? co2RatePpmMin : 0;
   if (!displayCacheValid || displayCo2RatePpmMin != shownCo2Rate || displayCo2RateReady != co2RateValid) {
@@ -1054,28 +1091,6 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayLossHeld = lossHeld;
   }
 
-  ucg.setFont(incubadora_font_7x13);
-  if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
-    char nextTempText[8];
-    formatTenths(tempTenths, nextTempText);
-    uint8_t tempR = tempQuality == 1 ? 70 : 255;
-    uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
-    uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
-    drawTextChanges(nextTempText, 5, 74, 64, 12, 58,
-                    tempR, tempG, tempB);
-    // Bold overprint keeps the compact font and its fixed field width on the Uno.
-    ucg.setPrintPos(6, 74);
-    ucg.print(nextTempText);
-    displayTempTenths = tempTenths;
-    displayTempQuality = tempQuality;
-  }
-  if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
-    char nextInternalTempText[8];
-    formatTenths(internalTempTenths, nextInternalTempText);
-    drawTextChanges(nextInternalTempText, 66, 74, 64, 12, 59,
-                    230, 235, 240);
-    displayInternalTempTenths = internalTempTenths;
-  }
   if (!displayCacheValid || displayCo2Enabled != botao_co2_onoff) {
     bool co2Flowing = digitalRead(CO2PUMP) == LOW;
     drawCo2Icon(11, 137, botao_co2_onoff, co2Flowing, activityIconFrame & 3);
@@ -1093,7 +1108,6 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
-  if (co2DoorMode == 2) drawDoorNotice();
   updateActivityIcons();
 }
 
@@ -1144,13 +1158,12 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   lastCo2PulseMs = pulseMs;
   co2LastPulseAt = now;
   co2MaxRiseAt = now;
-  co2RateAtPulsePpmMin = co2RatePpmMinReady ? co2RatePpmMin : 0;
-  if (co2RateAtPulsePpmMin < -5000) co2RateAtPulsePpmMin = -5000;
-  if (co2RateAtPulsePpmMin > 5000) co2RateAtPulsePpmMin = 5000;
+
   co2DoseResponsePending = co2BaselineReady;
   maxRate = 0;
   if (!freshReading) lossFresh = false;
   finishCo2Loss();
+  if (co2DoorMode == 4) co2DoorMode = 3;
   digitalWrite(CO2PUMP, LOW);
   delay(pulseMs);
   digitalWrite(CO2PUMP, HIGH);
@@ -1208,7 +1221,7 @@ bool setCo2Enabled(bool enabled) {
     safetyFault = 0;
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
   }
-  if (!enabled && co2DoorMode == 3) co2DoorMode = 0;
+  if (!enabled && co2DoorMode >= 3) co2DoorMode = 0;
   botao_co2_onoff = enabled;
   saveControlState();
   if (!enabled) digitalWrite(CO2PUMP, HIGH);
@@ -1399,7 +1412,7 @@ void toggleDoorMode() {
   co2DoseResponsePending = false;
   finishCo2Loss();
   if (co2DoorMode == 2) {
-    co2DoorMode = 3;
+    co2DoorMode = 4;
     if (!safetyFault) {
       setHeaterEnabled(true);
       setCo2Enabled(true);
@@ -1551,9 +1564,9 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   if (lossRate > 0) lossRate = 0;
   if (lossRate < -5000) lossRate = -5000;
   int32_t lossPerResponse = -lossRate * co2ResponseLagSeconds / 60L;
-  uint8_t fractionDenominator = co2DoorMode == 3 ? 1 :
+  uint8_t fractionDenominator = co2DoorMode >= 3 ? 1 :
     (ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3);
-  if (co2DoorMode != 3 && lossPerResponse > CO2_TOLERANCE_PPM / 2) {
+  if (co2DoorMode < 3 && lossPerResponse > CO2_TOLERANCE_PPM / 2) {
     fractionDenominator = 1 + CO2_TOLERANCE_PPM / lossPerResponse;
   }
   int32_t tempoValvula = ppmNecessario * 100L /
