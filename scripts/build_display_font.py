@@ -5,7 +5,7 @@ import re
 
 root = Path(__file__).resolve().parents[1]
 fontdir = Path.home() / 'Arduino/libraries/Ucglib/src/clib'
-labels = 'CO SENSOR FAIL TEMP TOO HOT LOST BLOQUEADO R RECUPERANDO INT PORTA ABERTA'
+labels = 'CO SENSOR FAIL TEMP TOO HOT LOST BLOQUEADO R RECUPERANDO INT PORTA ABERTA CO2 PAUSADO'
 specs = [
     ('ucg_pixel_font_data.c','ucg_font_7x13_mr','incubadora_font_7x13',
      set(' +-./*0123456789chikmnp'+labels)),

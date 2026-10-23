@@ -256,8 +256,9 @@ float doorTemperatureBefore = NAN;
 
 void updateDoorState(float temperature, bool valid) {
   if (!valid) return;
-  if (co2DoorMode == 1 && doorCo2Before - CO2i >= 2000 &&
-      (doorTemperatureBefore - temperature >= 0.2f || co2RatePpmMin < -1000))
+  int32_t drop = doorCo2Before - CO2i;
+  if (co2DoorMode == 1 && (drop >= 2000 ||
+      (drop >= 500 && doorTemperatureBefore - temperature >= 0.2f)))
     co2DoorMode = 2;
   if (co2DoorMode == 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
 }
@@ -787,7 +788,7 @@ void drawFanIcon(uint8_t x, uint8_t y, bool enabled, bool spinning, uint8_t fram
 }
 
 void updateActivityIcons() {
-  if (!displayCacheValid || co2DoorMode == 2) return;
+  if (!displayCacheValid || co2DoorMode == 1 || co2DoorMode == 2) return;
   unsigned long now = millis();
   bool co2Flowing = digitalRead(CO2PUMP) == LOW ||
                     (co2AnimationUntil != 0 && (int32_t)(now - co2AnimationUntil) < 0);
@@ -958,7 +959,8 @@ void drawDoorNotice() {
   setDisplayBackground(); ucg.drawBox(0, 83, 128, 77);
   setDisplayForeground(255, 190, 45);
   ucg.setFont(incubadora_font_7x13);
-  ucg.setPrintPos(22, 97); ucg.print(F("PORTA ABERTA"));
+  ucg.setPrintPos(22, 97);
+  ucg.print(co2DoorMode == 2 ? F("PORTA ABERTA") : F("CO2 PAUSADO"));
   ucg.drawFrame(43, 106, 42, 45);
   ucg.drawLine(43, 106, 70, 101);
   ucg.drawLine(70, 101, 70, 145);
@@ -1088,7 +1090,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     displayFanOn = ventilador_status;
   }
   displayCacheValid = true;
-  if (co2DoorMode == 2) drawDoorNotice();
+  if (co2DoorMode == 1 || co2DoorMode == 2) drawDoorNotice();
   updateActivityIcons();
 }
 
@@ -1194,6 +1196,7 @@ bool setCo2Enabled(bool enabled) {
     safetyFault = 0;
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
   }
+  if (enabled) updateDoorState(chamberTemperatureC, lastCo2ReadingValid);
   if (enabled != (botao_co2_onoff != 0)) {
     if (!enabled && !co2RangeWrapLatched && !safetyFault) {
       co2DoorMode = 1;
