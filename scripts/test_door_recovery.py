@@ -83,12 +83,12 @@ void restoreControls() {uint8_t controlState=EEPROM.read(EEPROM_CONTROL_STATE);
 void observeRise(unsigned long currentTime) {'''+rise+'''}
 '''+r'''
 const char *label=nullptr;
-int bodyLeft=-1,bodyRight=-1,openLeft=128,hingeX=-1;
+int bodyLeft=-1,bodyRight=-1,openRight=0,hingeX=-1;
 struct Display {
  void setFont(int) {} void setPrintPos(int,int) {} void print(const char *s) {label=s;}
  void drawBox(int x,int y,int w,int h) {assert(x>=0 && y>=0 && x+w<=128 && y+h<=160);}
  void drawFrame(int x,int y,int w,int h) {drawBox(x,y,w,h);if(bodyLeft<0){bodyLeft=x;bodyRight=x+w-1;}}
- void drawLine(int x,int y,int a,int b) {if(hingeX<0)hingeX=x;if(x<openLeft)openLeft=x;if(a<openLeft)openLeft=a;assert(x>=0 && x<128 && a>=0 && a<128 && y>=0 && y<160 && b>=0 && b<160);}
+ void drawLine(int x,int y,int a,int b) {if(hingeX<0)hingeX=x;if(x>openRight)openRight=x;if(a>openRight)openRight=a;assert(x>=0 && x<128 && a>=0 && a<128 && y>=0 && y<160 && b>=0 && b<160);}
 } ucg;
 void setDisplayBackground() {} void setDisplayForeground(int,int,int) {}
 '''+notice+'''
@@ -105,7 +105,7 @@ int main() {
   assert(co2ClickCount==0 && heaterClickCount==0 && !co2DoseResponsePending);
   tick(5000); assert(co2DoorMode==2 && gasPulses==0); // No deferred toggles.
   drawVisibleNotice(); assert(strcmp(label,"PORTA ABERTA")==0);
-  assert(openLeft<bodyLeft && hingeX==bodyRight);
+  assert(openRight>bodyRight && hingeX==bodyRight);
   // Neither manual gas nor independent enable commands bypass the pause.
   assert(!manualCo2Pulse("test",5) && gasPulses==0);
   assert(!setCo2Enabled(true)); setHeaterEnabled(true);

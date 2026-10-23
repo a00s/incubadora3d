@@ -1694,3 +1694,8 @@ filamento/processo e 39 STL das demais peças preservados.
 - Prefixos reservados ficam pendentes; expiração ou ordem diferente devolve eventos aos comandos normais. 3/4 cliques amarelos mantêm pulsos de 5/10 ms ao fim da janela; 5 cliques mantêm pulso de 20 ms imediato no quinto. Comandos simultâneos antigos cancelam prefixo. Gás automático não dispara enquanto houver prefixo pendente.
 - Média de perda continua suspensa em porta aberta/recuperação; desligar CO₂ individualmente não representa porta aberta. Removidos snapshots e limiares de inferência. Flags binárias dos controles convertidas a bool para liberar flash sem mudar valores 0/1.
 - Regressões compilam funções reais de botões/setters/pulso manual: GPIOs desligados no terceiro toque, sem ação nos dois primeiros, fechamento/restauração, EEPROM/boot, sequência incompleta e timeout, comandos/pulsos bloqueados na pausa, todos os pulsos legados, acknowledgement de trava por vermelho, segurança preservada e aviso com abertura à esquerda. Regressões de admissão de dose e média acumulada passaram. Compilação Uno: 32244 bytes flash, 1021 bytes RAM. Nenhuma peça ou geometria alterada.
+
+## Orientação da folha no ícone de porta — 2026-10-23
+
+- Atendendo à correção visual do usuário, folha da porta passa para o lado direito. Desenho da câmara e das dobradiças preservado; conjunto centralizado horizontalmente no visor.
+- Regressão exige borda livre à direita do corpo e articulação ainda na borda direita da câmara. Comandos, pausa e recuperação não alterados; nenhuma peça ou geometria CAD alterada.

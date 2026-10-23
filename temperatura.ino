@@ -960,15 +960,15 @@ void drawDoorNotice() {
   ucg.setFont(incubadora_font_7x13);
   ucg.setPrintPos(22, 97);
   ucg.print(F("PORTA ABERTA"));
-  // Chamber body, right hinges, and the door's free edge opening to the left.
-  ucg.drawFrame(54, 106, 40, 45);
-  ucg.drawFrame(59, 111, 29, 35);
-  ucg.drawBox(94, 112, 3, 7);
-  ucg.drawBox(94, 136, 3, 7);
-  ucg.drawLine(93, 106, 28, 100);
-  ucg.drawLine(28, 100, 28, 144);
-  ucg.drawLine(28, 144, 93, 150);
-  ucg.drawBox(33, 119, 3, 10);
+  // Same chamber and right hinges; door leaf projects to the right.
+  ucg.drawFrame(30, 106, 40, 45);
+  ucg.drawFrame(35, 111, 29, 35);
+  ucg.drawBox(70, 112, 3, 7);
+  ucg.drawBox(70, 136, 3, 7);
+  ucg.drawLine(69, 106, 95, 100);
+  ucg.drawLine(95, 100, 95, 144);
+  ucg.drawLine(95, 144, 69, 150);
+  ucg.drawBox(90, 119, 3, 10);
 }
 
 void renderDisplay(float temperature, float internalTemperature, bool co2Valid) {

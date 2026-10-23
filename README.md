@@ -365,8 +365,8 @@ alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova
 suficiente nem estabilidade da concentração.
 A porta usa comando explícito: amarelo (CO₂) → vermelho (aquecimento) → amarelo,
 com toques separados dentro de três segundos. A primeira sequência marca PORTA ABERTA,
-desliga imediatamente aquecimento e CO₂ e mostra o ícone da incubadora com abertura
-à esquerda. Não existe mais detecção automática de abertura por queda de sensores.
+desliga imediatamente aquecimento e CO₂ e mostra o ícone da incubadora com a folha da porta
+à direita. Não existe mais detecção automática de abertura por queda de sensores.
 Os dois primeiros toques ficam reservados: uma sequência completa não executa os
 comandos individuais desses botões.
 
