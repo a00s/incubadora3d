@@ -234,11 +234,13 @@ bool co2RatePpmMinReady = false;
 // Contents displace gas: this is an estimate, not a calibrated leak flow meter.
 const uint16_t CO2_GAS_VOLUME_CM3 = 1850;
 bool lossFresh = false;
-int32_t lossCm3Hour = -1;
+int32_t lossCm3HourX10 = -1;
 bool lossStable = false;
 unsigned long lossStartAt = 0;
 uint16_t lossStartPpm = 0;
-uint16_t lossReference = 0;
+float lossDropTotal = 0, lossTimeTotal = 0;
+uint16_t lossSegmentDrop = 0;
+unsigned long lossSegmentMs = 0;
 uint8_t lossWindows = 0;
 
 
@@ -853,18 +855,16 @@ void drawDisplayFrame() {
   drawCo2Icon(11, 137, botao_co2_onoff, false, 0);
   drawHeaterIcon(53, 136, botao_aquecedor_onoff, false, 0);
   drawFanIcon(98, 137, ventilador_status, ventilador_status != 0, activityIconFrame % 12);
-  ucg.setFont(ucg_font_7x13_mr);
-  ucg.setFont(ucg_font_inr16_mn);
   displayCacheValid = false;
 }
 
-void formatTenths(int16_t value, char *text) {
+void formatTenths(int32_t value, char *text) {
   if (value == -32768) {
     strcpy_P(text, PSTR("--.- C"));
     return;
   }
   int32_t magnitude = value < 0 ? -(int32_t)value : value;
-  char whole[6];
+  char whole[12];
   ltoa(magnitude / 10, whole, 10);
   uint8_t index = 0;
   if (value < 0) text[index++] = '-';
@@ -893,45 +893,40 @@ void formatPpmPerMinute(int32_t value, bool valid, char *text) {
 }
 
 
+void finishCo2Loss() {
+  // Commit each observed interval once, before the next injection/rise.
+  if (lossFresh) {
+    lossDropTotal += lossSegmentDrop;
+    lossTimeTotal += lossSegmentMs;
+    if (lossWindows < 3) lossWindows++;
+  }
+  lossStartAt = 0;
+  lossStable = lossFresh = false;
+}
+
 void updateCo2Loss(bool valid) {
   unsigned long now = millis();
-  lossStable = lossFresh = false;
-  if (!valid || now < CO2_SENSOR_WARMUP_MS) {
-    lossStartAt = 0;
-    lossWindows = 0;
-    return;
-  }
-  // Start from observed stabilization/decline, rather than a fixed dose delay.
-  if (!co2RatePpmMinReady || co2RatePpmMin > 0) {
-    lossStartAt = 0;
+  if (!valid || now < CO2_SENSOR_WARMUP_MS ||
+      !co2RatePpmMinReady || co2RatePpmMin > 0) {
+    finishCo2Loss();
     return;
   }
   if (!lossStartAt || CO2i > lossStartPpm) {
+    finishCo2Loss();
     lossStartAt = now;
     lossStartPpm = CO2i;
   }
   unsigned long elapsed = now - lossStartAt;
   if (!elapsed) return;
-  int32_t drop = (int32_t)lossStartPpm - CO2i;
-  // Nominal gas volume * concentration drop / actual elapsed time.
-  lossCm3Hour = (drop * (CO2_GAS_VOLUME_CM3 * 36L / 10) + elapsed / 2) / elapsed;
+  lossSegmentDrop = lossStartPpm - CO2i;
+  lossSegmentMs = elapsed;
+  float drop = lossDropTotal + lossSegmentDrop;
+  float observedMs = lossTimeTotal + elapsed;
+  // Ratio of sums: longer observed intervals carry proportionally more weight.
+  lossCm3HourX10 = drop * (CO2_GAS_VOLUME_CM3 * 36.0f) / observedMs + 0.5f;
   lossFresh = true;
-  int32_t difference = lossCm3Hour - lossReference;
-  if (difference < 0) difference = -difference;
-  uint16_t tolerance = lossReference / 4;
-  if (tolerance < 2) tolerance = 2;
-  if (drop >= 20 && difference > tolerance) lossWindows = 0;
-  lossStable = lossWindows >= 3 && drop >= 20;
-}
-
-void finishCo2Loss() {
-  // Only completed pre-dose decline segments build confidence across cycles.
-  if (lossFresh && (int32_t)lossStartPpm - CO2i >= 20) {
-    if (!lossWindows) lossReference = lossCm3Hour;
-    if (lossWindows < 3) lossWindows++;
-  }
-  lossStartAt = 0;
-  lossStable = lossFresh = false;
+  // Evidence threshold, not a required duration of a measurement interval.
+  lossStable = lossWindows >= 3 && drop >= 100;
 }
 
 void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,
@@ -1007,18 +1002,21 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   }
 
   bool shownLossStable = lossStable;
-  bool lossHeld = lossCm3Hour >= 0 && !lossFresh;
-  if (!displayCacheValid || displayLossCm3Hour != lossCm3Hour ||
+  bool lossHeld = lossCm3HourX10 >= 0 && !lossFresh;
+  if (!displayCacheValid || displayLossCm3Hour != lossCm3HourX10 ||
       displayLossStable != shownLossStable || displayLossHeld != lossHeld) {
-    char nextLossText[8];
-    if (lossCm3Hour >= 0) ltoa(lossCm3Hour, nextLossText, 10);
+    char nextLossText[14];
+    if (lossCm3HourX10 >= 0) {
+      formatTenths(lossCm3HourX10, nextLossText);
+      nextLossText[strlen(nextLossText) - 2] = '\0';
+    }
     else strcpy_P(nextLossText, PSTR("---"));
     if (lossHeld) strcat_P(nextLossText, PSTR("*"));
     ucg.setFont(ucg_font_7x13_mr);
     drawTextChanges(nextLossText, 73, 120, 110, 12, 54,
                     shownLossStable ? 230 : 255,
                     shownLossStable ? 235 : 190, shownLossStable ? 240 : 45);
-    displayLossCm3Hour = lossCm3Hour;
+    displayLossCm3Hour = lossCm3HourX10;
     displayLossStable = shownLossStable;
     displayLossHeld = lossHeld;
   }
@@ -1080,7 +1078,7 @@ void printStatus(unsigned long now) {
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
   Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
-  Serial.print(F(",loss_cm3_h=")); Serial.print(lossCm3Hour);
+  Serial.print(F(",loss_x10=")); Serial.print(lossCm3HourX10);
   Serial.print(F(",loss_ok=")); Serial.print(displayLossStable == 1 ? 1 : 0);
   Serial.println();
 }

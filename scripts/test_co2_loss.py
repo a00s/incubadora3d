@@ -7,7 +7,7 @@ import tempfile
 
 source = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
 constants = source[source.index('const uint16_t CO2_GAS_VOLUME_CM3'):source.index('// Variáveis globais para aprendizado adaptativo')]
-function = source[source.index('void updateCo2Loss(bool valid)'):source.index('\nvoid drawTextChanges')]
+function = source[source.index('void finishCo2Loss()'):source.index('\nvoid drawTextChanges')]
 colors = source[source.index("void setDisplayBackground()"):source.index("void drawCo2Icon(")]
 alert = re.search(r"bool alert = (.*);", source).group(1)
 harness = r'''
@@ -59,68 +59,62 @@ int main() {
   setDisplayBackground(); assert(ucg.r==8 && ucg.g==18 && ucg.b==30);
 
   measure(100000);
-  assert(lossCm3Hour == -1 && !lossFresh);
+  assert(lossCm3HourX10 == -1 && !lossFresh);
   co2RatePpmMin = 100; measure(120000);
-  assert(lossStartAt == 0 && lossCm3Hour == -1);
-  co2RatePpmMin = -100; co2TrendReady = false; measure(130000);
-  assert(lossStartAt == 130000);
-  finishCo2Loss();
-  co2TrendReady = true;
-  // Three completed 60-second declines build evidence across doses.
-  // The next dose comes only 80 s after the previous one: no long wait needed.
+  assert(lossStartAt == 0 && lossCm3HourX10 == -1);
+  co2RatePpmMin = -100;
+  // Three cycles of 100 ppm loss in 60 s: 11.1 cm3/h.
   for (int i=0; i<3; ++i) {
     unsigned long start = 140000UL + i*80000UL;
-    CO2i = 50000; co2LastPulseAt = start - 20000; measure(start);
-    assert(lossStartAt == start);
+    CO2i = 50000; measure(start);
     CO2i = 49990; measure(start + 6000);
-    assert(lossFresh && lossCm3Hour == 11); // No fixed minimum duration.
-    CO2i = 49980; measure(start + 12000);
-    assert(lossFresh && !lossStable);
+    assert(lossCm3HourX10 == 111 && lossFresh);
     CO2i = 49900; measure(start + 60000);
-    assert(lossCm3Hour == 11 && lossFresh && !lossStable);
+    assert(lossCm3HourX10 == 111);
+    // Re-reading the same prefix must not count it twice.
+    measure(start + 60000);
+    assert(lossTimeTotal == i*60000UL);
     finishCo2Loss();
-    assert(lossWindows == i+1 && !lossFresh && lossStartAt == 0);
-    // Injected rise is never included in the next decline.
-    co2RatePpmMin = 1000; CO2i = 51000; measure(start + 62000);
-    assert(lossCm3Hour == 11 && !lossFresh && lossWindows == i+1);
+    assert(lossDropTotal == (i+1)*100 && lossTimeTotal == (i+1)*60000UL);
+    co2RatePpmMin = 1000; CO2i = 52000; measure(start + 62000);
+    assert(lossCm3HourX10 == 111 && !lossFresh);
     co2RatePpmMin = -100;
   }
-  CO2i = 50000; measure(400000);
-  CO2i = 49950; measure(430000);
-  assert(lossCm3Hour == 11 && lossStable && lossFresh);
-  // Divergent new decline removes confidence rather than reusing old certainty.
-  CO2i = 49700; measure(460000);
-  assert(lossCm3Hour == 33 && !lossStable && lossWindows == 0);
-  finishCo2Loss(); assert(lossWindows == 1 && !lossFresh);
-  // A short interval with enough observed drop counts; duration is not the gate.
-  CO2i = 50000; measure(480000);
-  CO2i = 49940; measure(492000); finishCo2Loss();
-  assert(lossWindows == 2 && lossStartAt == 0);
-  // A tiny drop remains provisional regardless of duration.
-  CO2i = 50000; measure(500000);
-  CO2i = 49999; measure(560000); finishCo2Loss();
-  assert(lossWindows == 2);
-  // Even a two-second observed decline is measured with its actual duration.
-  CO2i = 50000; measure(570000);
-  CO2i = 49990; measure(572000);
-  assert(lossCm3Hour == 33 && lossFresh);
+  // A new flat sample must not overwrite the established mean with zero.
+  CO2i = 50000; measure(400000); measure(402000);
+  assert(lossCm3HourX10 == 110 && lossStable);
+  // Different duration: 100 ppm in 120 s carries twice the weight of 60 s.
+  CO2i = 49900; measure(520000);
+  assert(lossCm3HourX10 == 89); // 400 ppm / 300 s -> 8.88 cm3/h.
   finishCo2Loss();
-  // Invalid readings, rising concentration and unavailable trend retain history.
-  updateCo2Loss(false); assert(lossCm3Hour >= 0 && !lossFresh && lossWindows == 0);
+  assert(lossDropTotal == 400 && lossTimeTotal == 300000);
+  // A 1 ppm decline over 2 s is retained too; no fixed minimum or signal filter.
+  CO2i = 50000; measure(540000); CO2i = 49999; measure(542000);
+  finishCo2Loss();
+  assert(lossDropTotal == 401 && lossTimeTotal == 302000);
+  int32_t held = lossCm3HourX10;
+  updateCo2Loss(false);
+  assert(lossCm3HourX10 == held && !lossFresh);
   co2RatePpmMin = 1000; measure(1200000);
-  assert(lossCm3Hour >= 0 && !lossFresh);
+  assert(lossCm3HourX10 == held && lossDropTotal == 401);
   co2RatePpmMinReady = false; measure(1300000);
-  assert(lossCm3Hour >= 0 && lossStartAt == 0);
-  co2RatePpmMinReady = true; co2RatePpmMin = 0;
-  CO2i = 50000; measure(1400000); measure(1430000);
-  assert(lossCm3Hour == 0 && lossFresh);
-  // Actual elapsed duration, not a fixed sampling interval, sets the rate.
-  finishCo2Loss(); CO2i = 50000; co2RatePpmMin = -100; measure(1500000);
-  CO2i = 49900; measure(1545000);
-  assert(lossCm3Hour == 15);
-  // An increase beyond the segment origin restarts the decline anchor.
-  CO2i = 50100; measure(1547000);
-  assert(!lossFresh && lossStartPpm == 50100 && lossStartAt == 1547000);
+  assert(lossCm3HourX10 == held && lossStartAt == 0);
+  // Many later consistent cycles damp a short new fluctuation.
+  co2RatePpmMinReady = true; co2RatePpmMin = -100;
+  for (int i=0; i<100; ++i) {
+    unsigned long start = 1400000UL + i*80000UL;
+    CO2i = 50000; measure(start); CO2i = 49900; measure(start+60000);
+    finishCo2Loss();
+  }
+  held = lossCm3HourX10;
+  CO2i = 50000; measure(10000000); measure(10002000);
+  assert(lossCm3HourX10 >= held-1 && lossCm3HourX10 > 0);
+  // Sub-unit loss remains visible: 1 ppm per minute = 0.111 cm3/h.
+  finishCo2Loss(); lossDropTotal = lossTimeTotal = 0; lossWindows = 0;
+  CO2i = 50000; measure(11000000); CO2i = 49999; measure(11060000);
+  assert(lossCm3HourX10 == 1); // Display 0.1, not 0.
+  co2RatePpmMin = 100; measure(11062000);
+  assert(lossDropTotal == 1 && lossTimeTotal == 60000 && !lossFresh);
 
 }
 
