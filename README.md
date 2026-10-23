@@ -260,6 +260,10 @@ As cores de fundo indicam falha, espera ou operação normal. Durante o aquecime
 sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o desenho grande
 de DNA foi retirado para reservar espaço de firmware às animações e ao controle da incubadora.
 
+O firmware está temporariamente com alvo de **39 °C para diagnóstico**, sem desvio
+aplicado à leitura do sensor. Corte de controle em 39,1 °C e emergência em 40 °C;
+as faixas de cor acompanham esse alvo. Restaurar 37 °C ao encerrar o teste.
+
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
 ciclo, com `co2_range_lock` como última coluna; `EVENT` registra transições e falhas, e

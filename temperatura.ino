@@ -103,19 +103,20 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
-#define HEATER_SETPOINT_C 37.0
+// Temporary 39 C diagnostic target; sensor readings remain uncorrected.
+#define HEATER_SETPOINT_C 39.0
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_MAX_ON_MS 12000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
 #define HEATER_PID_KP_MS_PER_C 18000.0f
 #define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
-#define HEATER_HARD_CUTOFF 37.1
-#define HEATER_EMERGENCY_CUTOFF 38.0
-#define TEMPERATURE_GOOD_MIN 36.9
-#define TEMPERATURE_GOOD_MAX 37.1
-#define TEMPERATURE_DISPLAY_NEAR_MIN 36.5
-#define TEMPERATURE_DISPLAY_NEAR_MAX 37.5
+#define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1)
+#define HEATER_EMERGENCY_CUTOFF (HEATER_SETPOINT_C + 1.0)
+#define TEMPERATURE_GOOD_MIN (HEATER_SETPOINT_C - 0.1)
+#define TEMPERATURE_GOOD_MAX (HEATER_SETPOINT_C + 0.1)
+#define TEMPERATURE_DISPLAY_NEAR_MIN (HEATER_SETPOINT_C - 0.5)
+#define TEMPERATURE_DISPLAY_NEAR_MAX (HEATER_SETPOINT_C + 0.5)
 #define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
 #define MAX_INTERNAL_TEMP 31 // Liga fan acima de 31 C; desliga abaixo de 30 C
 
@@ -1342,7 +1343,7 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   // Allow controlled heating through the narrow
-  // deadband so a quantized 37.1 reading does not force a long coast downward.
+  // deadband so a quantized cutoff reading does not force a long coast downward.
   bool safeToHeat = temperature <= HEATER_HARD_CUTOFF &&
                     temperature < HEATER_HARD_CUTOFF;
   if (heaterOn && (!safeToHeat || now - heaterPulseStartedAt >= heaterCurrentPulseMs)) {
