@@ -261,7 +261,7 @@ sensor, três pontos reutilizam as bolhas de CO₂ como animação de espera; o 
 de DNA foi retirado para reservar espaço de firmware às animações e ao controle da incubadora.
 
 O firmware está com alvo de **37 °C**, sem desvio aplicado à leitura do sensor.
-Corte de controle em 37,1 °C e emergência em 38 °C; as faixas de cor acompanham esse alvo.
+Corte de controle em 37,1 °C e emergência em 39 °C; as faixas de cor acompanham o alvo de 37 °C.
 
 O firmware está em [temperatura.ino](temperatura.ino). Abra a porta serial a **9600 baud**;
 cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV por
