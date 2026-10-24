@@ -103,8 +103,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
-// Temporary 39 C diagnostic target; sensor readings remain uncorrected.
-#define HEATER_SETPOINT_C 39.0
+// Sensor readings remain uncorrected.
+#define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_MAX_ON_MS 12000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
