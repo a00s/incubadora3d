@@ -195,9 +195,13 @@ Use somente uma sonda no D4 nesta configuração.
 Calibração de um ponto em 2026-10-26: referência sobre a placa das lâminas
 38,5 °C e leitura bruta da sonda 37,125 °C; correção de +1,375 °C definida em
 `CHAMBER_TEMPERATURE_OFFSET_C`. Refinamento no mesmo dia: referência 36,2 °C
-e visor 36,0 °C; correção total agora +1,575 °C. Aplicada após validar a leitura, tanto ao visor
+e visor 36,0 °C: +0,2 °C. Comparação posterior de referência 37,9 °C versus
+visor 37,0 °C: mais +0,9 °C, total atual +2,475 °C, conforme solicitado pelo usuário.
+Aplicada após validar a leitura, tanto ao visor
 quanto ao PID e às proteções térmicas. Não altera a sonda interna da eletrônica.
-O ajuste inclui a diferença entre as posições das sondas e não valida toda a faixa térmica.
+A sonda do Arduino está mais alta e distante do aquecimento; a referência fica junto
+às lâminas. O ajuste compensa essa disposição e não valida toda a faixa térmica
+nem garante a mesma diferença durante aquecimento e equilíbrio.
 
 ### Preparar, compilar e gravar
 

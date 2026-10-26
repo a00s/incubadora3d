@@ -21,8 +21,8 @@
 #define EEPROM_SAFETY_FAULT 30
 
 #define CHAMBER_TEMPERATURE_PIN 4
-// Slide-plate reference: initial +1.375 C, then +0.2 C near 36 C.
-#define CHAMBER_TEMPERATURE_OFFSET_C 1.575f
+// Slide-plate reference: +1.375 C, +0.2 C, then +0.9 C (37.0 vs 37.9 C).
+#define CHAMBER_TEMPERATURE_OFFSET_C 2.475f
 #define DHT_TEMPERATURA_INT_PIN 2
 #define DHTTYPE DHT22
 

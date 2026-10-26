@@ -5,7 +5,7 @@ import re
 import subprocess
 import tempfile
 s = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
-defines = '\n'.join(line for line in s.splitlines() if line.startswith('#define HEATER') or line.startswith('#define EEPROM_SAFETY_FAULT'))
+defines = '\n'.join(line for line in s.splitlines() if line.startswith('#define HEATER') or line.startswith('#define EEPROM_SAFETY_FAULT') or line.startswith('#define CHAMBER_TEMPERATURE_OFFSET_C'))
 globals_ = s[s.index('unsigned long heaterPidLastUpdateAt'):s.index('bool heaterTrendReady')]+ 'bool heaterTrendReady = false;'
 fn = s[s.index('void controlHeater(float'):s.index('void finishCo2ClickSequence()')]
 harness = r'''
@@ -27,7 +27,7 @@ void setHeaterEnabled(bool b) {botao_aquecedor_onoff=b;pin=HIGH;}
 void setCo2Enabled(bool b) {botao_co2_onoff=b;}
 '''+defines+'\n'+globals_+'\n'+fn+r'''
 int main() {
-  assert(std::abs((36.0f-1.375f+1.575f)-36.2f)<0.0001f);
+  assert(std::abs((37.0f-1.575f+CHAMBER_TEMPERATURE_OFFSET_C)-37.9f)<0.0001f);
   controlHeater(36.2f,4000);
   assert(pin==LOW && heaterPidDemandMs>12000 && heaterPidDemandMs<=30000);
   heaterPidIntegralMs=12000;

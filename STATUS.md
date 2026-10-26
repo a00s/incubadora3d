@@ -1740,3 +1740,9 @@ filamento/processo e 39 STL das demais peças preservados.
 - Teste novo compila função real e verifica demanda maior longe da meta, redução perto da meta, pausa do relé, NaN e emergência. Regressões de porta/display/CO₂/perda passaram. Compilação 32128 bytes Flash, 1012 RAM; upload verificado.
 - Telemetria após gravação: leitura entre 36,33 e 36,45 °C, aquecimento habilitado e pulsos ativos; CO₂ segue desabilitado. Esta janela curta não confirma estabilização em 37 °C nem ausência de ultrapassagem; verificar com referência após equilíbrio.
 - Nenhuma geometria, STL/STEP/3MF ou visualizador alterado nesta mudança de firmware.
+
+## Compensação para posição das lâminas — 2026-10-26
+
+- Usuário solicitou explicitamente acrescentar a diferença referência 37,9 °C versus Arduino 37,0 °C, mantendo aquecimento habilitado. Offset passou de +1,575 para +2,475 °C (+0,9 °C). Usuário confirmou que a sonda Arduino fica mais alta e longe do aquecimento e a referência junto às lâminas; trata-se de compensação dessa disposição, sem comprovação de diferença constante durante transientes.
+- PID, ganhos, limites e proteções preservados. Nenhum comando de desabilitação enviado. Upload com verificação concluído (32128 bytes Flash, 1012 RAM). Telemetria corrigida 37,97 / 37,91 / 37,85 °C, heater_enabled=1 e heater_on=0: controle habilitado aguardando temperatura cair até a meta de 37 °C. CO₂ permanece desabilitado. Monitor encerrado após leitura.
+- Teste de calibração usa agora a constante real do firmware. Testes térmicos e regressões de display/porta/CO₂/perda passaram. Nenhuma peça, geometria, STL/STEP/3MF ou visualizador modificado.
