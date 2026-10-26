@@ -192,6 +192,12 @@ na serial), pois a sonda não mede umidade. A serial informa a
 temperatura com duas casas; isso não representa garantia de precisão de 0,01 °C.
 Use somente uma sonda no D4 nesta configuração.
 
+Calibração de um ponto em 2026-10-26: referência sobre a placa das lâminas
+38,5 °C e leitura bruta da sonda 37,125 °C; correção de +1,375 °C definida em
+`CHAMBER_TEMPERATURE_OFFSET_C`. Aplicada após validar a leitura, tanto ao visor
+quanto ao PID e às proteções térmicas. Não altera a sonda interna da eletrônica.
+O ajuste inclui a diferença entre as posições das sondas e não valida toda a faixa térmica.
+
 ### Preparar, compilar e gravar
 
 A placa usada é Arduino Uno R3 (`arduino:avr:uno`). O código fonte permanece em

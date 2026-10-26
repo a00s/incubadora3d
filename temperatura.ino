@@ -21,6 +21,8 @@
 #define EEPROM_SAFETY_FAULT 30
 
 #define CHAMBER_TEMPERATURE_PIN 4
+// Single-point reference at slide plate: 38.5 C versus DS18B20 raw 37.125 C.
+#define CHAMBER_TEMPERATURE_OFFSET_C 1.375f
 #define DHT_TEMPERATURA_INT_PIN 2
 #define DHTTYPE DHT22
 
@@ -75,7 +77,7 @@ void serviceChamberTemperature() {
     // 85 C is the power-on value; never use it as a control measurement.
     if (OneWire::crc8(scratch, 8) == scratch[8] && scratch[4] == 0x7F &&
         raw >= -880 && raw <= 2000 && raw != 1360) {
-      chamberTemperatureC = raw / 16.0f;
+      chamberTemperatureC = raw / 16.0f + CHAMBER_TEMPERATURE_OFFSET_C;
     }
   }
   startChamberConversion();
@@ -103,7 +105,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
-// Sensor readings remain uncorrected.
+// Chamber temperature is corrected at acquisition for display and control.
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_MAX_ON_MS 12000UL

@@ -1725,3 +1725,10 @@ filamento/processo e 39 STL das demais peças preservados.
 - Cliques amarelos voltam diretamente ao tratador original: 3/4/5 pulsos de 5/10/20 ms preservados, quinto imediato. Três cliques curtos vermelhos para reconhecimento da trava preservados. Gesto curto antigo nunca alterna porta.
 - Dose automática e média de perda pausam durante o vermelho pendente, evitando injeção e coleta enquanto o usuário arma abertura. Abertura/recuperação seguem excluídas da média de cm³/h.
 - Regressões cobrem limiar exato, curto antes do limiar, soltura sem poll no limiar, ausência de repetição em 7 s segurado, ausência de curto após longo, GPIO/EEPROM, reativação, segurança, cliques antigos e cancelamento simultâneo. Regressões de recuperação, média e isolamento do desenho passaram. Compilação Uno: 32000 bytes flash, 1011 bytes RAM. Nenhuma peça ou geometria alterada.
+
+## Calibração térmica na placa das lâminas — 2026-10-26
+
+- Referência informada pelo usuário: 38,5 °C sobre a placa das lâminas. DS18B20 principal apresentou 37,125 °C (serial 37,13); aplicado offset constante +1,375 °C após validação de CRC/configuração/faixa/valor de inicialização. Visor, telemetria, PID e proteções usam a mesma temperatura corrigida; DHT interno preservado.
+- Ajuste de um ponto inclui gradiente entre posições; não demonstra precisão em toda a faixa. Não força leitura fixa: variações reais continuam sendo medidas.
+- Compilação Uno: 32068 bytes Flash e 1012 bytes RAM. Upload com verificação concluído. Telemetria após gravação: três amostras consecutivas em 38,50 °C, heater_on=0; CO₂ permaneceu desabilitado. Monitor fechado após conferência; abrir serial reinicia a placa.
+- Regressões de display, porta, controle de CO₂ e perda passaram. Nenhuma peça/geometria ou visualizador alterado; STL/STEP/3MF não se aplicam. Consulta ao servidor local 8081 sem resposta (HTTP 000).
