@@ -194,7 +194,8 @@ Use somente uma sonda no D4 nesta configuração.
 
 Calibração de um ponto em 2026-10-26: referência sobre a placa das lâminas
 38,5 °C e leitura bruta da sonda 37,125 °C; correção de +1,375 °C definida em
-`CHAMBER_TEMPERATURE_OFFSET_C`. Aplicada após validar a leitura, tanto ao visor
+`CHAMBER_TEMPERATURE_OFFSET_C`. Refinamento no mesmo dia: referência 36,2 °C
+e visor 36,0 °C; correção total agora +1,575 °C. Aplicada após validar a leitura, tanto ao visor
 quanto ao PID e às proteções térmicas. Não altera a sonda interna da eletrônica.
 O ajuste inclui a diferença entre as posições das sondas e não valida toda a faixa térmica.
 
@@ -297,14 +298,15 @@ e temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e v
 ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
-de temperatura é 36,9–37,1 °C. O aquecedor liga ao cair para 36,9 °C e desliga ao chegar
-a 37,0 °C, com corte de segurança em 37,1 °C.
+de temperatura é 36,9–37,1 °C. O PID busca 37,0 °C com pulsos de até 30 s
+quando a leitura está em 36,5 °C ou abaixo, e até 12 s perto da meta. Mantém
+pausa mínima de 3 s, integral limitada a 12 s e corte imediato em 37,1 °C.
 Se a leitura de temperatura falhar (`NaN`), o firmware desliga temporariamente a saída do
 aquecedor e preserva os estados habilitados do aquecedor e do CO₂. Quando a leitura volta a
 ser válida, o controle do aquecedor retoma sozinho. Se a falha persistir por 60 s, o firmware
 registra `EVT,SAFE_OFF` e desliga ambos os controles. A tela mostra o motivo do corte no
 cabeçalho em vermelho; os ícones inferiores mostram quais controles ficaram desligados. Uma
-temperatura igual ou superior a 38,0 °C aciona `EVT,SAFE_OFF` imediatamente e desliga ambos.
+temperatura igual ou superior a 39,0 °C aciona `EVT,SAFE_OFF` imediatamente e desliga ambos.
 Durante a falha curta, o cabeçalho mostra `TEMP LOST` e o aquecedor mostra `WAIT`; no corte
 persistente, o cabeçalho mostra `SENSOR FAIL`; no corte por calor excessivo, mostra `TEMP TOO HOT`.
 O motivo do corte fica salvo até o usuário reativar um controle.

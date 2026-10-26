@@ -1732,3 +1732,11 @@ filamento/processo e 39 STL das demais peças preservados.
 - Ajuste de um ponto inclui gradiente entre posições; não demonstra precisão em toda a faixa. Não força leitura fixa: variações reais continuam sendo medidas.
 - Compilação Uno: 32068 bytes Flash e 1012 bytes RAM. Upload com verificação concluído. Telemetria após gravação: três amostras consecutivas em 38,50 °C, heater_on=0; CO₂ permaneceu desabilitado. Monitor fechado após conferência; abrir serial reinicia a placa.
 - Regressões de display, porta, controle de CO₂ e perda passaram. Nenhuma peça/geometria ou visualizador alterado; STL/STEP/3MF não se aplicam. Consulta ao servidor local 8081 sem resposta (HTTP 000).
+
+## Refinamento térmico e recuperação do aquecimento — 2026-10-26
+
+- Usuário informou referência 36,2 °C versus visor 36,0 °C. Offset total refinado de +1,375 para +1,575 °C; mesma correção para leitura, visor, PID e proteções.
+- Telemetria anterior confirmou demanda saturada em 12000 ms perto de 36 °C. Limite antigo de 12 s ligado / mínimo 3 s desligado restringia potência média a 80%. Agora o teto é 30 s quando erro >=0,5 °C e retorna a 12 s perto da meta. PID continua calculando duração: não força pulsos de 30 s. Integral permanece limitada a 12 s, pausa mínima a 3 s; cortes térmicos e falha de sonda preservados. Ganhos não alterados.
+- Teste novo compila função real e verifica demanda maior longe da meta, redução perto da meta, pausa do relé, NaN e emergência. Regressões de porta/display/CO₂/perda passaram. Compilação 32128 bytes Flash, 1012 RAM; upload verificado.
+- Telemetria após gravação: leitura entre 36,33 e 36,45 °C, aquecimento habilitado e pulsos ativos; CO₂ segue desabilitado. Esta janela curta não confirma estabilização em 37 °C nem ausência de ultrapassagem; verificar com referência após equilíbrio.
+- Nenhuma geometria, STL/STEP/3MF ou visualizador alterado nesta mudança de firmware.

@@ -21,8 +21,8 @@
 #define EEPROM_SAFETY_FAULT 30
 
 #define CHAMBER_TEMPERATURE_PIN 4
-// Single-point reference at slide plate: 38.5 C versus DS18B20 raw 37.125 C.
-#define CHAMBER_TEMPERATURE_OFFSET_C 1.375f
+// Slide-plate reference: initial +1.375 C, then +0.2 C near 36 C.
+#define CHAMBER_TEMPERATURE_OFFSET_C 1.575f
 #define DHT_TEMPERATURA_INT_PIN 2
 #define DHTTYPE DHT22
 
@@ -109,6 +109,8 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_MAX_ON_MS 12000UL
+#define HEATER_RECOVERY_MAX_ON_MS 30000UL
+#define HEATER_RECOVERY_ERROR_C 0.5f
 #define HEATER_TREND_WINDOW_MS 30000UL
 #define HEATER_PID_KP_MS_PER_C 18000.0f
 #define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
@@ -1336,7 +1338,10 @@ void controlHeater(float temperature, unsigned long now) {
     float demandMs = HEATER_PID_KP_MS_PER_C * errorC +
                      heaterPidIntegralMs + derivativeMs;
     if (demandMs < 0.0f) demandMs = 0.0f;
-    if (demandMs > HEATER_PID_MAX_ON_MS) demandMs = HEATER_PID_MAX_ON_MS;
+    // Longer pulses only well below target; keep integral and near-target cap unchanged.
+    unsigned long maxPulseMs = errorC >= HEATER_RECOVERY_ERROR_C
+      ? HEATER_RECOVERY_MAX_ON_MS : HEATER_PID_MAX_ON_MS;
+    if (demandMs > maxPulseMs) demandMs = maxPulseMs;
     heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);
   }
   heaterPidLastUpdateAt = now;
