@@ -2,6 +2,12 @@
 
 ## Trabalho ativo — controle térmico, 2026-10-27
 
+Às 14:56, validação aguardando ação física do usuário: o teste final de
+porta solicitado ainda não gerou `EVENT,door` no log da revisão atual.
+Firmware, testes e arquivo de telemetria prontos; não considerar objetivo concluído.
+Coletores confirmados vivos às 14:56 (serial e câmera, CPU 0,0%). A coleta continua;
+retomar verificação da recuperação quando o usuário confirmar abertura/fechamento.
+
 Versão atual gravada ~14:19: PI/D 9.000/1.000/18.000, manutenção inicial
 50%, aprendizado de perdas só com |taxa| <0,05 °C/min e tendência pronta.
 Preserva integral na pausa de porta; sem EEPROM. Ainda não declarar estabilidade.
