@@ -81,13 +81,17 @@ int8_t displayHealthState=DISPLAY_WAIT;
 int main() {
  renderDisplay(37,30,true);
  assert(ucg.has("ppm/min") && ucg.has("cm3/h"));
+ ucg.reset();renderDisplay(37.01,30,true);assert(ucg.has("37.01 C"));
+ ucg.reset();renderDisplay(37.08,30,true);assert(ucg.has("37.08 C"));
+ ucg.reset();renderDisplay(-37.08,30,true);assert(ucg.has("-37.08 C"));
+ ucg.reset();renderDisplay(NAN,30,false);assert(ucg.has("--.-- C"));
  co2DoorMode=2;CO2i=44000;
  ucg.reset();renderDisplay(36,30,true);ucg.assertOpen();assert(ucg.has("PORTA ABERTA"));
- assert(ucg.has("44000") && ucg.has("36.0 C"));
+ assert(ucg.has("44000") && ucg.has("36.00 C"));
  // Repeated live changes must never paint rate/loss text, even transiently.
  CO2i=43000;co2RatePpmMin=-9000;lossCm3HourX10=990;
  ucg.reset();renderDisplay(36.1,30.1,true);ucg.assertOpen();
- assert(ucg.has("43000") && ucg.has("36.1 C"));
+ assert(ucg.has("43000") && ucg.has("36.10 C"));
  // Alert-color transitions and direct frame reconstruction also stay isolated.
  CO2i=48000;ucg.reset();renderDisplay(36.8,30,true);ucg.assertOpen();
  ucg.reset();drawDisplayFrame();ucg.assertOpen();assert(ucg.has("PORTA ABERTA"));

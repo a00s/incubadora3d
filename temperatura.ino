@@ -166,7 +166,7 @@ int8_t displayTempQuality = -1;
 int8_t displayCo2RangeLock = -1;
 int8_t displaySafetyAlert = -1;
 uint8_t safetyFault = 0;
-int16_t displayTempTenths = 32767;
+int16_t displayTempHundredths = 32767;
 int16_t displayInternalTempTenths = 32767;
 int32_t displayLossCm3Hour = -2;
 int8_t displayLossStable = -1;
@@ -890,22 +890,22 @@ void drawDisplayFrame() {
   displayCacheValid = false;
 }
 
-void formatTenths(int32_t value, char *text) {
+void formatTenths(int32_t value, char *text, uint8_t decimals) {
   if (value == -32768) {
-    strcpy_P(text, PSTR("--.- C"));
+    strcpy_P(text, decimals == 2 ? PSTR("--.-- C") : PSTR("--.- C"));
     return;
   }
-  int32_t magnitude = value < 0 ? -(int32_t)value : value;
-  char whole[12];
-  ltoa(magnitude / 10, whole, 10);
-  uint8_t index = 0;
-  if (value < 0) text[index++] = '-';
-  for (uint8_t i = 0; whole[i] != '\0'; i++) text[index++] = whole[i];
-  text[index++] = '.';
-  text[index++] = '0' + magnitude % 10;
-  text[index++] = ' ';
-  text[index++] = 'C';
-  text[index] = '\0';
+  uint32_t magnitude = value < 0 ? -value : value;
+  char *end = text;
+  if (value < 0) *end++ = '-';
+  ltoa(magnitude / (decimals == 2 ? 100 : 10), end, 10);
+  end += strlen(end);
+  *end++ = '.';
+  if (decimals == 2) *end++ = '0' + magnitude % 100 / 10;
+  *end++ = '0' + magnitude % 10;
+  *end++ = ' ';
+  *end++ = 'C';
+  *end = '\0';
 }
 
 void formatPpmPerMinute(int32_t value, bool valid, char *text) {
@@ -1005,7 +1005,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     if (lockChanged) displayCo2RateReady = -1;
     drawHealthIndicator();
   }
-  int16_t tempTenths = isnan(temperature) ? -32768 : (int16_t)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
+  int16_t tempHundredths = isnan(temperature) ? -32768 : (int16_t)(temperature * 100.0f + (temperature >= 0 ? 0.5f : -0.5f));
   int16_t internalTempTenths = isnan(internalTemperature) ? -32768 : (int16_t)(internalTemperature * 10.0f + (internalTemperature >= 0 ? 0.5f : -0.5f));
   int8_t co2Quality = !co2Valid ? 0 : (co2AtTarget ? 1 :
     (CO2i >= CO2_TARGET_PPM - CO2_DISPLAY_NEAR_TOLERANCE_PPM &&
@@ -1037,9 +1037,9 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   }
 
   ucg.setFont(incubadora_font_7x13);
-  if (!displayCacheValid || displayTempTenths != tempTenths || displayTempQuality != tempQuality) {
-    char nextTempText[8];
-    formatTenths(tempTenths, nextTempText);
+  if (!displayCacheValid || displayTempHundredths != tempHundredths || displayTempQuality != tempQuality) {
+    char nextTempText[10];
+    formatTenths(tempHundredths, nextTempText, 2);
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
     uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
@@ -1048,12 +1048,12 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     // Bold overprint keeps the compact font and its fixed field width on the Uno.
     ucg.setPrintPos(6, 74);
     ucg.print(nextTempText);
-    displayTempTenths = tempTenths;
+    displayTempHundredths = tempHundredths;
     displayTempQuality = tempQuality;
   }
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
-    formatTenths(internalTempTenths, nextInternalTempText);
+    formatTenths(internalTempTenths, nextInternalTempText, 1);
     drawTextChanges(nextInternalTempText, 66, 74, 64, 12, 59,
                     230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
@@ -1085,7 +1085,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
       displayLossStable != shownLossStable || displayLossHeld != lossHeld) {
     char nextLossText[14];
     if (lossCm3HourX10 >= 0) {
-      formatTenths(lossCm3HourX10, nextLossText);
+      formatTenths(lossCm3HourX10, nextLossText, 1);
       nextLossText[strlen(nextLossText) - 2] = '\0';
     }
     else strcpy_P(nextLossText, PSTR("---"));

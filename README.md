@@ -368,6 +368,9 @@ revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um puls
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
 necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
 lados da meta, com corte independente em 37,1 °C.
+O visor mostra a temperatura da câmara com duas casas decimais (por exemplo,
+37,08 °C); a temperatura da eletrônica mantém uma casa. Os centésimos ajudam
+a acompanhar os passos da sonda, cuja resolução é 0,0625 °C.
 Uma previsão adicional corta a saída se temperatura + taxa positiva × 1,5 min
 atingir 37,1 °C. A meta do PID permanece 37 °C. Esse corte retoma automaticamente; não desabilita o controle.
 Sem tendência medida, usa manutenção e evita impulso proporcional inicial.

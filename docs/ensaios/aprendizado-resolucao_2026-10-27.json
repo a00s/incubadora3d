@@ -1,0 +1,35 @@
+{
+  "status": "parcial_interrompido_para_atualizar_visor",
+  "source_commit": "e87d5d6",
+  "firmware_sha256": "672355ae2d177e515a86cddb6deaa48dd59c098298e2b1dc411d1ad27fe75c1f",
+  "samples": 201,
+  "forecast_min": 1.5,
+  "forecast_threshold_c": 37.1,
+  "learning_rate_limit_c_min": 0.15,
+  "supervisor": {
+    "started_at": "2026-10-27T16:50:28.693554+01:00",
+    "status": "aborted",
+    "abort_c": 37.2,
+    "peak_c": 37.14,
+    "samples_above_37_1": 2,
+    "heat_on_command_at": "2026-10-27T16:50:51.338579+01:00",
+    "initial_temp_c": 37.01,
+    "peak_at": "2026-10-27T16:55:32.433944+01:00",
+    "peak_arduino_ms": 303170,
+    "last_at": "2026-10-27T16:58:16.542520+01:00",
+    "last_temp_c": 36.95,
+    "last_arduino_ms": 465996,
+    "heater_enabled": 1,
+    "heater_on": 0,
+    "pid_demand_ms": 10100,
+    "heat_rate_c_min": 0.04,
+    "reason": "KeyboardInterrupt: ",
+    "heat_off_command_at": "2026-10-27T16:58:16.611265+01:00",
+    "off_confirmed": true,
+    "ended_at": "2026-10-27T16:58:17.513683+01:00"
+  },
+  "temperature_c": {
+    "min": 36.7,
+    "max": 37.14
+  }
+}

@@ -260,3 +260,23 @@ Compilação e gravação com verificação passaram. Nova coleta:
 `coleta-aprendizado-resolucao-20261027.log`, fotos em `aprendizado-resolucao-camera/`.
 Ensaio físico ainda pendente. Manter esta revisão por vários ciclos antes
 de concluir convergência ou necessidade de outro ajuste.
+
+### Visor em centésimos e recuperação automática, 16:58
+
+A pedido do usuário, temperatura da câmara no visor passou a duas casas
+decimais, com cache também em centésimos. Campo comporta 37.08 C e
+-37.08 C, e leitura inválida mostra --.-- C. Temperatura interna e perda
+de CO₂ mantêm uma casa. Teste verifica atualização 37.01 → 37.08,
+negativos, NaN e isolamento do modo porta. Controle térmico preservado.
+
+Etapa anterior arquivada como parcial em
+`docs/ensaios/aprendizado-resolucao_2026-10-27.*`: máximo37,14 °C,
+últimos três minutos ~36,97 °C de média antes da mudança de visor.
+Não equivale a validação prolongada. Gravação verificada concluída.
+
+Ensaio novo mantém CO₂ ativo e deixa aquecimento desligado 180 s antes de
+retomar automaticamente, para medir recuperação após resfriamento sem abrir
+a porta. Esse ensaio não substitui teste físico de abertura. Log
+`coleta-recuperacao-centesimos-20261027.log`, fotos `recuperacao-centesimos-camera/`,
+supervisor `supervisao-recuperacao-centesimos.json`, todos sob
+`/tmp/incubadora-telemetria`. Resultado físico pendente.

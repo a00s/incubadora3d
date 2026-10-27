@@ -7,7 +7,7 @@ ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
 37,51 °C ~15:09, mesmo com saída desligada, por calor residual. Não atribuir
 esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
 
-Revisão atual gravada e verificada ~16:50: meta 37 °C, previsão de 90 s
+Revisão atual gravada e verificada ~16:58: meta 37 °C, previsão de 90 s
 corta saída se temperatura + taxa positiva × 1,5 min atingir 37,1 °C.
 Retoma automaticamente; controles permanecem habilitados. Corte por leitura
 real 37,1 °C e emergência travada 39 °C. Sem tendência inicial usa manutenção.
@@ -24,8 +24,18 @@ Resultado físico da revisão atual ainda PENDENTE, não declarar corrigido.
 Testes de software de controle térmico passaram; demais testes passaram na
 revisão anterior sem mudanças em CO₂/porta/display.
 
-Coleta atual: /tmp/incubadora-telemetria/coleta-aprendizado-resolucao-20261027.log;
-fotos em aprendizado-resolucao-camera; supervisor em supervisao-aprendizado-resolucao.json.
+Pedido do usuário: visor da câmara agora mostra DUAS casas decimais,
+com cache em centésimos; temperatura interna continua com uma. Formatação
+compartilhada preserva a perda de CO₂; teste cobre centésimos, negativos,
+NaN, limites de tela e modo porta. Gravado com verificação. Controle térmico
+não mudou nesta gravação; etapa anterior arquivada como parcial, pico37,14.
+Ensaio atual inicia com aquecimento OFF por 180 s de propósito para testar
+recuperação sem abrir a porta; CO₂ continua ON. Depois supervisor envia
+HEAT ON automaticamente. Conferir estado vivo no JSON/processo antes de agir.
+Não regravar agora: observar esta recuperação e a manutenção posterior.
+
+Coleta atual: /tmp/incubadora-telemetria/coleta-recuperacao-centesimos-20261027.log;
+fotos em recuperacao-centesimos-camera; supervisor em supervisao-recuperacao-centesimos.json.
 CO₂ mantido ATIVO por pedido do usuário. Supervisor externo interrompe
 apenas aquecimento a 37,2 °C ou perda de telemetria; não confundir esse
 aborto experimental com o corte normal que retoma sozinho.
