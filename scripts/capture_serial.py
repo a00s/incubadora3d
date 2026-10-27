@@ -38,7 +38,8 @@ def main() -> int:
             except BlockingIOError:
                 continue
             if not chunk:
-                continue
+                print("Porta serial desconectada; captura encerrada.", file=sys.stderr)
+                return 1
             pending.extend(chunk)
             while pending:
                 marker = pending.find(b"\xff\x86")

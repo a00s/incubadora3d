@@ -82,6 +82,12 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - Usuário trocou o pote por placa de Petri mais baixa e de maior superfície;
   volume não informado. Relatou pouca perda no µ-Slide durante a noite,
   apesar de o reservatório secar; contribuição das tampas e da umidade é hipótese.
+- Posição esclarecida pelo usuário: sensores separados por aproximadamente
+  3 cm; referência apoiada na gaveta metálica, sonda Arduino pendurada livre
+  no teto. A referência sofre influência térmica do metal e a sonda mede o ar;
+  proximidade não garante igualdade durante transientes. O ajuste atual busca
+  a temperatura da referência na região das amostras, não uma calibração
+  metrológica intrínseca da sonda. Não mover sensores durante a comparação.
 - Coleta anterior: `/tmp/incubadora-telemetria/coleta-20261027.log`.
   Após gravação: `coleta-pos-ajuste-20261027.log` na mesma pasta.
   Anotações e imagens temporárias nessa pasta; não presumir que sobreviverão
@@ -102,3 +108,11 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
   `roomcamctl vision stop` retornou 404 nesta sessão, usar API se necessário.
 - Coletor serial corrigido com `select.select`: de ~100% para ~0,1% CPU.
   Teste com pseudoporta verificou espera ociosa e preservação de bytes.
+
+Acompanhamento inicial após ajuste: referência 36,5 °C às 12:35:40,
+36,7 às 12:36:40, 36,8 às 12:37:40 e 36,9 às 12:39:40;
+Arduino pareado em 36,83 / 36,95 / 36,89 / 36,95 °C, respectivamente.
+Ainda não é comprovação de equilíbrio prolongado nem do teste de porta.
+Capturas pareadas em `/tmp/incubadora-telemetria/pos-ajuste-camera/`,
+metadados em `observations.jsonl`. Coleta de imagem limitada a uma hora,
+sem inferência local de objetos e sem mover PTZ.
