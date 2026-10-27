@@ -137,7 +137,7 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 
 - Câmara: DS18B20 em D4; eletrônica: DHT22 em D2; aquecedor em D6,
   saída ativa em LOW. Ligações detalhadas no README e no firmware.
-- Meta 37,0 °C; offset aplicado na aquisição `+1.575 °C` (ajustado e gravado em 2026-10-27;
+- Meta 37,0 °C; offset aplicado na aquisição `+1.175 °C` (ajustado e gravado em 2026-10-27;
   validação térmica em andamento).
   O README registra o contexto e a posição diferente da referência.
 - Pulsos atuais: até 17 s em toda a faixa, sem teto diferente perto da meta;
@@ -149,7 +149,7 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - Pausa de porta preserva integral aprendida na RAM e invalida tendência;
   desligamento manual/falhas restauram a estimativa inicial de
   10.000 ms/20 s (50%) de manutenção, com base no histórico observado.
-  A integral cresce só com tendência pronta, |taxa| <0,05 °C/min e saída não saturada;
+  A integral cresce só com tendência pronta, |taxa| <0,15 °C/min e saída não saturada;
   erro negativo a descarrega. PI/D atua nos dois lados da meta até corte 37,1 °C.
   Não há gravação desse aprendizado na EEPROM.
 - README descreve os parâmetros do controle;
