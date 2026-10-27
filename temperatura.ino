@@ -147,7 +147,7 @@ uint16_t heaterCurrentPulseMs = 0;
 unsigned long heaterTrendReferenceAt = 0;
 float heaterTrendReferenceC = 0.0f;
 float heaterTempRateCPerMin = 0.0f;
-float heaterPidIntegralMs = 0.0f;
+float heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
 uint16_t heaterPidDemandMs = 0;
 bool heaterPidInitialized = false;
 bool heaterTrendReady = false;
@@ -1249,7 +1249,8 @@ void setHeaterEnabled(bool enabled) {
     heaterLastTransitionAt = millis();
     heaterPidDemandMs = 0;
   }
-  if (!enabled && co2DoorMode != 2) heaterPidIntegralMs = 0.0f;
+  if (!enabled && co2DoorMode != 2)
+    heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
 }
 
 void controlHeater(float temperature, unsigned long now) {
@@ -1288,7 +1289,7 @@ void controlHeater(float temperature, unsigned long now) {
     }
     heaterPidDemandMs = 0;
     if (co2DoorMode != 2 || temperatureSensorFault || emergencyOvertemperature)
-      heaterPidIntegralMs = 0.0f;
+      heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
     heaterPidInitialized = false;
     heaterTrendReady = false;
     return;
@@ -1300,8 +1301,6 @@ void controlHeater(float temperature, unsigned long now) {
     heaterTrendReferenceAt = now;
     heaterTrendReferenceC = temperature;
     heaterTempRateCPerMin = 0.0f;
-    if (heaterPidIntegralMs == 0.0f)
-      heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
     heaterTrendReady = false;
   }
 
@@ -1322,7 +1321,7 @@ void controlHeater(float temperature, unsigned long now) {
 
   float errorC = HEATER_SETPOINT_C - temperature;
   // Learn steady loss near target, rather than integrating the door transient.
-  if (errorC < 0.0f || (errorC < 0.5f &&
+  if (errorC < 0.0f || (heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.05f &&
       heaterPidDemandMs < HEATER_PID_MAX_ON_MS)) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);

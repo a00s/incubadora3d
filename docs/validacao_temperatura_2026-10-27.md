@@ -141,6 +141,28 @@ da serial; esse ensaio combina abertura e reinício, sem separar seus efeitos.
 A nova coleta começou às ~13:53 com Arduino 34,33–34,51 °C e referência
 35,4 °C, controles habilitados. **Recuperação física ainda em acompanhamento.**
 
+Continuação dessa etapa: a referência atingiu 37,2 °C, e o pico completo
+registrado no Arduino foi 37,64 °C; a referência depois caiu a 36,1 °C.
+Logo, também não foi aprovada como controle estável. A integral havia
+crescido durante a recuperação, aprendendo o transiente como manutenção.
+
+## Quarta etapa: aprendizado em temperatura lenta
+
+Gravada em torno de 14:19. Ganhos 9.000/1.000/18.000, período de 20 s,
+teto de 17 s, PI/D nos dois lados da meta e cortes preservados.
+A integral positiva agora aprende somente com tendência pronta e
+|taxa| <0,05 °C/min, com saída não saturada, em qualquer distância da meta.
+Durante variações rápidas, mantém a estimativa de perdas. Erro negativo
+continua descarregando a integral. Inicialização e resets restauram 50%;
+a pausa da porta preserva o valor aprendido na RAM.
+
+Testes reais verificam aprendizado de uma perda estacionária em 36,3 °C,
+congelamento da integral durante tendência de +0,2 °C/min, manutenção,
+pausa da porta e cortes. Compilação/upload saída 0: 32.234 bytes Flash /
+1.012 RAM estática. O usuário confirmou novo reset do mínimo/máximo
+depois dessa gravação, por volta de 14:22, sem abrir a porta.
+**Verificação física dessa revisão ainda em andamento.**
+
 O trecho inicial truncado da nova coleta é descartado; usar as amostras
 contínuas após `BOOT_COUNT,6` na etapa com teto de 60%, e após
 `BOOT_COUNT,8` na etapa atual. Verificar continuidade e ausência de novos boots.
@@ -157,6 +179,8 @@ Versão com teto único: `coleta-pid-linear-20261027.log`, imagens e metadados
 em `pid-linear-camera/`.
 Versão atual de manutenção: `coleta-pi-manutencao-20261027.log`, imagens e
 metadados em `pi-manutencao-camera/`.
+Revisão atual: `coleta-aprendizado-estavel-20261027.log`, imagens e
+metadados em `aprendizado-estavel-camera/`.
 
 A análise de objetos do RoomCam foi desligada, mantendo o vídeo e as
 capturas. O coletor serial passou a esperar dados com `select`, sem

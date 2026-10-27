@@ -372,12 +372,15 @@ A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O proporcional usa 9.000 ms/°C, a integral 1.000 ms/(°C·min), e o derivativo
 18.000 ms/(°C/min), equivalente a aproximadamente 120 s de antecipação
-em relação ao proporcional. A integral aprende perdas com erro positivo
-menor que 0,5 °C e margem no teto da saída; acima da meta ela descarrega.
+em relação ao proporcional. A integral aprende perdas com tendência pronta,
+variação inferior a 0,05 °C/min em módulo e margem no teto da saída;
+acima da meta ela descarrega. Assim, o aquecimento transitório não é
+interpretado como potência de manutenção, e uma perda estável pode ser
+aprendida também longe da meta.
 O início usa 10 s/20 s (50%) de manutenção, baseado no histórico observado;
 o PID ajusta esse valor durante o funcionamento. A pausa de porta preserva
 o valor aprendido na RAM e reinicia só a tendência; desligamento manual,
-falha de sensor e emergência reinicializam a integral. O aprendizado ainda
+falha de sensor e emergência restauram a estimativa inicial de 50%. O aprendizado ainda
 não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar

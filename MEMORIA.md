@@ -1,5 +1,16 @@
 # Memória local do projeto
 
+## Trabalho ativo — controle térmico, 2026-10-27
+
+Versão atual gravada ~14:19: PI/D 9.000/1.000/18.000, manutenção inicial
+50%, aprendizado de perdas só com |taxa| <0,05 °C/min e tendência pronta.
+Preserva integral na pausa de porta; sem EEPROM. Ainda não declarar estabilidade.
+Coleta ativa a conferir: `/tmp/incubadora-telemetria/coleta-aprendizado-estavel-20261027.log`,
+fotos/metadados em `aprendizado-estavel-camera/`. Outros logs são etapas anteriores
+que falharam. Usuário zerou mínimo/máximo novamente ~14:22; porta fechada.
+Não pedir outra abertura agora: acompanhar esta aproximação e o patamar posterior.
+Resultados e histórico em `docs/validacao_temperatura_2026-10-27.md`.
+
 Este arquivo orienta sessões futuras. Conferir o código atual antes de assumir que
 parâmetros aqui registrados continuam iguais. Não presumir que o firmware local
 é idêntico ao gravado na placa sem verificar a gravação.
@@ -44,9 +55,9 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - `controlHeater` contém o PID e os cortes; `toggleDoorMode` pausa e
   restaura os controles. Conferir os nomes no código se forem refatorados.
 - Pausa de porta preserva integral aprendida na RAM e invalida tendência;
-  desligamento manual/falhas zeram a integral. Ao inicializar sem valor aprendido,
-  usa 10.000 ms/20 s (50%) de manutenção, com base no histórico observado.
-  A integral cresce só com erro positivo menor que 0,5 °C e saída não saturada;
+  desligamento manual/falhas restauram a estimativa inicial de
+  10.000 ms/20 s (50%) de manutenção, com base no histórico observado.
+  A integral cresce só com tendência pronta, |taxa| <0,05 °C/min e saída não saturada;
   erro negativo a descarrega. PI/D atua nos dois lados da meta até corte 37,1 °C.
   Não há gravação desse aprendizado na EEPROM.
 - README descreve os parâmetros do controle;
@@ -179,3 +190,25 @@ pela passagem momentânea por 37 °C. Confirmar boot e continuidade do log.
   `observar-manutencao.py`. Confirmar processos/frescor antes de continuar.
 - Início às ~13:53: Arduino 34,33–34,51 °C, referência visual 35,4 °C;
   ambos os controles habilitados. Validação física desta versão ainda pendente.
+
+## Aprendizado somente em temperatura lenta — gravado ~14:19
+
+- A etapa anterior também falhou: pico de 37,64 °C no Arduino e máximo
+  visual de 37,2 °C na referência; depois caiu a 36,1 °C na referência.
+  O primeiro patamar em 36,9 °C não comprovou estabilidade.
+- Integral positiva agora aprende somente com tendência pronta e
+  |taxa| <0,05 °C/min, em qualquer distância da meta, com saída não saturada.
+  Durante aquecimento/resfriamento rápido, mantém a estimativa de perdas.
+  Erro negativo ainda descarrega a integral. Ganhos 9.000/1.000/18.000,
+  período 20 s e teto 17 s preservados; PI/D segue ativo até corte 37,1.
+- Inicialização e resets usam 10 s/20 s (50%); pausa de porta preserva o valor
+  aprendido na RAM. Não há gravação do aprendizado em EEPROM.
+- Testes reais verificam aprendizado de perda estacionária em 36,3 °C e
+  congelamento da integral com tendência de +0,2 °C/min, além das verificações
+  anteriores. Compilação/upload saída 0: 32.234 bytes Flash / 1.012 RAM.
+  Restam só 22 bytes de Flash no Uno: recompilar qualquer alteração futura.
+- Coleta atual: `/tmp/incubadora-telemetria/coleta-aprendizado-estavel-20261027.log`;
+  imagens/metadados: `aprendizado-estavel-camera/`, observador `observar-estavel.py`.
+  As demais pastas são ensaios anteriores. Validação física atual ainda pendente.
+- Usuário confirmou mais um reset de mínimo/máximo após a gravação desta
+  revisão, por volta de 14:22, sem abrir a porta. Usar esse registro para o pico atual.

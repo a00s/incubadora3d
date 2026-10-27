@@ -74,7 +74,7 @@ void delay(int duration) {pulseDuration=duration;}
 void digitalWrite(int pin,int state) {pins[pin]=state; if(pin==CO2PUMP && state==LOW)gasPulses++;}
 int digitalRead(int pin) {return pins[pin];}
 void finishCo2Loss() {finished++;lossFresh=false;}
-'''+prototypes+'\n'+'\n'.join(functions)+r'''
+'''+next(line for line in source.splitlines() if line.startswith('#define HEATER_PID_INITIAL_INTEGRAL_MS'))+'\n'+prototypes+'\n'+'\n'.join(functions)+r'''
 void yellow(unsigned long now) {clockMs=now;finishCo2ClickSequenceIfExpired(now);handleCo2ButtonClick(now);}
 void redDown(unsigned long now) {clockMs=now;heaterButtonStable=true;serviceHeaterButton(true,false,now);}
 void redPoll(unsigned long now,bool both=false) {clockMs=now;finishCo2ClickSequenceIfExpired(now);serviceHeaterButton(false,both,now);}

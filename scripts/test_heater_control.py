@@ -32,9 +32,11 @@ int main() {
   assert(std::abs((36.95f-2.325f+CHAMBER_TEMPERATURE_OFFSET_C)-36.2f)<0.0001f);
   controlHeater(36.2f,4000);
   assert(pin==LOW && heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
+  assert(heaterPidIntegralMs==10000); // measured startup maintenance, no cold-error charge
   heaterPidIntegralMs=12000;
   controlHeater(36.2f,5000);
   assert(heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
+  assert(heaterPidIntegralMs==12000); // far from target, preserve learned maintenance
   controlHeater(36.6f,6000);
   assert(heaterPidDemandMs<=17000 && heaterCurrentPulseMs<=17000);
   controlHeater(37.1f,6001);
@@ -89,6 +91,14 @@ int main() {
   assert(heaterPidDemandMs>0); // PI maintenance survives a reading just above target.
   controlHeater(37.1f,260040);
   assert(pin==HIGH && heaterPidDemandMs==0); // independent hard cut remains.
+  // Learn a stationary loss even far from target, but freeze during rapid recovery.
+  heaterTrendReady=true;heaterTempRateCPerMin=0;heaterTrendReferenceAt=300000;
+  heaterPidLastUpdateAt=300000;heaterPidIntegralMs=9000;heaterPidDemandMs=0;
+  controlHeater(36.3f,301000);
+  assert(heaterPidIntegralMs>9000);
+  heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.2f;
+  controlHeater(36.3f,302000);
+  assert(heaterPidIntegralMs==9000);
 }
 '''
 with tempfile.TemporaryDirectory() as d:
