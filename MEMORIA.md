@@ -39,6 +39,12 @@ Supervisor inicial terminal: supervisao-recuperacao-centesimos.json.
 Depois vigia pico, abortando a 37,2 °C ou falha de telemetria. JSON atual
 supervisao-recuperacao-retomada.json; processo supervisionar-recuperacao-retomada.py.
 Não reiniciar processos apenas porque uma consulta demora; conferir PID e estado.
+Retomada confirmada por ACK e dados contínuos às 17:03:54. Após religar,
+Arduino ainda caiu até ~35,6 °C, por atraso térmico, e começou a subir.
+Às ~17:13 chegou a 36,83 °C; referência em 36,4 °C na captura 17:12:45.
+Não ajustar offset durante essa transição. Ensaios continuam com CO₂ ON.
+Imagens recortadas e comparação visual em docs/ensaios/camera_recuperacao_*.jpg
+e referencia_recuperacao_2026-10-27.csv. Validar pico e patamar antes de encerrar.
 Não regravar agora: observar esta recuperação e a manutenção posterior.
 
 Coleta atual: /tmp/incubadora-telemetria/coleta-recuperacao-centesimos-20261027.log;

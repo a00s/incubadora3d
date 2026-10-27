@@ -290,3 +290,11 @@ resfriamento. Supervisor novo ~17:03 mantém aquecimento OFF até <=36,5 °C
 e 20 s sem reboot, então retoma; limite de aborto em aquecimento continua
 37,2 °C. Firmware, leitor serial e câmera mantidos. Registro atual em
 `supervisao-recuperacao-retomada.json`; coleta e fotos continuam nos mesmos arquivos.
+
+Retomada confirmada às 17:03:54, sem reinício da serial/placa. O Arduino
+ainda caiu até ~35,6 °C após religar; depois recuperou até 36,83 °C
+~17:13, com CO₂ ativo. Referência na captura 17:12:45: 36,4 °C,
+Arduino pareado36,64 °C. Não recalibrar na transição. Comparações visuais
+por minuto arquivadas em `docs/ensaios/referencia_recuperacao_2026-10-27.csv`
+e imagens `camera_recuperacao_inicio.jpg`/`camera_recuperacao_subida.jpg`.
+Pico e manutenção posteriores ainda pendentes.
