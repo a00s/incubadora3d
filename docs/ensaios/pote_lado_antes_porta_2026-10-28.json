@@ -1,0 +1,27 @@
+{
+  "started_at": "2026-10-27T23:40:36.875679+01:00",
+  "status": "released_after_validation",
+  "abort_c": 37.2,
+  "peak_c": 37.11,
+  "samples_above_37_1": 1,
+  "heat_on_command_at": "2026-10-27T23:40:56.906861+01:00",
+  "initial_temp_c": 35.3,
+  "peak_at": "2026-10-27T23:59:36.723948+01:00",
+  "peak_arduino_ms": 2980978,
+  "last_at": "2026-10-28T00:02:45.026892+01:00",
+  "last_temp_c": 36.93,
+  "last_arduino_ms": 3168628,
+  "heater_enabled": 1,
+  "heater_on": 1,
+  "pid_demand_ms": 12836,
+  "heat_rate_c_min": -0.05,
+  "ended_at": "2026-10-28T00:02:45.026933+01:00",
+  "status_interpretation": "Transferência ao supervisor de porta, não aprovação térmica completa",
+  "firmware_commit": "a922e69",
+  "after_first_37": {
+    "minutes": 10.3181,
+    "min_c": 36.74,
+    "max_c": 37.11,
+    "mean_c": 36.9106711409396
+  }
+}

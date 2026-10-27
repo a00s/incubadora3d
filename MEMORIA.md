@@ -2,6 +2,21 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Atualização00:02 em28/10: montagem com pote AO LADO, sem contato direto
+com aquecedor. Recuperação desde23:40 chegou a37,05 °C às23:52 e máximo
+37,11 °C às23:59. Referência37,0 °C às23:55;36,8 °C às00:00;36,9 °C
+às00:02. Ensaio parcial arquivado em `pote_lado_antes_porta_2026-10-28.*`.
+Supervisor anterior terminou por TRANSFERÊNCIA, apesar do rótulo legado
+`released_after_validation`: não significa aprovação completa. Novo supervisor
+vivo `supervisionar-porta-pote-lado.py`, PID74644, saída
+`supervisao-porta-pote-lado.json`, sessão36062, limite37,2 °C/timeout1h.
+Permite pausa pelo botão sem comandar HEAT ON na entrada. Mesmo log e
+BOOT33, coletor70766. Não reiniciar serial/firmware durante o teste.
+Solicitado ao usuário teste normal de porta30s, sem mover água/sondas;
+aguardar confirmação/eventos novos. Câmera observador70767 termina cerca
+de00:09; conferir processo antes de continuar coleta de fotos.
+
+
 Atualização após manutenção do ventilador (~23:40): usuário confirmou serviço
 feito e porta fechada. ALL OFF foi enviado para manutenção; portanto essa
 retomada parte da integral inicial, não é teste isolado de pausa de porta.
