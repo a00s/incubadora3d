@@ -1,16 +1,16 @@
 {
-  "archived_at": "2026-10-27T14:54:06.645346+01:00",
-  "status": "validacao_pendente_teste_isolado_porta",
+  "archived_at": "2026-10-27T15:39:23.235785+01:00",
+  "status": "reprovado_picos_arduino",
   "source_log": "/tmp/incubadora-telemetria/coleta-aprendizado-estavel-20261027.log",
   "boot_count": 12,
-  "source_commit": "a6ed10869240ff29f19ab1685ddb9001dfe4f3f5",
+  "source_commit": "6d84dfb",
   "firmware_sha256": "2f458a687edf4333b524d314635997d6eb3f108fe95ac2b677ce21a2ebea78c6",
-  "samples": 863,
-  "last_arduino_ms": 2041253,
+  "samples": 2028,
+  "last_arduino_ms": 4750896,
   "temperature_c": {
-    "min": 36.26,
-    "mean": 36.88857473928157,
-    "max": 37.2
+    "min": 31.2,
+    "mean": 35.82528106508876,
+    "max": 37.51
   },
   "invalid_temperature_samples": 0,
   "events": [
@@ -30,7 +30,28 @@
     "EVENT,co2_pulse,80",
     "EVENT,co2_pulse,80",
     "EVENT,co2_pulse,80",
-    "EVENT,co2_pulse,80"
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,65",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,33",
+    "EVENT,co2_pulse,53",
+    "EVENT,co2_pulse,73",
+    "EVENT,co2_pulse,64",
+    "ACK,HEAT,OFF",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,54",
+    "EVENT,co2_pulse,74",
+    "EVENT,co2_pulse,71",
+    "EVENT,co2_pulse,58",
+    "ACK,CO2,OFF",
+    "ACK,HEAT,ON",
+    "ACK,HEAT,OFF",
+    "ACK,HEAT,ON",
+    "ACK,HEAT,OFF"
   ],
   "excluded_non_data_lines": 36,
   "parameters": {
@@ -50,8 +71,18 @@
     "learning_saved_to_eeprom": false
   },
   "limitations": [
-    "Referência apoiada na gaveta metálica; Arduino suspenso no teto, ~3 cm distante.",
-    "Dados desta revisão iniciam após reinício; teste isolado de porta ainda pendente.",
-    "CSV preserva amostras inválidas; estatísticas de temperatura usam apenas valores finitos."
-  ]
+    "Revisão reprovada: Arduino atingiu 37,51 C com o aquecedor já desligado.",
+    "Inclui resfriamento e pulsos de identificação com CO2 pausado após 15:21.",
+    "Amostras de temperatura inválidas são preservadas no CSV."
+  ],
+  "review": {
+    "arduino_peak_c": 37.51,
+    "arduino_peak_local_time_approx": "15:09:36",
+    "seconds_after_last_observed_heater_on": 111.4,
+    "heater_on_at_peak": false,
+    "pid_demand_at_peak_ms": 0,
+    "heat_off_confirmed_local_time_approx": "15:12:57",
+    "environment": "vazio, sem células, conforme usuário",
+    "emergency_cutoff_37_2_was_uploaded": false
+  }
 }

@@ -115,8 +115,9 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_PID_KI_MS_PER_C_MIN 1000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 18000.0f
 #define HEATER_PID_INITIAL_INTEGRAL_MS 10000.0f
+#define HEATER_COAST_FORECAST_MIN 3.0f
 #define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1f)
-#define HEATER_EMERGENCY_CUTOFF 39.0
+#define HEATER_EMERGENCY_CUTOFF 39.0f
 #define TEMPERATURE_GOOD_MIN (HEATER_SETPOINT_C - 0.1)
 #define TEMPERATURE_GOOD_MAX (HEATER_SETPOINT_C + 0.1)
 #define TEMPERATURE_DISPLAY_NEAR_MIN (HEATER_SETPOINT_C - 0.5)
@@ -1320,8 +1321,13 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
-  // Learn steady loss near target, rather than integrating the door transient.
-  if (errorC < 0.0f || (heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.05f &&
+  // Include the observed coast and the 30 s trend delay before adding more heat.
+  bool coastCut = heaterTrendReady
+    ? heaterTempRateCPerMin > 0.0f &&
+      temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_SETPOINT_C
+    : temperature >= HEATER_SETPOINT_C;
+  // Learn stationary loss, never the energy already travelling from the heater.
+  if (errorC < 0.0f || (!coastCut && heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.05f &&
       heaterPidDemandMs < HEATER_PID_MAX_ON_MS)) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);
@@ -1331,14 +1337,14 @@ void controlHeater(float temperature, unsigned long now) {
     }
   }
   // PI/D maintenance remains active on both sides of target, below the hard cut.
-  if (temperature >= HEATER_HARD_CUTOFF) {
+  if (temperature >= HEATER_HARD_CUTOFF || coastCut) {
     heaterPidDemandMs = 0;
   } else {
-    float derivativeMs = heaterTrendReady
-      ? -HEATER_PID_KD_MS_PER_C_MIN * heaterTempRateCPerMin
-      : 0.0f;
-    float demandMs = HEATER_PID_KP_MS_PER_C * errorC +
-                     heaterPidIntegralMs + derivativeMs;
+    // Until a measured trend exists, use maintenance without a cold-air boost.
+    float demandMs = heaterPidIntegralMs;
+    if (heaterTrendReady)
+      demandMs += HEATER_PID_KP_MS_PER_C * errorC -
+                  HEATER_PID_KD_MS_PER_C_MIN * heaterTempRateCPerMin;
     if (demandMs < 0.0f) demandMs = 0.0f;
     if (demandMs > HEATER_PID_MAX_ON_MS) demandMs = HEATER_PID_MAX_ON_MS;
     heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);

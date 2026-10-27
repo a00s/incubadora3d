@@ -31,16 +31,21 @@ int main() {
   // Paired observation: old corrected 36.95 C, reference 36.2 C.
   assert(std::abs((36.95f-2.325f+CHAMBER_TEMPERATURE_OFFSET_C)-36.2f)<0.0001f);
   controlHeater(36.2f,4000);
-  assert(pin==LOW && heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
+  assert(pin==LOW && heaterPidDemandMs==10000);
   assert(heaterPidIntegralMs==10000); // measured startup maintenance, no cold-error charge
   heaterPidIntegralMs=12000;
   controlHeater(36.2f,5000);
-  assert(heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
+  assert(heaterPidDemandMs==12000);
   assert(heaterPidIntegralMs==12000); // far from target, preserve learned maintenance
   controlHeater(36.6f,6000);
   assert(heaterPidDemandMs<=17000 && heaterCurrentPulseMs<=17000);
-  controlHeater(37.1f,6001);
+  heaterTrendReady=true;heaterTempRateCPerMin=0;
+  controlHeater(35.0f,6001);
+  assert(heaterPidDemandMs==17000);
+  controlHeater(37.1f,6002);
   assert(pin==HIGH && heaterPidDemandMs==0);
+  controlHeater(37.2f,6003);
+  assert(pin==HIGH && botao_aquecedor_onoff); // regulation pauses output, not the enabled control
   controlHeater(36.2f,8000);
   assert(pin==HIGH); // mandatory 3 s off
   controlHeater(36.2f,9001);
@@ -51,10 +56,15 @@ int main() {
   assert(pin==HIGH && heaterPidDemandMs==0);
   controlHeater(39.0f,24002);
   assert(pin==HIGH && !botao_aquecedor_onoff && !botao_co2_onoff && safetyFault==2);
+  controlHeater(36.0f,90000);
+  assert(pin==HIGH && !botao_aquecedor_onoff); // cooling cannot clear the latched trip
 
   // Actual GPIO duty over six periods at target: 6 s demand means 30%, not 67%.
   pin=HIGH;botao_aquecedor_onoff=true;safetyFault=0;
   heaterPidInitialized=false;heaterLastTransitionAt=90000;heaterPulseStartedAt=0;
+  controlHeater(37.0f,100000);
+  assert(pin==HIGH && heaterPidDemandMs==0); // no heating at target before trend is known
+  heaterTrendReady=true;heaterTempRateCPerMin=0;
   heaterPidIntegralMs=6000;
   unsigned long onMs=0,lastStart=0;int starts=0;
   for (unsigned long now=100020;now<220020;now+=20) {
@@ -71,7 +81,7 @@ int main() {
   heaterTrendReady=true;heaterTempRateCPerMin=0.3f;
   heaterTrendReferenceAt=220000;heaterPidIntegralMs=6000;pin=HIGH;
   controlHeater(36.8f,220020);
-  assert(heaterPidDemandMs<5000);
+  assert(pin==HIGH && heaterPidDemandMs==0); // forecast crosses target before measurement
   heaterTempRateCPerMin=-0.3f;
   controlHeater(36.8f,220040);
   assert(heaterPidDemandMs<=17000);
@@ -87,6 +97,7 @@ int main() {
   co2DoorMode=4;botao_aquecedor_onoff=true;
   controlHeater(36.8f,260000);
   assert(heaterPidIntegralMs==11000 && heaterPidDemandMs>0);
+  heaterTrendReady=true;heaterTempRateCPerMin=-0.05f;
   controlHeater(37.05f,260020);
   assert(heaterPidDemandMs>0); // PI maintenance survives a reading just above target.
   controlHeater(37.1f,260040);
@@ -99,6 +110,12 @@ int main() {
   heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.2f;
   controlHeater(36.3f,302000);
   assert(heaterPidIntegralMs==9000);
+  heaterTempRateCPerMin=0.04f;heaterPidIntegralMs=11000;
+  controlHeater(36.9f,303000);
+  assert(pin==HIGH && heaterPidDemandMs==0 && heaterPidIntegralMs==11000);
+  heaterTempRateCPerMin=-0.04f;
+  controlHeater(36.9f,304000);
+  assert(heaterPidDemandMs>0 && botao_aquecedor_onoff); // automatic return after forecast clears
 }
 '''
 with tempfile.TemporaryDirectory() as d:

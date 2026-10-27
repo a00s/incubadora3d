@@ -2,31 +2,27 @@
 
 ## Trabalho ativo — controle térmico, 2026-10-27
 
-Às 14:56, validação aguardando ação física do usuário: o teste final de
-porta solicitado ainda não gerou `EVENT,door` no log da revisão atual.
-Firmware, testes e arquivo de telemetria prontos; não considerar objetivo concluído.
-Coletores confirmados vivos às 14:56 (serial e câmera, CPU 0,0%). A coleta continua;
-retomar verificação da recuperação quando o usuário confirmar abertura/fechamento.
+Atualização 27/10 ~15:48: usuário confirmou câmara SEM células e autorizou
+ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
+37,51 °C ~15:09, mesmo com saída desligada, por calor residual. Não atribuir
+esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
 
-Versão atual gravada ~14:19: PI/D 9.000/1.000/18.000, manutenção inicial
-50%, aprendizado de perdas só com |taxa| <0,05 °C/min e tendência pronta.
-Preserva integral na pausa de porta; sem EEPROM. Ainda não declarar estabilidade.
-Coleta ativa a conferir: `/tmp/incubadora-telemetria/coleta-aprendizado-estavel-20261027.log`,
-fotos/metadados em `aprendizado-estavel-camera/`. Outros logs são etapas anteriores
-que falharam. Usuário zerou mínimo/máximo novamente ~14:22; porta fechada.
-Não pedir outra abertura agora: acompanhar esta aproximação e o patamar posterior.
-Resultados e histórico em `docs/validacao_temperatura_2026-10-27.md`.
+Revisão com antecipação gravada ~15:42: corta saída quando temperatura +
+taxa positiva × 3 min prevê 37 °C; retomada automática, controle permanece
+habilitado. Sem tendência inicial usa manutenção, sem impulso proporcional.
+Corte normal 37,1 °C; emergência travada continua 39 °C. O valor 37,2 °C
+NÃO foi gravado como emergência: é somente aborto do supervisor deste ensaio.
+Testes de software passaram; validação térmica física ainda pendente.
 
-Atualização ~14:50: startup teve uma referência de 37,2 °C às 14:35:59.
-Após isso, quadros completos por minuto de 14:36:59 a 14:47:59 em 36,9–37,1 °C.
-Foi solicitado teste final de porta (30 s, toques longos), agora com firmware
-mantido na mesma revisão; aguardar usuário/eventos no log e acompanhar recuperação.
-Não gravar firmware nem reabrir a serial durante esse ensaio.
-Telemetria completa já arquivada em `docs/ensaios/controle_termico_2026-10-27.csv`
-com parâmetros e estado de validação no JSON de mesmo nome. Atualizar esse
-arquivo ao terminar o ensaio; não confundir a cópia arquivada com a coleta viva em `/tmp`.
-Visualizador regenerado com geometria/layout equivalentes, cópia servida e HTTP 200
-em 8081. CAD/STL/STEP/3MF não foram modificados nesta tarefa de firmware.
+Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao-20261027.log;
+fotos em antecipacao-camera; supervisor em supervisao-antecipacao.json.
+Supervisor habilitou aquecimento ~15:44:55, após resfriamento/pulsos de
+identificação. Em ~15:48 usuário pediu CO₂ também ativo para ensaio combinado:
+comando CO2 ON enviado e ACK recebido. Não desligar CO₂ só para isolar calor.
+Conferir estado vivo antes de assumir continuidade; não reabrir serial durante
+ensaio. Supervisor aborta aquecimento a 37,2 °C ou telemetria perdida.
+Não declarar estabilidade nem liberar uso com células sem medir resposta completa.
+CAD e peças não modificados; visualizador já regenerado e servido em 8081.
 
 Este arquivo orienta sessões futuras. Conferir o código atual antes de assumir que
 parâmetros aqui registrados continuam iguais. Não presumir que o firmware local
