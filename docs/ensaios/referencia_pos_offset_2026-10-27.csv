@@ -1,0 +1,20 @@
+observed_at,reference_c,arduino_c,difference_c,image,note
+2026-10-27T23:09:48.020382+01:00,36.8,36.43,-0.37,000.jpg,Preparação anterior ao BOOT33
+2026-10-27T23:10:48.019109+01:00,36.4,36.3,-0.1,001.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:11:48.019505+01:00,36.3,36.36,0.06,002.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:12:48.020486+01:00,36.3,36.36,0.06,003.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:13:48.020369+01:00,36.3,36.61,0.31,004.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:14:48.020962+01:00,36.4,36.68,0.28,005.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:15:48.020088+01:00,36.5,36.74,0.24,006.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:16:48.020475+01:00,36.7,36.8,0.1,007.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:17:48.020509+01:00,36.8,36.8,0.0,008.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:18:48.020522+01:00,36.8,36.8,0.0,009.jpg,"Leitura visual principal, último DATA completo do mesmo registro; transição pós-ajuste"
+2026-10-27T23:19:48.020672+01:00,36.8,36.93,0.13,010.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:20:48.020762+01:00,36.9,36.86,-0.04,011.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:21:48.021132+01:00,36.9,36.86,-0.04,012.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:22:48.020946+01:00,36.9,36.99,0.09,013.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:23:48.021556+01:00,36.9,36.99,0.09,014.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:24:48.022103+01:00,37.0,36.99,-0.01,015.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:25:48.021959+01:00,37.1,36.99,-0.11,016.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:26:48.022158+01:00,37.1,36.8,-0.3,017.jpg,Leitura visual principal; montagem anterior com canto no aquecedor
+2026-10-27T23:27:48.022522+01:00,37.0,36.93,-0.07,018.jpg,Leitura visual principal; montagem anterior com canto no aquecedor

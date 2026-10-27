@@ -399,3 +399,23 @@ Retomada automática23:10:10; CO₂ ativo. Supervisão interrompe aquecimento
 a37,2 °C ou falha de dados, com timeout1h. Mesmos25mL e contato pelo canto,
 sem mover sondas. Não há aprovação física ainda: verificar patamar e pico
 completos dos dois sensores depois do ajuste.
+
+## Interrupção para manutenção e mudança do pote, 23:34–23:41
+
+Antes da manutenção, Arduino atingiu máximo37,11 °C; a referência chegou
+a37,0–37,1 °C nas capturas. Pares e imagens em
+`referencia_pos_offset_2026-10-27.csv` e `camera_pos_offset_*.jpg`.
+O supervisor terminou porque enviamos ALL OFF para o usuário ajustar o
+ventilador, não por atingir37,2 °C. Estado final preservado em
+`calibracao_agua25_antes_ventilador_2026-10-27.json`.
+
+Usuário confirmou manutenção feita e informou mudança física: pote ao lado
+do aquecedor, sem ficar sobre ele; aquecimento indireto pelo piso de alumínio.
+Volume restante e umidade não medidos. Não extrapolar a comparação anterior
+para essa montagem. Sem nova gravação nem ajuste de offset.
+
+Retomada HEAT ON confirmada23:40:56, BOOT33 mantido, CO₂ habilitado.
+Supervisor `supervisao-pos-ventilador.json`, mesmo log calib-agua25.
+Arduino35,36 °C às23:41; referência35,1 °C na imagem atual23:41:08.
+ALL OFF antes da manutenção reiniciou integral; não é ensaio de recuperação
+normal de porta com integral preservada. Validação térmica segue pendente.
