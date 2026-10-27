@@ -21,8 +21,8 @@
 #define EEPROM_SAFETY_FAULT 30
 
 #define CHAMBER_TEMPERATURE_PIN 4
-// Slide-plate reference: +1.375 C, +0.2 C, +0.9 C, then -0.15 C near target.
-#define CHAMBER_TEMPERATURE_OFFSET_C 2.325f
+// Slide-plate reference: prior +2.325 C; -0.75 C with Petri water dish (2026-10-27).
+#define CHAMBER_TEMPERATURE_OFFSET_C 1.575f
 #define DHT_TEMPERATURA_INT_PIN 2
 #define DHTTYPE DHT22
 

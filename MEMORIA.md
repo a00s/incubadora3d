@@ -34,16 +34,17 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 
 - Câmara: DS18B20 em D4; eletrônica: DHT22 em D2; aquecedor em D6,
   saída ativa em LOW. Ligações detalhadas no README e no firmware.
-- Meta 37,0 °C; offset aplicado na aquisição `+2.325 °C`.
+- Meta 37,0 °C; offset aplicado na aquisição `+1.575 °C` (ajustado e gravado em 2026-10-27;
+  validação térmica em andamento).
   O README registra o contexto e a posição diferente da referência.
 - Pulsos: até 12 s perto da meta e 30 s com erro >= 0,5 °C;
   pausa mínima 3 s. Tendência em janelas de 30 s; integral limitada a 12 s.
-- `updateHeaterControl` contém o PID e os cortes; `toggleDoorMode` pausa e
+- `controlHeater` contém o PID e os cortes; `toggleDoorMode` pausa e
   restaura os controles. Conferir os nomes no código se forem refatorados.
 - Durante desabilitação, o controle zera integral e invalida tendência;
   a retomada começa sem tendência térmica pronta. Isso é um ponto de
   investigação, não uma causa física comprovada de sobretemperatura.
-- Há trechos desatualizados no README com pulsos de 20 s/pausa de 10 s;
+- README corrigido para os pulsos de 30/12 s e pausa de 3 s;
   para parâmetros executados, conferir as constantes e a lógica do firmware.
 
 ## Relato físico de 2026-10-27 — investigação pendente
@@ -67,3 +68,37 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - Porta se imprime com a frente externa plana na mesa (+Y do CAD para cima).
 - Alterações de peças exigem STL/STEP, ambos os projetos completos 3MF,
   visualizador e verificações descritas no AGENTS.md.
+
+## Câmera e coleta — 2026-10-27
+
+- Acesso autorizado à câmera apontada ao termômetro: projeto
+  `/home/x/projetos/acessocamera`; ler seu `AGENTS.md` antes de usar.
+- Serviço existente: `http://127.0.0.1:8766`; cliente
+  `/home/x/projetos/acessocamera/.venv/bin/roomcamctl`.
+  Consultar status/frescor e capturar sem mover a câmera. Não ler nem expor
+  `camera.local.json` ou linhas de comando RTSP que contenham credenciais.
+- Visor principal: referência atual; mínimo à esquerda e máximo à direita,
+  conforme usuário. Só transcrever números realmente legíveis.
+- Usuário trocou o pote por placa de Petri mais baixa e de maior superfície;
+  volume não informado. Relatou pouca perda no µ-Slide durante a noite,
+  apesar de o reservatório secar; contribuição das tampas e da umidade é hipótese.
+- Coleta anterior: `/tmp/incubadora-telemetria/coleta-20261027.log`.
+  Após gravação: `coleta-pos-ajuste-20261027.log` na mesma pasta.
+  Anotações e imagens temporárias nessa pasta; não presumir que sobreviverão
+  a reinicializações. Conferir processo e data do log antes de afirmar coleta ativa.
+- Abertura/fechamento para trocar água foram confirmados por toque longo;
+  referência 33,4 °C versus Arduino 34,08 °C às 09:49, durante recuperação.
+- Às 12:24–12:28, referência visual 36,2–36,3 °C; Arduino na última hora
+  média 36,9707 °C, mínimo 36,76 e máximo 37,14 °C.
+- Correção inicial de offset −0,75 °C (+2,325 → +1,575), compilada,
+  testes do firmware aprovados e upload verificado por saída 0 às ~12:30.
+  Ainda requer observar equilíbrio e recuperação; não declarar problema resolvido.
+- Autorização do usuário: corrigir temperatura e fazer testes; pedir abertura
+  física da porta quando necessário. Não abrir serial em paralelo ao coletor.
+- Abrir serial pode reiniciar Uno; houve reinício na conexão inicial e após
+  retomar coleta. Salvar aprendizado/estatísticas em EEPROM ainda não implementado.
+- CPU: análise de objetos RoomCam desligada via POST `/api/vision/stop`
+  com JSON `{}`; vídeo permanece disponível. Só fotos não exigem inferência.
+  `roomcamctl vision stop` retornou 404 nesta sessão, usar API se necessário.
+- Coletor serial corrigido com `select.select`: de ~100% para ~0,1% CPU.
+  Teste com pseudoporta verificou espera ociosa e preservação de bytes.

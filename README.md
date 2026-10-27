@@ -197,7 +197,11 @@ Calibração de um ponto em 2026-10-26: referência sobre a placa das lâminas
 `CHAMBER_TEMPERATURE_OFFSET_C`. Refinamento no mesmo dia: referência 36,2 °C
 e visor 36,0 °C: +0,2 °C. Comparação posterior de referência 37,9 °C versus
 visor 37,0 °C: mais +0,9 °C. Ajuste fino posterior de −0,15 °C, com referência
-36,8–36,9 °C e visor 36,9–37,0 °C: total atual +2,325 °C.
+36,8–36,9 °C e visor 36,9–37,0 °C: total então +2,325 °C.
+Em 2026-10-27, após trocar o reservatório por uma placa de Petri, a referência
+vista pela câmera ficou em 36,2–36,3 °C enquanto o Arduino manteve média de
+36,97 °C na última hora (36,76–37,14 °C). Correção inicial de −0,75 °C:
+offset atual +1,575 °C, sujeito à verificação física após estabilização.
 Aplicada após validar a leitura, tanto ao visor
 quanto ao PID e às proteções térmicas. Não altera a sonda interna da eletrônica.
 A sonda do Arduino está mais alta e distante do aquecimento; a referência fica junto
@@ -280,12 +284,13 @@ cada comando deve terminar com uma quebra de linha. `DATA` contém uma linha CSV
 ciclo, com `co2_range_lock` como última coluna; `EVENT` registra transições e falhas, e
 `STATUS` consulta sensores, saídas e estado do controle, incluindo `boot_count`.
 `rate_ppm_min` é a variação líquida de CO₂
-normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; `heater_temp_rate_c_min`
+normalizada para ppm/min numa janela móvel de aproximadamente 30 segundos; `heat_rate_c_min`
 é a tendência de temperatura em °C/min; `heater_pid_demand_ms` é o tempo ligado pedido pelo PID
-em cada janela de controle de 30 s; o campo
+para o pulso atual (não representa uma janela fixa nem o tempo efetivamente aplicado); o campo
 `rate_ppm_min_valid` indica quando a janela já está disponível. A mesma taxa aparece na
 tela, com sinal positivo para ganho e negativo para perda, ajudando a observar vazamentos.
-A telemetria mantém uma casa decimal para temperatura/umidade e duas para as taxas,
+A telemetria mantém duas casas decimais para a temperatura da câmara e uma para
+temperatura interna/umidade, além de duas para as taxas,
 formatadas em ponto fixo para reduzir o uso de Flash no Uno.
 A linha `BOOT_COUNT` e o campo `boot_count`
 leem o contador salvo na EEPROM; ele incrementa uma vez por inicialização, sem gravações
@@ -355,11 +360,13 @@ desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato
 físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
 proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
 de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
-limitada a 20 s; um novo pulso pode começar após pelo menos 10 s desligado. O controle
+limitada a 30 s quando o erro é de pelo menos 0,5 °C e a 12 s perto da meta;
+um novo pulso pode começar após pelo menos 3 s desligado. O controle
 revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um pulso se a demanda
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
-necessária à manutenção. O aquecedor corta ao atingir 37,0 °C e tem limite independente de
-37,1 °C. A telemetria inclui a demanda do PID e
+necessária à manutenção. A demanda zera acima de 37,0 °C; em 37,0 °C exatos,
+o ajuste PI/D pode manter aquecimento. Há corte independente em 37,1 °C.
+A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O ajuste inicial ainda precisa de validação térmica prolongada por causa da inércia observada.
 O automático considera reposição quando a concentração projetada cai abaixo de
