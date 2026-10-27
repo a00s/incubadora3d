@@ -11,6 +11,14 @@ que falharam. Usuário zerou mínimo/máximo novamente ~14:22; porta fechada.
 Não pedir outra abertura agora: acompanhar esta aproximação e o patamar posterior.
 Resultados e histórico em `docs/validacao_temperatura_2026-10-27.md`.
 
+Atualização ~14:50: startup teve uma referência de 37,2 °C às 14:35:59.
+Após isso, quadros completos por minuto de 14:36:59 a 14:47:59 em 36,9–37,1 °C.
+Foi solicitado teste final de porta (30 s, toques longos), agora com firmware
+mantido na mesma revisão; aguardar usuário/eventos no log e acompanhar recuperação.
+Não gravar firmware nem reabrir a serial durante esse ensaio.
+Visualizador regenerado com geometria/layout equivalentes, cópia servida e HTTP 200
+em 8081. CAD/STL/STEP/3MF não foram modificados nesta tarefa de firmware.
+
 Este arquivo orienta sessões futuras. Conferir o código atual antes de assumir que
 parâmetros aqui registrados continuam iguais. Não presumir que o firmware local
 é idêntico ao gravado na placa sem verificar a gravação.

@@ -163,6 +163,19 @@ pausa da porta e cortes. Compilação/upload saída 0: 32.234 bytes Flash /
 depois dessa gravação, por volta de 14:22, sem abrir a porta.
 **Verificação física dessa revisão ainda em andamento.**
 
+Leituras pareadas desta revisão em
+[CSV](validacao_aprendizado_estavel_2026-10-27.csv). A revisão completa dos
+quadros identificou uma leitura de **37,2 °C às 14:35:59**, que não apareceu
+na amostragem visual inicial. Portanto, não considerar 37,1 °C como máximo
+de todo o arranque. De 14:36:59 até 14:47:59, todos os quadros por minuto
+verificados ficaram entre 36,9 e 37,1 °C. Às 14:47:59, referência 37,1 °C
+e Arduino 36,89 °C. O teste final de porta foi solicitado, com firmware
+mantido na mesma revisão; ainda não foi registrado evento de abertura nesse log.
+
+Visualizador regenerado e comparado: malha e layout equivalentes aos anteriores,
+sem alterações de CAD/STL/STEP/3MF. Cópia servida atualizada e HTTP 200 na porta
+8081; o SHA-256 do conteúdo HTTP coincide com `index.html` servido.
+
 O trecho inicial truncado da nova coleta é descartado; usar as amostras
 contínuas após `BOOT_COUNT,6` na etapa com teto de 60%, e após
 `BOOT_COUNT,8` na etapa atual. Verificar continuidade e ausência de novos boots.
