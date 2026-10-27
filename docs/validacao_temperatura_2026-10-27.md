@@ -429,3 +429,12 @@ Referência legível36,9 °C na captura00:04:56. Registro quantitativo em
 células nem comprova recuperação após abertura normal. Esse teste físico
 foi solicitado e ainda não há evento novo de porta no log. Supervisor de
 porta segue ativo, sem reiniciar placa/integral; timeout~01:02 desliga HEAT.
+
+## Patamar adicional,28/10 às00:24
+
+Sem nova abertura registrada. Últimos20min:575amostras,36,74–37,18 °C,
+média36,9576 °C;23amostras acima37,1 °C. Pico37,18 às00:13:27, sem
+disparo37,2. Referência37,0 °C na imagem00:23:38, Arduino37,11 °C.
+Foto `pote_lado_referencia_0023_2026-10-28.jpg` e janelas10/20/30min em
+`patamar_pote_lado_0024_2026-10-28.json`. Melhora do patamar nesta montagem
+não comprova recuperação após abertura; esse ensaio continua pendente.

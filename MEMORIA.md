@@ -2,6 +2,18 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Atualização00:24 de28/10, após retomada do objetivo: supervisor74644 e
+coletor70766 vivos; sem EVENT,door desde HEAT ON23:40. Referência37,0 °C
+na imagem atual00:23:38, Arduino37,11 °C. Últimos20min Arduino36,74–37,18 °C,
+média36,9576 °C;23amostras acima37,1. Não atingiu corte experimental37,2.
+O máximo37,18 ocorreu00:13:27; substitui máximos parciais anteriores.
+Dados `docs/ensaios/patamar_pote_lado_0024_2026-10-28.json`.
+Observador de fotos anterior terminou (PID70767 ausente); coleta retomada
+00:23:52 com mesmo script/pasta, índice061 em diante, sessão81596. Serviço
+RoomCam segue streaming, quadro0,11s; sem segundo RTSP/inferência.
+Teste físico de porta permanece pendente. Supervisor expira~01:02.
+
+
 Estado00:05 de28/10: teste de abertura solicitado, ainda sem resposta nem
 EVENT,door novo. Próximo passo físico indispensável: abertura30s com modo
 porta, sem mover água/sondas, e retomada pelo botão. Não inventar execução.
