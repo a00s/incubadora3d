@@ -108,13 +108,14 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 // Chamber temperature is corrected at acquisition for display and control.
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 3000UL
+#define HEATER_PID_PERIOD_MS 20000UL
 #define HEATER_PID_MAX_ON_MS 12000UL
-#define HEATER_RECOVERY_MAX_ON_MS 30000UL
+#define HEATER_RECOVERY_MAX_ON_MS 17000UL
 #define HEATER_RECOVERY_ERROR_C 0.5f
 #define HEATER_TREND_WINDOW_MS 30000UL
 #define HEATER_PID_KP_MS_PER_C 18000.0f
 #define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
-#define HEATER_PID_KD_MS_PER_C_MIN 6000.0f
+#define HEATER_PID_KD_MS_PER_C_MIN 18000.0f
 #define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1)
 #define HEATER_EMERGENCY_CUTOFF 39.0
 #define TEMPERATURE_GOOD_MIN (HEATER_SETPOINT_C - 0.1)
@@ -1319,7 +1320,9 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
-  if (errorC < 0.0f || heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
+  uint16_t maxPulseMs = errorC >= HEATER_RECOVERY_ERROR_C
+    ? HEATER_RECOVERY_MAX_ON_MS : HEATER_PID_MAX_ON_MS;
+  if (errorC < 0.0f || heaterPidDemandMs < maxPulseMs) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);
     if (heaterPidIntegralMs < 0.0f) heaterPidIntegralMs = 0.0f;
@@ -1338,9 +1341,6 @@ void controlHeater(float temperature, unsigned long now) {
     float demandMs = HEATER_PID_KP_MS_PER_C * errorC +
                      heaterPidIntegralMs + derivativeMs;
     if (demandMs < 0.0f) demandMs = 0.0f;
-    // Longer pulses only well below target; keep integral and near-target cap unchanged.
-    unsigned long maxPulseMs = errorC >= HEATER_RECOVERY_ERROR_C
-      ? HEATER_RECOVERY_MAX_ON_MS : HEATER_PID_MAX_ON_MS;
     if (demandMs > maxPulseMs) demandMs = maxPulseMs;
     heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);
   }
@@ -1357,7 +1357,11 @@ void controlHeater(float temperature, unsigned long now) {
     digitalWrite(HEATER, HIGH);
     heaterLastTransitionAt = now;
   } else if (!heaterOn && safeToHeat && heaterPidDemandMs > 0 &&
-             now - heaterLastTransitionAt >= HEATER_MIN_OFF_MS) {
+             now - heaterLastTransitionAt >= HEATER_MIN_OFF_MS &&
+             (heaterPulseStartedAt == 0 ||
+              now - heaterPulseStartedAt >= HEATER_PID_PERIOD_MS)) {
+    // Duration / 20 s defines duty instead of duration / (duration + 3 s).
+    // The 17 s maximum leaves at least 3 s off in every period.
     heaterCurrentPulseMs = heaterPidDemandMs;
     heaterPulseStartedAt = now;
     digitalWrite(HEATER, LOW);

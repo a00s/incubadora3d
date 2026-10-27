@@ -37,14 +37,16 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - Meta 37,0 °C; offset aplicado na aquisição `+1.575 °C` (ajustado e gravado em 2026-10-27;
   validação térmica em andamento).
   O README registra o contexto e a posição diferente da referência.
-- Pulsos: até 12 s perto da meta e 30 s com erro >= 0,5 °C;
-  pausa mínima 3 s. Tendência em janelas de 30 s; integral limitada a 12 s.
+- Pulsos atuais: até 12 s perto da meta e 17 s com erro >= 0,5 °C;
+  pelo menos 20 s entre inícios e 3 s desligado. Tendência em janelas de 30 s;
+  integral limitada a 12 s. Kd atual 18.000 ms/(°C/min), antecipação de
+  aproximadamente 60 s em relação ao termo proporcional.
 - `controlHeater` contém o PID e os cortes; `toggleDoorMode` pausa e
   restaura os controles. Conferir os nomes no código se forem refatorados.
 - Durante desabilitação, o controle zera integral e invalida tendência;
   a retomada começa sem tendência térmica pronta. Isso é um ponto de
   investigação, não uma causa física comprovada de sobretemperatura.
-- README corrigido para os pulsos de 30/12 s e pausa de 3 s;
+- README descreve os parâmetros do controle;
   para parâmetros executados, conferir as constantes e a lógica do firmware.
 
 ## Relato físico de 2026-10-27 — investigação pendente
@@ -116,3 +118,28 @@ Ainda não é comprovação de equilíbrio prolongado nem do teste de porta.
 Capturas pareadas em `/tmp/incubadora-telemetria/pos-ajuste-camera/`,
 metadados em `observations.jsonl`. Coleta de imagem limitada a uma hora,
 sem inferência local de objetos e sem mover PTZ.
+
+## Falha observada e correção da aplicação do PID — 2026-10-27
+
+- Teste solicitado: abertura física de ~30 s, sem mover água/sensores;
+  usuário confirmou execução. Modo porta ficou pausado ~57 s: abertura entre
+  ms 883662/886129 e fechamento entre 940321/942611 no log pós-calibração.
+- Arduino chegou a 33,39 °C após fechar. A referência voltou a 37,0 °C
+  às 13:00, mas às 13:04 marcou 37,3 °C; Arduino atingiu 37,51 °C,
+  já com aquecedor desligado, e depois caiu a ~36 °C.
+  Logo, o primeiro ajuste de offset não resolveu a oscilação. Não declarar
+  aquele teste aprovado nem usar somente a passagem por 37,0 como estabilidade.
+- Problema encontrado na aplicação: duração do pulso com apenas 3 s de pausa
+  torna a potência não linear: 12/(12+3)=80%, 6/(6+3)=67%.
+- Nova versão gravada ~13:11: período mínimo de 20 s entre inícios,
+  até 17 s ligado (85% longe da meta) ou 12 s (60% perto); Kd de 6.000
+  para 18.000 ms/(°C/min). Antiwindup considera o teto ativo de cada faixa.
+  Offset permanece +1,575 °C; Kp, Ki, corte de 37,1 e emergência de 39 °C preservados.
+- Teste da função C++ real verificou 6 s ligados a cada 20 s durante seis
+  períodos: exatamente 30% de tempo ligado, mantendo cortes e pausas.
+  Compilação/upload saída 0, 32.166 bytes Flash e 1.012 RAM estática.
+- Coleta nova: `/tmp/incubadora-telemetria/coleta-periodo20-20261027.log`;
+  imagens/metadados em `periodo20-camera/`. Houve reinício no começo da
+  coleta (BOOT_COUNT 6); desconsiderar trecho inicial truncado e confirmar
+  continuidade de ms e ausência de novos boots antes de avaliar a estabilidade.
+  Verificação física desta versão ainda pendente.

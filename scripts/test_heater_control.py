@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise actual thermal control: recovery, near-target cap and safety."""
+"""Exercise actual thermal control: duty, recovery, trend braking and safety."""
 from pathlib import Path
 import re
 import subprocess
@@ -30,10 +30,10 @@ int main() {
   // Paired observation: old corrected 36.95 C, reference 36.2 C.
   assert(std::abs((36.95f-2.325f+CHAMBER_TEMPERATURE_OFFSET_C)-36.2f)<0.0001f);
   controlHeater(36.2f,4000);
-  assert(pin==LOW && heaterPidDemandMs>12000 && heaterPidDemandMs<=30000);
+  assert(pin==LOW && heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
   heaterPidIntegralMs=12000;
   controlHeater(36.2f,5000);
-  assert(heaterPidDemandMs>12000 && heaterPidDemandMs<=30000);
+  assert(heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
   controlHeater(36.6f,6000);
   assert(heaterPidDemandMs<=12000 && heaterCurrentPulseMs<=12000);
   controlHeater(37.1f,6001);
@@ -41,15 +41,42 @@ int main() {
   controlHeater(36.2f,8000);
   assert(pin==HIGH); // mandatory 3 s off
   controlHeater(36.2f,9001);
+  assert(pin==HIGH); // 3 s off is insufficient before the 20 s pulse period
+  controlHeater(36.2f,24000);
   assert(pin==LOW);
-  controlHeater(NAN,9002);
+  controlHeater(NAN,24001);
   assert(pin==HIGH && heaterPidDemandMs==0);
-  controlHeater(39.0f,9003);
+  controlHeater(39.0f,24002);
   assert(pin==HIGH && !botao_aquecedor_onoff && !botao_co2_onoff && safetyFault==2);
+
+  // Actual GPIO duty over six periods at target: 6 s demand means 30%, not 67%.
+  pin=HIGH;botao_aquecedor_onoff=true;safetyFault=0;
+  heaterPidInitialized=false;heaterLastTransitionAt=90000;heaterPulseStartedAt=0;
+  controlHeater(37.0f,100000);
+  heaterPidIntegralMs=6000;
+  unsigned long onMs=0,lastStart=0;int starts=0;
+  for (unsigned long now=100020;now<220020;now+=20) {
+    int before=pin;controlHeater(37.0f,now);
+    if (before==HIGH && pin==LOW) {
+      if (lastStart) assert(now-lastStart==20000);
+      lastStart=now;starts++;
+    }
+    if (pin==LOW) onMs+=20;
+  }
+  assert(starts==6 && onMs==36000);
+
+  // A measured rise must brake before reaching target, without bypassing caps.
+  heaterTrendReady=true;heaterTempRateCPerMin=0.3f;
+  heaterTrendReferenceAt=220000;heaterPidIntegralMs=6000;pin=HIGH;
+  controlHeater(36.8f,220020);
+  assert(heaterPidDemandMs<5000);
+  heaterTempRateCPerMin=-0.3f;
+  controlHeater(36.8f,220040);
+  assert(heaterPidDemandMs<=12000);
 }
 '''
 with tempfile.TemporaryDirectory() as d:
     p=Path(d)/'test.cpp';p.write_text(harness)
     subprocess.run(['g++','-std=c++11',str(p),'-o',str(Path(d)/'test')],check=True)
     subprocess.run([str(Path(d)/'test')],check=True)
-print('Heater recovery, near-target cap, relay pause and safety checks passed.')
+print('Heater duty, recovery, trend braking, relay pause and safety checks passed.')

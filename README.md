@@ -308,7 +308,7 @@ e temperatura estão fora da faixa, amarelo quando apenas uma está na faixa e v
 ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0% ±0,1 ponto
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
-de temperatura é 36,9–37,1 °C. O PID busca 37,0 °C com pulsos de até 30 s
+de temperatura é 36,9–37,1 °C. O PID busca 37,0 °C com pulsos de até 17 s
 quando a leitura está em 36,5 °C ou abaixo, e até 12 s perto da meta. Mantém
 pausa mínima de 3 s, integral limitada a 12 s e corte imediato em 37,1 °C.
 Se a leitura de temperatura falhar (`NaN`), o firmware desliga temporariamente a saída do
@@ -360,15 +360,22 @@ desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato
 físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
 proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
 de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
-limitada a 30 s quando o erro é de pelo menos 0,5 °C e a 12 s perto da meta;
-um novo pulso pode começar após pelo menos 3 s desligado. O controle
+limitada a 17 s quando o erro é de pelo menos 0,5 °C e a 12 s perto da meta.
+Há pelo menos 20 s entre os inícios dos pulsos e 3 s desligado: 6 s pedidos
+equivalem a 30% de tempo ligado, em vez de 67% com a antiga pausa fixa de 3 s.
+Os limites correspondem a 85% longe da meta e 60% perto dela. O controle
 revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um pulso se a demanda
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
 necessária à manutenção. A demanda zera acima de 37,0 °C; em 37,0 °C exatos,
 o ajuste PI/D pode manter aquecimento. Há corte independente em 37,1 °C.
 A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
-O ajuste inicial ainda precisa de validação térmica prolongada por causa da inércia observada.
+O termo derivativo usa 18.000 ms/(°C/min), equivalente a aproximadamente
+60 s de antecipação em relação ao proporcional; a integral só acumula com
+margem no teto ativo da faixa. A alteração foi motivada por pico tardio
+de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
+já desligada. Verificação física do novo controle em andamento; passar
+momentaneamente por 37,0 °C não comprova estabilidade prolongada.
 O automático considera reposição quando a concentração projetada cai abaixo de
 49.500 ppm. Entre doses, mantém o contador mínimo de 30 ciclos e exige tendência
 abaixo de 300 ppm/min durante 30 s. Em geral respeita o tempo de resposta aprendido
