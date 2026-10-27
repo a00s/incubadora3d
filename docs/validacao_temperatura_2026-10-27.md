@@ -241,3 +241,22 @@ enquanto PI/D continua buscando 37 °C. Corte pela medição real permanece
 37,1 °C. Compilação, teste térmico e gravação verificada passaram. CO₂ ativo.
 Nova coleta `coleta-antecipacao-limite-20261027.log`, imagens em
 `antecipacao-limite-camera/`. Validação física ainda pendente.
+
+### Aprendizado compatível com a resolução, 16:50
+
+Previsão de 90 s contra 37,1 °C chegou à meta e teve máximo 37,14 °C
+(uma amostra acima de 37,1), mas média de 36,87–36,92 °C nos trechos
+de cinco minutos. Não aprovado como manutenção da meta. Arquivo separado
+`docs/ensaios/antecipacao-limite_2026-10-27.*`.
+
+Identificada incompatibilidade: DS18B20 12 bits varia em passos de 0,0625 °C;
+em 30 s isso equivale a 0,125 °C/min, acima do limite de aprendizado
+de 0,05 °C/min. Na coleta, só 41/187 amostras termicamente elegíveis
+passavam esse limite; com tolerância 0,15, 142/187 passariam.
+Alterada somente essa tolerância; previsão, cortes, ganhos e CO₂ mantidos.
+Teste de regressão novo verifica aprendizado com taxa 0,12 °C/min abaixo
+da previsão de corte, sem aprender na subida rápida 0,2 °C/min.
+Compilação e gravação com verificação passaram. Nova coleta:
+`coleta-aprendizado-resolucao-20261027.log`, fotos em `aprendizado-resolucao-camera/`.
+Ensaio físico ainda pendente. Manter esta revisão por vários ciclos antes
+de concluir convergência ou necessidade de outro ajuste.

@@ -107,6 +107,9 @@ int main() {
   heaterPidLastUpdateAt=300000;heaterPidIntegralMs=9000;heaterPidDemandMs=0;
   controlHeater(36.3f,301000);
   assert(heaterPidIntegralMs>9000);
+  heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.12f;
+  controlHeater(36.7f,301500);
+  assert(heaterPidIntegralMs>9000); // one DS18B20 step cannot freeze loss learning
   heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.2f;
   controlHeater(36.3f,302000);
   assert(heaterPidIntegralMs==9000);

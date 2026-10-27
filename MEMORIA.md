@@ -7,19 +7,25 @@ ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
 37,51 °C ~15:09, mesmo com saída desligada, por calor residual. Não atribuir
 esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
 
-Revisão atual gravada e verificada ~16:38: meta 37 °C, previsão de 90 s
+Revisão atual gravada e verificada ~16:50: meta 37 °C, previsão de 90 s
 corta saída se temperatura + taxa positiva × 1,5 min atingir 37,1 °C.
 Retoma automaticamente; controles permanecem habilitados. Corte por leitura
 real 37,1 °C e emergência travada 39 °C. Sem tendência inicial usa manutenção.
 Horizonte 180 s e previsão contra 37,0 °C ficaram abaixo da meta; mesmo
 90 s contra 37,0 °C manteve ~36,8 °C. Ensaios arquivados separadamente em
 docs/ensaios/antecipacao180_2026-10-27.* e antecipacao90_2026-10-27.*.
+A tolerância de aprendizado foi corrigida de 0,05 para 0,15 °C/min:
+um passo de 0,0625 °C em 30 s produz 0,125 °C/min. O limite antigo
+bloqueava 78% das amostras elegíveis. Mantidos anti-saturação, bloqueio
+na previsão de excesso e durante subida rápida. Teste novo cobre esse passo.
+A etapa anterior teve máximo 37,14 °C e média abaixo da meta; arquivada
+em docs/ensaios/antecipacao-limite_2026-10-27.*.
 Resultado físico da revisão atual ainda PENDENTE, não declarar corrigido.
 Testes de software de controle térmico passaram; demais testes passaram na
 revisão anterior sem mudanças em CO₂/porta/display.
 
-Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao-limite-20261027.log;
-fotos em antecipacao-limite-camera; supervisor em supervisao-antecipacao-limite.json.
+Coleta atual: /tmp/incubadora-telemetria/coleta-aprendizado-resolucao-20261027.log;
+fotos em aprendizado-resolucao-camera; supervisor em supervisao-aprendizado-resolucao.json.
 CO₂ mantido ATIVO por pedido do usuário. Supervisor externo interrompe
 apenas aquecimento a 37,2 °C ou perda de telemetria; não confundir esse
 aborto experimental com o corte normal que retoma sozinho.

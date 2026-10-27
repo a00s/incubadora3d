@@ -376,7 +376,8 @@ a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a po
 O proporcional usa 9.000 ms/°C, a integral 1.000 ms/(°C·min), e o derivativo
 18.000 ms/(°C/min), equivalente a aproximadamente 120 s de antecipação
 em relação ao proporcional. A integral aprende perdas com tendência pronta,
-variação inferior a 0,05 °C/min em módulo e margem no teto da saída;
+variação inferior a 0,15 °C/min em módulo (compatível com o passo da sonda
+de 0,0625 °C em janelas de 30 s) e margem no teto da saída;
 acima da meta ela descarrega. Assim, o aquecimento transitório não é
 interpretado como potência de manutenção, e uma perda estável pode ser
 aprendida também longe da meta.

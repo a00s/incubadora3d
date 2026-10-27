@@ -1326,8 +1326,9 @@ void controlHeater(float temperature, unsigned long now) {
     ? heaterTempRateCPerMin > 0.0f &&
       temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF
     : temperature >= HEATER_SETPOINT_C;
-  // Learn stationary loss, never the energy already travelling from the heater.
-  if (errorC < 0.0f || (!coastCut && heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.05f &&
+  // A DS18B20 step over 30 s is 0.125 C/min; allow quantized near-stationary loss.
+  // Forecast braking and saturation still prevent charging during fast recovery.
+  if (errorC < 0.0f || (!coastCut && heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.15f &&
       heaterPidDemandMs < HEATER_PID_MAX_ON_MS)) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);
