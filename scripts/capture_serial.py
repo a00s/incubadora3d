@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import select
 import sys
 import termios
 import tty
@@ -28,6 +29,10 @@ def main() -> int:
         termios.tcsetattr(fd, termios.TCSANOW, attrs)
         pending = bytearray()
         while True:
+            # The port is nonblocking: wait for bytes instead of spinning at 100% CPU.
+            ready, _, _ = select.select([fd], [], [], 1.0)
+            if not ready:
+                continue
             try:
                 chunk = os.read(fd, 512)
             except BlockingIOError:
