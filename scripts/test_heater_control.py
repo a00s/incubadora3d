@@ -110,7 +110,7 @@ int main() {
   heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.2f;
   controlHeater(36.3f,302000);
   assert(heaterPidIntegralMs==9000);
-  heaterTempRateCPerMin=0.04f;heaterPidIntegralMs=11000;
+  heaterTempRateCPerMin=0.08f;heaterPidIntegralMs=11000;
   controlHeater(36.9f,303000);
   assert(pin==HIGH && heaterPidDemandMs==0 && heaterPidIntegralMs==11000);
   heaterTempRateCPerMin=-0.04f;

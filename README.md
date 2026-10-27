@@ -368,6 +368,9 @@ revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um puls
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
 necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
 lados da meta, com corte independente em 37,1 °C.
+Uma previsão adicional corta a saída se temperatura + taxa positiva × 1,5 min
+atingir 37 °C. Esse corte retoma automaticamente; não desabilita o controle.
+Sem tendência medida, usa manutenção e evita impulso proporcional inicial.
 A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O proporcional usa 9.000 ms/°C, a integral 1.000 ms/(°C·min), e o derivativo

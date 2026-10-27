@@ -209,3 +209,22 @@ preservação do texto e extração de quadros binários MH-Z16.
 As verificações de software não comprovam desempenho térmico, precisão
 absoluta dos termômetros, temperatura do líquido ou uniformidade espacial.
 Nenhuma peça CAD ou configuração do projeto de impressão foi alterada.
+
+## Revisão de antecipação, 16:29
+
+O ensaio anterior com aprendizado estacionário também falhou: Arduino atingiu
+37,51 °C ~15:09, com calor residual após desligamento da saída. Pulsos de
+identificação estão arquivados em `docs/ensaios/pulso-*.json`.
+
+Foi gravada previsão de 180 s, mantendo corte normal 37,1 °C e emergência
+travada 39 °C. O ensaio de 15:44:55 a 16:28 teve máximo 37,01 °C, mas
+ficou longamente abaixo da meta; chegou a cortar em 36,58 °C com taxa
+0,16 °C/min. Às 16:14 a câmera mostrava referência 36,0 °C e Arduino
+36,51 °C. Isso não valida calibração nem estabilidade.
+
+Após solicitação do usuário, previsão reduzida a 90 s e gravada com verificação.
+Demais ganhos/cortes mantidos, CO₂ ativo. Nova coleta `coleta-antecipacao90-20261027.log`,
+quadros `antecipacao90-camera/`; ambos sob `/tmp/incubadora-telemetria`.
+Supervisor externo interrompe somente o aquecimento a 37,2 °C ou falha de
+telemetria; esse limite é do ensaio vazio, não emergência do firmware.
+Todos os cinco testes de controle passaram; resultado físico ainda pendente.

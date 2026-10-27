@@ -8,14 +8,19 @@ ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
 esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
 
 Revisão com antecipação gravada ~15:42: corta saída quando temperatura +
-taxa positiva × 3 min prevê 37 °C; retomada automática, controle permanece
+taxa positiva × 1,5 min prevê 37 °C; retomada automática, controle permanece
 habilitado. Sem tendência inicial usa manutenção, sem impulso proporcional.
 Corte normal 37,1 °C; emergência travada continua 39 °C. O valor 37,2 °C
 NÃO foi gravado como emergência: é somente aborto do supervisor deste ensaio.
 Testes de software passaram; validação térmica física ainda pendente.
 
-Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao-20261027.log;
-fotos em antecipacao-camera; supervisor em supervisao-antecipacao.json.
+Atualização ~16:29: horizonte de 180 s reduziu picos, mas ficou abaixo da meta
+por longos períodos (máximo 37,01, sem >37,1 até interrupção às 16:28).
+Usuário pediu correção: horizonte reduzido a 90 s, compilado, gravado e
+verificado; testes de aquecimento, porta, display e CO₂ passaram. Ensaio físico
+ainda pendente. CO₂ preservado ativo.
+Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao90-20261027.log;
+fotos em antecipacao90-camera; supervisor em supervisao-antecipacao90.json.
 Supervisor habilitou aquecimento ~15:44:55, após resfriamento/pulsos de
 identificação. Em ~15:48 usuário pediu CO₂ também ativo para ensaio combinado:
 comando CO2 ON enviado e ACK recebido. Não desligar CO₂ só para isolar calor.

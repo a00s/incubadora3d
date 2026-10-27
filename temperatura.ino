@@ -115,7 +115,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_PID_KI_MS_PER_C_MIN 1000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 18000.0f
 #define HEATER_PID_INITIAL_INTEGRAL_MS 10000.0f
-#define HEATER_COAST_FORECAST_MIN 3.0f
+#define HEATER_COAST_FORECAST_MIN 1.5f
 #define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1f)
 #define HEATER_EMERGENCY_CUTOFF 39.0f
 #define TEMPERATURE_GOOD_MIN (HEATER_SETPOINT_C - 0.1)
@@ -1321,7 +1321,7 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
-  // Include the observed coast and the 30 s trend delay before adding more heat.
+  // Use a 90 s coast horizon; 180 s repeatedly stalled below target in the chamber.
   bool coastCut = heaterTrendReady
     ? heaterTempRateCPerMin > 0.0f &&
       temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_SETPOINT_C
