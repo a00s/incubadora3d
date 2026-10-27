@@ -1,0 +1,57 @@
+{
+  "archived_at": "2026-10-27T14:54:06.645346+01:00",
+  "status": "validacao_pendente_teste_isolado_porta",
+  "source_log": "/tmp/incubadora-telemetria/coleta-aprendizado-estavel-20261027.log",
+  "boot_count": 12,
+  "source_commit": "a6ed10869240ff29f19ab1685ddb9001dfe4f3f5",
+  "firmware_sha256": "2f458a687edf4333b524d314635997d6eb3f108fe95ac2b677ce21a2ebea78c6",
+  "samples": 863,
+  "last_arduino_ms": 2041253,
+  "temperature_c": {
+    "min": 36.26,
+    "mean": 36.88857473928157,
+    "max": 37.2
+  },
+  "invalid_temperature_samples": 0,
+  "events": [
+    "EVENT,co2_probe,20",
+    "EVENT,co2_pulse,40",
+    "EVENT,co2_pulse,60",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80",
+    "EVENT,co2_pulse,80"
+  ],
+  "excluded_non_data_lines": 36,
+  "parameters": {
+    "target_c": 37.0,
+    "offset_c": 1.575,
+    "kp_ms_per_c": 9000,
+    "ki_ms_per_c_min": 1000,
+    "kd_ms_per_c_per_min": 18000,
+    "period_ms": 20000,
+    "max_on_ms": 17000,
+    "min_off_ms": 3000,
+    "initial_maintenance_ms": 10000,
+    "learning_max_abs_rate_c_min": 0.05,
+    "hard_cutoff_c": 37.1,
+    "emergency_c": 39.0,
+    "maintenance_preserved_during_door_pause": true,
+    "learning_saved_to_eeprom": false
+  },
+  "limitations": [
+    "Referência apoiada na gaveta metálica; Arduino suspenso no teto, ~3 cm distante.",
+    "Dados desta revisão iniciam após reinício; teste isolado de porta ainda pendente.",
+    "CSV preserva amostras inválidas; estatísticas de temperatura usam apenas valores finitos."
+  ]
+}

@@ -172,6 +172,12 @@ verificados ficaram entre 36,9 e 37,1 °C. Às 14:47:59, referência 37,1 °C
 e Arduino 36,89 °C. O teste final de porta foi solicitado, com firmware
 mantido na mesma revisão; ainda não foi registrado evento de abertura nesse log.
 
+A [telemetria completa desta revisão](ensaios/controle_termico_2026-10-27.csv)
+e seus [metadados](ensaios/controle_termico_2026-10-27.json) foram arquivados
+no projeto. O arquivo inclui as amostras após o último boot; o estado de
+validação permanece pendente do teste isolado de porta. As capturas pareadas
+estão no CSV de leituras visuais citado acima; os quadros originais continuam em `/tmp`.
+
 Visualizador regenerado e comparado: malha e layout equivalentes aos anteriores,
 sem alterações de CAD/STL/STEP/3MF. Cópia servida atualizada e HTTP 200 na porta
 8081; o SHA-256 do conteúdo HTTP coincide com `index.html` servido.

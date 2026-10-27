@@ -16,6 +16,9 @@ Após isso, quadros completos por minuto de 14:36:59 a 14:47:59 em 36,9–37,1 �
 Foi solicitado teste final de porta (30 s, toques longos), agora com firmware
 mantido na mesma revisão; aguardar usuário/eventos no log e acompanhar recuperação.
 Não gravar firmware nem reabrir a serial durante esse ensaio.
+Telemetria completa já arquivada em `docs/ensaios/controle_termico_2026-10-27.csv`
+com parâmetros e estado de validação no JSON de mesmo nome. Atualizar esse
+arquivo ao terminar o ensaio; não confundir a cópia arquivada com a coleta viva em `/tmp`.
 Visualizador regenerado com geometria/layout equivalentes, cópia servida e HTTP 200
 em 8081. CAD/STL/STEP/3MF não foram modificados nesta tarefa de firmware.
 
