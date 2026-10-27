@@ -27,14 +27,14 @@ case "$ACTION" in
     ;;
   compile)
     "$CLI" compile --fqbn "$FQBN" \
-      --build-property 'compiler.c.extra_flags=-mcall-prologues -fno-inline-small-functions' \
-      --build-property 'compiler.cpp.extra_flags=-mcall-prologues -fno-inline-small-functions' \
+      --build-property 'compiler.c.extra_flags=-mcall-prologues -fno-inline-small-functions -fno-split-wide-types -fno-tree-scev-cprop -mstrict-X' \
+      --build-property 'compiler.cpp.extra_flags=-mcall-prologues -fno-inline-small-functions -fno-split-wide-types -fno-tree-scev-cprop -mstrict-X' \
       --build-property compiler.c.elf.extra_flags=-Wl,--relax --libraries "$LIBRARIES" --build-path "$BUILD" "$SKETCH"
     ;;
   upload)
     "$CLI" compile --fqbn "$FQBN" \
-      --build-property 'compiler.c.extra_flags=-mcall-prologues -fno-inline-small-functions' \
-      --build-property 'compiler.cpp.extra_flags=-mcall-prologues -fno-inline-small-functions' \
+      --build-property 'compiler.c.extra_flags=-mcall-prologues -fno-inline-small-functions -fno-split-wide-types -fno-tree-scev-cprop -mstrict-X' \
+      --build-property 'compiler.cpp.extra_flags=-mcall-prologues -fno-inline-small-functions -fno-split-wide-types -fno-tree-scev-cprop -mstrict-X' \
       --build-property compiler.c.elf.extra_flags=-Wl,--relax --libraries "$LIBRARIES" --build-path "$BUILD" \
       --upload --verify --port "$PORT" "$SKETCH"
     ;;

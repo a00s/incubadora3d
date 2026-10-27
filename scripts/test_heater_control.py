@@ -86,7 +86,7 @@ int main() {
   controlHeater(36.8f,220040);
   assert(heaterPidDemandMs<=17000);
   // Maintenance can use more than 60% without switching temperature bands.
-  heaterTempRateCPerMin=0;heaterPidIntegralMs=15000;
+  heaterTempRateCPerMin=0;heaterPidIntegralMs=15000;heaterFilteredTempC=37.0f;
   controlHeater(37.0f,220060);
   assert(heaterPidIntegralMs==15000 && heaterPidDemandMs==15000);
 
@@ -119,6 +119,17 @@ int main() {
   heaterTempRateCPerMin=0.04f;
   controlHeater(36.9f,304000);
   assert(heaterPidDemandMs>0 && botao_aquecedor_onoff); // automatic return after forecast clears
+  // A real warming trend must replace a stale cooling trend at the next window.
+  pin=HIGH;botao_aquecedor_onoff=true;safetyFault=0;co2DoorMode=0;
+  heaterPidInitialized=true;heaterTrendReady=true;
+  heaterPidLastUpdateAt=400000;heaterTrendReferenceAt=400000;
+  heaterFilteredTempC=36.6f;heaterTrendReferenceC=36.6f;heaterTempRateCPerMin=-0.3f;
+  for (unsigned long now=400020;now<=431000;now+=20)
+    controlHeater(36.6f+(now-400000)*0.000005f,now);
+  assert(heaterTempRateCPerMin>0.15f); // no second EMA can retain the old negative sign
+  controlHeater(37.0f,431020);
+  assert(pin==HIGH && heaterPidDemandMs==0 && botao_aquecedor_onoff);
+
 }
 '''
 with tempfile.TemporaryDirectory() as d:

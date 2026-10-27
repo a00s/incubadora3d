@@ -298,3 +298,43 @@ Arduino pareado36,64 °C. Não recalibrar na transição. Comparações visuais
 por minuto arquivadas em `docs/ensaios/referencia_recuperacao_2026-10-27.csv`
 e imagens `camera_recuperacao_inicio.jpg`/`camera_recuperacao_subida.jpg`.
 Pico e manutenção posteriores ainda pendentes.
+
+## Revisão da tendência e resultado prolongado, 17:29–22:10
+
+A revisão removeu a segunda EMA da taxa: filtra primeiro a temperatura
+(com constante aproximada10s) e calcula a tendência na janela30s. Também
+bloqueia pulsos com leitura >=37 °C quando a tendência é positiva.
+Teste de regressão cobre inversão de resfriamento para aquecimento e o
+bloqueio na meta. Isso NÃO resolveu fisicamente os picos: supervisor
+interrompeu às17:42 com Arduino37,20 °C, e os dados posteriores incluíram
+37,45 °C após reabilitação do controle. Essa reabilitação está no log,
+sem novo ACK serial e sem reboot; origem não estabelecida.
+
+Às22:01:32, novo enquadramento da câmera permitiu ler referência37,9 °C;
+Arduino próximo de37,0 °C. A última hora naquele momento teve
+36,39–37,45 °C no Arduino, média36,898 °C. Falhou tanto em estabilidade
+quanto na concordância com a referência. Fonte reconstituível, hash, parâmetros
+e7108 amostras arquivados em `docs/ensaios/filtro_tendencia_2026-10-27.*`.
+Não usar essas medidas para mudar offset sem controlar a condição física.
+
+## Novo recipiente e atualização parcial do visor, ~22:10
+
+Usuário encontrou recipiente seco; adicionou25mL em outro pote, com só
+um canto tocando o aquecedor. Pediu manter assim neste ensaio e comparar
+sem contato depois que estabilizar em37 °C. Isso é relato físico, não medida
+de temperatura da água ou umidade. Telemetria da câmara não mede RH.
+
+Visor agora atualiza apenas as células dos caracteres alterados,7×12px,
+com sobreimpressão em negrito dentro da própria célula.37.01→37.08 apaga
+uma célula e desenha apenas8;36.99→37.00 altera três células. Valor idêntico
+não gera desenho de temperatura. Cor/invalidade do cache forçam o campo
+completo; comprimentos menores apagam caracteres antigos.
+Todos os cinco testes passaram; compilação32244bytes flash e1024bytes
+de RAM estática. Gravação verificada. O controle térmico não mudou nessa
+atualização de visor e permanece sem aprovação física.
+
+Novo log `coleta-visor-parcial-20261027.log`, BOOT27 (ignorar fragmentos
+pré-boot), fotos `visor-parcial-camera/`. Supervisor externo `supervisao-agua25.json`
+anexado ao controle já ativo às22:16, sem enviar HEAT ON; aborta aquecimento
+a37,2 °C, telemetria inválida ou timeout1h. CO₂ ativo. Referência25,3 °C
+às22:12:25 durante manipulação/reset; extremos reiniciados ainda a confirmar.

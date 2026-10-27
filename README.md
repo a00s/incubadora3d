@@ -359,7 +359,9 @@ desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato
 `ALL OFF` desliga a injeção e o aquecedor. Esses estados são salvos na EEPROM, como os botões
 físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
 proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
-de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
+de 30 s antecipa quedas ou subidas. A leitura usada pelo PI/D passa por
+filtro de 10 s antes do cálculo da tendência; o corte por temperatura real
+continua usando a leitura sem esse filtro. A tendência não recebe outra EMA. O PID ajusta continuamente a duração de cada pulso,
 limitada a 17 s em toda a faixa de operação.
 Há pelo menos 20 s entre os inícios dos pulsos e 3 s desligado: 6 s pedidos
 equivalem a 30% de tempo ligado, em vez de 67% com a antiga pausa fixa de 3 s.
@@ -369,7 +371,9 @@ cair. A integral é limitada e descarrega gradualmente acima da meta para conser
 necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
 lados da meta, com corte independente em 37,1 °C.
 O visor mostra a temperatura da câmara com duas casas decimais (por exemplo,
-37,08 °C); a temperatura da eletrônica mantém uma casa. Os centésimos ajudam
+37,08 °C); a temperatura da eletrônica mantém uma casa. O campo da câmara
+redesenha apenas os caracteres que mudam; mudanças de cor ou reconstrução
+da tela invalidam o campo completo. Os centésimos ajudam
 a acompanhar os passos da sonda, cuja resolução é 0,0625 °C.
 Uma previsão adicional corta a saída se temperatura + taxa positiva × 1,5 min
 atingir 37,1 °C. A meta do PID permanece 37 °C. Esse corte retoma automaticamente; não desabilita o controle.

@@ -147,6 +147,7 @@ unsigned long heaterPulseStartedAt = 0;
 uint16_t heaterCurrentPulseMs = 0;
 unsigned long heaterTrendReferenceAt = 0;
 float heaterTrendReferenceC = 0.0f;
+float heaterFilteredTempC = 0.0f;
 float heaterTempRateCPerMin = 0.0f;
 float heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
 uint16_t heaterPidDemandMs = 0;
@@ -167,6 +168,7 @@ int8_t displayCo2RangeLock = -1;
 int8_t displaySafetyAlert = -1;
 uint8_t safetyFault = 0;
 int16_t displayTempHundredths = 32767;
+char displayTemperatureText[8] = {};
 int16_t displayInternalTempTenths = 32767;
 int32_t displayLossCm3Hour = -2;
 int8_t displayLossStable = -1;
@@ -1043,11 +1045,28 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
     uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
-    drawTextChanges(nextTempText, 5, 74, 64, 12, 58,
-                    tempR, tempG, tempB);
-    // Bold overprint keeps the compact font and its fixed field width on the Uno.
-    ucg.setPrintPos(6, 74);
-    ucg.print(nextTempText);
+    bool fullTemperature = !displayCacheValid || displayTempQuality != tempQuality;
+    if (fullTemperature) {
+      setDisplayBackground();
+      ucg.drawBox(4, 64, 58, 12);
+    }
+    const char *digit = nextTempText;
+    for (uint8_t i = 0; i < sizeof(displayTemperatureText); i++) {
+      char nextDigit = *digit;
+      if (nextDigit) digit++;
+      if (!fullTemperature && nextDigit == displayTemperatureText[i]) continue;
+      uint8_t digitX = 5 + i * 7;
+      if (!fullTemperature) {
+        setDisplayBackground();
+        ucg.drawBox(digitX, 64, 7, 12);
+      }
+      if (nextDigit) {
+        setDisplayForeground(tempR, tempG, tempB);
+        ucg.drawGlyph(digitX, 74, 0, nextDigit);
+        ucg.drawGlyph(digitX + 1, 74, 0, nextDigit);
+      }
+      displayTemperatureText[i] = nextDigit;
+    }
     displayTempHundredths = tempHundredths;
     displayTempQuality = tempQuality;
   }
@@ -1301,30 +1320,32 @@ void controlHeater(float temperature, unsigned long now) {
     heaterPidLastUpdateAt = now;
     heaterTrendReferenceAt = now;
     heaterTrendReferenceC = temperature;
+    heaterFilteredTempC = temperature;
     heaterTempRateCPerMin = 0.0f;
     heaterTrendReady = false;
   }
 
   unsigned long elapsedMs = now - heaterPidLastUpdateAt;
+  float filterWeight = elapsedMs * 0.0001f;
+  if (elapsedMs >= 10000UL) filterWeight = 1.0f;
+  heaterFilteredTempC += (temperature - heaterFilteredTempC) * filterWeight;
   if (now - heaterTrendReferenceAt >= HEATER_TREND_WINDOW_MS) {
     unsigned long trendElapsedMs = now - heaterTrendReferenceAt;
-    float measuredRate = (temperature - heaterTrendReferenceC) * 60000.0f /
+    float measuredRate = (heaterFilteredTempC - heaterTrendReferenceC) * 60000.0f /
                          (float)trendElapsedMs;
-    // Smooth the 30-second sensor trend so one quantization step does not
-    // make the relay chase measurement noise.
-    heaterTempRateCPerMin = heaterTrendReady
-      ? heaterTempRateCPerMin * 0.5f + measuredRate * 0.5f
-      : measuredRate;
+    // Filter quantization before differentiation, without another delayed rate EMA.
+    heaterTempRateCPerMin = measuredRate;
     heaterTrendReferenceAt = now;
-    heaterTrendReferenceC = temperature;
+    heaterTrendReferenceC = heaterFilteredTempC;
     heaterTrendReady = true;
   }
 
-  float errorC = HEATER_SETPOINT_C - temperature;
+  float errorC = HEATER_SETPOINT_C - heaterFilteredTempC;
   // Use a 90 s coast horizon; 180 s repeatedly stalled below target in the chamber.
   bool coastCut = heaterTrendReady
     ? heaterTempRateCPerMin > 0.0f &&
-      temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF
+      (temperature >= HEATER_SETPOINT_C ||
+       temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF)
     : temperature >= HEATER_SETPOINT_C;
   // A DS18B20 step over 30 s is 0.125 C/min; allow quantized near-stationary loss.
   // Forecast braking and saturation still prevent charging during fast recovery.

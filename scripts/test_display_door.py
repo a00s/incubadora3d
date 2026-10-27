@@ -24,6 +24,7 @@ harness=r'''
 #include <string>
 #include <vector>
 #include <utility>
+#include <tuple>
 #include <assert.h>
 using std::isnan;
 #define F(x) x
@@ -55,18 +56,29 @@ void drawHeaterIcon(uint8_t,uint8_t,bool,bool,uint8_t) {iconDraws++;}
 void drawFanIcon(uint8_t,uint8_t,bool,bool,uint8_t) {iconDraws++;}
 struct Display {
  int baseline=0;
+ std::string temperatureField=std::string(8,' ');
+ std::vector<std::tuple<int,int,int,int>> boxes;
+ std::vector<std::tuple<int,int,char>> glyphs;
  std::vector<std::pair<int,std::string>> writes;
  int getWidth() {return 128;} int getHeight() {return 160;}
  int getStrWidth(const char *s) {return strlen(s)*7;}
- void clearScreen() {} void setColor(int,int,int,int) {} void setFont(int) {}
+ void clearScreen() {temperatureField=std::string(8,' ');} void setColor(int,int,int,int) {} void setFont(int) {}
  void setPrintPos(int,int y) {baseline=y;}
  void print(const char *s) {writes.push_back({baseline,s});}
- void drawBox(int x,int y,int w,int h) {assert(x>=0 && y>=0 && x+w<=128 && y+h<=160);}
+ void drawBox(int x,int y,int w,int h) {
+  assert(x>=0 && y>=0 && x+w<=128 && y+h<=160);boxes.push_back({x,y,w,h});
+  if(y==64)for(int i=0;i<8;i++)if(5+7*i>=x && 5+7*i<x+w)temperatureField[i]=' ';
+ }
+ void drawGlyph(int x,int y,int dir,char c) {
+  assert(dir==0 && x>=0 && x<128 && y>=0 && y<160);
+  glyphs.push_back({x,y,c});writes.push_back({y,std::string(1,c)});
+  if(y==74 && x>=5 && x<61 && (x-5)%7==0)temperatureField[(x-5)/7]=c;
+ }
  void drawFrame(int x,int y,int w,int h) {drawBox(x,y,w,h);}
  void drawLine(int x,int y,int a,int b) {assert(x>=0 && x<128 && a>=0 && a<128 && y>=0 && y<160 && b>=0 && b<160);}
  void drawHLine(int x,int y,int w) {assert(x>=0 && y>=0 && x+w<=128 && y<160);}
- void reset() {writes.clear();iconDraws=0;}
- bool has(const char *s) {for(auto &w:writes)if(w.second==s)return true;return false;}
+ void reset() {writes.clear();boxes.clear();glyphs.clear();iconDraws=0;}
+ bool has(const char *s) {for(auto &w:writes)if(w.second==s)return true;return temperatureField.substr(0,strlen(s))==s;}
  void assertOpen() {
   for(auto &w:writes) if(w.first>80) assert(w.first==97 && w.second=="PORTA ABERTA");
   assert(!has("ppm/min") && !has("cm3/h") && iconDraws==0);
@@ -83,6 +95,11 @@ int main() {
  assert(ucg.has("ppm/min") && ucg.has("cm3/h"));
  ucg.reset();renderDisplay(37.01,30,true);assert(ucg.has("37.01 C"));
  ucg.reset();renderDisplay(37.08,30,true);assert(ucg.has("37.08 C"));
+ assert(ucg.boxes.size()==1 && ucg.boxes[0]==std::make_tuple(33,64,7,12));
+ assert(ucg.glyphs.size()==2 && std::get<2>(ucg.glyphs[0])=='8');
+ ucg.reset();renderDisplay(37.08,30,true);assert(ucg.glyphs.empty() && ucg.boxes.empty());
+ renderDisplay(36.99,30,true);ucg.reset();renderDisplay(37.0,30,true);
+ assert(ucg.has("37.00 C") && ucg.boxes.size()==3 && ucg.glyphs.size()==6);
  ucg.reset();renderDisplay(-37.08,30,true);assert(ucg.has("-37.08 C"));
  ucg.reset();renderDisplay(NAN,30,false);assert(ucg.has("--.-- C"));
  co2DoorMode=2;CO2i=44000;

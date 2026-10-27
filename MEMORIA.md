@@ -1,61 +1,60 @@
 # Memória local do projeto
 
-## Trabalho ativo — controle térmico, 2026-10-27
+## Trabalho ativo — controle térmico e visor, 2026-10-27
 
-Atualização 27/10 ~15:48: usuário confirmou câmara SEM células e autorizou
-ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
-37,51 °C ~15:09, mesmo com saída desligada, por calor residual. Não atribuir
-esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
+**Estado ~22:18: ensaio vazio, sem células (relato do usuário). NÃO aprovado
+para uso com células; controle térmico ainda tem picos e diferença entre sondas.**
 
-Revisão atual gravada e verificada ~16:58: meta 37 °C, previsão de 90 s
-corta saída se temperatura + taxa positiva × 1,5 min atingir 37,1 °C.
-Retoma automaticamente; controles permanecem habilitados. Corte por leitura
-real 37,1 °C e emergência travada 39 °C. Sem tendência inicial usa manutenção.
-Horizonte 180 s e previsão contra 37,0 °C ficaram abaixo da meta; mesmo
-90 s contra 37,0 °C manteve ~36,8 °C. Ensaios arquivados separadamente em
-docs/ensaios/antecipacao180_2026-10-27.* e antecipacao90_2026-10-27.*.
-A tolerância de aprendizado foi corrigida de 0,05 para 0,15 °C/min:
-um passo de 0,0625 °C em 30 s produz 0,125 °C/min. O limite antigo
-bloqueava 78% das amostras elegíveis. Mantidos anti-saturação, bloqueio
-na previsão de excesso e durante subida rápida. Teste novo cobre esse passo.
-A etapa anterior teve máximo 37,14 °C e média abaixo da meta; arquivada
-em docs/ensaios/antecipacao-limite_2026-10-27.*.
-Resultado físico da revisão atual ainda PENDENTE, não declarar corrigido.
-Testes de software de controle térmico passaram; demais testes passaram na
-revisão anterior sem mudanças em CO₂/porta/display.
+Resultados verificados: a revisão de tendência filtrada, gravada ~17:29,
+falhou no ensaio supervisionado às 17:42 (37,20 °C, HEAT OFF confirmado).
+O controle foi reabilitado posteriormente, sem novo ACK serial; origem não
+estabelecida. Entre as leituras das horas seguintes, Arduino atingiu 37,45 °C.
+Às 22:01:32, câmera atual mostrou referência37,9 °C e Arduino~37,0 °C.
+Não atribuir todos os picos à calibração. Arquivo completo, parâmetros e
+patch reprodutível do firmware realmente ensaiado em
+`docs/ensaios/filtro_tendencia_2026-10-27.{csv,json,patch}`.
+Etapas anteriores, incluindo recuperação com pico37,39 °C, também arquivadas.
 
-Pedido do usuário: visor da câmara agora mostra DUAS casas decimais,
-com cache em centésimos; temperatura interna continua com uma. Formatação
-compartilhada preserva a perda de CO₂; teste cobre centésimos, negativos,
-NaN, limites de tela e modo porta. Gravado com verificação. Controle térmico
-não mudou nesta gravação; etapa anterior arquivada como parcial, pico37,14.
-Preparação de recuperação começou ~16:58 com aquecimento OFF e CO₂ ON.
-Primeiro supervisor abortou ANTES de enviar HEAT ON: temperatura residual
-ultrapassou a pré-condição 37,1 °C (~17:00), pico no log 37,20 °C ainda
-com saída desligada. Não chamar esse trecho de recuperação aprovada.
-Supervisor inicial terminal: supervisao-recuperacao-centesimos.json.
-Às ~17:03 iniciou supervisor novo, sem reabrir serial/regravar: espera
-20 s de dados contínuos e temperatura <=36,5 °C antes de HEAT ON.
-Depois vigia pico, abortando a 37,2 °C ou falha de telemetria. JSON atual
-supervisao-recuperacao-retomada.json; processo supervisionar-recuperacao-retomada.py.
-Não reiniciar processos apenas porque uma consulta demora; conferir PID e estado.
-Retomada confirmada por ACK e dados contínuos às 17:03:54. Após religar,
-Arduino ainda caiu até ~35,6 °C, por atraso térmico, e começou a subir.
-Às ~17:13 chegou a 36,83 °C; referência em 36,4 °C na captura 17:12:45.
-Não ajustar offset durante essa transição. Ensaios continuam com CO₂ ON.
-Imagens recortadas e comparação visual em docs/ensaios/camera_recuperacao_*.jpg
-e referencia_recuperacao_2026-10-27.csv. Validar pico e patamar antes de encerrar.
-Não regravar agora: observar esta recuperação e a manutenção posterior.
+Relato físico do usuário ~22:11: recipiente estava SECO; porta foi aberta,
+fechada e adicionados25mL em OUTRO pote, com apenas um canto tocando o
+ aquecedor. Usuário pediu manter exatamente assim por enquanto e comparar
+sem contato depois que estabilizar em37 °C. Não alterar essa montagem sem
+nova orientação. Evaporação/umidade dessa montagem ainda não medidas.
+Hipótese: secagem e contato térmico mudam a carga térmica e a evaporação;
+isso não é explicação verificada de todos os erros do controle.
+Arduino NÃO mede atualmente umidade da câmara (`rh_pct=nan`); DHT22 mede
+somente temperatura da eletrônica. Os95% citados pelo usuário são relato
+anterior, não leitura presente da telemetria.
 
-Coleta atual: /tmp/incubadora-telemetria/coleta-recuperacao-centesimos-20261027.log;
-fotos em recuperacao-centesimos-camera; supervisor atual em supervisao-recuperacao-retomada.json.
-CO₂ mantido ATIVO por pedido do usuário. Supervisor externo interrompe
-apenas aquecimento a 37,2 °C ou perda de telemetria; não confundir esse
-aborto experimental com o corte normal que retoma sozinho.
-Conferir processos vivos e último BOOT antes de assumir continuidade.
-Não reabrir serial durante ensaio. Não pedir abertura da porta nesta etapa.
-Não declarar estabilidade nem liberar uso com células sem medir resposta completa.
-CAD e peças não modificados; visualizador regenerado e servido em 8081.
+Firmware atual gravado e verificado ~22:10: temperatura da câmara com duas
+casas; atualiza somente caracteres alterados (células7×12 px). Redesenho
+completo desse campo só quando cache invalidado ou cor de qualidade muda.
+Teste cobre37,01→37,08 (uma célula),36,99→37,00 (três), sem mudança (zero),
+negativos, NaN e modo porta. Todos os cinco testes de controle passaram.
+Flags AVR em scripts/arduino.sh foram ajustados para caber no Uno:
+32244bytes flash,1024bytes estáticos de RAM. Sem mudança de driver da tela.
+Controle térmico é o MESMO da revisão reprovada: alvo37,0; corte real37,1;
+emergência travada39; filtro da leitura10s, tendência30s sem segunda EMA;
+bloqueia pulsos na meta com tendência positiva. Não declarar corrigido.
+
+Coleta viva: `/tmp/incubadora-telemetria/coleta-visor-parcial-20261027.log`;
+câmera/metadados em `visor-parcial-camera/`; BOOT_COUNT27 após a abertura
+da serial. Descartar fragmentos anteriores ao BOOT. Ambos controles
+confirmados ativos depois do fechamento. Supervisor externo anexado ~22:16,
+sem novo HEAT ON: `supervisao-agua25.json`, script `supervisionar-agua25.py`.
+Ele interrompe aquecimento a37,2 °C, falha de dados ou após1h. Não confundir
+com a emergência do firmware. Verificar PID vivo e estado atual antes de agir.
+Não reiniciar/regravar durante este ensaio. CO₂ deve permanecer ativo com
+porta fechada, conforme pedido do usuário. Acompanhar aproximação/pico;
+calibração só poderá ser comparada no patamar, sem mexer na montagem.
+
+Câmera foi reposicionada; imagem atual está legível. Usar quadro inteiro
+após mudanças; recorte antigo x640–905 não enquadra mais todos os dígitos.
+Referência25,3 °C observada22:12:25 durante manipulação/reset. Usuário
+anunciou reset de mínimo/máximo; confirmação visual dos novos extremos
+pendente. Não adivinhar dígitos pequenos. Serviço existente127.0.0.1:8766;
+não iniciar segundo RTSP, não mover PTZ nem expor configuração/credenciais.
+CAD/STL/STEP/3MF sem mudanças; visualizador deve seguir servido em8081.
 
 Este arquivo orienta sessões futuras. Conferir o código atual antes de assumir que
 parâmetros aqui registrados continuam iguais. Não presumir que o firmware local

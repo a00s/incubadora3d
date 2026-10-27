@@ -1,0 +1,31 @@
+--- a/temperatura.ino
++++ b/temperatura.ino
+@@ -149,0 +150 @@
++float heaterFilteredTempC = 0.0f;
+@@ -1303,0 +1305 @@
++    heaterFilteredTempC = temperature;
+@@ -1308,0 +1311,3 @@
++  float filterWeight = elapsedMs * 0.0001f;
++  if (elapsedMs >= 10000UL) filterWeight = 1.0f;
++  heaterFilteredTempC += (temperature - heaterFilteredTempC) * filterWeight;
+@@ -1311 +1316 @@
+-    float measuredRate = (temperature - heaterTrendReferenceC) * 60000.0f /
++    float measuredRate = (heaterFilteredTempC - heaterTrendReferenceC) * 60000.0f /
+@@ -1313,5 +1318,2 @@
+-    // Smooth the 30-second sensor trend so one quantization step does not
+-    // make the relay chase measurement noise.
+-    heaterTempRateCPerMin = heaterTrendReady
+-      ? heaterTempRateCPerMin * 0.5f + measuredRate * 0.5f
+-      : measuredRate;
++    // Filter quantization before differentiation, without another delayed rate EMA.
++    heaterTempRateCPerMin = measuredRate;
+@@ -1319 +1321 @@
+-    heaterTrendReferenceC = temperature;
++    heaterTrendReferenceC = heaterFilteredTempC;
+@@ -1323 +1325 @@
+-  float errorC = HEATER_SETPOINT_C - temperature;
++  float errorC = HEATER_SETPOINT_C - heaterFilteredTempC;
+@@ -1327 +1329,2 @@
+-      temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF
++      (temperature >= HEATER_SETPOINT_C ||
++       temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF)

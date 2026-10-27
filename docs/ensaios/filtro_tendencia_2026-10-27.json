@@ -1,0 +1,73 @@
+{
+  "status": "reprovado_picos_e_desvio_referencia",
+  "source_base_commit": "d779431",
+  "source_patch": "filtro_tendencia_2026-10-27.patch",
+  "firmware_sha256": "803c1b2bc2873ffdb47af2bba7bc2a5dd87575f22e1c0cdf535b0e293ab3a330",
+  "compiler_extra_flags": "-mcall-prologues -fno-inline-small-functions -fno-split-wide-types",
+  "boot": "BOOT_COUNT,25",
+  "samples": 7108,
+  "temperature_c": {
+    "min": 28.01,
+    "max": 37.45
+  },
+  "samples_above_37_2": 299,
+  "heater_enabled_transitions": [
+    {
+      "ms": 23506,
+      "heater_enabled": 1,
+      "temperature_c": 35.89
+    },
+    {
+      "ms": 796994,
+      "heater_enabled": 0,
+      "temperature_c": 37.2
+    },
+    {
+      "ms": 3011649,
+      "heater_enabled": 1,
+      "temperature_c": 30.2
+    },
+    {
+      "ms": 16413704,
+      "heater_enabled": 0,
+      "temperature_c": 37.01
+    }
+  ],
+  "supervisor": {
+    "started_at": "2026-10-27T17:29:03.193667+01:00",
+    "status": "aborted",
+    "abort_c": 37.2,
+    "peak_c": 37.2,
+    "samples_above_37_1": 3,
+    "heat_on_command_at": "2026-10-27T17:29:25.827482+01:00",
+    "initial_temp_c": 35.89,
+    "peak_at": "2026-10-27T17:42:19.312476+01:00",
+    "peak_arduino_ms": 794504,
+    "last_at": "2026-10-27T17:42:19.312502+01:00",
+    "last_temp_c": 37.2,
+    "last_arduino_ms": 794504,
+    "heater_enabled": 1,
+    "heater_on": 0,
+    "pid_demand_ms": 0,
+    "heat_rate_c_min": 0.06,
+    "reason": "RuntimeError: Limite de interrup\u00e7\u00e3o do ensaio atingido",
+    "heat_off_command_at": "2026-10-27T17:42:19.312531+01:00",
+    "off_confirmed": true,
+    "ended_at": "2026-10-27T17:42:21.419204+01:00"
+  },
+  "events": [
+    "ACK,HEAT,ON",
+    "ACK,HEAT,OFF",
+    "EVENT,door,open"
+  ],
+  "camera_observation": {
+    "reference_c": 37.9,
+    "arduino_approx_c": 37.0,
+    "camera_repositioned": true,
+    "note": "Leitura visual do campo principal em quadro atual; diferen\u00e7a ~0,9 C; \u00e1gua sendo conferida pelo usu\u00e1rio.",
+    "observed_at": "2026-10-27T22:01:35.341334+01:00",
+    "camera_overlay_at": "2026-10-27T22:01:32+01:00",
+    "image": "camera_referencia_37_9_2026-10-27.jpg"
+  },
+  "note": "Reativa\u00e7\u00e3o posterior ao aborto detectada no log, sem novo ACK serial e sem reboot; origem n\u00e3o estabelecida. Prepara\u00e7\u00e3o de atualiza\u00e7\u00e3o parcial do visor preserva pausa de porta."
+}

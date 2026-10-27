@@ -1,0 +1,26 @@
+{
+  "status": "visor_parcial_gravado_controle_termico_ainda_em_validacao",
+  "firmware_sha256": "0ab67204ff3a26473700778e006cf64875c9ffda63a1d46ce77933b69be5227e",
+  "hex_sha256": "9dc2fd6c1bef5e617bd2162a6fe1486a6bf928dc94d691969370fdb2f7041586",
+  "flash_bytes": 32244,
+  "static_ram_bytes": 1024,
+  "boot_count": 27,
+  "source_log": "/tmp/incubadora-telemetria/coleta-visor-parcial-20261027.log",
+  "physical_setup_reported": {
+    "water_ml": 25,
+    "previous_reservoir_dry": true,
+    "new_reservoir": true,
+    "heater_contact": "somente_um_canto",
+    "user_preference": "manter_assim_e_comparar_sem_contato_depois"
+  },
+  "humidity_chamber_measured": false,
+  "test_supervisor": "/tmp/incubadora-telemetria/supervisao-agua25.json",
+  "tests_passed": [
+    "heater_control",
+    "door_recovery",
+    "display_door",
+    "co2_control",
+    "co2_loss"
+  ],
+  "note": "Altera\u00e7\u00e3o do visor n\u00e3o resolve por si s\u00f3 os picos t\u00e9rmicos. Ensaio supervisionado com \u00e1gua25mL em andamento."
+}
