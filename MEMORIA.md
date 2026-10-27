@@ -2,6 +2,17 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Estado00:05 de28/10: teste de abertura solicitado, ainda sem resposta nem
+EVENT,door novo. Próximo passo físico indispensável: abertura30s com modo
+porta, sem mover água/sondas, e retomada pelo botão. Não inventar execução.
+Patamar parcial desde primeira chegada37:12,86min, Arduino36,74–37,11 °C,
+média36,921 °C, uma amostra acima37,1; registro em
+`docs/ensaios/patamar_pote_lado_parcial_2026-10-28.json`.
+Supervisor74644 confirmado vivo00:05; timeout às~01:02 desliga HEAT,
+assim como leitura>=37,2 °C/falha de dados. CO₂ permanece habilitado.
+Essa interrupção programada não é emergência de firmware39 °C.
+
+
 Atualização00:02 em28/10: montagem com pote AO LADO, sem contato direto
 com aquecedor. Recuperação desde23:40 chegou a37,05 °C às23:52 e máximo
 37,11 °C às23:59. Referência37,0 °C às23:55;36,8 °C às00:00;36,9 °C

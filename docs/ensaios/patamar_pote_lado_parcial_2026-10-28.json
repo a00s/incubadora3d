@@ -1,0 +1,13 @@
+{
+  "status": "partial_awaiting_physical_door_test",
+  "firmware_commit": "a922e69",
+  "setup": "Pote ao lado do aquecedor; sondas sem mudança relatada",
+  "minutes_after_first_37": 12.859333333333334,
+  "samples": 371,
+  "min_c": 36.74,
+  "max_c": 37.11,
+  "mean_c": 36.92121293800539,
+  "above_37_1": 1,
+  "door_events": [],
+  "last_data": "DATA,3321102,29619,1,36.93,nan,29.2,1,1,1,0,0,20,80,0.00,1,-151,0.00,0,0,27,0,13268,-0.07,0,29393"
+}

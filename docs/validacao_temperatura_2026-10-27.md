@@ -419,3 +419,13 @@ Supervisor `supervisao-pos-ventilador.json`, mesmo log calib-agua25.
 Arduino35,36 °C às23:41; referência35,1 °C na imagem atual23:41:08.
 ALL OFF antes da manutenção reiniciou integral; não é ensaio de recuperação
 normal de porta com integral preservada. Validação térmica segue pendente.
+
+## Patamar parcial com pote ao lado, 28/10 às00:05
+
+Desde a primeira leitura>=37 °C:12,86min,371amostras; mínimo36,74 °C,
+máximo37,11 °C, média36,921 °C, uma amostra acima37,1 °C.
+Referência legível36,9 °C na captura00:04:56. Registro quantitativo em
+`patamar_pote_lado_parcial_2026-10-28.json`. Não constitui aprovação para
+células nem comprova recuperação após abertura normal. Esse teste físico
+foi solicitado e ainda não há evento novo de porta no log. Supervisor de
+porta segue ativo, sem reiniciar placa/integral; timeout~01:02 desliga HEAT.
