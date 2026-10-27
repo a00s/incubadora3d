@@ -20,6 +20,7 @@ int pin=HIGH;
 int digitalRead(int) {return pin;}
 void digitalWrite(int,int v) {pin=v;}
 bool botao_aquecedor_onoff=true,botao_co2_onoff=false;
+uint8_t co2DoorMode=0;
 int safetyFault=0;
 struct {void update(int,int) {}} EEPROM;
 struct {void println(const char*) {}} Serial;
@@ -52,7 +53,6 @@ int main() {
   // Actual GPIO duty over six periods at target: 6 s demand means 30%, not 67%.
   pin=HIGH;botao_aquecedor_onoff=true;safetyFault=0;
   heaterPidInitialized=false;heaterLastTransitionAt=90000;heaterPulseStartedAt=0;
-  controlHeater(37.0f,100000);
   heaterPidIntegralMs=6000;
   unsigned long onMs=0,lastStart=0;int starts=0;
   for (unsigned long now=100020;now<220020;now+=20) {
@@ -77,6 +77,18 @@ int main() {
   heaterTempRateCPerMin=0;heaterPidIntegralMs=15000;
   controlHeater(37.0f,220060);
   assert(heaterPidIntegralMs==15000 && heaterPidDemandMs==15000);
+
+  // Door pause keeps learned maintenance; resume does not reintegrate the cold air.
+  co2DoorMode=2;botao_aquecedor_onoff=false;heaterPidIntegralMs=11000;
+  controlHeater(36.8f,230000);
+  assert(pin==HIGH && heaterPidIntegralMs==11000);
+  co2DoorMode=4;botao_aquecedor_onoff=true;
+  controlHeater(36.8f,260000);
+  assert(heaterPidIntegralMs==11000 && heaterPidDemandMs>0);
+  controlHeater(37.05f,260020);
+  assert(heaterPidDemandMs>0); // PI maintenance survives a reading just above target.
+  controlHeater(37.1f,260040);
+  assert(pin==HIGH && heaterPidDemandMs==0); // independent hard cut remains.
 }
 '''
 with tempfile.TemporaryDirectory() as d:

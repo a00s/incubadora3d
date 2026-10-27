@@ -366,13 +366,19 @@ equivalem a 30% de tempo ligado, em vez de 67% com a antiga pausa fixa de 3 s.
 O limite corresponde a 85% do tempo ligado. O controle
 revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um pulso se a demanda
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
-necessária à manutenção. A demanda zera acima de 37,0 °C; em 37,0 °C exatos,
-o ajuste PI/D pode manter aquecimento. Há corte independente em 37,1 °C.
+necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
+lados da meta, com corte independente em 37,1 °C.
 A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
-O termo derivativo usa 18.000 ms/(°C/min), equivalente a aproximadamente
-60 s de antecipação em relação ao proporcional; a integral só acumula com
-margem no teto da saída. A alteração foi motivada por pico tardio
+O proporcional usa 9.000 ms/°C, a integral 1.000 ms/(°C·min), e o derivativo
+18.000 ms/(°C/min), equivalente a aproximadamente 120 s de antecipação
+em relação ao proporcional. A integral aprende perdas com erro positivo
+menor que 0,5 °C e margem no teto da saída; acima da meta ela descarrega.
+O início usa 10 s/20 s (50%) de manutenção, baseado no histórico observado;
+o PID ajusta esse valor durante o funcionamento. A pausa de porta preserva
+o valor aprendido na RAM e reinicia só a tendência; desligamento manual,
+falha de sensor e emergência reinicializam a integral. O aprendizado ainda
+não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.

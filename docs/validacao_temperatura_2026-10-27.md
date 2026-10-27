@@ -97,8 +97,53 @@ sem limiar de temperatura para alternar tetos. Período de 20 s, pausa de
 Flash / 1.012 RAM estática. O teste de função C++ passou novamente.
 
 **Estabilidade física da versão com teto único ainda em acompanhamento.**
+Leituras dessa versão em [CSV separado](validacao_pid_linear_2026-10-27.csv).
+Nas capturas verificadas entre 13:34 e 13:42, a referência ficou em
+36,9–37,1 °C. O Arduino teve pico de 37,33 °C e voltou a baixar; a leitura
+de referência das 13:40 foi 37,1 °C e a das 13:42 foi 37,0 °C.
+Essa observação corresponde à porta fechada. O teste de porta com a
+versão atual foi solicitado e ainda não consta no log; o teste anterior
+foi feito antes dessas alterações no PID.
+
+Continuação: às 13:44, a referência caiu para 36,2 °C e o Arduino para
+36,08 °C. **O patamar anterior não comprovou estabilidade: a versão com
+teto único também continuou oscilando.**
+
+## Terceira etapa: PI/D com potência de manutenção
+
+Versão gravada em torno de 13:52:
+
+- PI/D permanece ativo levemente acima de 37,0 °C, mantendo o corte
+  independente de 37,1 °C. O corte total na primeira leitura acima da
+  meta interrompia também a compensação das perdas, favorecendo a queda
+  seguinte antes da resposta do aquecedor.
+- Kp 9.000 ms/°C, Ki 1.000 ms/(°C·min), Kd 18.000 ms/(°C/min).
+  A relação D/P equivale a aproximadamente 120 s, próxima dos 114,6 s
+  entre a última amostra ligada e o pico observado na primeira etapa.
+- Manutenção inicial de 10 s/20 s (50%), baseada no histórico de 50–60%
+  observado. O PI ajusta a manutenção; a integral positiva cresce com
+  erro menor que 0,5 °C e saída não saturada, sem carregar com o grande
+  erro frio da abertura. Erro negativo descarrega a integral.
+- A pausa da porta preserva a integral na RAM. Desligamento manual,
+  leitura inválida e emergência a reinicializam. Não há gravação do
+  aprendizado na EEPROM.
+- Teto único de 17 s/20 s, pausa mínima de 3 s, lógica de CO₂ e emergência
+  de 39 °C preservados.
+
+Testes das funções reais verificam potência de manutenção em 37,05 °C,
+corte em 37,1 °C e preservação de 11 s de integral na pausa/retomada,
+inclusive pelo toque longo dos botões. Os cinco testes do firmware passaram.
+Compilação/upload saída 0: 32.204 bytes Flash / 1.012 RAM estática.
+
+O usuário informou mínimo/máximo zerados e segunda abertura de ~30 s,
+com os dois toques longos. A execução coincidiu com a gravação e reabertura
+da serial; esse ensaio combina abertura e reinício, sem separar seus efeitos.
+A nova coleta começou às ~13:53 com Arduino 34,33–34,51 °C e referência
+35,4 °C, controles habilitados. **Recuperação física ainda em acompanhamento.**
+
 O trecho inicial truncado da nova coleta é descartado; usar as amostras
-contínuas após `BOOT_COUNT,6` e verificar se não houve outro reinício.
+contínuas após `BOOT_COUNT,6` na etapa com teto de 60%, e após
+`BOOT_COUNT,8` na etapa atual. Verificar continuidade e ausência de novos boots.
 
 ## Coleta e limites
 
@@ -110,6 +155,8 @@ Log da segunda etapa: `coleta-periodo20-20261027.log`; imagens e metadados
 em `periodo20-camera/`.
 Versão com teto único: `coleta-pid-linear-20261027.log`, imagens e metadados
 em `pid-linear-camera/`.
+Versão atual de manutenção: `coleta-pi-manutencao-20261027.log`, imagens e
+metadados em `pi-manutencao-camera/`.
 
 A análise de objetos do RoomCam foi desligada, mantendo o vídeo e as
 capturas. O coletor serial passou a esperar dados com `select`, sem

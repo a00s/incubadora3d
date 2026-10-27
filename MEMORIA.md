@@ -39,13 +39,16 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
   O README registra o contexto e a posição diferente da referência.
 - Pulsos atuais: até 17 s em toda a faixa, sem teto diferente perto da meta;
   pelo menos 20 s entre inícios e 3 s desligado. Tendência em janelas de 30 s;
-  integral limitada a 17 s. Kd atual 18.000 ms/(°C/min), antecipação de
-  aproximadamente 60 s em relação ao termo proporcional.
+  integral limitada a 17 s. Kp atual 9.000 ms/°C, Ki 1.000 ms/(°C·min),
+  Kd 18.000 ms/(°C/min): aproximadamente 120 s de antecipação.
 - `controlHeater` contém o PID e os cortes; `toggleDoorMode` pausa e
   restaura os controles. Conferir os nomes no código se forem refatorados.
-- Durante desabilitação, o controle zera integral e invalida tendência;
-  a retomada começa sem tendência térmica pronta. Isso é um ponto de
-  investigação, não uma causa física comprovada de sobretemperatura.
+- Pausa de porta preserva integral aprendida na RAM e invalida tendência;
+  desligamento manual/falhas zeram a integral. Ao inicializar sem valor aprendido,
+  usa 10.000 ms/20 s (50%) de manutenção, com base no histórico observado.
+  A integral cresce só com erro positivo menor que 0,5 °C e saída não saturada;
+  erro negativo a descarrega. PI/D atua nos dois lados da meta até corte 37,1 °C.
+  Não há gravação desse aprendizado na EEPROM.
 - README descreve os parâmetros do controle;
   para parâmetros executados, conferir as constantes e a lógica do firmware.
 
@@ -153,3 +156,26 @@ quadros em `pid-linear-camera/`. As pastas `pos-ajuste-camera` e
 `periodo20-camera` documentam etapas anteriores, não a versão atual.
 Validação física do limite único ainda pendente; não declarar estabilidade
 pela passagem momentânea por 37 °C. Confirmar boot e continuidade do log.
+
+## Versão PI/D de manutenção — gravada ~13:52 em 2026-10-27
+
+- A versão de teto único ainda oscilou: depois de capturas em 36,9–37,1 °C,
+  às 13:44 a referência caiu a 36,2 °C e o Arduino a 36,08 °C.
+- Removido o corte total da demanda logo acima de 37,0 °C. O PI/D deve
+  equilibrar perdas também levemente acima da meta; corte independente 37,1 °C
+  e emergência 39 °C preservados.
+- Ganhos atuais e manutenção inicial descritos no topo. A integral não carrega
+  com o grande erro da abertura e fica preservada durante a pausa de porta.
+- Testes da função real verificam manutenção em 37,05 °C, corte em 37,1 °C,
+  retenção de integral ao pausar/retomar e duty de 30% para 6 s/20 s.
+  Teste dos botões verifica também retenção de 11 s de integral no toque longo.
+- Compilação/upload saída 0: 32.204 bytes Flash / 1.012 RAM estática.
+- Usuário confirmou mínimo/máximo zerados e segunda abertura de ~30 s,
+  com os toques longos. Essa execução coincidiu com a gravação/reabertura
+  da serial: o registro não separa a recuperação da porta do reinício.
+  Não pedir nova abertura agora; acompanhar primeiro esta recuperação.
+- Coleta atual: `/tmp/incubadora-telemetria/coleta-pi-manutencao-20261027.log`;
+  imagens/metadados: `pi-manutencao-camera/`; observador temporário
+  `observar-manutencao.py`. Confirmar processos/frescor antes de continuar.
+- Início às ~13:53: Arduino 34,33–34,51 °C, referência visual 35,4 °C;
+  ambos os controles habilitados. Validação física desta versão ainda pendente.

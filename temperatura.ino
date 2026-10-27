@@ -106,15 +106,16 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
 // Chamber temperature is corrected at acquisition for display and control.
-#define HEATER_SETPOINT_C 37.0
+#define HEATER_SETPOINT_C 37.0f
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_PERIOD_MS 20000UL
 #define HEATER_PID_MAX_ON_MS 17000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
-#define HEATER_PID_KP_MS_PER_C 18000.0f
-#define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
+#define HEATER_PID_KP_MS_PER_C 9000.0f
+#define HEATER_PID_KI_MS_PER_C_MIN 1000.0f
 #define HEATER_PID_KD_MS_PER_C_MIN 18000.0f
-#define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1)
+#define HEATER_PID_INITIAL_INTEGRAL_MS 10000.0f
+#define HEATER_HARD_CUTOFF (HEATER_SETPOINT_C + 0.1f)
 #define HEATER_EMERGENCY_CUTOFF 39.0
 #define TEMPERATURE_GOOD_MIN (HEATER_SETPOINT_C - 0.1)
 #define TEMPERATURE_GOOD_MAX (HEATER_SETPOINT_C + 0.1)
@@ -1248,7 +1249,7 @@ void setHeaterEnabled(bool enabled) {
     heaterLastTransitionAt = millis();
     heaterPidDemandMs = 0;
   }
-  if (!enabled) heaterPidIntegralMs = 0.0f;
+  if (!enabled && co2DoorMode != 2) heaterPidIntegralMs = 0.0f;
 }
 
 void controlHeater(float temperature, unsigned long now) {
@@ -1286,7 +1287,8 @@ void controlHeater(float temperature, unsigned long now) {
       heaterLastTransitionAt = now;
     }
     heaterPidDemandMs = 0;
-    heaterPidIntegralMs = 0.0f;
+    if (co2DoorMode != 2 || temperatureSensorFault || emergencyOvertemperature)
+      heaterPidIntegralMs = 0.0f;
     heaterPidInitialized = false;
     heaterTrendReady = false;
     return;
@@ -1298,7 +1300,8 @@ void controlHeater(float temperature, unsigned long now) {
     heaterTrendReferenceAt = now;
     heaterTrendReferenceC = temperature;
     heaterTempRateCPerMin = 0.0f;
-    heaterPidIntegralMs = 0.0f;
+    if (heaterPidIntegralMs == 0.0f)
+      heaterPidIntegralMs = HEATER_PID_INITIAL_INTEGRAL_MS;
     heaterTrendReady = false;
   }
 
@@ -1318,7 +1321,9 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
-  if (errorC < 0.0f || heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
+  // Learn steady loss near target, rather than integrating the door transient.
+  if (errorC < 0.0f || (errorC < 0.5f &&
+      heaterPidDemandMs < HEATER_PID_MAX_ON_MS)) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);
     if (heaterPidIntegralMs < 0.0f) heaterPidIntegralMs = 0.0f;
@@ -1326,9 +1331,8 @@ void controlHeater(float temperature, unsigned long now) {
       heaterPidIntegralMs = HEATER_PID_MAX_ON_MS;
     }
   }
-  // At the exact setpoint, retain the PI/D trim so the heater can balance
-  // steady heat loss instead of cycling only after a full 0.1 C drop.
-  if (errorC < 0.0f || temperature >= HEATER_HARD_CUTOFF) {
+  // PI/D maintenance remains active on both sides of target, below the hard cut.
+  if (temperature >= HEATER_HARD_CUTOFF) {
     heaterPidDemandMs = 0;
   } else {
     float derivativeMs = heaterTrendReady

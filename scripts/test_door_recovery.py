@@ -150,8 +150,11 @@ int main() {
   // Old yellow/red/yellow pattern now only invokes normal short-click commands.
   yellow(42000);tapRed(42200);yellow(42400);tick(45000);assert(co2DoorMode==0);
   // Releasing after the threshold still counts as long if a poll was missed.
+  heaterPidIntegralMs=11000;
   redDown(46000);redUp(48000);assert(co2DoorMode==2);
+  assert(heaterPidIntegralMs==11000);
   holdRed(49000);assert(co2DoorMode==4 && botao_co2_onoff && botao_aquecedor_onoff);
+  assert(heaterPidIntegralMs==11000);
   // Simultaneous-button reset gesture cancels a pending hold, not a door toggle.
   redDown(52000);redPoll(53000,true);redPoll(56000);redUp(56100);
   assert(co2DoorMode==4);
