@@ -2,7 +2,7 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
-**Estado ~22:18: ensaio vazio, sem células (relato do usuário). NÃO aprovado
+**Estado ~23:11: ensaio vazio, sem células (relato do usuário). NÃO aprovado
 para uso com células; controle térmico ainda tem picos e diferença entre sondas.**
 
 Resultados verificados: a revisão de tendência filtrada, gravada ~17:29,
@@ -26,7 +26,7 @@ Arduino NÃO mede atualmente umidade da câmara (`rh_pct=nan`); DHT22 mede
 somente temperatura da eletrônica. Os95% citados pelo usuário são relato
 anterior, não leitura presente da telemetria.
 
-Firmware atual gravado e verificado ~22:41: TODOS os cinco campos numéricos
+Firmware atual gravado e verificado ~23:09: TODOS os cinco campos numéricos
 (CO₂, temperatura da câmara, temperatura interna, ppm/min, cm³/h) usam cache
 por caractere. Só apaga a célula cuja forma mudou; mudança apenas de cor
 repinta sem apagar. Fonte grande tem avanço13px, pequena7px, confirmado
@@ -36,7 +36,8 @@ espera2s do ciclo de CO₂; sensor DS18B20 converte em >=800ms. O CO₂ continua
 lido no ciclo principal. Testes de todos os cinco campos, mesma leitura sem
 SPI, cores sem apagar, mudança de comprimento, cadência e modo porta passaram;
 também passaram os quatro testes térmico/porta/CO₂. Flash32160bytes, RAM
-estática1121bytes. Controle térmico NÃO mudou nessas alterações gráficas.
+estática1121bytes. As alterações gráficas não mudaram ganhos/cortes. Depois delas houve somente
+o ajuste operacional de offset abaixo.
 
 Hardware confirmado pelo usuário em imagens de anúncios: tela AZDelivery
 1,77pol ST7735(S),128×160,SPI, com conversor TXS0108E. Driver configurado
@@ -49,20 +50,27 @@ versão/regulador da placa antes de recomendar mudança de alimentação.
 O intervalo de ~2,35s no desenho antigo foi medido no log e explicado pela
 espera do programa; não atribuir automaticamente a driver/conversor.
 
-Coleta viva: `/tmp/incubadora-telemetria/coleta-campos-parciais-20261027.log`;
-fotos/metadados em `campos-parciais-camera/`; supervisor atual
-`supervisao-campos-parciais.json`, script `supervisionar-campos-parciais.py`.
-Ambos controles ativos após20s de dados estáveis; retoma automática do ensaio
-confirmada22:42:24. Último pico desse novo trecho ~36,45 °C às22:43;
-seguir até patamar e pico completo. Supervisor interrompe aquecimento a37,2 °C,
-falta de dados ou timeout1h. Verificar PID vivo e dados atuais, não só JSON.
-CO₂ ativo, manter25mL e só o canto do pote tocando conforme pedido do usuário.
-Às22:47:13, imagem fresca da referência36,2 °C versusArduino36,76 °C:
-diferença+0,56 °C. Segue pendente; não considerar calibrado nem compensar
-por esse ponto transitório. Comparações/fotos em
-docs/ensaios/referencia_agua25_2026-10-27.csv.
-Sem mais regravações por enquanto: preservar este ensaio. Comparar offset só
-no patamar. A câmera mostrou35,0 °C vsArduino~35,6 °C às22:34:51 (transição).
+Ajuste operacional gravado23:09: offset de+1,575 para+1,175 °C (−0,4 °C).
+Base: últimos10min antes da interrupção tiveram média36,965 °C no Arduino,
+faixa36,83–37,14 °C; referência repetiu36,5–36,6 °C nas imagens23:00/23:06
+e anteriores. Fonte/dados em campos_parciais_antes_offset_2026-10-27.*.
+É alinhamento operacional do ponto de referência desta montagem: referência
+apoiada em metal, Arduino livre no ar; NÃO calibração comum de ambos sensores.
+Ainda precisa validação independente no novo patamar e pico. Ganhos, período,
+corte normal37,1 °C e emergência travada39 °C mantidos. Todos os testes passaram.
+
+Coleta viva: `/tmp/incubadora-telemetria/coleta-calib-agua25-20261027.log`;
+fotos/metadados em `calib-agua25-camera/`; BOOT33 (descartar trechos pré-boot).
+Supervisor `supervisao-calib-agua25.json`, script `supervisionar-calib-agua25.py`.
+Retomada automática do ensaio confirmada23:10:10 após20s de dados contínuos.
+Às23:11, Arduino36,24 °C, ambos controles habilitados, aquecedor pulsando;
+queda inicial inclui mudança do offset e interrupção para gravação.
+Supervisor interrompe aquecimento a37,2 °C, falta de dados ou timeout1h
+(após retomada, aproximadamente00:10). Verificar PID vivo e dados atuais.
+CO₂ ativo. Manter25mL, só o canto do pote tocando e mesmas posições de sondas,
+conforme pedido do usuário. Não declarar calibração/controle aprovados antes
+ de comparar novo patamar e pico completo da referência e do Arduino.
+Dados/limites e hashes em docs/ensaios/calibracao_operacional_agua25_2026-10-27.json.
 
 Gravação da cadência foi autorizada pelo usuário ~22:30; ensaio anterior
 interrompido com35,33 °C, não por falha térmica. Etapa seguinte interrompida

@@ -1,0 +1,50 @@
+{
+  "status": "patamar_arduino_com_desvio_operacional_referencia",
+  "source_commit": "c28f589",
+  "firmware_sha256": "8b448825ebfaca44807b089f5f8cc6e6d9889c38179e352c29cc2460f4ffbf0c",
+  "offset_c": 1.575,
+  "boot": "BOOT_COUNT,31",
+  "samples": 766,
+  "last10min_c": {
+    "min": 36.83,
+    "mean": 36.96517361111111,
+    "max": 37.14
+  },
+  "temperature_max_c": 37.14,
+  "reference_repeated_c": [
+    36.5,
+    36.6
+  ],
+  "planned_operational_offset_delta_c": -0.4,
+  "calibration_kind": "operating_point_correction_not_common_point_sensor_calibration",
+  "mounts_reported": {
+    "reference": "apoiada_em_gaveta_metal",
+    "arduino": "suspensa_livre_no_teto",
+    "distance_cm": 3
+  },
+  "water_ml_reported": 25,
+  "heater_contact_reported": "somente_canto",
+  "supervisor": {
+    "started_at": "2026-10-27T22:42:03.496633+01:00",
+    "status": "aborted",
+    "abort_c": 37.2,
+    "peak_c": 37.14,
+    "samples_above_37_1": 2,
+    "heat_on_command_at": "2026-10-27T22:42:24.727399+01:00",
+    "initial_temp_c": 36.33,
+    "peak_at": "2026-10-27T22:58:21.095319+01:00",
+    "peak_arduino_ms": 975800,
+    "last_at": "2026-10-27T23:08:22.573839+01:00",
+    "last_temp_c": 36.89,
+    "last_arduino_ms": 1575144,
+    "heater_enabled": 1,
+    "heater_on": 0,
+    "pid_demand_ms": 0,
+    "heat_rate_c_min": 0.19,
+    "reason": "KeyboardInterrupt: ",
+    "heat_off_command_at": "2026-10-27T23:08:22.665382+01:00",
+    "off_confirmed": true,
+    "ended_at": "2026-10-27T23:08:23.869562+01:00"
+  },
+  "note": "Sondas em apoios diferentes; corre\u00e7\u00e3o vale para arranjo atual. Trecho encerrado para ajustar offset, n\u00e3o por limite. Validar com nova coleta independente."
+}

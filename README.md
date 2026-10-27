@@ -201,7 +201,11 @@ visor 37,0 °C: mais +0,9 °C. Ajuste fino posterior de −0,15 °C, com referê
 Em 2026-10-27, após trocar o reservatório por uma placa de Petri, a referência
 vista pela câmera ficou em 36,2–36,3 °C enquanto o Arduino manteve média de
 36,97 °C na última hora (36,76–37,14 °C). Correção inicial de −0,75 °C:
-offset atual +1,575 °C, sujeito à verificação física após estabilização.
+offset então +1,575 °C. No patamar posterior, com25mL em novo pote e
+somente um canto tocando o aquecedor, Arduino~36,97 °C e referência36,5–36,6 °C
+motivaram ajuste operacional de−0,4 °C: **offset atual +1,175 °C**, em validação.
+As sondas estão em apoios diferentes; isso é alinhamento operacional para
+a montagem atual, não calibração dos dois sensores em um ponto comum.
 Aplicada após validar a leitura, tanto ao visor
 quanto ao PID e às proteções térmicas. Não altera a sonda interna da eletrônica.
 A sonda do Arduino está mais alta e distante do aquecimento; a referência fica junto

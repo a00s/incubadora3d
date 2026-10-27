@@ -1,0 +1,33 @@
+{
+  "status": "gravado_verificado_validacao_fisica_pendente",
+  "firmware_sha256": "bea609bf27a70dc4f3361867d9ccaceb68c36dc523725d81498ea8df2b18d3e6",
+  "hex_sha256": "e83ff84cc15bc583d2eae8acea041d56589206ae9e3ab6f7cb66ea795a8da60c",
+  "offset_previous_c": 1.575,
+  "offset_c": 1.175,
+  "offset_delta_c": -0.4,
+  "calibration_kind": "operating_point_correction_not_common_point_sensor_calibration",
+  "baseline_dataset": "campos_parciais_antes_offset_2026-10-27.json",
+  "reference_repeated_c": [
+    36.5,
+    36.6
+  ],
+  "target_c": 37.0,
+  "normal_cutoff_c": 37.1,
+  "emergency_latched_c": 39.0,
+  "boot_count": 33,
+  "source_log": "/tmp/incubadora-telemetria/coleta-calib-agua25-20261027.log",
+  "supervisor": "/tmp/incubadora-telemetria/supervisao-calib-agua25.json",
+  "water_ml_reported": 25,
+  "heater_contact_reported": "somente_canto",
+  "mounts_reported": {
+    "reference": "sobre_metal",
+    "arduino": "livre_no_ar"
+  },
+  "tests_passed": [
+    "heater_control",
+    "display_door",
+    "door_recovery",
+    "co2_control",
+    "co2_loss"
+  ]
+}

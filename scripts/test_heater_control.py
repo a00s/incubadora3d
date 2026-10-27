@@ -28,8 +28,6 @@ void setHeaterEnabled(bool b) {botao_aquecedor_onoff=b;pin=HIGH;}
 void setCo2Enabled(bool b) {botao_co2_onoff=b;}
 '''+defines+'\n'+globals_+'\n'+fn+r'''
 int main() {
-  // Paired observation: old corrected 36.95 C, reference 36.2 C.
-  assert(std::abs((36.95f-2.325f+CHAMBER_TEMPERATURE_OFFSET_C)-36.2f)<0.0001f);
   controlHeater(36.2f,4000);
   assert(pin==LOW && heaterPidDemandMs==10000);
   assert(heaterPidIntegralMs==10000); // measured startup maintenance, no cold-error charge

@@ -375,3 +375,27 @@ naquele instante, controle habilitado. Tendência ainda+0,24 °C/min.
 Ainda não é patamar de calibração nem aprovação de controle. Fotos e
 pares de25,3/28,01;30,0/31,39;35,0/35,58;36,2/36,76 °C em
 `docs/ensaios/referencia_agua25_2026-10-27.csv` e `agua25_comparacao_*.jpg`.
+
+## Ajuste operacional do offset, 23:09
+
+O trecho sem novas gravações22:42–23:08 manteve Arduino no alvo:
+últimos10min de controle ativo36,83–37,14 °C, média36,965 °C. Referência
+repetiu36,5–36,6 °C nas imagens; pares/fotos em
+`referencia_campos_parciais_2026-10-27.csv` e `camera_campos_parciais_inicio.jpg`.
+Ensaio completo em `campos_parciais_antes_offset_2026-10-27.*`.
+
+Aplicado ajuste operacional de−0,4 °C: offset+1,575→+1,175 °C. O propósito
+é alinhar a leitura/controlador ao ponto de referência nesta montagem fixa.
+Não é calibração intrínseca em ponto comum: uma sonda está sobre metal e
+a outra livre no ar; essa diferença de montagem continua sendo uma limitação.
+Ganhos, período e cortes37,1/39 °C mantidos. Verificações de software passaram,
+compilação32160bytes flash/1121bytes de RAM e gravação verificada concluídas.
+Foi removida do teste de relé a antiga asserção aritmética de um ponto
+de calibração obsoleto; a validação do offset é física, nos pares registrados.
+
+Validação independente iniciada em `coleta-calib-agua25-20261027.log`,
+BOOT33; imagens `calib-agua25-camera/`, supervisor `supervisao-calib-agua25.json`.
+Retomada automática23:10:10; CO₂ ativo. Supervisão interrompe aquecimento
+a37,2 °C ou falha de dados, com timeout1h. Mesmos25mL e contato pelo canto,
+sem mover sondas. Não há aprovação física ainda: verificar patamar e pico
+completos dos dois sensores depois do ajuste.
