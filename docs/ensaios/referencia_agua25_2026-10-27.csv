@@ -1,0 +1,5 @@
+observed_at,reference_c,arduino_c,arduino_minus_reference_c,image,note
+2026-10-27T22:12:29.311764+01:00,25.3,28.01,2.71,agua25_comparacao_1.jpg,"Leitura visual principal; último DATA completo capturado na mesma consulta, diferença temporal de poucos segundos; transição térmica."
+2026-10-27T22:19:31.993020+01:00,30.0,31.39,1.39,agua25_comparacao_2.jpg,"Leitura visual principal; último DATA completo capturado na mesma consulta, diferença temporal de poucos segundos; transição térmica."
+2026-10-27T22:34:55.069418+01:00,35.0,35.58,0.58,agua25_comparacao_3.jpg,"Leitura visual principal; último DATA completo capturado na mesma consulta, diferença temporal de poucos segundos; transição térmica."
+2026-10-27T22:47:13.363647+01:00,36.2,36.76,0.56,agua25_comparacao_4.jpg,"Leitura visual principal; último DATA completo capturado na mesma consulta, diferença temporal de poucos segundos; transição térmica."

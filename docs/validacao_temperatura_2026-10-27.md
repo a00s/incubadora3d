@@ -338,3 +338,40 @@ pré-boot), fotos `visor-parcial-camera/`. Supervisor externo `supervisao-agua25
 anexado ao controle já ativo às22:16, sem enviar HEAT ON; aborta aquecimento
 a37,2 °C, telemetria inválida ou timeout1h. CO₂ ativo. Referência25,3 °C
 às22:12:25 durante manipulação/reset; extremos reiniciados ainda a confirmar.
+
+## Cadência e redesenho de todos os campos, 22:30–22:43
+
+Usuário autorizou gravar a cadência mais rápida do visor. A atualização
+passou do fim do ciclo de CO₂ (~2,35s medidos) para o atendimento de
+entradas, a cada quatro quadros de160ms (~640ms, sujeito ao tempo de I/O).
+O DS18B20 continua com conversões >=800ms. Não mudou o intervalo
+intencional de espera/dosagem de CO₂ nem os parâmetros térmicos.
+
+Após observar que os demais campos ainda apagavam inteiros, usuário pediu
+atualização parcial também de CO₂, temperatura interna, ppm/min e cm³/h.
+Agora todos os campos compartilham cache de caracteres e cores. Apenas
+células diferentes são apagadas; repintura só de cor mantém o fundo.
+Encurtamento limpa sufixos e a última célula é limitada à largura da tela.
+Testes verificam os cinco campos, zero desenho com valores iguais, carry
+36.99→37.00, CO₂50000→50001, INT30.0→30.1, taxa-100→-101,
+perda24.0*→24.1*, cores, sufixos, cadência e modo porta. Os avanços reais
+das fontes (13/7px) são decodificados no teste para validar as células.
+Todos os cinco testes de controle passaram; compilação32160bytes flash,
+1121bytes de RAM estática; gravação verificada ~22:41.
+
+Etapas com água25mL interrompidas para essas alterações de visor foram
+arquivadas como PARCIAIS, não aprovadas nem reprovadas pelo limite:
+`agua25_pre_cadencia_2026-10-27.*` (máximo35,33 °C) e
+`visor_rapido_2026-10-27.*` (máximo36,76 °C, fonte reconstituível).
+Coleta atual `coleta-campos-parciais-20261027.log`, fotos
+`campos-parciais-camera/`, supervisor `supervisao-campos-parciais.json`.
+Retomada confirmada22:42:24, CO₂ ativo, montagem mantida25mL/canto.
+Pico e patamar térmicos continuam pendentes. Referência35,0 °C e
+Arduino~35,6 °C em captura atual22:34:51, ainda em transição.
+
+Comparação adicional22:47:13 em imagem com idade0,07s: referência36,2 °C,
+último DATA Arduino36,76 °C, diferença+0,56 °C; saída do aquecedor0
+naquele instante, controle habilitado. Tendência ainda+0,24 °C/min.
+Ainda não é patamar de calibração nem aprovação de controle. Fotos e
+pares de25,3/28,01;30,0/31,39;35,0/35,58;36,2/36,76 °C em
+`docs/ensaios/referencia_agua25_2026-10-27.csv` e `agua25_comparacao_*.jpg`.

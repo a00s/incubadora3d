@@ -1,0 +1,23 @@
+{
+  "status": "gravado_verificado_ensaio_termico_em_andamento",
+  "firmware_sha256": "8b448825ebfaca44807b089f5f8cc6e6d9889c38179e352c29cc2460f4ffbf0c",
+  "hex_sha256": "8773cf0d42d55ae387699471729975c565cd3bbdfb0bd6445dcc99a12a02dd6f",
+  "flash_bytes": 32160,
+  "static_ram_bytes": 1121,
+  "display_update_check_ms": 640,
+  "sensor_conversion_min_ms": 800,
+  "partial_fields": [
+    "co2_ppm",
+    "chamber_temperature",
+    "internal_temperature",
+    "co2_rate_ppm_min",
+    "co2_loss_cm3_h"
+  ],
+  "large_glyph_advance_px": 13,
+  "small_glyph_advance_px": 7,
+  "source_log": "/tmp/incubadora-telemetria/coleta-campos-parciais-20261027.log",
+  "supervisor": "/tmp/incubadora-telemetria/supervisao-campos-parciais.json",
+  "physical_setup": "25mL, outro pote, s\u00f3 o canto tocando o aquecedor; manter por prefer\u00eancia do usu\u00e1rio",
+  "note": "Atualiza\u00e7\u00e3o gr\u00e1fica n\u00e3o comprova controle t\u00e9rmico corrigido. Mesmos ganhos/offset/cortes.",
+  "boot_count": 31
+}

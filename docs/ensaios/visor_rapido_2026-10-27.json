@@ -1,0 +1,37 @@
+{
+  "status": "parcial_interrompido_para_aplicar_redesenho_em_todos_os_campos",
+  "source_base_commit": "033e012",
+  "source_patch": "visor_rapido_2026-10-27.patch",
+  "firmware_sha256": "f3b2fd41fd984ca86523a18f07b1feb5893065934261aaeb5d7958be77f6557d",
+  "boot": "BOOT_COUNT,29",
+  "samples": 290,
+  "temperature_c": {
+    "min": 35.01,
+    "max": 36.76
+  },
+  "supervisor": {
+    "started_at": "2026-10-27T22:31:05.677790+01:00",
+    "status": "aborted",
+    "abort_c": 37.2,
+    "peak_c": 36.76,
+    "samples_above_37_1": 0,
+    "heat_on_command_at": "2026-10-27T22:31:26.913072+01:00",
+    "initial_temp_c": 35.2,
+    "peak_at": "2026-10-27T22:41:07.717555+01:00",
+    "peak_arduino_ms": 601181,
+    "last_at": "2026-10-27T22:41:08.118111+01:00",
+    "last_temp_c": 36.76,
+    "last_arduino_ms": 601181,
+    "heater_enabled": 1,
+    "heater_on": 0,
+    "pid_demand_ms": 13797,
+    "heat_rate_c_min": 0.05,
+    "reason": "KeyboardInterrupt: ",
+    "heat_off_command_at": "2026-10-27T22:41:08.312401+01:00",
+    "off_confirmed": true,
+    "ended_at": "2026-10-27T22:41:09.716409+01:00"
+  },
+  "water_ml_reported": 25,
+  "heater_contact_reported": "somente_canto",
+  "note": "Interrompido para atender pedido de atualiza\u00e7\u00e3o parcial de CO2/INT/ppm/cm3. Sem atingir limite; pico/patamar n\u00e3o aprovados."
+}

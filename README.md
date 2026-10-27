@@ -371,9 +371,12 @@ cair. A integral é limitada e descarrega gradualmente acima da meta para conser
 necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
 lados da meta, com corte independente em 37,1 °C.
 O visor mostra a temperatura da câmara com duas casas decimais (por exemplo,
-37,08 °C); a temperatura da eletrônica mantém uma casa. O campo da câmara
-redesenha apenas os caracteres que mudam; mudanças de cor ou reconstrução
-da tela invalidam o campo completo. Os centésimos ajudam
+37,08 °C); a temperatura da eletrônica mantém uma casa. Todos os campos numéricos
+(CO₂, temperaturas, ppm/min e cm³/h) redesenham apenas os caracteres alterados.
+A troca de cor repinta os glifos sem apagar o fundo; encurtamento remove os
+caracteres antigos. O visor é atendido a cada ~640 ms dentro do serviço de
+entradas, acompanhando as novas conversões de temperatura (>=800 ms) sem
+esperar os dois segundos do ciclo de CO₂. Os centésimos ajudam
 a acompanhar os passos da sonda, cuja resolução é 0,0625 °C.
 Uma previsão adicional corta a saída se temperatura + taxa positiva × 1,5 min
 atingir 37,1 °C. A meta do PID permanece 37 °C. Esse corte retoma automaticamente; não desabilita o controle.
@@ -609,3 +612,8 @@ válvula ficou aberta por poucos milissegundos.
 Visual atual: o fundo voltou ao azul-marinho (`RGB 8,18,30`), que dá ao display
 o tom futurista desejado. A animação de pontos permanece visível durante os 10 s de
 aquecimento do sensor de CO₂; depois, a interface de leituras aparece.
+
+O módulo de tela informado pelo usuário é AZDelivery1,77pol, ST7735(S),
+128×160 por SPI, ligado através de TXS0108E. O driver Ucglib já corresponde
+a essa família. Referências oficiais: [tela AZDelivery](https://www.az-delivery.de/en/products/1-77-zoll-spi-tft-display)
+e [conversor TI](https://www.ti.com/product/TXS0108E).

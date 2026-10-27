@@ -161,6 +161,15 @@ bool lastCo2ReadingValid = false;
 bool co2RangeWrapLatched = false;
 bool co2RawReferenceReady = false;
 bool displayCacheValid = false;
+struct DisplayFieldCache {
+  char text[14];
+  uint8_t r, g, b;
+};
+DisplayFieldCache displayFields[5] = {};
+// x, baseline, fixed glyph advance, erase height: CO2, chamber, internal, rate, loss.
+const uint8_t displayFieldGeometry[5][4] = {
+  {5,40,13,18}, {5,74,7,12}, {66,74,7,12}, {73,101,7,13}, {73,120,7,12}
+};
 int32_t displayCo2Ppm = -2;
 int8_t displayCo2Quality = -1;
 int8_t displayTempQuality = -1;
@@ -168,7 +177,6 @@ int8_t displayCo2RangeLock = -1;
 int8_t displaySafetyAlert = -1;
 uint8_t safetyFault = 0;
 int16_t displayTempHundredths = 32767;
-char displayTemperatureText[8] = {};
 int16_t displayInternalTempTenths = 32767;
 int32_t displayLossCm3Hour = -2;
 int8_t displayLossStable = -1;
@@ -699,7 +707,6 @@ void loop()
       digitalWrite(CO2PUMP, HIGH);
     }
 
-    renderDisplay(t, t_interna, validCo2);
     if (!serialHeaderPrinted) {
     Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,dose_rise_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm"));
       serialHeaderPrinted = true;
@@ -828,7 +835,9 @@ void serviceActivityIconAnimation() {
   if (now - lastActivityIconFrameAt < 160UL) return;
   lastActivityIconFrameAt = now;
   activityIconFrame = (activityIconFrame + 1) % 12;
-  updateActivityIcons();
+  if ((activityIconFrame & 3) == 0)
+    renderDisplay(chamberTemperatureC, dhtint.readTemperature(), lastCo2ReadingValid);
+  else updateActivityIcons();
 }
 
 void setHealthColor() {
@@ -963,14 +972,32 @@ void updateCo2Loss(bool valid) {
   lossStable = lossWindows >= 3 && drop >= 100;
 }
 
-void drawTextChanges(const char *next, uint8_t x, uint8_t baseline,
-                     uint8_t fieldTop, uint8_t fieldHeight, uint8_t fieldWidth,
+void drawTextChanges(const char *next, uint8_t field,
                      uint8_t fgR, uint8_t fgG, uint8_t fgB) {
-  setDisplayBackground();
-  ucg.drawBox(x - 1, fieldTop, fieldWidth, fieldHeight);
-  setDisplayForeground(fgR, fgG, fgB);
-  ucg.setPrintPos(x, baseline);
-  ucg.print(next);
+  DisplayFieldCache &previous = displayFields[field];
+  bool recolor = !displayCacheValid || previous.r != fgR || previous.g != fgG || previous.b != fgB;
+  previous.r = fgR; previous.g = fgG; previous.b = fgB;
+  uint8_t x = displayFieldGeometry[field][0];
+  uint8_t baseline = displayFieldGeometry[field][1];
+  uint8_t width = displayFieldGeometry[field][2];
+  uint8_t top = baseline - (field == 0 ? 17 : 10);
+  for (uint8_t i = 0; i < sizeof(previous.text) && x < 128; i++, x += width) {
+    char digit = *next;
+    if (digit) next++;
+    bool changed = digit != previous.text[i];
+    if (changed) {
+      uint8_t clearWidth = width;
+      if (clearWidth > 128 - x) clearWidth = 128 - x;
+      setDisplayBackground();
+      ucg.drawBox(x, top, clearWidth, displayFieldGeometry[field][3]);
+    }
+    if (digit && (changed || recolor)) {
+      setDisplayForeground(fgR, fgG, fgB);
+      ucg.drawGlyph(x, baseline, 0, digit);
+      if (field == 1) ucg.drawGlyph(x + 1, baseline, 0, digit);
+    }
+    previous.text[i] = digit;
+  }
 }
 
 void drawDoorNotice() {
@@ -1032,7 +1059,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t co2R = co2Quality == 1 ? 70 : 255;
     uint8_t co2G = co2Quality == 1 ? 235 : (co2Quality == 2 ? 190 : 65);
     uint8_t co2B = co2Quality == 1 ? 145 : (co2Quality == 2 ? 45 : 75);
-    drawTextChanges(nextCo2Text, 5, 40, 23, 18, 120,
+    drawTextChanges(nextCo2Text, 0,
                     co2R, co2G, co2B);
     displayCo2Ppm = CO2i;
     displayCo2Quality = co2Quality;
@@ -1045,35 +1072,14 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t tempR = tempQuality == 1 ? 70 : 255;
     uint8_t tempG = tempQuality == 1 ? 235 : (tempQuality == 2 ? 190 : 65);
     uint8_t tempB = tempQuality == 1 ? 145 : (tempQuality == 2 ? 45 : 75);
-    bool fullTemperature = !displayCacheValid || displayTempQuality != tempQuality;
-    if (fullTemperature) {
-      setDisplayBackground();
-      ucg.drawBox(4, 64, 58, 12);
-    }
-    const char *digit = nextTempText;
-    for (uint8_t i = 0; i < sizeof(displayTemperatureText); i++) {
-      char nextDigit = *digit;
-      if (nextDigit) digit++;
-      if (!fullTemperature && nextDigit == displayTemperatureText[i]) continue;
-      uint8_t digitX = 5 + i * 7;
-      if (!fullTemperature) {
-        setDisplayBackground();
-        ucg.drawBox(digitX, 64, 7, 12);
-      }
-      if (nextDigit) {
-        setDisplayForeground(tempR, tempG, tempB);
-        ucg.drawGlyph(digitX, 74, 0, nextDigit);
-        ucg.drawGlyph(digitX + 1, 74, 0, nextDigit);
-      }
-      displayTemperatureText[i] = nextDigit;
-    }
+    drawTextChanges(nextTempText, 1, tempR, tempG, tempB);
     displayTempHundredths = tempHundredths;
     displayTempQuality = tempQuality;
   }
   if (!displayCacheValid || displayInternalTempTenths != internalTempTenths) {
     char nextInternalTempText[8];
     formatTenths(internalTempTenths, nextInternalTempText, 1);
-    drawTextChanges(nextInternalTempText, 66, 74, 64, 12, 59,
+    drawTextChanges(nextInternalTempText, 2,
                     230, 235, 240);
     displayInternalTempTenths = internalTempTenths;
   }
@@ -1092,7 +1098,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     uint8_t rateR = !co2RateValid ? 145 : (shownCo2Rate < 0 ? 255 : (shownCo2Rate > 0 ? 120 : 75));
     uint8_t rateG = !co2RateValid ? 155 : (shownCo2Rate < 0 ? 115 : (shownCo2Rate > 0 ? 215 : 220));
     uint8_t rateB = !co2RateValid ? 165 : (shownCo2Rate < 0 ? 75 : (shownCo2Rate > 0 ? 250 : 145));
-    drawTextChanges(nextRateText, 73, 101, 91, 13, 54,
+    drawTextChanges(nextRateText, 3,
                     rateR, rateG, rateB);
     displayCo2RatePpmMin = shownCo2Rate;
     displayCo2RateReady = co2RateValid;
@@ -1110,7 +1116,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
     else strcpy_P(nextLossText, PSTR("---"));
     if (lossHeld) strcat_P(nextLossText, PSTR("*"));
     ucg.setFont(incubadora_font_7x13);
-    drawTextChanges(nextLossText, 73, 120, 110, 12, 54,
+    drawTextChanges(nextLossText, 4,
                     shownLossStable ? 230 : 255,
                     shownLossStable ? 235 : 190, shownLossStable ? 240 : 45);
     displayLossCm3Hour = lossCm3HourX10;

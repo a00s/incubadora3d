@@ -1,0 +1,9 @@
+--- a/temperatura.ino
++++ b/temperatura.ino
+@@ -702 +701,0 @@
+-    renderDisplay(t, t_interna, validCo2);
+@@ -831 +830,3 @@
+-  updateActivityIcons();
++  if ((activityIconFrame & 3) == 0)
++    renderDisplay(chamberTemperatureC, dhtint.readTemperature(), lastCo2ReadingValid);
++  else updateActivityIcons();

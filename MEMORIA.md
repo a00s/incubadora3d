@@ -26,27 +26,50 @@ Arduino NÃO mede atualmente umidade da câmara (`rh_pct=nan`); DHT22 mede
 somente temperatura da eletrônica. Os95% citados pelo usuário são relato
 anterior, não leitura presente da telemetria.
 
-Firmware atual gravado e verificado ~22:10: temperatura da câmara com duas
-casas; atualiza somente caracteres alterados (células7×12 px). Redesenho
-completo desse campo só quando cache invalidado ou cor de qualidade muda.
-Teste cobre37,01→37,08 (uma célula),36,99→37,00 (três), sem mudança (zero),
-negativos, NaN e modo porta. Todos os cinco testes de controle passaram.
-Flags AVR em scripts/arduino.sh foram ajustados para caber no Uno:
-32244bytes flash,1024bytes estáticos de RAM. Sem mudança de driver da tela.
-Controle térmico é o MESMO da revisão reprovada: alvo37,0; corte real37,1;
-emergência travada39; filtro da leitura10s, tendência30s sem segunda EMA;
-bloqueia pulsos na meta com tendência positiva. Não declarar corrigido.
+Firmware atual gravado e verificado ~22:41: TODOS os cinco campos numéricos
+(CO₂, temperatura da câmara, temperatura interna, ppm/min, cm³/h) usam cache
+por caractere. Só apaga a célula cuja forma mudou; mudança apenas de cor
+repinta sem apagar. Fonte grande tem avanço13px, pequena7px, confirmado
+pela decodificação das fontes reais no teste. Campos encurtados apagam sufixos.
+Visor verifica atualizações ~640ms durante atendimento de entradas, fora da
+espera2s do ciclo de CO₂; sensor DS18B20 converte em >=800ms. O CO₂ continua
+lido no ciclo principal. Testes de todos os cinco campos, mesma leitura sem
+SPI, cores sem apagar, mudança de comprimento, cadência e modo porta passaram;
+também passaram os quatro testes térmico/porta/CO₂. Flash32160bytes, RAM
+estática1121bytes. Controle térmico NÃO mudou nessas alterações gráficas.
 
-Coleta viva: `/tmp/incubadora-telemetria/coleta-visor-parcial-20261027.log`;
-câmera/metadados em `visor-parcial-camera/`; BOOT_COUNT27 após a abertura
-da serial. Descartar fragmentos anteriores ao BOOT. Ambos controles
-confirmados ativos depois do fechamento. Supervisor externo anexado ~22:16,
-sem novo HEAT ON: `supervisao-agua25.json`, script `supervisionar-agua25.py`.
-Ele interrompe aquecimento a37,2 °C, falha de dados ou após1h. Não confundir
-com a emergência do firmware. Verificar PID vivo e estado atual antes de agir.
-Não reiniciar/regravar durante este ensaio. CO₂ deve permanecer ativo com
-porta fechada, conforme pedido do usuário. Acompanhar aproximação/pico;
-calibração só poderá ser comparada no patamar, sem mexer na montagem.
+Hardware confirmado pelo usuário em imagens de anúncios: tela AZDelivery
+1,77pol ST7735(S),128×160,SPI, com conversor TXS0108E. Driver configurado
+Ucglib_ST7735_18x128x160_HWSPI corresponde à família. Fichas oficiais:
+https://www.az-delivery.de/en/products/1-77-zoll-spi-tft-display e
+https://www.ti.com/product/TXS0108E . CSV documenta VA3,3V/VB5V, A→tela,
+B→Uno, OE via resistor aVA. Qualidade elétrica não medida. Fontes AZ têm
+especificação2,7–3,3V e diagrama de ligação do módulo com VCC5V; identificar
+versão/regulador da placa antes de recomendar mudança de alimentação.
+O intervalo de ~2,35s no desenho antigo foi medido no log e explicado pela
+espera do programa; não atribuir automaticamente a driver/conversor.
+
+Coleta viva: `/tmp/incubadora-telemetria/coleta-campos-parciais-20261027.log`;
+fotos/metadados em `campos-parciais-camera/`; supervisor atual
+`supervisao-campos-parciais.json`, script `supervisionar-campos-parciais.py`.
+Ambos controles ativos após20s de dados estáveis; retoma automática do ensaio
+confirmada22:42:24. Último pico desse novo trecho ~36,45 °C às22:43;
+seguir até patamar e pico completo. Supervisor interrompe aquecimento a37,2 °C,
+falta de dados ou timeout1h. Verificar PID vivo e dados atuais, não só JSON.
+CO₂ ativo, manter25mL e só o canto do pote tocando conforme pedido do usuário.
+Às22:47:13, imagem fresca da referência36,2 °C versusArduino36,76 °C:
+diferença+0,56 °C. Segue pendente; não considerar calibrado nem compensar
+por esse ponto transitório. Comparações/fotos em
+docs/ensaios/referencia_agua25_2026-10-27.csv.
+Sem mais regravações por enquanto: preservar este ensaio. Comparar offset só
+no patamar. A câmera mostrou35,0 °C vsArduino~35,6 °C às22:34:51 (transição).
+
+Gravação da cadência foi autorizada pelo usuário ~22:30; ensaio anterior
+interrompido com35,33 °C, não por falha térmica. Etapa seguinte interrompida
+~22:41 para atender pedido de estender redesenho parcial a todos os campos,
+com máximo36,76 °C. Não confundir interrupções gráficas com ensaios aprovados
+ou com falhas por temperatura. Arquivos `agua25_pre_cadencia_2026-10-27.*`
+e `visor_rapido_2026-10-27.*` preservam dados e fonte realmente gravada.
 
 Câmera foi reposicionada; imagem atual está legível. Usar quadro inteiro
 após mudanças; recorte antigo x640–905 não enquadra mais todos os dígitos.
