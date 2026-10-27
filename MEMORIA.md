@@ -29,13 +29,20 @@ com cache em centésimos; temperatura interna continua com uma. Formatação
 compartilhada preserva a perda de CO₂; teste cobre centésimos, negativos,
 NaN, limites de tela e modo porta. Gravado com verificação. Controle térmico
 não mudou nesta gravação; etapa anterior arquivada como parcial, pico37,14.
-Ensaio atual inicia com aquecimento OFF por 180 s de propósito para testar
-recuperação sem abrir a porta; CO₂ continua ON. Depois supervisor envia
-HEAT ON automaticamente. Conferir estado vivo no JSON/processo antes de agir.
+Preparação de recuperação começou ~16:58 com aquecimento OFF e CO₂ ON.
+Primeiro supervisor abortou ANTES de enviar HEAT ON: temperatura residual
+ultrapassou a pré-condição 37,1 °C (~17:00), pico no log 37,20 °C ainda
+com saída desligada. Não chamar esse trecho de recuperação aprovada.
+Supervisor inicial terminal: supervisao-recuperacao-centesimos.json.
+Às ~17:03 iniciou supervisor novo, sem reabrir serial/regravar: espera
+20 s de dados contínuos e temperatura <=36,5 °C antes de HEAT ON.
+Depois vigia pico, abortando a 37,2 °C ou falha de telemetria. JSON atual
+supervisao-recuperacao-retomada.json; processo supervisionar-recuperacao-retomada.py.
+Não reiniciar processos apenas porque uma consulta demora; conferir PID e estado.
 Não regravar agora: observar esta recuperação e a manutenção posterior.
 
 Coleta atual: /tmp/incubadora-telemetria/coleta-recuperacao-centesimos-20261027.log;
-fotos em recuperacao-centesimos-camera; supervisor em supervisao-recuperacao-centesimos.json.
+fotos em recuperacao-centesimos-camera; supervisor atual em supervisao-recuperacao-retomada.json.
 CO₂ mantido ATIVO por pedido do usuário. Supervisor externo interrompe
 apenas aquecimento a 37,2 °C ou perda de telemetria; não confundir esse
 aborto experimental com o corte normal que retoma sozinho.

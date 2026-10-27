@@ -280,3 +280,13 @@ a porta. Esse ensaio não substitui teste físico de abertura. Log
 `coleta-recuperacao-centesimos-20261027.log`, fotos `recuperacao-centesimos-camera/`,
 supervisor `supervisao-recuperacao-centesimos.json`, todos sob
 `/tmp/incubadora-telemetria`. Resultado físico pendente.
+
+Preparação interrompida ~17:00 antes de HEAT ON: subida residual atingiu
+37,20 °C no Arduino, com aquecimento desabilitado e saída OFF em todo o
+trecho. Referência 37,1 °C na captura ~17:00:54. Isso permanece como
+evidência de calor residual; não declarar estabilidade pela etapa curta.
+A pré-condição do supervisor abortava ao ultrapassar 37,1 °C durante o
+resfriamento. Supervisor novo ~17:03 mantém aquecimento OFF até <=36,5 °C
+e 20 s sem reboot, então retoma; limite de aborto em aquecimento continua
+37,2 °C. Firmware, leitor serial e câmera mantidos. Registro atual em
+`supervisao-recuperacao-retomada.json`; coleta e fotos continuam nos mesmos arquivos.
