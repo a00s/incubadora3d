@@ -2,6 +2,22 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Atualização após manutenção do ventilador (~23:40): usuário confirmou serviço
+feito e porta fechada. ALL OFF foi enviado para manutenção; portanto essa
+retomada parte da integral inicial, não é teste isolado de pausa de porta.
+Relato físico NOVO: pote agora AO LADO do aquecedor, sem ficar sobre ele;
+usuário descreve aquecimento indireto pelo piso de alumínio. Substitui a
+montagem anterior de canto encostado. Não presumir volume restante nem RH.
+Sem novo ajuste de firmware/offset nesta mudança. CO₂ habilitado confirmado
+na telemetria; retomada térmica supervisionada por
+`/tmp/incubadora-telemetria/supervisionar-pos-ventilador.py`, saída
+`supervisao-pos-ventilador.json`, usando o mesmo log calib-agua25/BOOT33.
+Conferir estado vivo antes de afirmar que continua aquecendo.
+Etapa anterior foi interrompida pela manutenção, não por limite térmico:
+máximo Arduino37,11 °C; referência atingiu37,0–37,1 °C nas capturas.
+Esses dados não validam a montagem nova nem uso com células.
+
+
 **Estado ~23:11: ensaio vazio, sem células (relato do usuário). NÃO aprovado
 para uso com células; controle térmico ainda tem picos e diferença entre sondas.**
 
