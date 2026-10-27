@@ -110,10 +110,10 @@ int main() {
   heaterPidIntegralMs=9000;heaterTempRateCPerMin=0.2f;
   controlHeater(36.3f,302000);
   assert(heaterPidIntegralMs==9000);
-  heaterTempRateCPerMin=0.08f;heaterPidIntegralMs=11000;
+  heaterTempRateCPerMin=0.14f;heaterPidIntegralMs=11000;
   controlHeater(36.9f,303000);
   assert(pin==HIGH && heaterPidDemandMs==0 && heaterPidIntegralMs==11000);
-  heaterTempRateCPerMin=-0.04f;
+  heaterTempRateCPerMin=0.04f;
   controlHeater(36.9f,304000);
   assert(heaterPidDemandMs>0 && botao_aquecedor_onoff); // automatic return after forecast clears
 }

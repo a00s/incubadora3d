@@ -228,3 +228,16 @@ quadros `antecipacao90-camera/`; ambos sob `/tmp/incubadora-telemetria`.
 Supervisor externo interrompe somente o aquecimento a 37,2 °C ou falha de
 telemetria; esse limite é do ensaio vazio, não emergência do firmware.
 Todos os cinco testes de controle passaram; resultado físico ainda pendente.
+
+### Previsão contra o limite, 16:38
+
+O primeiro ensaio de 90 s também permaneceu abaixo da meta: após startup,
+Arduino ~36,8 °C e cortes preditivos em 36,83 °C. Máximo total 37,01 °C,
+sem leituras acima de 37,1. Telemetria e parâmetros arquivados em
+`docs/ensaios/antecipacao90_2026-10-27.*`; etapa de 180 s também arquivada.
+
+Alterada somente a comparação preditiva: previsão de 90 s protege 37,1 °C,
+enquanto PI/D continua buscando 37 °C. Corte pela medição real permanece
+37,1 °C. Compilação, teste térmico e gravação verificada passaram. CO₂ ativo.
+Nova coleta `coleta-antecipacao-limite-20261027.log`, imagens em
+`antecipacao-limite-camera/`. Validação física ainda pendente.

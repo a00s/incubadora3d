@@ -7,27 +7,26 @@ ensaios automáticos. A revisão anterior foi REPROVADA: Arduino chegou a
 37,51 °C ~15:09, mesmo com saída desligada, por calor residual. Não atribuir
 esse pico à diferença entre sondas. Evidência completa em docs/ensaios.
 
-Revisão com antecipação gravada ~15:42: corta saída quando temperatura +
-taxa positiva × 1,5 min prevê 37 °C; retomada automática, controle permanece
-habilitado. Sem tendência inicial usa manutenção, sem impulso proporcional.
-Corte normal 37,1 °C; emergência travada continua 39 °C. O valor 37,2 °C
-NÃO foi gravado como emergência: é somente aborto do supervisor deste ensaio.
-Testes de software passaram; validação térmica física ainda pendente.
+Revisão atual gravada e verificada ~16:38: meta 37 °C, previsão de 90 s
+corta saída se temperatura + taxa positiva × 1,5 min atingir 37,1 °C.
+Retoma automaticamente; controles permanecem habilitados. Corte por leitura
+real 37,1 °C e emergência travada 39 °C. Sem tendência inicial usa manutenção.
+Horizonte 180 s e previsão contra 37,0 °C ficaram abaixo da meta; mesmo
+90 s contra 37,0 °C manteve ~36,8 °C. Ensaios arquivados separadamente em
+docs/ensaios/antecipacao180_2026-10-27.* e antecipacao90_2026-10-27.*.
+Resultado físico da revisão atual ainda PENDENTE, não declarar corrigido.
+Testes de software de controle térmico passaram; demais testes passaram na
+revisão anterior sem mudanças em CO₂/porta/display.
 
-Atualização ~16:29: horizonte de 180 s reduziu picos, mas ficou abaixo da meta
-por longos períodos (máximo 37,01, sem >37,1 até interrupção às 16:28).
-Usuário pediu correção: horizonte reduzido a 90 s, compilado, gravado e
-verificado; testes de aquecimento, porta, display e CO₂ passaram. Ensaio físico
-ainda pendente. CO₂ preservado ativo.
-Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao90-20261027.log;
-fotos em antecipacao90-camera; supervisor em supervisao-antecipacao90.json.
-Supervisor habilitou aquecimento ~15:44:55, após resfriamento/pulsos de
-identificação. Em ~15:48 usuário pediu CO₂ também ativo para ensaio combinado:
-comando CO2 ON enviado e ACK recebido. Não desligar CO₂ só para isolar calor.
-Conferir estado vivo antes de assumir continuidade; não reabrir serial durante
-ensaio. Supervisor aborta aquecimento a 37,2 °C ou telemetria perdida.
+Coleta atual: /tmp/incubadora-telemetria/coleta-antecipacao-limite-20261027.log;
+fotos em antecipacao-limite-camera; supervisor em supervisao-antecipacao-limite.json.
+CO₂ mantido ATIVO por pedido do usuário. Supervisor externo interrompe
+apenas aquecimento a 37,2 °C ou perda de telemetria; não confundir esse
+aborto experimental com o corte normal que retoma sozinho.
+Conferir processos vivos e último BOOT antes de assumir continuidade.
+Não reabrir serial durante ensaio. Não pedir abertura da porta nesta etapa.
 Não declarar estabilidade nem liberar uso com células sem medir resposta completa.
-CAD e peças não modificados; visualizador já regenerado e servido em 8081.
+CAD e peças não modificados; visualizador regenerado e servido em 8081.
 
 Este arquivo orienta sessões futuras. Conferir o código atual antes de assumir que
 parâmetros aqui registrados continuam iguais. Não presumir que o firmware local

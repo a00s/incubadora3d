@@ -369,7 +369,7 @@ cair. A integral é limitada e descarrega gradualmente acima da meta para conser
 necessária à manutenção. O ajuste PI/D mantém potência de manutenção nos dois
 lados da meta, com corte independente em 37,1 °C.
 Uma previsão adicional corta a saída se temperatura + taxa positiva × 1,5 min
-atingir 37 °C. Esse corte retoma automaticamente; não desabilita o controle.
+atingir 37,1 °C. A meta do PID permanece 37 °C. Esse corte retoma automaticamente; não desabilita o controle.
 Sem tendência medida, usa manutenção e evita impulso proporcional inicial.
 A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.

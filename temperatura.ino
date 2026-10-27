@@ -1324,7 +1324,7 @@ void controlHeater(float temperature, unsigned long now) {
   // Use a 90 s coast horizon; 180 s repeatedly stalled below target in the chamber.
   bool coastCut = heaterTrendReady
     ? heaterTempRateCPerMin > 0.0f &&
-      temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_SETPOINT_C
+      temperature + heaterTempRateCPerMin * HEATER_COAST_FORECAST_MIN >= HEATER_HARD_CUTOFF
     : temperature >= HEATER_SETPOINT_C;
   // Learn stationary loss, never the energy already travelling from the heater.
   if (errorC < 0.0f || (!coastCut && heaterTrendReady && fabsf(heaterTempRateCPerMin) < 0.05f &&
