@@ -309,8 +309,8 @@ ambas estão na faixa. A faixa de controle do CO₂ é 49.000–51.000 ppm (5,0%
 percentual), alinhada à precisão declarada por fabricantes de incubadoras profissionais.
 A perda medida na câmara pode impedir que ela permaneça dentro dessa faixa. A faixa visual
 de temperatura é 36,9–37,1 °C. O PID busca 37,0 °C com pulsos de até 17 s
-quando a leitura está em 36,5 °C ou abaixo, e até 12 s perto da meta. Mantém
-pausa mínima de 3 s, integral limitada a 12 s e corte imediato em 37,1 °C.
+em períodos de pelo menos 20 s, sem trocar o teto conforme a faixa de temperatura.
+Mantém pausa mínima de 3 s, integral limitada a 17 s e corte imediato em 37,1 °C.
 Se a leitura de temperatura falhar (`NaN`), o firmware desliga temporariamente a saída do
 aquecedor e preserva os estados habilitados do aquecedor e do CO₂. Quando a leitura volta a
 ser válida, o controle do aquecedor retoma sozinho. Se a falha persistir por 60 s, o firmware
@@ -360,10 +360,10 @@ desligado. `CO2 LOCK` ativa a trava manualmente. `HEAT ON` habilita o termostato
 físicos. O aquecimento usa PID com saída por tempo: o desvio até 37,0 °C define a ação
 proporcional, o erro acumulado compensa perdas persistentes e a tendência medida em janelas
 de 30 s antecipa quedas ou subidas. O PID ajusta continuamente a duração de cada pulso,
-limitada a 17 s quando o erro é de pelo menos 0,5 °C e a 12 s perto da meta.
+limitada a 17 s em toda a faixa de operação.
 Há pelo menos 20 s entre os inícios dos pulsos e 3 s desligado: 6 s pedidos
 equivalem a 30% de tempo ligado, em vez de 67% com a antiga pausa fixa de 3 s.
-Os limites correspondem a 85% longe da meta e 60% perto dela. O controle
+O limite corresponde a 85% do tempo ligado. O controle
 revê o relé a cada ~20 ms enquanto processa os botões e pode encurtar um pulso se a demanda
 cair. A integral é limitada e descarrega gradualmente acima da meta para conservar a potência
 necessária à manutenção. A demanda zera acima de 37,0 °C; em 37,0 °C exatos,
@@ -372,7 +372,7 @@ A telemetria inclui a demanda do PID e
 a taxa térmica para acompanhar a resposta quando a temperatura ambiente ou a porta mudarem.
 O termo derivativo usa 18.000 ms/(°C/min), equivalente a aproximadamente
 60 s de antecipação em relação ao proporcional; a integral só acumula com
-margem no teto ativo da faixa. A alteração foi motivada por pico tardio
+margem no teto da saída. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.

@@ -88,7 +88,15 @@ antecipação pela tendência, limites e segurança. Os outros quatro testes
 do firmware também passaram. Compilação e upload: saída 0, 32.166 bytes
 de Flash e 1.012 de RAM estática.
 
-**Estabilidade física da segunda etapa ainda em acompanhamento.**
+Refinamento em torno de 13:23: o teto de 12 s/60% perto da meta foi
+retirado. A aproximação estava lenta perto de 36,7 °C com demanda atingindo
+esse teto, e a faixa reduzida limitava a potência disponível nessa região.
+A versão atual usa **um único teto de 17 s/85%**, também para a integral,
+sem limiar de temperatura para alternar tetos. Período de 20 s, pausa de
+3 s e Kd de 18.000 preservados. Compilação/upload saída 0: 32.122 bytes
+Flash / 1.012 RAM estática. O teste de função C++ passou novamente.
+
+**Estabilidade física da versão com teto único ainda em acompanhamento.**
 O trecho inicial truncado da nova coleta é descartado; usar as amostras
 contínuas após `BOOT_COUNT,6` e verificar se não houve outro reinício.
 
@@ -100,6 +108,8 @@ Imagens pareadas e metadados: `pos-ajuste-camera/observations.jsonl`.
 Log posterior ao ajuste: `coleta-pos-ajuste-20261027.log`.
 Log da segunda etapa: `coleta-periodo20-20261027.log`; imagens e metadados
 em `periodo20-camera/`.
+Versão com teto único: `coleta-pid-linear-20261027.log`, imagens e metadados
+em `pid-linear-camera/`.
 
 A análise de objetos do RoomCam foi desligada, mantendo o vídeo e as
 capturas. O coletor serial passou a esperar dados com `select`, sem

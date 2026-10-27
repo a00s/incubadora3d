@@ -109,9 +109,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define HEATER_SETPOINT_C 37.0
 #define HEATER_MIN_OFF_MS 3000UL
 #define HEATER_PID_PERIOD_MS 20000UL
-#define HEATER_PID_MAX_ON_MS 12000UL
-#define HEATER_RECOVERY_MAX_ON_MS 17000UL
-#define HEATER_RECOVERY_ERROR_C 0.5f
+#define HEATER_PID_MAX_ON_MS 17000UL
 #define HEATER_TREND_WINDOW_MS 30000UL
 #define HEATER_PID_KP_MS_PER_C 18000.0f
 #define HEATER_PID_KI_MS_PER_C_MIN 5000.0f
@@ -1320,9 +1318,7 @@ void controlHeater(float temperature, unsigned long now) {
   }
 
   float errorC = HEATER_SETPOINT_C - temperature;
-  uint16_t maxPulseMs = errorC >= HEATER_RECOVERY_ERROR_C
-    ? HEATER_RECOVERY_MAX_ON_MS : HEATER_PID_MAX_ON_MS;
-  if (errorC < 0.0f || heaterPidDemandMs < maxPulseMs) {
+  if (errorC < 0.0f || heaterPidDemandMs < HEATER_PID_MAX_ON_MS) {
     heaterPidIntegralMs += errorC * HEATER_PID_KI_MS_PER_C_MIN *
                            ((float)elapsedMs / 60000.0f);
     if (heaterPidIntegralMs < 0.0f) heaterPidIntegralMs = 0.0f;
@@ -1341,7 +1337,7 @@ void controlHeater(float temperature, unsigned long now) {
     float demandMs = HEATER_PID_KP_MS_PER_C * errorC +
                      heaterPidIntegralMs + derivativeMs;
     if (demandMs < 0.0f) demandMs = 0.0f;
-    if (demandMs > maxPulseMs) demandMs = maxPulseMs;
+    if (demandMs > HEATER_PID_MAX_ON_MS) demandMs = HEATER_PID_MAX_ON_MS;
     heaterPidDemandMs = (uint16_t)(demandMs + 0.5f);
   }
   heaterPidLastUpdateAt = now;

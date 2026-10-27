@@ -37,9 +37,9 @@ parâmetros aqui registrados continuam iguais. Não presumir que o firmware loca
 - Meta 37,0 °C; offset aplicado na aquisição `+1.575 °C` (ajustado e gravado em 2026-10-27;
   validação térmica em andamento).
   O README registra o contexto e a posição diferente da referência.
-- Pulsos atuais: até 12 s perto da meta e 17 s com erro >= 0,5 °C;
+- Pulsos atuais: até 17 s em toda a faixa, sem teto diferente perto da meta;
   pelo menos 20 s entre inícios e 3 s desligado. Tendência em janelas de 30 s;
-  integral limitada a 12 s. Kd atual 18.000 ms/(°C/min), antecipação de
+  integral limitada a 17 s. Kd atual 18.000 ms/(°C/min), antecipação de
   aproximadamente 60 s em relação ao termo proporcional.
 - `controlHeater` contém o PID e os cortes; `toggleDoorMode` pausa e
   restaura os controles. Conferir os nomes no código se forem refatorados.
@@ -143,3 +143,13 @@ sem inferência local de objetos e sem mover PTZ.
   coleta (BOOT_COUNT 6); desconsiderar trecho inicial truncado e confirmar
   continuidade de ms e ausência de novos boots antes de avaliar a estabilidade.
   Verificação física desta versão ainda pendente.
+
+Refinamento ~13:23: removido o teto por faixa de 12 s/60%, que limitava a
+aproximação com demanda saturada perto de 36,7 °C. Limite único de 17 s/85%
+e integral máxima de 17 s, preservando período de 20 s e Kd de 18.000.
+Compilação/upload saída 0: 32.122 bytes Flash / 1.012 RAM estática.
+Coleta atual em `/tmp/incubadora-telemetria/coleta-pid-linear-20261027.log`,
+quadros em `pid-linear-camera/`. As pastas `pos-ajuste-camera` e
+`periodo20-camera` documentam etapas anteriores, não a versão atual.
+Validação física do limite único ainda pendente; não declarar estabilidade
+pela passagem momentânea por 37 °C. Confirmar boot e continuidade do log.

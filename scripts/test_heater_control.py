@@ -35,7 +35,7 @@ int main() {
   controlHeater(36.2f,5000);
   assert(heaterPidDemandMs>12000 && heaterPidDemandMs<=17000);
   controlHeater(36.6f,6000);
-  assert(heaterPidDemandMs<=12000 && heaterCurrentPulseMs<=12000);
+  assert(heaterPidDemandMs<=17000 && heaterCurrentPulseMs<=17000);
   controlHeater(37.1f,6001);
   assert(pin==HIGH && heaterPidDemandMs==0);
   controlHeater(36.2f,8000);
@@ -72,7 +72,11 @@ int main() {
   assert(heaterPidDemandMs<5000);
   heaterTempRateCPerMin=-0.3f;
   controlHeater(36.8f,220040);
-  assert(heaterPidDemandMs<=12000);
+  assert(heaterPidDemandMs<=17000);
+  // Maintenance can use more than 60% without switching temperature bands.
+  heaterTempRateCPerMin=0;heaterPidIntegralMs=15000;
+  controlHeater(37.0f,220060);
+  assert(heaterPidIntegralMs==15000 && heaterPidDemandMs==15000);
 }
 '''
 with tempfile.TemporaryDirectory() as d:
