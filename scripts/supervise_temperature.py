@@ -1,16 +1,14 @@
 import json
 import argparse
 import math
-import os
 import signal
 import time
 from datetime import datetime
 from pathlib import Path
 
-parser = argparse.ArgumentParser(description='Supervisão térmica contínua, sem limite de duração. Não reinicia a serial.')
+parser = argparse.ArgumentParser(description='Observação térmica contínua e somente leitura; nunca comanda o Arduino.')
 parser.add_argument('--log', type=Path, required=True)
 parser.add_argument('--state', type=Path, required=True)
-parser.add_argument('--port', default='/dev/ttyACM0')
 args = parser.parse_args()
 log, out = args.log, args.state
 release = out.with_suffix('.release')
@@ -37,21 +35,14 @@ def interrupted(*_):
     raise KeyboardInterrupt
 
 signal.signal(signal.SIGTERM, interrupted)
-state = {'started_at': stamp(), 'status': 'arming', 'abort_c': 37.2,
+state = {'started_at': stamp(), 'status': 'starting', 'abort_c': None,
          'peak_c': None, 'samples_above_37_1': 0}
-fd = None
 released = False
 try:
     fields = sample()
-    assert fields[7] == '1', 'CO2 deve estar habilitado antes da retomada'
-    assert float(fields[4]) < 37.2, 'Temperatura já no limite'
     previous_ms = int(fields[1])
-    fd = os.open(args.port, os.O_WRONLY | os.O_NOCTTY | os.O_NONBLOCK)
-    if fields[8] == '0':
-        os.write(fd, b'HEAT ON\n')
-        state['heat_on_command_at'] = stamp()
     state.update(status='watching', initial_temp_c=float(fields[4]),
-                 duration_limit_seconds=None, note='Contínuo por solicitação do usuário; modo porta permitido')
+                 duration_limit_seconds=None, read_only=True, note='Somente registro; cortes pertencem ao firmware')
     start = time.monotonic()
     seen = None
     saved = 0
@@ -72,8 +63,6 @@ try:
         state.update(last_at=stamp(), last_temp_c=temp, last_arduino_ms=ms,
                      heater_enabled=int(fields[8]), heater_on=int(fields[9]),
                      pid_demand_ms=int(fields[22]), heat_rate_c_min=float(fields[23]))
-        if temp >= state['abort_c']:
-            raise RuntimeError('Limite de interrupção do ensaio atingido')
         if time.monotonic() - saved > 5:
             out.write_text(json.dumps(state, indent=2) + '\n')
             saved = time.monotonic()
@@ -88,21 +77,6 @@ try:
 except BaseException as exc:
     state.update(status='aborted', reason=type(exc).__name__ + ': ' + str(exc))
 finally:
-    if fd is not None:
-        if not released:
-            os.write(fd, b'HEAT OFF\n')
-            state['heat_off_command_at'] = stamp()
-        os.close(fd)
-    if not released:
-        for _ in range(50):
-            time.sleep(.1)
-            try:
-                fields = sample()
-                if fields[8:10] == ['0', '0']:
-                    state['off_confirmed'] = True
-                    break
-            except Exception:
-                pass
     state['ended_at'] = stamp()
     out.write_text(json.dumps(state, indent=2) + '\n')
     print(json.dumps(state), flush=True)

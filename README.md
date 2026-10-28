@@ -626,7 +626,7 @@ Supervisão contínua no computador (sem prazo de desligamento):
 ```sh
 python3 -u scripts/supervise_temperature.py --log /caminho/coleta.log --state /caminho/supervisao.json
 ```
-Requer coletor serial já ativo, sem `timeout`. O supervisor usa a porta somente
-para escrita; não abre outro leitor nem configura a serial. Mantém interrupção
-experimental em37,2 °C e por falha de telemetria/reinício; não substitui os
-cortes do firmware. A saída normal do aquecedor continua pulsada pelo PID.
+Requer coletor serial já ativo, sem `timeout`. O monitor lê somente o arquivo de telemetria e nunca abre a porta serial.
+Não comanda ligar/desligar, não corta a37,2 °C e não tem limite de duração.
+Seu encerramento ou falha não altera o aquecimento. Os cortes permanecem
+no firmware:37,1 °C com retomada automática e emergência39 °C.

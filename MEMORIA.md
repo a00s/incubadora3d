@@ -2,6 +2,20 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Atualização10:26 de28/10: PAUSA explícita solicitada pelo usuário para
+colar novamente o metal da porta que se descolou (relato físico). Log
+EVENT,door,open, ambos controles0; ALL OFF enviado para confirmar pausa.
+Não reativar aquecimento/CO₂ até usuário retomar. Coletor segue ativo.
+Supervisor anterior cortou04:21:06 em37,24 °C, perdendo continuidade
+noturna. Usuário esclareceu que não quer interrupções experimentais
+no computador. `scripts/supervise_temperature.py` agora SOMENTE LEITURA,
+sem acesso serial, sem limite térmico/tempo e sem HEAT OFF no encerramento.
+Teste com log sintético38 °C e SIGTERM confirmou registro sem desligamento.
+Monitor atual sessão87853, estado `observacao-sem-corte.json`, mesmo log
+co2-adaptativo. Firmware permanece igual, com corte normal37,1 e emergência39.
+Tentativa HEAT ON10:25 foi recusada ERR,DOOR_OPEN; não foi reativado.
+
+
 Retomada verificada01:20: upload com verificação saída0, BOOT36 após
 reabrir coleta. Log atual `/tmp/incubadora-telemetria/coleta-co2-adaptativo-20261028.log`,
 SEM timeout; sessão66366. Supervisor contínuo sessão93438, estado
