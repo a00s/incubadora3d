@@ -1,0 +1,15 @@
+{
+  "status": "uploaded_physical_response_pending",
+  "uploaded_at": "2026-10-28T01:20:00+01:00",
+  "boot_count": 36,
+  "source_sha256": "2e29834ac04009fc34e1d1dfe70f46860a28b23120b10286ea14a012cb684255",
+  "flash_bytes": 32186,
+  "static_ram_bytes": 1121,
+  "co2_pulse_max_ms": 1000,
+  "co2_pulse_max_growth_ms": 20,
+  "supervisor_duration_limit_seconds": null,
+  "supervisor_abort_c": 37.2,
+  "log": "/tmp/incubadora-telemetria/coleta-co2-adaptativo-20261028.log",
+  "state": "/tmp/incubadora-telemetria/supervisao-co2-adaptativo.json",
+  "note": "Upload verificado; retomada HEAT ON confirmada; resposta CO2 ainda pendente após warmup2min"
+}

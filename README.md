@@ -413,9 +413,9 @@ Próximo do alvo ou durante subida, a espera adaptativa permanece.
 
 A primeira dose é uma sonda de 20 ms. Depois, a duração se adapta à resposta observada,
 ao déficit projetado e à tendência de perda, acompanhando mudanças de vazão sem medir
-a pressão diretamente. Pulsos automáticos vão de 20 a 80 ms. A primeira sonda é
+a pressão diretamente. Pulsos automáticos vão de 20 a 1000 ms, crescendo no máximo20 ms por dose. A primeira sonda é
 20 ms; sem ganho validado ou após resposta fraca, a próxima sonda cresce 20 ms em
-relação à anterior, sempre limitada pelo déficit e pelo teto absoluto de 80 ms.
+relação à anterior, sempre limitada pelo déficit e pelo teto absoluto de1000 ms.
 Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio durante
 subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
 alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
@@ -436,7 +436,7 @@ a primeira dose não espera o contador/tendência antigos. Depois dela, concentr
 em recuperação permite nova dose após 60 s, mesmo que o contador normal ainda não tenha
 zerado. Subida rápida bloqueia, e fora dessa condição valem as esperas normais.
 A duração usa o ganho aprendido da válvula (ppm por milissegundo), não uma leitura de
-pressão: menor resposta observada pede mais tempo, sempre até 80 ms. Sem ganho validado,
+pressão: menor resposta observada pede mais tempo, sempre até1000 ms e no máximo20 ms a mais que a dose anterior. Sem ganho validado,
 mantém sonda/progressão conservadora. Na recuperação usa déficit atual, sem extrapolar
 para o futuro a queda brusca da porta. Falha de segurança impede religamento automático; trava de faixa continua
 impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
@@ -621,3 +621,12 @@ O módulo de tela informado pelo usuário é AZDelivery1,77pol, ST7735(S),
 128×160 por SPI, ligado através de TXS0108E. O driver Ucglib já corresponde
 a essa família. Referências oficiais: [tela AZDelivery](https://www.az-delivery.de/en/products/1-77-zoll-spi-tft-display)
 e [conversor TI](https://www.ti.com/product/TXS0108E).
+
+Supervisão contínua no computador (sem prazo de desligamento):
+```sh
+python3 -u scripts/supervise_temperature.py --log /caminho/coleta.log --state /caminho/supervisao.json
+```
+Requer coletor serial já ativo, sem `timeout`. O supervisor usa a porta somente
+para escrita; não abre outro leitor nem configura a serial. Mantém interrupção
+experimental em37,2 °C e por falha de telemetria/reinício; não substitui os
+cortes do firmware. A saída normal do aquecedor continua pulsada pelo PID.

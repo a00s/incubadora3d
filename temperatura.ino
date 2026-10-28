@@ -218,7 +218,7 @@ int32_t max_co2_increase = 0;
 // analise: 1436ppm/s pra 0.5kg/cm2 com a valvula aperta por 5ms
 const float TAXA_MAXIMA = 1000.0; // ppm/s
 const float TAXA_MINIMA = 10.0;   // ppm/s
-const int DELAY_MAXIMO = 80;     // ms; limita o pulso enquanto a resposta da válvula se adapta
+const int DELAY_MAXIMO = 1000;     // ms; limita o pulso enquanto a resposta da válvula se adapta
 const int DELAY_MINIMO = 20;      // ms; pulsos menores não geraram resposta confiável da válvula
 const int32_t CO2_INITIAL_GAIN_ESTIMATE_X100 = 1200L; // Só prior; recalibrado pela primeira resposta
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100 = 50; // Evita divisão por zero: 0,5 ppm/ms
@@ -682,6 +682,7 @@ void loop()
         Serial.print(F("EVENT,co2_pulse,"));
       }
       // First probe stays small; subsequent unvalidated probes grow gradually.
+      if (pulseMs > lastCo2PulseMs + 20) pulseMs = lastCo2PulseMs + 20;
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
       if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
       co2_before_pump = CO2i;

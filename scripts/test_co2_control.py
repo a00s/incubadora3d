@@ -12,7 +12,7 @@ recovery = re.search(r'bool recoveryReady = (.*?);',source,re.S).group(1)
 advance = re.search(r'if \(co2DoorMode == 4\) co2DoorMode = 3;',source).group(0)
 gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
 weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
-start = source.index('      if (pulseMs > pulseLimit)')
+start = source.index('      if (pulseMs > lastCo2PulseMs + 20)')
 caps = source[start:source.index('      co2_before_pump', start)]
 initial = re.search(r'if \(lastCo2PulseMs == 0\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
 harness = r'''
@@ -88,6 +88,15 @@ int main() {
   co2GainValidatedThisBoot = true; co2LastResponseWeak = false;
   assert(boundedProbe(35,80) == 35);
   assert(boundedProbe(100,80) == 80);
+  lastCo2PulseMs = 80;
+  assert(boundedProbe(900,1000) == 100); // Valid gain also ramps rather than jumping.
+  for (int expected : {100,120,140,160,180,200}) {
+    lastCo2PulseMs = boundedProbe(900,1000);
+    assert(lastCo2PulseMs == expected);
+  }
+  assert(boundedProbe(900,25) == 25); // Deficit can shrink immediately.
+  lastCo2PulseMs = 1000;
+  assert(boundedProbe(1200,1000) == 1000);
   assert(boundedProbe(5,80) == 20);
   co2LastResponseWeak = true; lastCo2PulseMs = 40;
   assert(boundedProbe(20,80) == 60);

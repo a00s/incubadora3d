@@ -2,6 +2,35 @@
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
 
+Retomada verificada01:20: upload com verificação saída0, BOOT36 após
+reabrir coleta. Log atual `/tmp/incubadora-telemetria/coleta-co2-adaptativo-20261028.log`,
+SEM timeout; sessão66366. Supervisor contínuo sessão93438, estado
+`supervisao-co2-adaptativo.json`, `duration_limit_seconds=null`; ACK HEAT ON
+e ambos controles1 confirmados. Temperatura32,61 °C, CO₂~32317ppm.
+Câmera ligada ao log NOVO via `observar-co2-adaptativo.py`, sessão91851,
+pasta `co2-adaptativo-camera/`; observador antigo parado para não parear
+imagens atuais com log velho. Warmup CO₂2min após boot; resposta dos
+pulsos >80ms precisa validação física. Metadados/hash em
+`docs/ensaios/co2_adaptativo_2026-10-28.json`. Não reintroduzir prazo de
+1h no aquecimento nem prazo12h no coletor por padrão.
+
+
+Atualização01:20 de28/10: usuário pediu aquecimento indefinido SEM limite
+de duração; não reintroduzir timeout1h. Supervisor antigo efetivamente
+desligou HEAT01:02, não por temperatura. Novo script versionado
+`scripts/supervise_temperature.py` sem prazo; conserva corte experimental
+37,2 °C e falta de dados. Remover wrapper `timeout` interrompeu coletor,
+causando pausa adicional; coleta restabelecida SEM timeout e BOOT34.
+Usuário observou CO₂ baixo e suspeita cilindro quase vazio (relato/hipótese).
+Verificado: meta50000ppm, leitura~31750ppm, pulsos repetidos80ms; código
+limitava toda adaptação a80ms. Correção: teto1000ms, crescimento máximo
+20ms por dose também com ganho validado; redução imediata pelo déficit
+permitida. Sonda inicial20ms, esperas/intertravamentos preservados.
+Cinco testes passaram e build32186bytes flash/1121RAM. Gravação/retomada
+conferir abaixo e no log novo. Não atribuir baixa concentração só ao cilindro;
+resposta física à correção ainda não validada.
+
+
 Atualização00:24 de28/10, após retomada do objetivo: supervisor74644 e
 coletor70766 vivos; sem EVENT,door desde HEAT ON23:40. Referência37,0 °C
 na imagem atual00:23:38, Arduino37,11 °C. Últimos20min Arduino36,74–37,18 °C,
