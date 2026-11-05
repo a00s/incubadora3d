@@ -1,3 +1,74 @@
+## Auditoria do simulador e duas câmaras — 2026-11-05 (estado mais recente)
+
+- Relato físico do usuário: resposta inicial pode demorar mais com CO₂ muito baixo,
+  na retomada ou após porta aberta, devido à mistura/renovação no misturador e na
+  câmara principal. Tratar como relato; volumes efetivos e tempos não calibrados.
+  CAD/README documentam sensor no misturador e canal Ø6,2 até a câmara.
+- Correção verificada no simulador: atraso zero agendava gás em posição da fila já
+  consumida e perdia a dose. Agora entrega no próximo passo (discretização até2s).
+  Teste de conservação falha ao restaurar o bug e passa com a correção.
+- Tendência/janela de estabilidade passaram a usar o bloco real do firmware;
+  histórico reinicia na falha de sensor. Dois tanques opcionais têm concentrações
+  separadas, entrada/deslocamento de gás puro e troca conservativa entre volumes.
+  Conferidos conservação da troca, entrada zero e limite de gás puro.
+- 8.084 cenários exploratórios: uma/duas câmaras, atraso máximo30/300s,
+  volumes relativos supostos10%/50%, duas sementes e partida2.000/45.000ppm.
+  Resultados/hipóteses/hashes: docs/ensaios/co2_auditoria_simulacao_2026-11-05.json.
+  Há excessos em parte dos testes de estresse; NÃO declarar aprovação física.
+  O número82.805ppm citado ao usuário veio de atraso hipotético284s, não medido.
+- Telemetria preservada: boot5, doses96/122/144ms tiveram subida líquida>=50ppm
+  após aproximadamente29,4/10,5/8,5s e picos94,0/77,1/87,6s. Tempos contados desde
+  DATA anterior ao pulso (~uma amostra de incerteza). Não equivalem a calibração
+  isolada. Doses seguintes e boot7 sem subida líquida; causa não determinada.
+- Nenhum upload nesta auditoria. Última gravação confirmada anteriormente foi a
+  matemática com proteção de perda de resposta,32.252bytes/1.125RAM. A USB não foi
+  aberta agora e estados atuais não foram inferidos. Sem comandos ON/OFF/ACK.
+- Firmware candidato NÃO gravado ainda está no diretório de trabalho: mínimo20s
+  no gate, mas contador legado30ciclos (~60s) e estabilidade30s continuam limitando
+  o automático. Não afirmar que já executa a lógica solicitada de20s/platô.
+  Compilação32.250bytes/1.125RAM e cinco testes locais passaram; testes não provam
+  estabilidade. Falta ajustar platô e atribuição de doses ainda não observadas.
+- Alterações anteriores de firmware/README/testes continuam pendentes no diretório;
+  commit desta auditoria contém simulador, relatório e memória. Sem alteração CAD.
+  Visualizador copiado para/tmp e servidor8081 respondeu200.
+
+## Recuperação lenta desde~2.000ppm — revisão em bancada 2026-11-05
+
+- Relato novo: CO₂ habilitado na tela normal, após~10min ainda~2.000ppm; usuário
+  reconectou USB para revisão/teste. Não é continuação presumida da trava anterior.
+- Verificado na USB antes da gravação: leitura válida~1.950ppm,co2_enabled1,
+  co2_range_lock0; último pulso20ms sem subida útil. Coleta abriu/reiniciou placa;
+  firmware antigo depois emitiu5ms e continuou sem subida. O teste anterior só
+  media picos/última hora e começava em45.000ppm: omitia partida realmente baixa.
+- Comparação pelo mesmo modelo, semente e planta: desde2.000ppm, nominal antigo
+ 12.436s→novo2.962s; válvula com tempo morto20ms13.874s→3.208s; vazão alta
+ 5.054s→2.516s. Isso é simulação (até~50min no nominal modelado), não promessa
+  de tempo físico nem prova de solução. Baixa pressão/perda elevada ainda lentas.
+- Revisão gravada com --verify e saída0:32.226bytes flash/1.121RAM. Cinco testes
+  reais C++ passaram. Sem mudanças no controle térmico, cortes ou trava de faixa.
+- Partida sem dose anterior não espera300s além do warmup120s. Abaixo40.000ppm,
+  sonda40ms, progressão fraca+20ms e com ganho pode dobrar; >=40.000ppm mantém
+  sonda5ms/crescimento5ms. Dose sempre limitada a metade do déficit (1/3 perto).
+  Resposta positiva pode reduzir dose mesmo com ganho ainda não validado.
+- Somente abaixo40.000ppm, observação pode encurtar para>=90s após subida>=200ppm,
+  taxa<=0 e pico sem aumentar há30s. Ausência de resposta mantém300s. Retomada da
+  porta/religamento invalida validação anterior e faz nova sonda na faixa atual.
+- Removido cálculo de atraso adaptativo que desde a última revisão não era usado
+  para decidir espera/dose. Espera de recuperação agora usa a condição real acima.
+- Simulações ampliadas:2 grades×2.000 casos (45.000 e2.000ppm),15 casos nomeados
+  por grade; comparação com versão a41da6b. Planta de porta agora pausa30s e zera
+  duração anterior na retomada como o firmware real. Dois excessos nos1.600 casos
+  sinalizados de cada grade; trocas sem pausa têm mais excessos. Muitos casos
+  de perda/vazão insuficiente continuam baixos. Todos resultados/limites em
+  docs/ensaios/co2_recuperacao_2026-11-05.json; não declarar tudo aprovado.
+- Coleta nova somente observação, SEM timeout, sessão77612:
+  /tmp/incubadora-telemetria/recuperacao-pos-correcao-20261105.log, BOOT_COUNT3.
+  Primeira dose40ms em122.148ms; até261.016ms leitura~1.893ppm, sem subida útil.
+  Aguardando próxima dose60ms e resposta; usuário confirmou cilindro/regulador
+  abertos, gás e pressão disponíveis. Valor numérico não informado nem exigido
+  pelo algoritmo; controle aprende pela resposta, não pelo manômetro.
+  Não diagnosticar só software nem afirmar válvula abriu: confirmou-se comando.
+
 ## Gravação final confirmada — 2026-11-05
 
 - `scripts/arduino.sh upload` fora do sandbox terminou com saída0 e `--verify`;
