@@ -275,11 +275,8 @@ void updateDoorState(bool valid) {
 }
 
 bool co2ResponseWaitComplete(unsigned long now) {
-  // Confirmed decline below the good band can replenish after the minimum
-  // cooldown; a rise or near-target reading retains the learned response wait.
-  uint8_t seconds = CO2i < CO2_CONTROL_MIN_PPM && co2RatePpmMin < -50
-    ? 60 : co2ResponseLagSeconds;
-  return now - co2LastPulseAt >= (unsigned long)seconds * 1000UL;
+  // A falling reading can precede the delayed peak: never stack doses early.
+  return now - co2LastPulseAt >= CO2_RESPONSE_LAG_MAX_MS;
 }
 
 void setup()
@@ -561,17 +558,10 @@ void loop()
     bool recoveryReady = co2DoorMode >= 3 && CO2i < CO2_CONTROL_MIN_PPM &&
       co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN &&
       (co2DoorMode == 4 || (co2RatePpmMinReady && co2RatePpmMin <= 0 &&
-       currentTime - co2LastPulseAt >= 60000UL));
+       responseWaitComplete));
     bool doseResponseReady = validCo2 && (recoveryReady ||
       (responseWaitComplete && contador_pomp == 0 && co2TrendReady));
     co2ProjectedPpm = CO2i;
-    if (validCo2 && co2DoorMode < 3 && co2RatePpmMinReady && co2RatePpmMin < 0) {
-      int32_t boundedRate = co2RatePpmMin;
-      if (boundedRate < -5000) boundedRate = -5000;
-      int32_t projected = CO2i + boundedRate * co2ResponseLagSeconds / 60L;
-      if (projected < 0) projected = 0;
-      co2ProjectedPpm = projected;
-    }
     int32_t pulseLimit = DELAY_MINIMO;
     int32_t co2Deficit = CO2_TARGET_PPM - co2ProjectedPpm;
     if (validCo2 && co2Deficit > 0) {
@@ -639,20 +629,22 @@ void loop()
         doseResponseReady && co2ClickCount == 0 && !heaterPressPending &&
         millis() - co2LastPulseAt >= 1000UL) {
       int32_t pulseMs;
-      if (lastCo2PulseMs == 0) {
+      if (lastCo2PulseMs == 0 || currentTime - co2LastPulseAt >= 600000UL) {
         // Calibrate from this valve/tank state before using learned gain.
         pulseMs = DELAY_MINIMO;
         Serial.print(F("EVENT,co2_probe,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
           // Ignore responses below 50 ppm, where sensor noise and leak-model
-          // error dominate; larger responses update gain gradually. If a pulse
+          // error dominate; higher responses update gain immediately. If a pulse
           // produces no measurable rise, the next probe steps up gradually
           // instead of repeating the same ineffective minimum pulse forever.
           if (max_co2_increase >= 50) {
             int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
-            co2GainEstimatePpmPerMsX100 =
-              (co2GainEstimatePpmPerMsX100 + observedGainX100 * 2L) / 3L;
+            // Higher flow must shrink the next dose immediately. Lower flow
+            // decays gradually, following cylinder depletion without a jump.
+            co2GainEstimatePpmPerMsX100 = observedGainX100 > co2GainEstimatePpmPerMsX100
+              ? observedGainX100 : (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
             co2GainValidatedThisBoot = true;
             co2LastResponseWeak = false;
           } else {
@@ -1592,20 +1584,9 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
     return DELAY_MINIMO;
   }
   int32_t ppmNecessario = ppm_objetivo - ppm_atual;
-  // Suaviza em 1/3 a eficiência medida a cada resposta estabilizada, acompanhando
-  // a pressão variável sem deixar uma única amostra definir todo o pulso seguinte.
-  // O sensor pode refletir a injeção muitos segundos depois de fechar a válvula.
-  // Reduce the fraction as projected leakage grows, keeping the steady error
-  // caused by delayed feedback within the configured CO2 tolerance.
-  int32_t lossRate = co2RatePpmMin;
-  if (lossRate > 0) lossRate = 0;
-  if (lossRate < -5000) lossRate = -5000;
-  int32_t lossPerResponse = -lossRate * co2ResponseLagSeconds / 60L;
-  uint8_t fractionDenominator = co2DoorMode >= 3 ? 1 :
-    (ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3);
-  if (co2DoorMode < 3 && lossPerResponse > CO2_TOLERANCE_PPM / 2) {
-    fractionDenominator = 1 + CO2_TOLERANCE_PPM / lossPerResponse;
-  }
+  // Use a fraction of the measured deficit, including after door recovery.
+  // Do not enlarge a dose to compensate predicted future leakage.
+  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3;
   int32_t tempoValvula = ppmNecessario * 100L /
                          (ganhoPpmPorMsX100 * fractionDenominator);
   if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;

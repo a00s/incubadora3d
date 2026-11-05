@@ -183,10 +183,10 @@ int main() {
   assert(!botao_co2_onoff && !botao_aquecedor_onoff && co2DoorMode==0);
   // Recovery dose math stays bounded; learning ignores fictitious door compensation.
   co2DoorMode=4;co2RatePpmMin=0;
-  assert(calcularDelayProporcional(47000,50000,5000,true,80)==60);
+  assert(calcularDelayProporcional(47000,50000,5000,true,80)==30);
   assert(calcularDelayProporcional(47000,50000,20000,true,80)==20);
   co2DoorMode=3;
-  assert(calcularDelayProporcional(47000,50000,10000,true,80)==30);
+  assert(calcularDelayProporcional(47000,50000,10000,true,80)==20);
   assert(calcularDelayProporcional(30000,50000,10000,true,80)==80);
   co2DoorMode=0;assert(calcularDelayProporcional(47000,50000,10000,true,80)==20);
   max_co2_increase=0;co2_before_pump=45000;CO2i=44000;observeRise(80000);

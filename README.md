@@ -403,23 +403,19 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-O automático considera reposição quando a concentração projetada cai abaixo de
-49.500 ppm. Entre doses, mantém o contador mínimo de 30 ciclos e exige tendência
-abaixo de 300 ppm/min durante 30 s. Em geral respeita o tempo de resposta aprendido
-entre 90 e 180 s. Se a leitura estiver abaixo de 49.000 ppm e a tendência indicar
-queda superior a 50 ppm/min, pode repor após 60 s, ainda respeitando o contador e a
-tendência sustentada. Isso evita esperar todo o atraso adaptativo enquanto o gás cai.
-Próximo do alvo ou durante subida, a espera adaptativa permanece.
+O automático considera reposição quando a concentração medida cai abaixo de
+49.500 ppm. Entre doses aguarda pelo menos 180 s e exige tendência abaixo de
+300 ppm/min durante 30 s e contador zerado. A queda de concentração não encurta
+a espera: ainda pode haver resposta atrasada da injeção anterior.
 
-A primeira dose é uma sonda de 20 ms. Depois, a duração se adapta à resposta observada,
-ao déficit projetado e à tendência de perda, acompanhando mudanças de vazão sem medir
-a pressão diretamente. Pulsos automáticos vão de 20 a 1000 ms, crescendo no máximo20 ms por dose. A primeira sonda é
-20 ms; sem ganho validado ou após resposta fraca, a próxima sonda cresce 20 ms em
-relação à anterior, sempre limitada pelo déficit e pelo teto absoluto de1000 ms.
-Isso evita ficar preso em 40 ms depois de reiniciar perto do alvo. O bloqueio durante
-subida permanece para evitar empilhar doses com efeito atrasado. A resposta física após esta
-alteração ainda precisa ser acompanhada: a liberação mais cedo não comprova vazão
-suficiente nem estabilidade da concentração.
+A primeira dose e a primeira após dez minutos sem injetar são sondas de 20 ms.
+Depois, o ganho em ppm/ms acompanha as respostas recentes: aumento de vazão é
+adotado imediatamente; redução é incorporada em 1/3 por resposta. Resposta fraca
+permite crescer somente 20 ms por dose. Pulsos vão de 20 a 1000 ms, com crescimento
+máximo de 20 ms e redução imediata. A dose cobre somente metade do déficit medido
+(um terço perto da meta), sem antecipar perdas futuras. A pressão não é medida;
+uma troca de cilindro durante dosagem contínua ainda pode mudar a primeira resposta.
+Validação física desta revisão permanece pendente.
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o
 ícone com a folha à direita. Manter pressionado não repete o comando; soltar após o
@@ -432,14 +428,10 @@ sai e cada controle volta ao estado que tinha antes da abertura. Se o CO₂ esta
 habilitado, entra em RECUPERANDO até atingir 49.000 ppm; se estava desligado, permanece
 desligado, sem recuperação. O aquecimento também só volta se estava habilitado.
 Com sensor já aquecido, leitura válida, CO₂ abaixo de 49.000 e sem subida rápida,
-a primeira dose não espera o contador/tendência antigos. Depois dela, concentração parada ou caindo
-em recuperação permite nova dose após 60 s, mesmo que o contador normal ainda não tenha
-zerado. Subida rápida bloqueia, e fora dessa condição valem as esperas normais.
-A duração usa o ganho aprendido da válvula (ppm por milissegundo), não uma leitura de
-pressão: menor resposta observada pede mais tempo, sempre até1000 ms e no máximo20 ms a mais que a dose anterior. Sem ganho validado,
-mantém sonda/progressão conservadora. Na recuperação usa déficit atual, sem extrapolar
-para o futuro a queda brusca da porta. Falha de segurança impede religamento automático; trava de faixa continua
-impedindo CO₂. Tetos de dose, espera e bloqueio durante subida permanecem.
+a primeira dose não espera o contador/tendência antigos. Depois dela, exige os
+180 s completos antes de outra dose. A recuperação também usa somente uma fração
+do déficit medido e os mesmos limites adaptativos. Falhas e trava de faixa continuam
+impedindo CO₂ e não são liberadas por esta alteração.
 
 A pausa fica salva na EEPROM. Se reiniciar marcada como aberta, ambos continuam
 desligados e o aviso permanece; os estados anteriores também ficam salvos para o
@@ -463,7 +455,7 @@ limite superior da faixa (51.000 ppm) ou acima, o pulso é recusado. Sem leitura
 o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
 válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
 modo automático ao fim da janela de três segundos.
-Após cada pulso de CO₂, o controle aguarda aproximadamente um minuto para observar a
+Após cada pulso de CO₂, o controle aguarda pelo menos três minutos para observar a
 resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
 direta da válvula. O MH-Z16 não informa a faixa configurada por uma consulta UART; a
 antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar a faixa.

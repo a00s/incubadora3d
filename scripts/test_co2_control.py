@@ -14,11 +14,13 @@ gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
 weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
 start = source.index('      if (pulseMs > lastCo2PulseMs + 20)')
 caps = source[start:source.index('      co2_before_pump', start)]
-initial = re.search(r'if \(lastCo2PulseMs == 0\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
+initial = re.search(r'if \(lastCo2PulseMs == 0.*?\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
+gain_update = source[source.index('          if (max_co2_increase >= 50) {'):source.index('          if (max_co2_increase >= 50 && co2MaxRiseAt') ]
 harness = r'''
 #include <stdint.h>
 #include <initializer_list>
 #include <assert.h>
+#define CO2_RESPONSE_LAG_MAX_MS 180000UL
 #define CO2_CONTROL_MIN_PPM 49000L
 #define CO2_SENSOR_WARMUP_MS 120000UL
 #define CO2_TARGET_PPM 50000L
@@ -34,6 +36,12 @@ unsigned long co2LastPulseAt = 100000, actualNow=120000;
 unsigned long millis() {return actualNow;}
 uint8_t co2ResponseLagSeconds = 180;
 '''+function+'''
+int32_t co2GainEstimatePpmPerMsX100=1200;
+const int32_t CO2_MIN_GAIN_ESTIMATE_X100=50;
+void learn(int32_t max_co2_increase) {
+'''+gain_update+'''
+}
+
 int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
   if (!lastCo2PulseMs) pulseMs = '''+initial+''';
   else { '''+weak_probe+''' }
@@ -56,6 +64,15 @@ bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendRea
 '''+r'''
 void markDoseSent() { '''+advance+''' }
 int main() {
+  lastCo2PulseMs=100;
+  learn(10000); // New cylinder: increased flow is adopted immediately.
+  assert(co2GainEstimatePpmPerMsX100==10000);
+  learn(5000); // Depletion follows recent responses gradually.
+  assert(co2GainEstimatePpmPerMsX100==8333);
+  for (int n=0;n<10;n++) learn(5000);
+  assert(co2GainEstimatePpmPerMsX100<5100);
+  learn(0); assert(co2LastResponseWeak);
+  lastCo2PulseMs=0; co2GainValidatedThisBoot=false; co2LastResponseWeak=false;
   assert(admit(0));
   assert(!admit(true)); // No automatic dose while a possible long press is pending.
   assert(!admit(0,false) && !admit(0,true,false));
@@ -70,8 +87,8 @@ int main() {
   co2RatePpmMin=-200; CO2i=49000; assert(!ready(100001,true,30,false));
   CO2i=47700; markDoseSent(); assert(co2DoorMode==3);
   assert(!ready(159999,true,30,false)); // No repeated immediate recovery dose.
-  assert(ready(160000,true,30,false)); // Falling recovery ignores obsolete counter.
-  co2RatePpmMin=0; assert(ready(160000,true,30,false));
+  assert(!ready(160000,true,30,false)); // Falling recovery ignores obsolete counter.
+  co2RatePpmMin=0; assert(!ready(160000,true,30,false));
   assert(!ready(159999,true,30,false));
   co2RatePpmMin=10; assert(!ready(160000,true,30,false));
   co2RatePpmMin=500; assert(!ready(160000,true,30,false));
@@ -100,24 +117,18 @@ int main() {
   assert(boundedProbe(5,80) == 20);
   co2LastResponseWeak = true; lastCo2PulseMs = 40;
   assert(boundedProbe(20,80) == 60);
-  assert(!ready(159999, true, 0, true));
-  assert(ready(160000, true, 0, true)); // Falling at 47,700: no 180 s wait.
-  assert(!ready(160000, false, 0, true));
-  assert(!ready(160000, true, 1, true));
-  assert(!ready(160000, true, 0, false)); // Sustained trend still required.
-  co2RatePpmMin = 500;
-  assert(!ready(160000, true, 0, true)); // Rising: preserve full response wait.
-  assert(ready(280000, true, 0, true));
-  co2RatePpmMin = -50;
-  assert(!ready(160000, true, 0, true)); // Small/noisy change is insufficient.
-  co2RatePpmMin = -51;
-  assert(ready(160000, true, 0, true));
-  CO2i = 49000;
-  assert(!ready(160000, true, 0, true)); // Near target: no early-dose shortcut.
-  assert(ready(280000, true, 0, true));
-  co2ResponseLagSeconds = 90;
-  assert(!ready(189999, true, 0, true));
-  assert(ready(190000, true, 0, true));
+  for (uint8_t mode : {0,3}) {
+    co2DoorMode=mode;
+    for (int rate : {-200,0,500}) {
+      co2RatePpmMin=rate;
+      assert(!ready(279999,true,0,true));
+      assert(ready(280000,true,0,true));
+    }
+  }
+  co2DoorMode=0;
+  assert(!ready(280000,false,0,true));
+  assert(!ready(280000,true,1,true));
+  assert(!ready(280000,true,0,false));
 }
 '''
 with tempfile.TemporaryDirectory(prefix='incubadora-control-') as folder:

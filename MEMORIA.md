@@ -1,3 +1,23 @@
+## Correção de dosagem CO₂ — 2026-11-05
+
+- Relato: usuário trocou por cilindro com mais CO₂; houve excesso e alerta/parada
+  durante a noite. Atribuição ao aumento de vazão é hipótese consistente com o
+  relato; não há telemetria desta noite disponível nesta sessão.
+- Código verificado: permitia repetir dose em 60 s, compensar perdas projetadas e
+  usar todo o déficit na recuperação. Ganho maior era diluído na estimativa antiga.
+- Correção local: espera mínima180 s entre doses automáticas, inclusive recuperação;
+  usa metade do déficit medido (1/3 perto da meta), sem projetar perdas para dosar.
+  Ganho maior é adotado imediatamente; ganho menor decai1/3 por resposta, seguindo
+  esvaziamento gradual. Após10min sem dose volta à sonda20ms. Crescimento máximo
+ 20ms por dose e teto1000ms mantidos; cortes e trava persistente preservados.
+- Limitação: sem medição de pressão, a primeira dose após troca durante dosagem
+  contínua ainda usa informação anterior. Sonda mínima20ms também exige validação
+  com a pressão nova; não afirmar que impede todo excesso.
+- Compilação verificada:31892bytes flash,1121RAM. Testes de controle, ganho,
+  recuperação da porta, perdas, térmico e visor executados. Sem porta ttyACM nesta
+  sessão: NÃO gravado, NÃO retomado controle físico, NÃO validado no cilindro novo.
+- Sem alteração CAD ou de peças; STL/STEP/3MF e visualizador preservados.
+
 # Memória local do projeto
 
 ## Trabalho ativo — controle térmico e visor, 2026-10-27
