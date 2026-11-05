@@ -1,143 +1,109 @@
 #!/usr/bin/env python3
-"""Check the firmware's replenishment timing and retained dose interlocks."""
+"""Run the real dosing model and firmware admission/timing functions on the host."""
 from pathlib import Path
 import re
 import subprocess
 import tempfile
 
-source = (Path(__file__).resolve().parents[1] / 'temperatura.ino').read_text()
-function = source[source.index('bool co2ResponseWaitComplete('):source.index('void setup()')]
-admission = re.search(r'if \((validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS.*?)\) \{\s*int32_t pulseMs;',source,re.S).group(1)
-recovery = re.search(r'bool recoveryReady = (.*?);',source,re.S).group(1)
-advance = re.search(r'if \(co2DoorMode == 4\) co2DoorMode = 3;',source).group(0)
-gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
-weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
-start = source.index('      if (pulseMs > lastCo2PulseMs + 5)')
-caps = source[start:source.index('      co2_before_pump', start)]
-initial = re.search(r'if \(lastCo2PulseMs == 0.*?\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
-gain_update = source[source.index('          if (max_co2_increase >= 50) {'):source.index('          if (max_co2_increase >= 50 && co2MaxRiseAt') ]
-harness = r'''
-#include <stdint.h>
-#include <initializer_list>
-#include <assert.h>
-#define CO2_RESPONSE_LAG_MAX_MS 180000UL
-#define CO2_DOSE_OBSERVATION_MS 300000UL
-#define CO2_CONTROL_MIN_PPM 49000L
-#define CO2_SENSOR_WARMUP_MS 120000UL
-#define CO2_TARGET_PPM 50000L
-#define CO2_TOLERANCE_PPM 1000L
-#define DELAY_MINIMO 20
-#define MANUAL_CO2_PULSE_MS 5
-#define CO2_MAX_RISING_RATE_PPM_PER_MIN 50L
-uint8_t co2DoorMode=0;
-bool co2RatePpmMinReady=true;
-bool co2GainValidatedThisBoot = false, co2LastResponseWeak = false;
-int32_t lastCo2PulseMs = 0;
-int32_t CO2i = 47700, co2RatePpmMin = -200;
-unsigned long co2LastPulseAt = 100000, actualNow=120000;
-unsigned long millis() {return actualNow;}
-uint8_t co2ResponseLagSeconds = 180;
-'''+function+'''
-int32_t co2GainEstimatePpmPerMsX100=1200;
-const int32_t CO2_MIN_GAIN_ESTIMATE_X100=50;
-void learn(int32_t max_co2_increase) {
-'''+gain_update+'''
-}
+root = Path(__file__).resolve().parents[1]
+source = (root / 'temperatura.ino').read_text()
 
-int32_t boundedProbe(int32_t pulseMs, int32_t pulseLimit) {
-  if (!lastCo2PulseMs) pulseMs = '''+initial+''';
-  else { '''+weak_probe+''' }
-'''+caps+'''
-  return pulseMs;
+def function(signature):
+    start = source.index(signature)
+    brace = source.index('{', start)
+    end, depth = brace + 1, 1
+    while depth:
+        depth += (source[end] == '{') - (source[end] == '}')
+        end += 1
+    return source[start:end].replace('unsigned long', 'uint32_t')
+
+macros = '\n'.join(re.findall(r'^#define CO2_[^\n]+', source, re.M))
+admission = re.search(r'if \((validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS.*?)\) \{\s*int32_t pulseMs;', source, re.S).group(1)
+a = source.index('    bool responseWaitComplete =')
+gates = source[a:source.index('    int32_t pulseLimit', a)]
+header = root / 'firmware/incubadora/co2_dosing.h'
+harness = '#include "' + str(header) + '"\n' + r'''
+#include <cassert>
+#include <cmath>
+#include <cstdint>
+#include <random>
+''' + macros + r'''
+int32_t CO2i=47000, co2RatePpmMin=-20, max_co2_increase=0, lastCo2PulseMs=0;
+uint8_t co2DoorMode=0, co2RateHistoryCount=16;
+int32_t co2RateHistoryPpm[16];
+float co2Rate=0;
+bool co2DoseResponsePending=false, co2RatePpmMinReady=true;
+uint16_t co2NoisePpm=10, co2ResponseWaitSeconds=600;
+uint32_t co2LastPulseAt=100000, co2MaxRiseAt=100000, actualNow=120000;
+uint32_t millis() { return actualNow; }
+''' + function('bool co2ResponseWaitComplete(') + function('void measureCo2Noise(') + r'''
+bool ready(uint32_t currentTime, bool validCo2=true, int contador_pomp=0, bool co2TrendReady=true) {
+''' + gates + r'''
+  (void)contador_pomp; (void)co2TrendReady;
+  return doseResponseReady;
 }
-bool admit(bool heaterPressPending, bool botao_co2_onoff=true, bool validCo2=true, unsigned long currentTime=120000) {
+bool admit(bool heaterPressPending=false, bool validCo2=true, bool botao_co2_onoff=true, uint32_t currentTime=120000) {
   actualNow=currentTime;
-  int32_t co2ProjectedPpm=47000;
   bool doseResponseReady=true;
   uint8_t co2ClickCount=0;
-  return '''+admission+''';
+  return ''' + admission + r''';
 }
-bool ready(unsigned long now, bool validCo2, int contador_pomp, bool co2TrendReady) {
-  unsigned long currentTime=now;
-  bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
-  bool recoveryReady = '''+recovery+''';
-  return '''+gate+''';
-}
-'''+r'''
-void markDoseSent() { '''+advance+''' }
 int main() {
-  lastCo2PulseMs=100;
-  learn(10000); // New cylinder: increased flow is adopted immediately.
-  assert(co2GainEstimatePpmPerMsX100==10000);
-  learn(5000); // Depletion follows recent responses gradually.
-  assert(co2GainEstimatePpmPerMsX100==8333);
-  for (int n=0;n<10;n++) learn(5000);
-  assert(co2GainEstimatePpmPerMsX100<5100);
-  learn(0); assert(co2LastResponseWeak);
-  lastCo2PulseMs=0; co2GainValidatedThisBoot=false; co2LastResponseWeak=false;
-  assert(admit(0));
-  assert(!admit(true)); // No automatic dose while a possible long press is pending.
-  assert(!admit(0,false) && !admit(0,true,false));
+  Co2DoseModel dose;
+  assert(dose.pulse(48000,1000)==80);
+  dose.learn(160,2000);
+  assert(dose.pulse(4000,1000)==160); // Last duration * half deficit / last rise.
+  assert(dose.pulse(1000,1000)==40);
+  assert(dose.pulse(100000,1000)==176); // Controlled upward change, no fixed increment.
+  dose.learn(100,1000);assert(dose.pulse(1000,1000)==50);
+  dose.learn(100,500);assert(dose.pulse(1000,1000)==100); // Falling pressure.
+  dose.learn(100,2000);assert(dose.pulse(1000,1000)==25); // Higher cylinder flow.
+  dose.learn(100,0);assert(dose.pulse(48000,1000)==110); // No response: no divide by zero or reset.
+  assert(!dose.fresh && !dose.trained);
+  dose.learn(110,0);assert(dose.pulse(48000,1000)==121);
+  assert(dose.pulse(0,1000)==0 && dose.pulse(-1,1000)==0);
+  dose.reset();assert(dose.fresh && !dose.trained && dose.referenceMs==80);
+  std::mt19937 rng(20261105);
+  for(int i=0;i<20000;i++) {
+    if(i%31==0)dose.reset();
+    auto pulse=dose.pulse(1+rng()%50000,1000);
+    assert(pulse>=5 && pulse<=1000);
+    dose.learn(pulse,rng()%65536);
+  }
 
-  co2LastPulseAt=119500;assert(!admit(0)); // A fresh manual pulse prevents a duplicate automatic shot.
-  co2LastPulseAt=100000;
-  assert(!admit(0,true,true,119999)); // Sensor warmup is never bypassed.
-  co2DoorMode=4; CO2i=47700; co2RatePpmMin=-200;
-  assert(!ready(100001,true,30,false));
-  assert(ready(400000,true,30,false)); // First close dose: no stale counter/trend wait.
-  assert(!ready(100001,false,30,false));
-  co2RatePpmMin=500; assert(!ready(100001,true,30,false));
-  co2RatePpmMin=-200; CO2i=49000; assert(!ready(100001,true,30,false));
-  CO2i=47700; markDoseSent(); assert(co2DoorMode==3);
-  assert(!ready(159999,true,30,false)); // No repeated immediate recovery dose.
-  assert(!ready(160000,true,30,false)); // Falling recovery ignores obsolete counter.
-  co2RatePpmMin=0; assert(!ready(160000,true,30,false));
-  assert(!ready(159999,true,30,false));
-  co2RatePpmMin=10; assert(!ready(160000,true,30,false));
-  co2RatePpmMin=500; assert(!ready(160000,true,30,false));
-  co2RatePpmMin=-200; co2DoorMode=0;
-  // Restart near target: the first probe stays small, then escapes the old 40 ms cap.
-  assert(boundedProbe(80,80) == 5);
-  lastCo2PulseMs = 20;
-  for (int expected : {25,30,35,40}) {
-    co2LastResponseWeak = true;
-    lastCo2PulseMs = boundedProbe(20,80);
-    assert(lastCo2PulseMs == expected);
+  CO2i=47000; assert(admit());
+  assert(!admit(true) && !admit(false,false) && !admit(false,true,false));
+  assert(!admit(false,true,true,119999));
+  CO2i=49500;assert(!admit());CO2i=47000;
+  co2LastPulseAt=119500;assert(!admit());co2LastPulseAt=100000;
+  assert(!ready(119999) && ready(120000)); // Exactly 20 seconds, including no detected response.
+  co2DoseResponsePending=true;max_co2_increase=0;
+  assert(ready(120000,true,30,false)); // Old cycle/stability counters cannot prolong the minimum.
+  co2RatePpmMin=100;assert(!ready(120000)); // Still rising: wait beyond minimum.
+  co2Rate=10;assert(!ready(120000));co2Rate=0; // New rise blocks even while old slope is falling.
+  co2MaxRiseAt=110000;assert(!ready(120000));co2MaxRiseAt=100000;
+  co2RatePpmMin=0;assert(ready(120000)); // Plateau: no need to wait until falling.
+  co2RatePpmMin=-100;assert(ready(120000));
+  assert(!ready(120000,false));
+  co2RatePpmMinReady=false;assert(!ready(120000));co2RatePpmMinReady=true;
+  for(co2DoorMode=0;co2DoorMode<=4;co2DoorMode++) {
+    assert(!ready(119999));assert(ready(120000));
+    co2RatePpmMin=100;assert(!ready(120000));co2RatePpmMin=0;
   }
-  assert(boundedProbe(80,25) == 25); // A small deficit still limits the pulse.
-  co2GainValidatedThisBoot = true; co2LastResponseWeak = false;
-  assert(boundedProbe(35,80) == 35);
-  assert(boundedProbe(100,80) == 45);
-  lastCo2PulseMs = 80;
-  assert(boundedProbe(900,1000) == 85); // Valid gain also ramps rather than jumping.
-  for (int expected : {85,90,95,100,105,110}) {
-    lastCo2PulseMs = boundedProbe(900,1000);
-    assert(lastCo2PulseMs == expected);
-  }
-  assert(boundedProbe(900,25) == 25); // Deficit can shrink immediately.
-  lastCo2PulseMs = 1000;
-  assert(boundedProbe(1200,1000) == 1000);
-  assert(boundedProbe(5,80) == 5);
-  co2LastResponseWeak = true; lastCo2PulseMs = 40;
-  assert(boundedProbe(20,80) == 45);
-  for (uint8_t mode : {0,3}) {
-    co2DoorMode=mode;
-    for (int rate : {-200,0,500}) {
-      co2RatePpmMin=rate;
-      assert(!ready(399999,true,0,true));
-      assert(ready(400000,true,0,true));
-    }
-  }
-  co2DoorMode=0;
-  assert(!ready(400000,false,0,true));
-  assert(!ready(400000,true,1,true));
-  assert(!ready(400000,true,0,false));
+  co2DoorMode=0;co2LastPulseAt=0;lastCo2PulseMs=0;assert(ready(120000));
+  co2LastPulseAt=UINT32_MAX-1000;lastCo2PulseMs=100;
+  assert(!ready(1000));
+  assert(ready((uint32_t)(co2LastPulseAt+20000UL)));
+
+  for(int i=0;i<16;i++)co2RateHistoryPpm[i]=2000+(i%2?80:-80);
+  measureCo2Noise();assert(co2NoisePpm==160);
+  for(int i=0;i<16;i++)co2RateHistoryPpm[i]=2000;
+  measureCo2Noise();assert(co2NoisePpm==0);
 }
 '''
-with tempfile.TemporaryDirectory(prefix='incubadora-control-') as folder:
-    cpp = Path(folder) / 'control.cpp'
-    binary = Path(folder) / 'control-test'
+with tempfile.TemporaryDirectory(prefix='incubadora-co2-') as folder:
+    cpp, exe = Path(folder)/'test.cpp', Path(folder)/'test'
     cpp.write_text(harness)
-    subprocess.run(['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', str(cpp), '-o', str(binary)], check=True)
-    subprocess.run([str(binary)], check=True)
-print('CO2 replenishment timing and interlock checks passed.')
+    subprocess.run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-ftrapv',str(cpp),'-o',str(exe)],check=True)
+    subprocess.run([str(exe)],check=True)
+print('CO2 last-dose calculation, 20s minimum, rise/plateau/fall, door and rollover checks passed.')

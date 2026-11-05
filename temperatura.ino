@@ -3,6 +3,7 @@
 #include <SPI.h>
 #include "Ucglib.h"
 #include "display_font.h"
+#include "co2_dosing.h"
 #include <NDIRZ16.h>
 #include <avr/wdt.h>
 #include <EEPROM.h>
@@ -103,7 +104,7 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_MAX_RISING_RATE_PPM_PER_MIN 50L
 #define CO2_STABLE_TIME_MS 30000UL
 #define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
-#define CO2_RESPONSE_LAG_MIN_MS 90000UL
+#define CO2_RESPONSE_LAG_MIN_MS 20000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
 #define CO2_DOSE_OBSERVATION_MS 300000UL
 // Chamber temperature is corrected at acquisition for display and control.
@@ -229,14 +230,11 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_WAIT 1
 #define DISPLAY_READY 2
 int8_t displayHealthState = DISPLAY_WAIT;
-int32_t co2GainEstimatePpmPerMsX100 = CO2_INITIAL_GAIN_ESTIMATE_X100;
+Co2DoseModel co2DoseModel;
 bool co2DoseResponsePending = false;
-bool co2GainValidatedThisBoot = false;
-bool co2LastResponseWeak = false;
+uint16_t co2NoisePpm = 10;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
-uint8_t co2ResponseLagSeconds = CO2_RESPONSE_LAG_DEFAULT_MS / 1000UL;
-int32_t co2ProjectedPpm = 0;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -276,8 +274,21 @@ void updateDoorState(bool valid) {
 }
 
 bool co2ResponseWaitComplete(unsigned long now) {
-  // A falling reading can precede the delayed peak: never stack doses early.
-  return now - co2LastPulseAt >= CO2_DOSE_OBSERVATION_MS;
+  // 20 s between doses, including after invalid readings. No long fallback.
+  return (co2LastPulseAt == 0 && lastCo2PulseMs == 0) ||
+         (now - co2LastPulseAt >= CO2_RESPONSE_LAG_MIN_MS &&
+          (!co2DoseResponsePending || now - co2MaxRiseAt >= CO2_RESPONSE_LAG_MIN_MS));
+}
+
+
+void measureCo2Noise() {
+  uint16_t low = 65535, high = 0;
+  for (uint8_t i = 0; i < co2RateHistoryCount; ++i) {
+    uint16_t value = co2RateHistoryPpm[i];
+    if (value < low) low = value;
+    if (value > high) high = value;
+  }
+  co2NoisePpm = high - low;
 }
 
 void setup()
@@ -449,7 +460,7 @@ void loop()
         mySensorCO2.rawLoggingEnabled = true;
         EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
         setCo2Enabled(false);
-        Serial.println(F("EVENT,co2_near_protocol_limit,auto_locked_persistently"));
+        Serial.println(F("EVENT,co2_near_protocol_limit,locked"));
       }
       if (millis() < CO2_SENSOR_WARMUP_MS) {
         lastCo2RawPpm = sensorPpm;
@@ -549,34 +560,23 @@ void loop()
       co2StableSince = 0;
       co2TrendReady = false;
       co2DoseResponsePending = false;
+      co2DoseModel.reset();
       lastCo2PulseMs = 0; // Re-probe after losing the sensor reference.
       co2LastPulseAt = currentTime; // Wait again: an unseen dose may still be mixing.
       co2RateHistoryCount = 0;
       co2RateHistoryNext = 0;
       co2RatePpmMinReady = false;
     }
-    // Keep the minimum cooldown, then wait for a sustained slowdown before
-    // another automatic dose. Live telemetry showed the chamber response can
-    // keep rising well beyond 60 s; dosing during that rise stacked pulses.
+    // A new dose is permitted after 20 s, only once the measured rise has stopped.
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
-    bool recoveryReady = co2DoorMode >= 3 && CO2i < CO2_CONTROL_MIN_PPM &&
-      co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN &&
-      (responseWaitComplete && (co2DoorMode == 4 || (co2RatePpmMinReady && co2RatePpmMin <= 0 &&
-       currentTime - co2LastPulseAt >= CO2_DOSE_OBSERVATION_MS)));
-    bool doseResponseReady = validCo2 && (recoveryReady ||
-      (responseWaitComplete && contador_pomp == 0 && co2TrendReady));
-    co2ProjectedPpm = CO2i;
-    int32_t pulseLimit = DELAY_MINIMO;
-    int32_t co2Deficit = CO2_TARGET_PPM - co2ProjectedPpm;
-    if (validCo2 && co2Deficit > 0) {
-      // Scale the pulse cap with the remaining deficit. A broad ramp responds
-      // faster during large deficits while still tapering near target; the
-      // observed dose gain continues to adapt each cycle.
-      pulseLimit += co2Deficit >> 4;
-      if (pulseLimit > DELAY_MAXIMO) pulseLimit = DELAY_MAXIMO;
-    }
+    // The rolling slope rejects isolated sample jitter. A rising slope blocks
+    // replenishment; a plateau or fall below the target permits the next dose.
+    bool doseResponseReady = validCo2 && responseWaitComplete &&
+      co2RatePpmMinReady && co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN &&
+      co2Rate <= 2.0f;
+    int32_t pulseLimit = DELAY_MAXIMO; // Mechanical limit; gas quantity is calculated by the model.
     int32_t delayProporcional = validCo2
-      ? calcularDelayProporcional(co2ProjectedPpm, CO2_TARGET_PPM, co2GainEstimatePpmPerMsX100, doseResponseReady, pulseLimit)
+      ? co2DoseModel.pulse(CO2_TARGET_PPM - CO2i, pulseLimit)
       : DELAY_MINIMO;
 
     
@@ -600,7 +600,7 @@ void loop()
     }
 
     if(sensorReadOk && CO2i == 0){
-      Serial.println(F("EVENT,co2_zero_reading,invalid_for_control"));
+      Serial.println(F("EVENT,co2_zero_reading,invalid"));
     }
     
 //    Serial.print("CONT: ");
@@ -628,59 +628,25 @@ void loop()
         // Start replenishing halfway into the allowed band. Waiting for the
         // lower edge and then dosing only a fraction of the deficit biased
         // the measured steady state below the 5% setpoint.
-        co2ProjectedPpm < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
+        CO2i < (CO2_TARGET_PPM - CO2_TOLERANCE_PPM / 2) &&
         botao_co2_onoff == 1 &&
         doseResponseReady && co2ClickCount == 0 && !heaterPressPending &&
         millis() - co2LastPulseAt >= 1000UL) {
       int32_t pulseMs;
-      if (lastCo2PulseMs == 0 || co2DoorMode == 4 || currentTime - co2LastPulseAt >= 600000UL) {
+      if (co2DoseResponsePending && lastCo2PulseMs > 0) {
+        int32_t measuredRise = max_co2_increase;
+        if (measuredRise > 65535L) measuredRise = 65535L;
+        co2DoseModel.learn(lastCo2PulseMs, measuredRise >= 50 ? measuredRise : 0);
+        co2DoseResponsePending = false;
+      }
+      if (lastCo2PulseMs == 0 || co2DoorMode == 4) {
         // Calibrate from this valve/tank state before using learned gain.
-        pulseMs = MANUAL_CO2_PULSE_MS;
         Serial.print(F("EVENT,co2_probe,"));
       } else {
-        if (co2DoseResponsePending && lastCo2PulseMs > 0) {
-          // Ignore responses below 50 ppm, where sensor noise and leak-model
-          // error dominate; higher responses update gain immediately. If a pulse
-          // produces no measurable rise, the next probe steps up gradually
-          // instead of repeating the same ineffective minimum pulse forever.
-          if (max_co2_increase >= 50) {
-            int32_t observedGainX100 = max_co2_increase * 100L / lastCo2PulseMs;
-            // Higher flow must shrink the next dose immediately. Lower flow
-            // decays gradually, following cylinder depletion without a jump.
-            co2GainEstimatePpmPerMsX100 = observedGainX100 > co2GainEstimatePpmPerMsX100
-              ? observedGainX100 : (co2GainEstimatePpmPerMsX100 * 2L + observedGainX100) / 3L;
-            co2GainValidatedThisBoot = true;
-            co2LastResponseWeak = false;
-          } else {
-            co2LastResponseWeak = true;
-          }
-          if (co2GainEstimatePpmPerMsX100 < CO2_MIN_GAIN_ESTIMATE_X100) {
-            co2GainEstimatePpmPerMsX100 = CO2_MIN_GAIN_ESTIMATE_X100;
-          }
-          if (max_co2_increase >= 50 && co2MaxRiseAt > co2LastPulseAt) {
-            unsigned long observedLagMs = co2MaxRiseAt - co2LastPulseAt;
-            if (observedLagMs < CO2_RESPONSE_LAG_MIN_MS) {
-              observedLagMs = CO2_RESPONSE_LAG_MIN_MS;
-            }
-            if (observedLagMs > CO2_RESPONSE_LAG_MAX_MS) {
-              observedLagMs = CO2_RESPONSE_LAG_MAX_MS;
-            }
-            uint8_t observedLagSeconds = (observedLagMs + 500UL) / 1000UL;
-            co2ResponseLagSeconds = (co2ResponseLagSeconds * 2 + observedLagSeconds) / 3;
-          }
-          co2DoseResponsePending = false;
-        }
-        pulseMs = calcularDelayProporcional(co2ProjectedPpm, CO2_TARGET_PPM,
-                                            co2GainEstimatePpmPerMsX100, true, pulseLimit);
-        // Weak probes must escape the startup cap and keep adapting.
-        if (!co2GainValidatedThisBoot || co2LastResponseWeak)
-          pulseMs = lastCo2PulseMs + 5;
         Serial.print(F("EVENT,co2_pulse,"));
       }
-      // First probe stays small; subsequent unvalidated probes grow gradually.
-      if (pulseMs > lastCo2PulseMs + 5) pulseMs = lastCo2PulseMs + 5;
-      if (pulseMs > pulseLimit) pulseMs = pulseLimit;
-      if (pulseMs < MANUAL_CO2_PULSE_MS) pulseMs = MANUAL_CO2_PULSE_MS;
+      measureCo2Noise();
+      pulseMs = co2DoseModel.pulse(CO2_TARGET_PPM - CO2i, pulseLimit);
       co2_before_pump = CO2i;
       co2BaselineReady = true;
       lastCo2PulseMs = pulseMs;
@@ -716,7 +682,7 @@ void loop()
     Serial.print(lastCo2PulseMs); Serial.print(',');
     printFixed(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
     printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
-    Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(co2TrendReady && contador_pomp == 0 ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println(co2ProjectedPpm);
+    Serial.print(max_co2_increase); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(co2TrendReady && contador_pomp == 0 ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println(CO2i);
 
     if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
@@ -1169,7 +1135,7 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   unsigned long now = millis();
   bool freshReading = lastCo2ReadingValid && now - lastValidCo2Time <= 5000UL;
   if ((CO2i > 0 && CO2i >= CO2_CONTROL_MAX_PPM) || digitalRead(CO2PUMP) == LOW) {
-    Serial.println(F("ERR,CO2_PRIME_LIMIT_OR_VALVE_BUSY"));
+    Serial.println(F("ERR,PRIME_BUSY"));
     return false;
   }
   if (co2RangeWrapLatched) {
@@ -1208,12 +1174,12 @@ void handleSerialCommand() {
   if (strcmp_P(serialCommandBuffer, PSTR("STATUS")) == 0) {
     printStatus(millis());
   } else if (strcmp_P(serialCommandBuffer, PSTR("HELP")) == 0) {
-    Serial.println(F("CMD: STATUS, CO2 ON/OFF/PRIME/LOCK/ACK, HEAT ON/OFF, ALL OFF"));
+    Serial.println(F("CMD:STATUS|CO2|HEAT|ALL OFF"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ON")) == 0) {
     co2ClickCount = 0;
     if (setCo2Enabled(true)) Serial.println(F("ACK,CO2,ON"));
     else Serial.println(co2DoorMode == 2 ? F("ERR,DOOR_OPEN") :
-                        F("ERR,CO2_RANGE_LOCKED; send CO2 ACK after external verification"));
+                        F("ERR,CO2_RANGE_LOCKED"));
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 ACK")) == 0) {
     clearCo2RangeLock();
   } else if (strcmp_P(serialCommandBuffer, PSTR("CO2 LOCK")) == 0) {
@@ -1237,7 +1203,7 @@ void handleSerialCommand() {
     setHeaterEnabled(false);
     Serial.println(F("ACK,HEAT,OFF"));
   } else if (serialCommandLength > 0) {
-    Serial.println(F("ERR,UNKNOWN_COMMAND; send HELP"));
+    Serial.println(F("ERR,UNKNOWN_COMMAND"));
   }
 }
 
@@ -1254,6 +1220,7 @@ bool setCo2Enabled(bool enabled) {
   }
   if (!enabled && co2DoorMode >= 3) co2DoorMode = 0;
   if (enabled && !botao_co2_onoff) {
+    co2DoseModel.reset();
     lastCo2PulseMs = 0;
     co2DoseResponsePending = false;
   }
@@ -1433,7 +1400,7 @@ void finishHeaterClickSequence() {
   heaterClickCount = 0;
   if (clicks >= 3 && co2RangeWrapLatched) {
     clearCo2RangeLock();
-    Serial.println(F("EVENT,co2_lock_cleared,heater_three_clicks"));
+    Serial.println(F("EVENT,co2_lock_cleared,button"));
   } else if (clicks & 1) setHeaterEnabled(!botao_aquecedor_onoff);
 }
 
@@ -1531,7 +1498,6 @@ void serviceInputsForTwoSeconds() {
     serviceActivityIconAnimation();
     bool bothPressed = co2ButtonStable && heaterButtonStable;
     if (bothPressed && !bothButtonsStable) {
-      Serial.println(F("EVENT,both_buttons_pressed"));
       heaterPressPending = false;
       if (co2ClickCount > 0) setCo2Enabled(co2ModeAtClickSequence);
       co2ClickCount = 0;
@@ -1582,24 +1548,6 @@ void disableAutoCalibration() {
   while (mySerialCO2.available()) {
     mySerialCO2.read();
   }
-}
-
-
-// Função para calcular o tempo de abertura
-int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32_t ganhoPpmPorMsX100, bool tendenciaValida, int32_t pulseLimit) {
-  if (!tendenciaValida || ppm_atual <= 0 || ppm_objetivo <= ppm_atual ||
-      ganhoPpmPorMsX100 <= 0) {
-    return DELAY_MINIMO;
-  }
-  int32_t ppmNecessario = ppm_objetivo - ppm_atual;
-  // Use a fraction of the measured deficit, including after door recovery.
-  // Do not enlarge a dose to compensate predicted future leakage.
-  uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3;
-  int32_t tempoValvula = ppmNecessario * 100L /
-                         (ganhoPpmPorMsX100 * fractionDenominator);
-  if (tempoValvula < MANUAL_CO2_PULSE_MS) return MANUAL_CO2_PULSE_MS;
-  if (tempoValvula > pulseLimit) return pulseLimit;
-  return (int32_t)tempoValvula;
 }
 
 

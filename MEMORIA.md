@@ -1,3 +1,33 @@
+## Última dose como referência — gravado em 2026-11-05
+
+- Decisão explícita do usuário: simplificar, aprender pela última dose, repor quando
+  estiver abaixo e cair/estabilizar; esperar enquanto sobe; intervalo mínimo20s.
+  Usuário autorizou gravação novamente (“manda”).
+- Implementado em firmware/incubadora/co2_dosing.h: tempo anterior × metade do
+  déficit / maior subida líquida desde a dose; aumento limitado10%, redução imediata.
+  Resposta<50ppm aumenta10% sem divisão e sem reset. Sem resposta há teto por
+  déficit/150, permitindo até pelo menos80ms depois da primeira tentativa; limites
+  gerais5–1000ms. Não soma doses, não usa Padé nem espera adaptativa90–600s.
+- Gate real:20s desde fim da injeção,20s sem novo pico, histórico válido, inclinação
+  <=50ppm/min e subida recente<=2ppm/s (tolerância ao ruído). Contador30ciclos e
+  flag de estabilidade antigos ficam na telemetria, mas não bloqueiam o automático.
+  Warmup120s, porta, leitura inválida, cortes e EEPROM continuam preservados.
+- Verificado: cinco testes C++ locais passaram, incluindo20.000 histórias numéricas,
+  gate exato20s, platô sem precisar cair, subida recente mesmo com média negativa,
+  porta, falha, rollover, aquecimento e visor. Build31.444bytes/1.117RAM.
+- Upload scripts/arduino.sh upload terminou com saída0 e --verify. Coletor somente
+  leitura sessão1377: /tmp/incubadora-telemetria/co2-ultima-dose-20261105.log.
+  BOOT_COUNT9; CO₂ habilitado1, aquecimento1, trava0, temperatura36,86–37,05°C,
+  leitura inicial41.202ppm caindo durante warmup. Nenhum ON/OFF/ACK enviado.
+- 6.063 simulações exploratórias de8h, duas sementes, uma/duas câmaras, partida
+ 2.000/45.000ppm, porta, pressão, sensor e contato. Os quatro casos de curva medida
+  na planta de uma câmara ficaram entre49.879 e50.053ppm de pico; na planta de duas
+  câmaras a concentração no sensor difere da principal e alguns picos passam51.000.
+  As grades amplas ainda têm excessos e recuperação insuficiente: NÃO afirmar todos
+  aprovados nem regulação física estável. Relatório/hashes de fonte/header/hex:
+  docs/ensaios/co2_recuperacao_2026-11-05.json. Validação física prolongada pendente.
+- Sem alterações CAD; visualizador existente copiado para/tmp e porta8081 conferida.
+
 ## Auditoria do simulador e duas câmaras — 2026-11-05 (estado mais recente)
 
 - Relato físico do usuário: resposta inicial pode demorar mais com CO₂ muito baixo,

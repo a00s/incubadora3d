@@ -17,7 +17,7 @@ names=[
     'void finishHeaterClickSequence(', 'void handleHeaterButtonClick(',
     'void finishCo2ClickSequence(', 'void handleCo2ButtonClick(',
     'void toggleDoorMode(', 'void dispatchHeaterClick(', 'void serviceHeaterButton(',
-    'void finishCo2ClickSequenceIfExpired(', 'int32_t calcularDelayProporcional(',
+    'void finishCo2ClickSequenceIfExpired(',
 ]
 functions=[function(n) for n in names]
 prototypes='\n'.join(re.sub(r' = MANUAL_CO2_PULSE_MS','',f[:f.index('{')].strip())+';' for f in functions)
@@ -181,20 +181,17 @@ int main() {
   // Old firmware stored no resume requests: keep both off on legacy paused boot.
   EEPROM.update(29,4);restoreControls();toggleDoorMode();
   assert(!botao_co2_onoff && !botao_aquecedor_onoff && co2DoorMode==0);
-  // Recovery dose math stays bounded; learning ignores fictitious door compensation.
-  co2DoorMode=4;co2RatePpmMin=0;
-  assert(calcularDelayProporcional(47000,50000,5000,true,80)==30);
-  assert(calcularDelayProporcional(47000,50000,20000,true,80)==7);
-  co2DoorMode=3;
-  assert(calcularDelayProporcional(47000,50000,10000,true,80)==15);
-  assert(calcularDelayProporcional(30000,50000,10000,true,80)==80);
-  co2DoorMode=0;assert(calcularDelayProporcional(47000,50000,10000,true,80)==15);
+  // A deliberate restart re-probes a changed cylinder and discards old pulse duration.
+  co2DoorMode=0;botao_co2_onoff=false;co2DoseModel.learn(240,12000);
+  assert(setCo2Enabled(true));
+  assert(!co2DoseModel.trained && co2DoseModel.fresh && lastCo2PulseMs==0);
   max_co2_increase=0;co2_before_pump=45000;CO2i=44000;observeRise(80000);
   assert(max_co2_increase==0);
   CO2i=45100;observeRise(81000);CO2i=45050;observeRise(82000);
   assert(max_co2_increase==100 && co2MaxRiseAt==81000);
 }
 '''
+harness='#include "'+str(Path(__file__).resolve().parents[1]/'firmware/incubadora/co2_dosing.h')+'"\nCo2DoseModel co2DoseModel;\nuint16_t co2ResponseWaitSeconds=600;\n'+harness
 with tempfile.TemporaryDirectory(prefix='incubadora-door-') as folder:
     cpp=Path(folder)/'door.cpp'; binary=Path(folder)/'door-test'; cpp.write_text(harness)
     subprocess.run(['g++','-std=c++11','-Wall','-Wextra','-Werror',str(cpp),'-o',str(binary)],check=True)
