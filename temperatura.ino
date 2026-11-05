@@ -100,11 +100,12 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define CO2_SENSOR_LOCK_MAGIC 0xA5
 #define CO2_SENSOR_WARMUP_MS 120000UL
 #define CO2_GOOD_MIN_PPM CO2_CONTROL_MIN_PPM
-#define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
+#define CO2_MAX_RISING_RATE_PPM_PER_MIN 50L
 #define CO2_STABLE_TIME_MS 30000UL
 #define CO2_RESPONSE_LAG_DEFAULT_MS 120000UL
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
+#define CO2_DOSE_OBSERVATION_MS 300000UL
 // Chamber temperature is corrected at acquisition for display and control.
 #define HEATER_SETPOINT_C 37.0f
 #define HEATER_MIN_OFF_MS 3000UL
@@ -276,7 +277,7 @@ void updateDoorState(bool valid) {
 
 bool co2ResponseWaitComplete(unsigned long now) {
   // A falling reading can precede the delayed peak: never stack doses early.
-  return now - co2LastPulseAt >= CO2_RESPONSE_LAG_MAX_MS;
+  return now - co2LastPulseAt >= CO2_DOSE_OBSERVATION_MS;
 }
 
 void setup()
@@ -547,6 +548,9 @@ void loop()
       co2ReferenceReady = false;
       co2StableSince = 0;
       co2TrendReady = false;
+      co2DoseResponsePending = false;
+      lastCo2PulseMs = 0; // Re-probe after losing the sensor reference.
+      co2LastPulseAt = currentTime; // Wait again: an unseen dose may still be mixing.
       co2RateHistoryCount = 0;
       co2RateHistoryNext = 0;
       co2RatePpmMinReady = false;
@@ -557,8 +561,8 @@ void loop()
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
     bool recoveryReady = co2DoorMode >= 3 && CO2i < CO2_CONTROL_MIN_PPM &&
       co2RatePpmMin <= CO2_MAX_RISING_RATE_PPM_PER_MIN &&
-      (co2DoorMode == 4 || (co2RatePpmMinReady && co2RatePpmMin <= 0 &&
-       responseWaitComplete));
+      (responseWaitComplete && (co2DoorMode == 4 || (co2RatePpmMinReady && co2RatePpmMin <= 0 &&
+       currentTime - co2LastPulseAt >= CO2_DOSE_OBSERVATION_MS)));
     bool doseResponseReady = validCo2 && (recoveryReady ||
       (responseWaitComplete && contador_pomp == 0 && co2TrendReady));
     co2ProjectedPpm = CO2i;
@@ -629,9 +633,9 @@ void loop()
         doseResponseReady && co2ClickCount == 0 && !heaterPressPending &&
         millis() - co2LastPulseAt >= 1000UL) {
       int32_t pulseMs;
-      if (lastCo2PulseMs == 0 || currentTime - co2LastPulseAt >= 600000UL) {
+      if (lastCo2PulseMs == 0 || co2DoorMode == 4 || currentTime - co2LastPulseAt >= 600000UL) {
         // Calibrate from this valve/tank state before using learned gain.
-        pulseMs = DELAY_MINIMO;
+        pulseMs = MANUAL_CO2_PULSE_MS;
         Serial.print(F("EVENT,co2_probe,"));
       } else {
         if (co2DoseResponsePending && lastCo2PulseMs > 0) {
@@ -670,13 +674,13 @@ void loop()
                                             co2GainEstimatePpmPerMsX100, true, pulseLimit);
         // Weak probes must escape the startup cap and keep adapting.
         if (!co2GainValidatedThisBoot || co2LastResponseWeak)
-          pulseMs = lastCo2PulseMs + 20;
+          pulseMs = lastCo2PulseMs + 5;
         Serial.print(F("EVENT,co2_pulse,"));
       }
       // First probe stays small; subsequent unvalidated probes grow gradually.
-      if (pulseMs > lastCo2PulseMs + 20) pulseMs = lastCo2PulseMs + 20;
+      if (pulseMs > lastCo2PulseMs + 5) pulseMs = lastCo2PulseMs + 5;
       if (pulseMs > pulseLimit) pulseMs = pulseLimit;
-      if (pulseMs < DELAY_MINIMO) pulseMs = DELAY_MINIMO;
+      if (pulseMs < MANUAL_CO2_PULSE_MS) pulseMs = MANUAL_CO2_PULSE_MS;
       co2_before_pump = CO2i;
       co2BaselineReady = true;
       lastCo2PulseMs = pulseMs;
@@ -1249,6 +1253,10 @@ bool setCo2Enabled(bool enabled) {
     EEPROM.update(EEPROM_SAFETY_FAULT, 0);
   }
   if (!enabled && co2DoorMode >= 3) co2DoorMode = 0;
+  if (enabled && !botao_co2_onoff) {
+    lastCo2PulseMs = 0;
+    co2DoseResponsePending = false;
+  }
   botao_co2_onoff = enabled;
   saveControlState();
   if (!enabled) digitalWrite(CO2PUMP, HIGH);
@@ -1589,7 +1597,7 @@ int32_t calcularDelayProporcional(int32_t ppm_atual, int32_t ppm_objetivo, int32
   uint8_t fractionDenominator = ppmNecessario > CO2_TOLERANCE_PPM ? 2 : 3;
   int32_t tempoValvula = ppmNecessario * 100L /
                          (ganhoPpmPorMsX100 * fractionDenominator);
-  if (tempoValvula < DELAY_MINIMO) return DELAY_MINIMO;
+  if (tempoValvula < MANUAL_CO2_PULSE_MS) return MANUAL_CO2_PULSE_MS;
   if (tempoValvula > pulseLimit) return pulseLimit;
   return (int32_t)tempoValvula;
 }

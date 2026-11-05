@@ -12,7 +12,7 @@ recovery = re.search(r'bool recoveryReady = (.*?);',source,re.S).group(1)
 advance = re.search(r'if \(co2DoorMode == 4\) co2DoorMode = 3;',source).group(0)
 gate = re.search(r'bool doseResponseReady = (.*?);', source, re.S).group(1)
 weak_probe = re.search(r'if \(!co2GainValidatedThisBoot \|\| co2LastResponseWeak\).*?;', source, re.S).group(0)
-start = source.index('      if (pulseMs > lastCo2PulseMs + 20)')
+start = source.index('      if (pulseMs > lastCo2PulseMs + 5)')
 caps = source[start:source.index('      co2_before_pump', start)]
 initial = re.search(r'if \(lastCo2PulseMs == 0.*?\) \{.*?pulseMs = (.*?);', source, re.S).group(1)
 gain_update = source[source.index('          if (max_co2_increase >= 50) {'):source.index('          if (max_co2_increase >= 50 && co2MaxRiseAt') ]
@@ -21,12 +21,14 @@ harness = r'''
 #include <initializer_list>
 #include <assert.h>
 #define CO2_RESPONSE_LAG_MAX_MS 180000UL
+#define CO2_DOSE_OBSERVATION_MS 300000UL
 #define CO2_CONTROL_MIN_PPM 49000L
 #define CO2_SENSOR_WARMUP_MS 120000UL
 #define CO2_TARGET_PPM 50000L
 #define CO2_TOLERANCE_PPM 1000L
 #define DELAY_MINIMO 20
-#define CO2_MAX_RISING_RATE_PPM_PER_MIN 300L
+#define MANUAL_CO2_PULSE_MS 5
+#define CO2_MAX_RISING_RATE_PPM_PER_MIN 50L
 uint8_t co2DoorMode=0;
 bool co2RatePpmMinReady=true;
 bool co2GainValidatedThisBoot = false, co2LastResponseWeak = false;
@@ -81,7 +83,8 @@ int main() {
   co2LastPulseAt=100000;
   assert(!admit(0,true,true,119999)); // Sensor warmup is never bypassed.
   co2DoorMode=4; CO2i=47700; co2RatePpmMin=-200;
-  assert(ready(100001,true,30,false)); // First close dose: no stale counter/trend wait.
+  assert(!ready(100001,true,30,false));
+  assert(ready(400000,true,30,false)); // First close dose: no stale counter/trend wait.
   assert(!ready(100001,false,30,false));
   co2RatePpmMin=500; assert(!ready(100001,true,30,false));
   co2RatePpmMin=-200; CO2i=49000; assert(!ready(100001,true,30,false));
@@ -94,9 +97,9 @@ int main() {
   co2RatePpmMin=500; assert(!ready(160000,true,30,false));
   co2RatePpmMin=-200; co2DoorMode=0;
   // Restart near target: the first probe stays small, then escapes the old 40 ms cap.
-  assert(boundedProbe(80,80) == 20);
+  assert(boundedProbe(80,80) == 5);
   lastCo2PulseMs = 20;
-  for (int expected : {40,60,80,80}) {
+  for (int expected : {25,30,35,40}) {
     co2LastResponseWeak = true;
     lastCo2PulseMs = boundedProbe(20,80);
     assert(lastCo2PulseMs == expected);
@@ -104,31 +107,31 @@ int main() {
   assert(boundedProbe(80,25) == 25); // A small deficit still limits the pulse.
   co2GainValidatedThisBoot = true; co2LastResponseWeak = false;
   assert(boundedProbe(35,80) == 35);
-  assert(boundedProbe(100,80) == 80);
+  assert(boundedProbe(100,80) == 45);
   lastCo2PulseMs = 80;
-  assert(boundedProbe(900,1000) == 100); // Valid gain also ramps rather than jumping.
-  for (int expected : {100,120,140,160,180,200}) {
+  assert(boundedProbe(900,1000) == 85); // Valid gain also ramps rather than jumping.
+  for (int expected : {85,90,95,100,105,110}) {
     lastCo2PulseMs = boundedProbe(900,1000);
     assert(lastCo2PulseMs == expected);
   }
   assert(boundedProbe(900,25) == 25); // Deficit can shrink immediately.
   lastCo2PulseMs = 1000;
   assert(boundedProbe(1200,1000) == 1000);
-  assert(boundedProbe(5,80) == 20);
+  assert(boundedProbe(5,80) == 5);
   co2LastResponseWeak = true; lastCo2PulseMs = 40;
-  assert(boundedProbe(20,80) == 60);
+  assert(boundedProbe(20,80) == 45);
   for (uint8_t mode : {0,3}) {
     co2DoorMode=mode;
     for (int rate : {-200,0,500}) {
       co2RatePpmMin=rate;
-      assert(!ready(279999,true,0,true));
-      assert(ready(280000,true,0,true));
+      assert(!ready(399999,true,0,true));
+      assert(ready(400000,true,0,true));
     }
   }
   co2DoorMode=0;
-  assert(!ready(280000,false,0,true));
-  assert(!ready(280000,true,1,true));
-  assert(!ready(280000,true,0,false));
+  assert(!ready(400000,false,0,true));
+  assert(!ready(400000,true,1,true));
+  assert(!ready(400000,true,0,false));
 }
 '''
 with tempfile.TemporaryDirectory(prefix='incubadora-control-') as folder:

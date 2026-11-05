@@ -404,18 +404,25 @@ de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
 O automático considera reposição quando a concentração medida cai abaixo de
-49.500 ppm. Entre doses aguarda pelo menos 180 s e exige tendência abaixo de
-300 ppm/min durante 30 s e contador zerado. A queda de concentração não encurta
+49.500 ppm. Entre doses aguarda pelo menos 300 s e exige tendência abaixo de
+50 ppm/min durante 30 s e contador zerado. A queda de concentração não encurta
 a espera: ainda pode haver resposta atrasada da injeção anterior.
 
-A primeira dose e a primeira após dez minutos sem injetar são sondas de 20 ms.
+A primeira dose e a primeira após dez minutos sem injetar são sondas de 5 ms.
 Depois, o ganho em ppm/ms acompanha as respostas recentes: aumento de vazão é
 adotado imediatamente; redução é incorporada em 1/3 por resposta. Resposta fraca
-permite crescer somente 20 ms por dose. Pulsos vão de 20 a 1000 ms, com crescimento
-máximo de 20 ms e redução imediata. A dose cobre somente metade do déficit medido
+permite crescer somente 5 ms por dose. Pulsos vão de 5 a 1000 ms, com crescimento
+máximo de 5 ms e redução imediata. A dose cobre somente metade do déficit medido
 (um terço perto da meta), sem antecipar perdas futuras. A pressão não é medida;
 uma troca de cilindro durante dosagem contínua ainda pode mudar a primeira resposta.
-Validação física desta revisão permanece pendente.
+Ao trocar cilindro, desligar e religar o controle de CO₂ (ou usar a pausa de porta):
+a retomada reinicia com sonda de 5 ms, preservando a espera desde a dose anterior.
+Falha de leitura também invalida a dose em aprendizado e exige nova sonda.
+Validação física desta revisão permanece pendente. O modelo de simulação inclui
+atraso de transporte e mistura, não calibra o equipamento real. Troca sem pausa
+pode causar excesso na primeira dose; perda muito alta pode manter CO₂ abaixo da
+faixa com esta espera conservadora. Executar `python3 scripts/simulate_co2_control.py`
+para reproduzir 2.011 cenários de oito horas, incluindo esses limites conhecidos.
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o
 ícone com a folha à direita. Manter pressionado não repete o comando; soltar após o
@@ -429,7 +436,7 @@ habilitado, entra em RECUPERANDO até atingir 49.000 ppm; se estava desligado, p
 desligado, sem recuperação. O aquecimento também só volta se estava habilitado.
 Com sensor já aquecido, leitura válida, CO₂ abaixo de 49.000 e sem subida rápida,
 a primeira dose não espera o contador/tendência antigos. Depois dela, exige os
-180 s completos antes de outra dose. A recuperação também usa somente uma fração
+300 s completos antes de outra dose. A recuperação também usa somente uma fração
 do déficit medido e os mesmos limites adaptativos. Falhas e trava de faixa continuam
 impedindo CO₂ e não são liberadas por esta alteração.
 
@@ -455,7 +462,7 @@ limite superior da faixa (51.000 ppm) ou acima, o pulso é recusado. Sem leitura
 o pulso é permitido e o firmware começa a aprender a resposta quando chegarem leituras
 válidas. Toques intermediários não são gravados na EEPROM. Um toque simples alterna o
 modo automático ao fim da janela de três segundos.
-Após cada pulso de CO₂, o controle aguarda pelo menos três minutos para observar a
+Após cada pulso de CO₂, o controle aguarda pelo menos cinco minutos para observar a
 resposta do sensor antes de permitir outro. A serial não oferece comando de abertura
 direta da válvula. O MH-Z16 não informa a faixa configurada por uma consulta UART; a
 antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar a faixa.

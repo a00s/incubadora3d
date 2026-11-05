@@ -1,3 +1,42 @@
+## Gravação final confirmada — 2026-11-05
+
+- `scripts/arduino.sh upload` fora do sandbox terminou com saída0 e `--verify`;
+ 32002bytes flash/1121RAM. Cinco testes de regressão passaram.
+- Serial após gravação: BOOT_COUNT3; evento
+  `co2_range_lock_restored_after_boot`. DATA:co2_enabled0,heater_enabled1,
+  valve_open0,co2_range_lock1; temperatura36,74–36,86°C nos primeiros segundos.
+  CO₂ bruto~2290ppm, porém co2_valid0 e sensor em aquecimento: NÃO interpretar
+  como concentração física confirmada nem como permissão para destravar.
+- Trava persistente preservada, sem CO2 ACK, CO2 ON ou HEAT ON enviados.
+  Leitor serial somente observação, sessão13159; verificar se segue vivo antes
+  de reutilizar USB. Abrir serial reiniciou a placa. Validar com medição externa
+  antes de liberar trava; não declarar regulação física aprovada.
+
+## Revisão ampliada e simulação — 2026-11-05
+
+- Usuário autorizou gravação e pediu milhares de simulações, incluindo troca de
+  cilindro e porta. Upload da revisão anterior4381627 retornou saída0 fora do
+  sandbox; a placa só é acessível fora do isolamento. Revisão final conferir abaixo.
+- Revisão atual: sondas/mínimo5ms; crescimento máximo5ms; espera300s inclusive
+  na porta; tendência<=50ppm/min por30s. Ganho maior imediato, menor1/3 por resposta;
+  dose de metade do déficit (1/3 perto da meta). Teto1000ms preservado.
+- Desligar/religar CO₂, retomar porta, dez minutos sem dose ou falha de sensor
+  exigem nova sonda5ms. Falha de sensor reinicia espera300s para não empilhar dose
+  cuja resposta ficou invisível. Trocar cilindro usando pausa/desligamento do CO₂;
+  sem sinalização, primeira dose ainda pode usar ganho antigo e causar excesso.
+- Simulador `scripts/simulate_co2_control.py` extrai seleção de pulso e gates reais
+  C++; planta hipotética varia vazão, perda, atraso0–300s, mistura10–120s, ruído,
+  falha180s, tempo morto da válvula0–20ms, porta e troca. Semente20261105;
+  2.011 cenários de8h (16.088h modeladas). Não é ensaio físico nem calibração.
+- Resultado verificado da grade2.000: em1.600 casos sem troca não sinalizada,
+  dois picos>51000 (máx51356ppm). Em400 trocas sem pausa,36 excessos. Muitos
+  casos de perda alta/vazão insuficiente ficaram abaixo49000. Não declarar todos
+  cenários aprovados ou estabilidade física. Relatório com hash e parâmetros:
+  `docs/ensaios/co2_simulacoes_2026-11-05.json`. Modelos de casos conhecidos e
+  limites de pulso/espera têm asserções; grade exploratória registra falhas.
+- Sem alterações CAD. O visualizador foi copiado para/tmp e respondeu200 na8081
+  durante a etapa anterior. Não liberar trava de faixa nem forçar controles ON.
+
 ## Correção de dosagem CO₂ — 2026-11-05
 
 - Relato: usuário trocou por cilindro com mais CO₂; houve excesso e alerta/parada
