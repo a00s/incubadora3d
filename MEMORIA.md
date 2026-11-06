@@ -1,3 +1,40 @@
+## Piso útil aprendido da abertura — gravado em 2026-11-06 (mais recente)
+
+- Na retomada real com a revisão5e69972, após dose produtiva63ms o cálculo voltou
+  para7–8ms sem subida mensurável e o CO₂ caiu novamente para47mil. Só aumentar a
+  fração do déficit e lembrar subidas não resolve a repetição de pulsos ineficazes.
+- Header agora aprende zeroMs a partir de durações sem subida líquida>=50ppm,
+  apenas abaixo de uma duração que já funcionou. A duração útil comprovada começa
+  desconhecida e só é definida após uma resposta real deste boot/cilindro; depois
+  diminui com respostas novas. O valor80ms é apenas referência inicial de dose,
+  não uma prova de abertura útil para aprender o piso. Ausência de resposta numa dose
+  antes útil não pode inventar um tempo morto maior. Resposta positiva<=zeroMs
+  invalida o piso. Reset acompanha reinício/reabilitação/porta/falha de sensor.
+- Fórmula: zeroMs+(último_tempo−zeroMs)*déficit/última_subida. Ganho pela última
+  dose, sem somar doses. Aumento10% antes do arredondamento, redução imediata,
+  caps e guardas anteriores preservados. Piso é empírico da resposta líquida, não
+  calibração mecânica isolada; vazão, perdas e mistura podem influenciá-lo.
+- Regressão:13ms→2645ppm,8ms sem resposta e déficit500 passa a pedir9ms em vez de5.
+  Resposta positiva com7ms zera piso8 antigo. Variação de ganho segue adaptativa;
+  não foi usado valor de manômetro nem abertura fixa para a pressão atual.
+- Proteção da partida:65/72ms sem resposta antes de qualquer sucesso não aprendem
+  piso;80ms→5000ppm depois disso permite16ms para déficit1000, sem piso falso65ms.
+- Cinco suites C++ passaram,20.000histórias, invariantes do piso, resposta fraca,
+  mudanças de ganho, curva curta e memória/rollover. Build final31.618bytes/1.125RAM.
+  Upload com --verify terminou saída0. Sem mudança de PID térmico nem das travas.
+- Coletor anterior104678 parado por SIGINT antes do upload. Coleta atual somente
+  observação SEM timeout, sessão35097: /tmp/incubadora-telemetria/co2-piso-confirmado-20261106.log.
+  BOOT_COUNT17,co2_enabled1,heater_enabled1,range_lock0; leitura inicial43.115ppm,
+  temperatura36,74°C. Descartar dados anteriores ao BOOT17. Sem ON/OFF/ACK enviados.
+- Mais10.140execuções simuladas: quatro grades da revisão e comparação sem piso,
+  com duas sementes, partida, queda de vazão e duas câmaras. No caso de limiar10ms,
+  última hora46.941–50.188→49.348–50.032ppm. Caso de queda progressiva de vazão
+  manteve49.383–50.096ppm. Muitos estresses ainda excedem ou ficam baixos; não
+  declarar tudo aprovado nem manutenção física prolongada em5% confirmada.
+- Relatório co2_manutencao_2026-11-06.json conserva as revisões intermediárias,
+  pico real54.790, comparações e hashes finais. Verificar estado da coleta atual
+  antes de abrir outra serial. Sem CAD/3MF modificados;8081 respondeu200.
+
 ## Revisão final após pico real — gravado em 2026-11-06
 
 - Revisão física autônoma encontrou pico54.790ppm na versãobcf2e8e (déficit inteiro

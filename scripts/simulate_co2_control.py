@@ -199,6 +199,8 @@ int main(){
  run("maintenance_high_loss",400,400,40,8,false,false,false,10,0,false,0,48000);
  run("maintenance_depleting",250,150,25,6,true,false,false,10,0,false,0,48000);
  run("maintenance_valve_threshold",250,250,25,8,false,false,false,8,0,false,5,48000);
+ run("maintenance_threshold_10ms",250,250,25,8,false,false,false,8,0,false,10,48000);
+ run("maintenance_threshold_pressure_drop",250,80,20,6,true,false,false,10,0,false,10,48000);
  std::mt19937 rng(SIM_SEED);
  auto unit=[&](){return double(rng())/rng.max();};
  for(int i=0;i<2000;i++) {

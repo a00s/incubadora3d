@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.532 bytes de Flash (97%) e
-1.121 bytes de RAM global (54%), deixando 724 bytes de Flash e 927 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.618 bytes de Flash (97%) e
+1.125 bytes de RAM global (54%), deixando 638 bytes de Flash e 923 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -408,13 +408,21 @@ O automático repõe abaixo de 49.500 ppm, buscando 50.000 ppm. O modelo
 subida líquida medida desde essa dose. Não soma doses nem aprende uma curva.
 
 Com subida mensurável de pelo menos 50 ppm, calcula:
-`tempo = tempo anterior × (déficit inteiro / subida anterior)`.
+`tempo = piso útil aprendido + (tempo anterior − piso útil) × déficit / subida anterior`.
 Desde 2026-11-06 repõe o déficit inteiro: usar só metade reduzia demais a abertura
 na manutenção e favorecia quedas para 47.000–48.000 ppm entre respostas.
 A redução é imediata; o aumento é limitado a 10% por dose para conter extrapolações
 quando a vazão muda. Sem subida mensurável, calcula um aumento de 10%, sem divisão
 por zero nem reiniciar a aprendizagem. A primeira referência é 80 ms, duração que
 já produziu subida no conjunto instalado; as respostas novas a substituem.
+O piso só pode ser aprendido após observar uma dose com resposta útil neste
+ciclo; o atraso inicial de enchimento não pode se tornar piso de abertura.
+Depois disso, o piso é aprendido quando uma duração menor que outra já útil não produz subida
+líquida mensurável. Ele evita voltar a pulsos ineficazes de 5–8 ms após uma dose
+produtiva. Uma resposta com duração igual ou menor invalida um piso antigo; o
+ganho continua sendo atualizado pela última dose, acompanhando vazão variável.
+Não é uma calibração isolada de atraso mecânico: mistura e queda influenciam a
+resposta líquida. Não há soma de doses.
 Sem resposta, existe um teto adicional calculado por déficit/150, com permissão
 mínima de até 80 ms após a primeira tentativa, para não impedir a abertura útil.
 Isso limita a duração; não força pulsos de 80 ms nem garante qualquer vazão física.

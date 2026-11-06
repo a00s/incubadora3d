@@ -52,6 +52,10 @@ bool admit(bool heaterPressPending=false, bool validCo2=true, bool botao_co2_ono
 int main() {
   Co2DoseModel dose;
   assert(dose.pulse(48000,1000)==80);
+  dose.learn(65,0);dose.learn(72,0);
+  assert(dose.zeroMs==0 && dose.usefulCeilingMs==0); // Initial transport delay is NOT a valve-opening floor.
+  dose.learn(80,5000);assert(dose.pulse(1000,1000)==16);
+  dose.reset();
   dose.learn(160,2000);
   assert(dose.pulse(2000,1000)==160); // Last duration * full deficit / last rise.
   assert(dose.pulse(1000,1000)==80);
@@ -62,9 +66,16 @@ int main() {
   // Nov6 telemetry: avoid cutting a productive 13ms dose to 5/6ms when 2137ppm short.
   dose.learn(13,2645);assert(dose.pulse(2137,1000)==11);
   dose.learn(11,1771);assert(dose.pulse(2490,1000)==13); // Still respects 10% growth before rounding.
+  // Actual short pulses that produced no net rise must not keep being selected.
+  dose.learn(8,0);dose.learn(13,2645);
+  assert(dose.zeroMs==8 && dose.pulse(500,1000)==9);
+  assert(dose.pulse(2137,1000)==13); // Retains opening overhead; scales only useful time.
+  dose.learn(7,2000);assert(dose.zeroMs==0); // A higher-flow/earlier-opening valve invalidates stale offset.
+  dose.reset();
   dose.learn(100,0);assert(dose.pulse(48000,1000)==110); // No response: no divide by zero or reset.
   assert(!dose.fresh && !dose.trained);
   dose.learn(110,0);assert(dose.pulse(48000,1000)==121);
+  for(int i=0;i<10;i++){dose.learn(1000,0);assert((dose.usefulCeilingMs==0 ? dose.zeroMs==0 : dose.zeroMs<dose.usefulCeilingMs));}
   assert(dose.pulse(0,1000)==0 && dose.pulse(-1,1000)==0);
   dose.reset();assert(dose.fresh && !dose.trained && dose.referenceMs==80);
   std::mt19937 rng(20261105);
@@ -73,6 +84,8 @@ int main() {
     auto pulse=dose.pulse(1+rng()%50000,1000);
     assert(pulse>=5 && pulse<=1000);
     dose.learn(pulse,rng()%65536);
+    assert((dose.usefulCeilingMs==0 ? dose.zeroMs==0 : dose.zeroMs<dose.usefulCeilingMs));
+    if(dose.trained)assert(dose.zeroMs<dose.referenceMs);
   }
 
   CO2i=47000; assert(admit());

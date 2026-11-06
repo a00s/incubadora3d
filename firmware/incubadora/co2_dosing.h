@@ -5,12 +5,22 @@
 struct Co2DoseModel {
   uint16_t referenceMs = 80;
   uint16_t referenceRise = 0;
+  uint16_t zeroMs = 0;
+  uint16_t usefulCeilingMs = 0; // No useful opening is proven for this boot/cylinder yet.
   bool trained = false;
   bool fresh = true;
 
   void reset() { *this = Co2DoseModel(); }
 
   void learn(uint16_t pulseMs, uint16_t risePpm) {
+    if (risePpm >= 50) {
+      // A shorter successful opening disproves a stale zero-response interval.
+      if (pulseMs <= zeroMs) zeroMs = 0;
+      if (usefulCeilingMs == 0 || pulseMs < usefulCeilingMs) usefulCeilingMs = pulseMs;
+    } else if (usefulCeilingMs != 0 && pulseMs < usefulCeilingMs && pulseMs > zeroMs) {
+      // Do not interpret loss of flow at a proven useful duration as dead time.
+      zeroMs = pulseMs;
+    }
     referenceMs = pulseMs;
     referenceRise = risePpm;
     trained = risePpm >= 50;
@@ -21,7 +31,7 @@ struct Co2DoseModel {
     if (deficit <= 0) return 0;
     float calculated = referenceMs;
     if (!fresh) {
-      calculated = trained ? referenceMs * ((float)deficit / referenceRise)
+      calculated = trained ? zeroMs + (referenceMs - zeroMs) * ((float)deficit / referenceRise)
                            : referenceMs * 1.1f;
       // Limit upward extrapolation; a new cylinder can change the flow.
       float growthLimit = referenceMs * 1.1f;
