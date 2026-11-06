@@ -40,7 +40,7 @@ definidos explicitamente pelo usuário.
 | Regra | Efeito |
 |---|---|
 | Meta 50.000 ppm | Entra no erro usado para calcular a dose. |
-| Faixa 49.000–51.000 ppm | Referência visual e de recuperação. Injeção é impedida em51.000 ppm ou mais, sem necessariamente desligar a habilitação. |
+| Faixa 49.000–51.000 ppm | Referência visual e de recuperação. Dose de recuperação é zero em50.000 ppm ou mais, sem necessariamente desligar a habilitação. |
 | Espera inicial 120 s | Não injeta durante esse tempo após reinício, mesmo habilitado. Foi acrescentada nas revisões; o primeiro código importado esperava10s. |
 | Histórico de 16 leituras e janela ≥30 s | Outra condição para liberar doses. É preenchido em paralelo ao aquecimento inicial; uma leitura inválida reinicia esse histórico. |
 | Intervalo mínimo 20 s | Entre o fechamento da válvula e nova abertura automática. Pedido pelo usuário. |
@@ -51,8 +51,8 @@ definidos explicitamente pelo usuário.
 | Calibração 20/40/60/80… ms | Enquanto não existe ganho útil. Pedido pelo usuário. |
 | Aumento máximo 20 ms | Aplica-se também às doses calculadas após aprender; reduções podem ser maiores. Pedido pelo usuário. |
 | Abertura mínima 5 ms e máxima 100 ms | Teto de 100 ms pedido explicitamente pelo usuário. Vale para calibração e doses aprendidas. Não é declaração de limite físico da válvula. O primeiro código importado usava 1–60 ms; o teto de 1.000 ms das revisões foi removido. |
-| Compensação de perda | Ainda soma uma parcela à necessidade: perda estimada×tempo de resposta medido, com mínimo 20 s. Não é somente a proporção do déficit. |
-| Estimativa da perda | Aprende em quedas acima de 45.000 ppm, ignora taxas acima de 200 ppm/s e filtra 80% do valor anterior + 20% do novo. Esses parâmetros foram introduzidos nas revisões. |
+| Compensação de perda | Removida da necessidade: calcula somente (50.000 − ppm atual) × soma(ms)/soma(subidas), arredondada para cima e limitada pelos tetos. |
+| Estimativa da perda | Aprende em quedas acima de 45.000 ppm, ignora taxas acima de 200 ppm/s e filtra 80% do valor anterior + 20% do novo. Esses parâmetros foram introduzidos nas revisões; a estimativa não participa mais da dose. |
 | Religar CO₂ | Limpa o histórico de ganho, mas conserva a estimativa de perda e o horário do último comando. |
 | Leitura inválida | Impede injeção e limpa histórico/tendência. A habilitação pode continuar ligada. |
 | Botões em processamento | Sequência do botão de CO₂ ou pressão pendente no botão térmico suspendem a dosagem automática. |

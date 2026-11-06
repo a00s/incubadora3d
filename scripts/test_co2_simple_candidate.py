@@ -18,6 +18,13 @@ int main() {
   c.trained=true; c.referenceMs=20; c.referenceRise=500;c.lastProbeMs=20;
   assert(c.pulse(120000)==40); //20ms gave500ppm;1000ppm missing.
   c.lastPpm=49900; assert(c.pulse(120000)==5); //4ms below mechanical minimum.
+  // Real overshoot regression: estimated loss must not create demand at target.
+  c.lossPpmPerSec=150;c.responseMs=120000;
+  c.lastPpm=50890; assert(c.pulse(120000)==0);
+  c.lastPpm=50283; assert(c.pulse(120000)==0);
+  c.lastPpm=50000; assert(c.pulse(120000)==0);
+  c.lastPpm=49900; assert(c.pulse(120000)==5);
+  c.lossPpmPerSec=0;
   c.lastPpm=51000; assert(c.pulse(120000)==0);
   c.falling=0; c.flat=0; assert(c.pulse(120000)==0);
   c.lastPpm=45000; c.flat=2; assert(c.pulse(120000)==40);

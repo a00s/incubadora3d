@@ -1,3 +1,11 @@
+## ATUAL: dose somente pelo déficit — 2026-11-06 20:08CET
+
+- Usuário relatou doses excessivas em equilíbrio, autorizou corrigir/verificar/upload e pediu manter CO₂ habilitado. Confirmado no log anterior:50.890ppm→51ms e50.283ppm→69ms. Causa verificada na fonte: perda estimada×responseMs somada ao déficit, permitindo demanda acima da meta.
+- Removida essa parcela da dose. Agora ceil((50000−ppm)×referenceMs/referenceRise), zero a partir de50000. Mantidos ganho observado1–5, início20ms, calibração+20, aumento máximo20, teto100/min5, intervalo20s, EEPROM, térmico/porta/trava60000. Não adicionada regra nova de desligamento. Mudança experimental de agrupamento/atraso foi ensaiada e DESCARTADA antes de compilar/upload: piorou recuperação. Fonte instalada continua referência da última abertura, com sua limitação de atribuição documentada.
+- ENVIADO/VERIFICADO96a633adcd009c9a23e877207a1e98cb574475e59af15600fa42cfdeab314e5c às20:08:48, saída0.31886Flash/1179RAM. Header6e6ac178aafeb61c2a873d8324923292c5810fa6ee2599cf9984ca8916a0793c. Boot novo preservouCO₂1/heater1/lock0:37916ppm,36.93°C, conforme EEPROM. NenhumON/OFF/ACK enviado. Log logs/telemetria/usb-20261106T190848-183482Z.log. Coleta e validação física em andamento; não afirmar estabilidade.
+- Testes aritméticos incluindo perda150ppm/s×120s e pontos reais50.890/50.283/50000→0,49900→5 passaram; persistência e grandes deltas passaram;13painel passou. Simulação2024cenários preservada em docs/ensaios/co2_deficit_sem_compensacao_2026-11-06.json: nominal61409.3ppm,1075/2000stresstravados. Correção NÃO valida regulação fechada. Usuário informado das falhas antes do envio. O objetivo de funcionamento permanece pendente de prova; não marcar completo pela gravação.
+- Viewer8081 HTTP200/cópia servida atualizada, semCAD/3MF alterados.
+
 ## ATUAL: teto100ms por pulso — 2026-11-06 19:28CET
 
 - Usuário definiu que pulso não deve ultrapassar100ms e pediu gravar/Git/testar. Aplicado MAX_PULSE_MS=100 tanto ao resultado proporcional treinado quanto à calibração; mantémmin5ms e aumento máximo20ms.20→40→60→80→100, sem ultrapassar100nas próximas tentativas. Pulsos manuais já estavamlimitados20ms. Não acrescentamos alerta, desligamento ou outro comportamento se a conta pedir>100: só limita abertura.

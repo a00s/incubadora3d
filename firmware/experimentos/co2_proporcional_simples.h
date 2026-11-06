@@ -49,7 +49,7 @@ struct Co2DoseModel {
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
-        int32_t delivered = mass; // Learn only the observed rise; loss belongs to the dose demand.
+        int32_t delivered = mass; // Learn only the observed rise, without estimated loss.
         // Only useful rises enter the history. In particular, the recorded
         // 69ppm fluctuation must not replace a response of several thousand ppm.
         if (!stepCount) { referenceMs = 0; referenceRise = 0; }
@@ -78,8 +78,8 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
-    if (!ready(now) || lastPpm >= 51000 || lastPpm <= 0) return 0;
-    int32_t needed = 50000L - lastPpm + lossPpmPerSec * (responseMs / 1000.0f);
+    if (!ready(now) || lastPpm >= 50000 || lastPpm <= 0) return 0;
+    int32_t needed = 50000L - lastPpm;
     if (needed <= 0) return 0;
     uint32_t duration;
     if (trained && referenceRise) {
