@@ -3,7 +3,8 @@ from pathlib import Path
 import re
 ROOT = Path(__file__).resolve().parents[1]
 
-def harness():
+def harness(model_path=None):
+    model_path = Path(model_path) if model_path else ROOT/'firmware/incubadora/co2_dosing.h'
     source = (ROOT/'temperatura.ino').read_text()
     def function(signature):
         start = source.index(signature)
@@ -19,7 +20,7 @@ def harness():
     macros = '\n'.join(re.findall(r'^#define (?:CO2_|MANUAL_CO2_)[^\n]+', source, re.M))
     # MANUAL_CO2_PULSE_MS is a const int in the sketch.
     macros += '\n#define MANUAL_CO2_PULSE_MS 5\n'
-    return '#include "'+str(ROOT/'firmware/incubadora/co2_dosing.h')+'"\n'+r'''
+    return '#include "'+str(model_path.resolve())+'"\n'+r'''
 #include <cassert>
 #include <cmath>
 #include <cstdint>

@@ -403,6 +403,14 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
+Há uma candidata solicitada de proporção direta, **offline e reprovada para envio**,
+em `firmware/experimentos/co2_proporcional_simples.h`. Seu teste de aritmética é
+`python3 scripts/test_co2_simple_candidate.py`; passar essa conta não valida
+controle com atraso. O relatório `docs/ensaios/co2_proporcao_literal_reprovada_2026-11-06.json`
+preserva os excessos simulados. `--model firmware/experimentos/co2_proporcional_simples.h`
+no simulador seleciona essa candidata sem modificar o firmware ativo. Nenhum novo
+upload foi feito nessa revisão; o Arduino continua em `e91dcb05`.
+
 O controle busca 50.000 ppm, com faixa de referência49.000–51.000ppm.
 Duas quedas consecutivas dentro de20s ou um platô em qualquer leitura válida
 permitem calcular a próxima abertura. O intervalo mínimo entre aberturas continua20s
