@@ -154,9 +154,9 @@ int main() {
  assert(ucg.has("RECUPERANDO") && ucg.has("ppm/min") && ucg.has("cm3/h"));
  assert(!ucg.has("PORTA ABERTA"));
  co2DoorMode=2;ucg.reset();renderDisplay(36.8,30,true);ucg.assertOpen();
- // No-response faults are visible; temperature faults keep priority.
+ // A lack of rise does not fabricate a sensor or gas fault.
  co2DoorMode=0;co2DoseModel.update(fakeMillis,6400,true);co2DoseModel.record(20,fakeMillis);
- fakeMillis+=180000;ucg.reset();renderDisplay(37.0,30,true);assert(ucg.has("CO2 SEM RESP"));
+ fakeMillis+=180000;ucg.reset();renderDisplay(37.0,30,true);assert(!ucg.has("CO2 SEM RESP")&&displaySafetyAlert==0);
  ucg.reset();renderDisplay(NAN,30,false);assert(ucg.has("TEMP LOST"));
  co2DoseModel.reset();
  // Every numeric field preserves unchanged glyphs and erases only changed cells.

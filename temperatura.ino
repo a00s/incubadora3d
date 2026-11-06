@@ -507,10 +507,6 @@ void loop()
       co2RateHistoryNext = 0;
       co2RatePpmMinReady = false;
     }
-    if (botao_co2_onoff && co2DoseModel.noResponse(currentTime)) {
-      setCo2Enabled(false);
-      Serial.println(F("EVENT,co2_no_response,auto_off"));
-    }
     // A new dose is permitted after 20 s, only once the measured rise has stopped.
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
     // Two consecutive valid declines below target; no projected-gas estimate.
@@ -740,7 +736,6 @@ void drawHealthIndicator() {
   if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
   else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
-  else if (displaySafetyAlert == 4) ucg.print(F("CO2 SEM RESP"));
   else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") :
                  (co2DoorMode >= 3 ? F("RECUPERANDO") : F("CO2 ppm")));
   if (!displaySafetyAlert) {
@@ -905,8 +900,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   uint8_t conditionsAtTarget = (co2AtTarget ? 1 : 0) + (temperatureAtTarget ? 1 : 0);
   int8_t healthState = conditionsAtTarget == 0 ? DISPLAY_FAULT :
                        (conditionsAtTarget == 1 ? DISPLAY_WAIT : DISPLAY_READY);
-  uint8_t safetyAlert = safetyFault ? safetyFault : (isnan(temperature) ? 3 :
-    (co2DoseModel.noResponse(millis()) ? 4 : 0));
+  uint8_t safetyAlert = safetyFault ? safetyFault : (isnan(temperature) ? 3 : 0);
   int8_t rangeLockState = co2RangeWrapLatched ? 1 : 0;
   bool lockChanged = rangeLockState != displayCo2RangeLock;
   if (healthState != displayHealthState || lockChanged || safetyAlert != displaySafetyAlert) {

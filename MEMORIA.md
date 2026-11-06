@@ -1,3 +1,11 @@
+## ATUAL: removido alerta de ausência de subida — 2026-11-06 15:22CET
+
+- Usuário afirmou que NÃO houve injeção apesar dos comandos no log e pediu remover o alerta. Tratar como relato físico; logs confirmam só comandos, NÃO passagem de gás. GPIO7LOW/delay/HIGH ocorre no mesmo caminho de comando, mas não há realimentação da válvula. Não afirmar que a injeção ocorreu nem diagnosticar cilindro/relé/sensor sem evidência.
+- Removidos CO2 SEM RESP, EVENT co2_no_response, desligamento180s e congelamento de update/ready por esse prazo. Sem subida não é falha de leitura. Preservadas travas de excesso/protocolo/temperatura/porta e a conta/margem de gás pendente. Se orçamento estiver gasto, novas aberturas ainda podem ser impedidas: não prometer que remover alerta resolve a vazão.
+- ENVIADO/VERIFICADO e91dcb05d4ed336f54c9520c7d0ece29411643105a31c354e426223539751872, saída0,31.966Flash/1.175RAM,290Flash/873RAM livres. Habilitação salva preservada; estavaCO₂0 devido ao desligamento da versão anterior, aquecimento1. Não enviamos ON/OFF/ACK nem religamos CO₂ automaticamente.
+- Painel sem esse alerta no cartão atual; eventos antigos preservados como desligamento da versão antiga, categoria controle. Testes20milhistórias,10painel,display,porta,aquecimento,perdas,JS passaram.6072cenários,3sementes sem pico≥60000; mantidas falhas de recuperação/pendências, sem garantia5%física. Relatório docs/ensaios/co2_sem_alerta_subida_2026-11-06.json. Hashes e upload conferidos.
+- Logger/painel ativos, viewer8081=200, cópiaservida atualizada. Sem CAD/3MF alterados. Relatórios anteriores preservados como histórico, não estado atual.
+
 ## ATUAL: recuperação limitada após sonda insuficiente — 2026-11-06 15:12CET
 
 - ENVIADO/VERIFICADO `3ec0f3fe1248d15aecea92aba3857fba4e01d9ef2a2a57adb661432eb435991e`, saída0;32.206Flash/1.175RAM,50Flash/873RAM livres. Preservada habilitação deixada pelo usuário: pós-upload boot4, CO₂1/aquecimento1/trava0. Nenhum ON/OFF/ACK enviado. Logger ativo, novo arquivo logs/telemetria/usb-20261106T141239-906959Z.log; painel reiniciado e HTTP8082/8081=200. Não afirmar estabilidade por ter enviado.

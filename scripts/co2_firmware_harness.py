@@ -29,12 +29,8 @@ uint32_t co2LastPulseAt=0,co2RecentRiseAt=0,actualNow=0;
 int32_t CO2i=48000,lastCo2PulseMs=0;
 float co2Rate=0;
 bool co2RatePpmMinReady=true,botao_co2_onoff=true;
-int responseFaultEvents=0;
-#define F(x) x
-struct { void println(const char*) {responseFaultEvents++;} } Serial;
-void setCo2Enabled(bool enabled){botao_co2_onoff=enabled;}
 uint32_t millis(){return actualNow;}
-'''+macros+'\n'+function('void updateCo2RecentRise(')+'\n'+function('bool co2ResponseWaitComplete(')+'\nvoid serviceResponseFault(uint32_t currentTime){'+function('if (botao_co2_onoff && co2DoseModel.noResponse(currentTime))')+'}\n'+r'''
+'''+macros+'\n'+function('void updateCo2RecentRise(')+'\n'+function('bool co2ResponseWaitComplete(')+r'''
 bool firmwareReady(uint32_t currentTime,bool validCo2=true){
 '''+gates+r'''
  return doseResponseReady;
@@ -51,6 +47,6 @@ void recordAutomatic(uint16_t ms,uint32_t now){
 }
 void resetFirmware(){
  co2DoseModel=Co2DoseModel();co2LastPulseAt=co2RecentRiseAt=actualNow=0;
- lastCo2PulseMs=0;co2Rate=0;co2RatePpmMinReady=true;botao_co2_onoff=true;responseFaultEvents=0;
+ lastCo2PulseMs=0;co2Rate=0;co2RatePpmMinReady=true;botao_co2_onoff=true;
 }
 '''

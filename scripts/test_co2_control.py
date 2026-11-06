@@ -106,26 +106,26 @@ int main(){
  c.lossPpmPerSec=10;c.lastPpm=49000;c.referenceMs=20;c.referenceRise=500;
  for(auto &step:c.steps)step={0,0};c.stepCount=0;
  assert(c.pulse(182000)==50); //Raw65ms, envelope50ms; no unbounded loss compensation.
- // Real two-hour stall: bounded complement, then explicit fault rather than silent waiting.
+ // Real two-hour stall: bounded complement, without a fabricated no-response fault.
  resetFirmware();c.update(119853,15986,true);recordAutomatic(20,121909);
  const Reading noResponseReplay[]={ NO_RESPONSE_ROWS };
  int complements=0;uint32_t secondAt=0;
  for(const auto &row:noResponseReplay){
-   c.update(row.at,row.ppm,row.valid);serviceResponseFault(row.at);
+   c.update(row.at,row.ppm,row.valid);
    auto retry=firmwarePulse(row.at);
    if(retry){assert(!complements&&retry==33);recordAutomatic(retry,row.at);secondAt=row.at;complements++;}
  }
  assert(complements==1&&c.lastMs==53&&c.stepCount==0);
- assert(!botao_co2_onoff&&responseFaultEvents==1);
- assert(c.noResponse(secondAt+180000)&&!c.ready(secondAt+180000));
- c.update(secondAt+182000,17000,true);assert(c.noResponse(secondAt+182000));
- c.reset(true);assert(c.noResponse(secondAt+182000)); //Off/on retains the gas account.
+ assert(botao_co2_onoff); //No auto-off simply because a rise was not seen.
+ assert(c.pulse(secondAt+180000)==0); //Budget spent; no blind extra gas.
+ c.update(secondAt+182000,17000,true);assert(c.previousValid); //Keep processing real readings.
+ c.reset(true);assert(c.observing); //Off/on retains the gas account.
  c.reset();c.update(120000,6400,true);c.record(20,120000);
  c.update(138000,6390,true);c.update(140100,6380,true);
  auto retry=c.pulse(142200);assert(retry==45);c.record(retry,142200);
  assert(c.lastMs==65&&c.combined);
  for(uint32_t t=144200;t<=320200;t+=2000){c.update(t,6380,true);assert(c.pulse(t)==0);}
- assert(c.noResponse(322200));
+ assert(c.pulse(322200)==0&&botao_co2_onoff);
  // First plateau must not discharge the gas account of a later complement.
  c.reset();c.update(120000,2000,true);c.record(20,120000);
  c.update(138000,1990,true);c.update(140100,1980,true);
@@ -158,4 +158,4 @@ with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
     cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2: rolling1..5 stairs, real20ms stall retried within budget, timeout auto-off, real228ms replay blocked, independent safety bound, learned response time, proportional dose, plateau, rollover and20000 histories passed')
+print('CO2: rolling1..5 stairs, real20ms stall retried within budget, no automatic no-rise fault, real228ms replay blocked, independent safety bound, learned response time, proportional dose, plateau, rollover and20000 histories passed')

@@ -30,7 +30,7 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void update(uint32_t now, int32_t ppm, bool valid, bool learn = true) {
-    if (!valid || !learn || noResponse(now)) { previousValid = false; falling = flat = 0; return; }
+    if (!valid || !learn) { previousValid = false; falling = flat = 0; return; }
     uint32_t elapsed = now - lastAt;
     if (previousValid && elapsed && elapsed <= 20000UL) {
       int32_t delta = ppm - lastPpm;
@@ -81,11 +81,9 @@ struct Co2DoseModel {
     lastPpm = ppm; lastAt = now;
   }
 
-  __attribute__((noinline,noclone)) bool noResponse(uint32_t now) const { return observing && now - sendAt >= 180000UL; }
-
   bool ready(uint32_t now) const {
     bool plateau = flat >= 2 && lastPpm > 0;
-    return previousValid && !noResponse(now) && (!observing || mass < 200) && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
+    return previousValid && (!observing || mass < 200) && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {

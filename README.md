@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.206 bytes de Flash (99%) e
-1.175 bytes de RAM global (57%), deixando 50 bytes de Flash e 873 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 31.966 bytes de Flash (99%) e
+1.175 bytes de RAM global (57%), deixando 290 bytes de Flash e 873 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -429,12 +429,12 @@ conta até o platô observado mais o espaçamento real entre os comandos. Não h
 um novo temporizador fixo de observação de60/120s. A dose posterior a uma escada
 complementada também conserva um teto de ganho alto até obter resposta isolada.
 
-Se uma resposta continuar pendente por180s desde a última abertura, fecha o
-automático, emite `EVENT,co2_no_response,auto_off` e mostra **CO2 SEM RESP** no
-visor e alerta no gráfico. Uma oscilação posterior ou desligar/religar o controle
-não apaga essa falha nem o gás contabilizado. É necessário verificar gás, válvula,
-sensor e condição real da câmara antes de reiniciar um ensaio; o reset físico
-perde a conta em RAM. Sem resposta física, o código não pode comprovar a passagem de gás.
+Não há alerta nem desligamento automático por ausência de subida após um comando.
+O sensor pode continuar lendo normalmente sem detectar efeito dessas doses. O limite
+de gás pendente permanece: esgotar essa margem pode impedir novas aberturas, sem
+inventar um defeito de sensor ou comprovar que houve passagem de gás. Desligar/religar
+não apaga esse total; reset físico perde a conta em RAM. Eventos antigos da regra
+removida ficam no histórico como controles da versão anterior, não como alerta atual.
 
 Mantidos aquecimento inicial do sensor120s, pausa de porta, cortes por temperatura,
 leitura inválida, limite superior51.000ppm e travas EEPROM de concentração/protocolo.
@@ -446,10 +446,9 @@ previsão. O comando STATUS responde `STATUS,see_DATA`: o estado completo já
 é transmitido a cada ciclo nas linhas DATA. Retirado o contador legado de espera,
 que não participava das decisões, para caber no Uno.
 
-O relatório atual é `docs/ensaios/co2_recuperacao_sem_espera_infinita_2026-11-06.json`:
+O relatório atual é `docs/ensaios/co2_sem_alerta_subida_2026-11-06.json`:
 6.072cenários de4h,3sementes e20.000histórias numéricas. Nenhum cenário ensaiado
-atingiu60.000ppm; ainda há picos acima51.000ppm, falhas de recuperação e desligamentos
-por ausência de resposta. Os cenários com sonda inicial ineficaz por tempo morto22ms,
+atingiu60.000ppm; ainda há picos acima51.000ppm, falhas de recuperação e respostas ainda pendentes. Os cenários com sonda inicial ineficaz por tempo morto22ms,
 partindo de16mil ou6.400ppm, atingiram a faixa em menos20min no modelo, sem falha.
 Isso não comprova recuperação física nesse prazo nem estabilidade de5%.
 `python3 scripts/simulate_co2_control.py --explore --require-no-excess --report /tmp/co2.json`

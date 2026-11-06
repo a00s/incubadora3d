@@ -61,11 +61,11 @@ class Chronology(unittest.TestCase):
         self.assertEqual([e['duration_ms'] for e in doors],[8400,8400])
         self.assertAlmostEqual(doors[0]['t'],1700000003.1)
 
-    def test_no_response_is_a_visible_alert(self):
+    def test_legacy_no_response_is_history_not_a_current_alert(self):
         text=capture(count=1)+'EVENT,co2_no_response,auto_off\n'+data(3000,6400)
         event=next(e for e in parse_log(text,'fault',1000)[0]['events'] if e['raw'].startswith('EVENT,co2_no_response'))
-        self.assertEqual(event['kind'],'alert')
-        self.assertIn('sem resposta',event['label'])
+        self.assertEqual(event['kind'],'control')
+        self.assertIn('versão antiga',event['label'])
 
     def test_dose_tooltip_has_actual_average_basis(self):
         header=FALLBACK[:]

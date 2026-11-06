@@ -3,7 +3,7 @@
 #include <vector>
 #include <random>
 #include <cstdio>
-struct Result {double peak,low,high,mean;int first,doses,minInterval,locked,noResponse;};
+struct Result {double peak,low,high,mean;int first,doses,minInterval,locked,unresolved;};
 Result run(double g0,double g1,double lambda,int delay,double mixing,double initial,
            bool gradual=false,bool notified=false,int door=-1,double noise=0,double dead=0,
            bool dropout=false,bool contact=false,bool softOpening=false){
@@ -25,7 +25,6 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   co2DoseModel.update(now,sensed,valid,!opened);
   if(!valid){co2DoseModel.reset(true);co2LastPulseAt=now;lastCo2PulseMs=0;}
   if(valid)updateCo2RecentRise(now);
-  serviceResponseFault(now);
   uint16_t pulse=firmwarePulse(now,valid,botao_co2_onoff&&!opened);
   if(pulse){
    double gain=gradual?g0+(g1-g0)*t/14400:(t<7200?g0:g1);
@@ -42,10 +41,10 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   if(t>=10800){lo=std::min(lo,ppm);hi=std::max(hi,ppm);total+=ppm;count++;}
  }
  assert(shortest==999999||shortest>=20);
- return {peak,lo,hi,total/count,first,doses,shortest,locked?1:0,co2DoseModel.noResponse(14398000)?1:0};
+ return {peak,lo,hi,total/count,first,doses,shortest,locked?1:0,co2DoseModel.observing?1:0};
 }
 void emit(const char*name,Result r){
- printf("{\"scenario\":\"%s\",\"peak_ppm\":%.1f,\"last_hour_min\":%.1f,\"last_hour_max\":%.1f,\"last_hour_mean\":%.1f,\"first_band_s\":%d,\"doses\":%d,\"min_interval_s\":%d,\"range_locked\":%d,\"no_response_fault\":%d}\n",name,r.peak,r.low,r.high,r.mean,r.first,r.doses,r.minInterval,r.locked,r.noResponse);
+ printf("{\"scenario\":\"%s\",\"peak_ppm\":%.1f,\"last_hour_min\":%.1f,\"last_hour_max\":%.1f,\"last_hour_mean\":%.1f,\"first_band_s\":%d,\"doses\":%d,\"min_interval_s\":%d,\"range_locked\":%d,\"unresolved_response\":%d}\n",name,r.peak,r.low,r.high,r.mean,r.first,r.doses,r.minInterval,r.locked,r.unresolved);
 }
 int main(int argc,char**argv){
  unsigned seed=argc>1?(unsigned)std::strtoul(argv[1],nullptr,10):20261106;
