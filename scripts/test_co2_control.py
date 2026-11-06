@@ -15,7 +15,7 @@ int main(){
  // The exact requested proportion, with only mechanical/growth bounds.
  resetFirmware();c.previousValid=true;c.trained=true;c.referenceMs=20;c.referenceRise=2000;
  c.lastPpm=49000;c.falling=2;c.lossPpmPerSec=0;
- assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==22); // Upward extrapolation capped at10%.
+ assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==40); // Exact ratio; no percentage ceiling.
  c.lastPpm=49000;c.referenceRise=4000;assert(c.pulse(120000)==5);
  c.falling=1;assert(!c.ready(120000));c.falling=2;assert(c.ready(120000));
  recordAutomatic(10,120000);assert(!firmwareReady(139999));
@@ -24,6 +24,19 @@ int main(){
  c.lastPpm=50000;c.falling=0;c.flat=2;c.lossPpmPerSec=20;c.referenceMs=20;c.referenceRise=2000;
  assert(c.pulse(140010)==5);c.lossPpmPerSec=0;assert(c.pulse(140010)==0);
  c.lastPpm=51000;c.lossPpmPerSec=20;assert(c.pulse(140010)==0);
+ // A rising curve flattening at45000 must act before any decline, after20s.
+ resetFirmware();c.previousValid=true;c.trained=true;c.referenceMs=44;c.referenceRise=5000;
+ c.lastPpm=45000;c.lastAt=100000;c.hasSent=true;c.sendAt=100000;
+ c.update(102000,45001,true);c.update(104000,45002,true);
+ assert(c.falling==0&&c.flat==2);assert(!c.ready(119999));assert(c.ready(120000));
+ assert(c.pulse(120000)==44);
+ // The same plateau can continue short calibration probes before useful gain exists.
+ c.trained=false;assert(c.pulse(120000)>=5);
+ // A useful response can be learned at the plateau, without two falling samples.
+ resetFirmware();c.update(100000,40000,true);c.record(20,100000);
+ c.update(110000,41000,true);c.update(120000,42000,true);
+ c.update(122000,42001,true);c.update(124000,42002,true);
+ assert(c.falling==0&&c.trained&&c.referenceRise>=2000);
  // A rising response forbids a new command, independent of the old rolling slope.
  c.update(150000,50000,true);c.update(152000,50025,true);assert(!c.ready(160000));
  // A real valley-to-peak rise remains useful even below ppm at the command.
@@ -33,10 +46,16 @@ int main(){
  for(uint32_t t=160000;t<=220000;t+=10000)c.update(t,48800-(t-150000)/100,true);
  assert(c.trained&&c.referenceMs==20&&c.referenceRise>=2000);
 
- // Maintenance never relearns a false small gain from overlapping flat doses.
- c.lastPpm=50000;auto rise=c.referenceRise;c.record(5,230000);assert(!c.observing);
+ // A flat dose with no measurable rise does not invent a new gain.
+ c.lastPpm=50000;auto rise=c.referenceRise;c.record(5,230000);assert(c.observing);
  c.update(232000,50000,true);c.update(234000,50000,true);assert(c.referenceRise==rise);
  c.reset(true);assert(!c.trained&&c.referenceMs==20&&c.hasSent);
+ // Plateau recognition has no49000/51000 gate; the separate upper cut still prevents gas.
+ resetFirmware();c.previousValid=true;c.flat=2;c.lastPpm=2000;assert(c.ready(120000));
+ c.lastPpm=52000;assert(c.ready(120000));assert(c.pulse(120000)==0);
+ // A large proportional result is not silently converted to a10% increment.
+ c.trained=true;c.referenceMs=40;c.referenceRise=2000;c.lastPpm=40000;c.lossPpmPerSec=0;
+ assert(c.pulse(120000)==200);
  // No response cannot divide by zero; two declines must be in the same 20 s window.
  resetFirmware();c.update(100000,48000,true);c.update(102000,47900,true);
  assert(c.falling==1);c.update(130000,47800,true);assert(c.falling==0);

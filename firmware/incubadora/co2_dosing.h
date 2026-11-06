@@ -43,7 +43,7 @@ struct Co2DoseModel {
       if (ppm < valley) { valley = peak = ppm; valleyAt = peakAt = now; }
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
-      if (falling >= 2 && mass >= 50 && now - sendAt >= 20000UL) {
+      if ((falling >= 2 || flat >= 2) && mass >= 50 && now - sendAt >= 20000UL) {
         referenceMs = lastMs;
         int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
         referenceRise = delivered > 65535L ? 65535 : delivered;
@@ -56,7 +56,7 @@ struct Co2DoseModel {
   }
 
   bool ready(uint32_t now) const {
-    bool plateau = trained && flat >= 2 && lastPpm >= 49000 && lastPpm <= 51000;
+    bool plateau = flat >= 2 && lastPpm > 0;
     return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
@@ -68,9 +68,6 @@ struct Co2DoseModel {
     if (trained && referenceRise) {
       // Last opening * (remaining ppm + measured loss refill) / observed dose result.
       duration = ((uint32_t)referenceMs * needed + referenceRise - 1) / referenceRise;
-      // Avoid a large unobserved upward jump after a cylinder/flow change.
-      uint32_t growthLimit = referenceMs + (referenceMs + 9) / 10;
-      if (duration > growthLimit) duration = growthLimit;
     } else {
       // No useful response yet: increase the short probe gradually, without
       // inventing a gain or dividing by zero during initial chamber filling.
@@ -88,10 +85,10 @@ struct Co2DoseModel {
     lastMs = ms;
     valley = peak = lastPpm; valleyAt = peakAt = now;
     mass = 0;
-    falling = 0;
+    falling = flat = 0;
     sendAt = now;
     hasSent = true;
-    observing = !trained || lastPpm < 49000;
+    observing = true;
   }
 
   // Kept for the legacy CSV column: -1 explicitly means no forecast is used.

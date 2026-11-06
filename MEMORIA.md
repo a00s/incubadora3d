@@ -1,3 +1,27 @@
+## ÚLTIMA: platô qualquer ppm + proporção sem teto10% — 2026-11-06
+
+- Usuário pediu agir no platô antes de cair emqualquer valor e rejeitou incrementos
+  de4ms causados pelo teto10%. Agora plateauflat>=2 emqualquer leitura válida;
+  limite superior51000 e travas permanecem separados. Aprende resultado útil
+  também ao estabilizar, não só emduasquedas. Cada dose passa aser observada.
+- Retirado teto percentual da conta proporcional treinada. Fórmula inteira
+  ceil(msReferencia×(50000−atual+perda20s)/subidaReferencia),5–1000ms. Sondas sem
+  resposta útil ainda crescem gradualmente para não dividir porzero. Sem pausa
+  deobservação;20s mínimo entre aberturas; aquecimento inicial120s preservado.
+- GRAVADO/VERIFICADO: Firmware enviado e verificado · e573e146, saída0.
+  HEX e573e14629acb8f61b80c2ead6c552bbe80546b0dc99f20064111cfcd22be860;31.784Flash/1.140RAM.
+  Upload anterior9637c33b já tinha platô abaixo49mil, mas ainda teto10%; este o remove.
+- Testes exatos de proporção eplatô sem queda passaram,20milhistórias,porta,
+  aquecimento,perdas evisor. Simulação atual emco2_plato_proporcao_direta_2026-11-06.json
+  registra EXCESSOS GRAVES: modelo nominal~80086ppm,frio~215190ppm. Não omitir essas
+  falhas nem declarar regulação segura/estável. Usuário foi informado emcomentário
+  que proporção direta com atraso ultrapassou60mil eque trava não recolhe gás.
+  Não existe garantia de queplantahipotética reproduz resposta física, mas é risco
+  concreto do ensaio computacional; teste éacompanhado pelo usuário nos gráficos.
+- Relatórios anteriores preservados. LoggerUSB/painel ativos; envios gravados em
+  logs/firmware-events.jsonl, com data/hash/verify e linha no gráfico. Não abrir
+  segundo leitor nem enviar ON/OFF/ACK sem necessidade/autorizaçãocorrespondente.
+
 ## ATUALÍSSIMO: SEM PAUSA DE OBSERVAÇÃO, gravado às11:30CET — 2026-11-06
 
 - Usuário rejeitou explicitamente a pausa de observação ("nada de pausa") e pediu

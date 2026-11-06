@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 31.880 bytes de Flash (99%) e
-1.140 bytes de RAM global (55%), deixando 376 bytes de Flash e 908 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 31.784 bytes de Flash (99%) e
+1.140 bytes de RAM global (55%), deixando 472 bytes de Flash e 908 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -405,7 +405,9 @@ já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
 O controle busca 50.000 ppm, com faixa de referência de 49.000–51.000 ppm.
 A revisão simples de 2026-11-06 retirou a projeção de gás pendente do cálculo.
-Duas variações negativas consecutivas dentro de 20 s indicam queda. Entre
+Duas variações negativas consecutivas dentro de 20 s indicam queda.
+Duas amostras quase estáveis também liberam pelo platô em qualquer leitura válida,
+sem exigir primeiro cair nem estar acima de49.000ppm; o corte superior é separado. Entre
 aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
 O cálculo proporcional usa a última dose útil: `ms anteriores × ppm necessários /
 resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, com aumento limitado ao
@@ -415,7 +417,7 @@ O resultado observado é a maior subida a partir do vale depois da dose, mesmo
 quando o pico continua abaixo da leitura no instante do comando. A perda medida
 durante essa subida é somada para não confundir gás entregue com variação líquida.
 A perda histórica usa quedas válidas perto da meta, sem porta aberta, e não uma
-pressão fixa de cilindro. No platô de 49.000–51.000 ppm, duas amostras quase estáveis
+pressão fixa de cilindro. No platô, duas amostras quase estáveis
 (até 2 ppm/s) permitem repor a perda de 20 s antes de uma queda grande. O erro para
 50.000 ppm também participa dessa dose; acima de 51.000 ppm o automático fecha.
 
@@ -444,8 +446,14 @@ as falhas dos cenários de estresse. A revisão simples foi exercitada em 6.054
 simulações de quatro horas e 20.000 histórias numéricas; nem todos os cenários
 mantêm a faixa ou evitam excesso, portanto isso não certifica estabilidade física.
 Relatórios antigos são conservados em `docs/ensaios/`; a revisão simples está em
-`co2_sem_pausa_2026-11-06.json`; a revisão anterior com pausa foi arquivada em
+`co2_plato_proporcao_direta_2026-11-06.json`; a revisão sem pausa anterior está
+em `co2_sem_pausa_2026-11-06.json`, e a versão com pausa foi arquivada em
 `co2_controle_simples_2026-11-06.json`.
+
+A proporção direta solicitada ainda apresentou excessos graves nos modelos com
+atraso, inclusive acima60.000ppm. Esses resultados estão preservados no relatório;
+a versão está em teste acompanhado pelos gráficos, sem certificação de estabilidade
+ou segurança universal. A trava não retira gás já liberado.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o
