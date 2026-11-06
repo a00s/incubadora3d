@@ -1,149 +1,74 @@
 #!/usr/bin/env python3
-"""Run the real dosing model and firmware admission/timing functions on the host."""
+"""Exercise the real dosing header and extracted Uno gates, including uint32 wrap."""
 from pathlib import Path
-import re
 import subprocess
 import tempfile
-
-root = Path(__file__).resolve().parents[1]
-source = (root / 'temperatura.ino').read_text()
-
-def function(signature):
-    start = source.index(signature)
-    brace = source.index('{', start)
-    end, depth = brace + 1, 1
-    while depth:
-        depth += (source[end] == '{') - (source[end] == '}')
-        end += 1
-    return source[start:end].replace('unsigned long', 'uint32_t')
-
-macros = '\n'.join(re.findall(r'^#define CO2_[^\n]+', source, re.M))
-admission = re.search(r'if \((validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS.*?)\) \{\s*int32_t pulseMs;', source, re.S).group(1)
-a = source.index('    bool responseWaitComplete =')
-gates = source[a:source.index('    int32_t pulseLimit', a)]
-header = root / 'firmware/incubadora/co2_dosing.h'
-harness = '#include "' + str(header) + '"\n' + r'''
-#include <cassert>
-#include <cmath>
-#include <cstdint>
+from co2_firmware_harness import harness
+code=harness()+r'''
 #include <random>
-''' + macros + r'''
-int32_t CO2i=47000, co2RatePpmMin=-20, max_co2_increase=0, lastCo2PulseMs=0;
-uint8_t co2DoorMode=0, co2RateHistoryCount=16;
-int32_t co2RateHistoryPpm[16];
-float co2Rate=0;
-bool co2DoseResponsePending=false, co2RatePpmMinReady=true;
-uint16_t co2NoisePpm=10, co2ResponseWaitSeconds=600;
-uint32_t co2RecentRiseAt=0;
-uint32_t co2LastPulseAt=100000, co2MaxRiseAt=100000, actualNow=120000;
-uint32_t millis() { return actualNow; }
-''' + function('void updateCo2RecentRise(') + function('bool co2ResponseWaitComplete(') + function('void measureCo2Noise(') + r'''
-bool ready(uint32_t currentTime, bool validCo2=true, int contador_pomp=0, bool co2TrendReady=true) {
-''' + gates + r'''
-  (void)contador_pomp; (void)co2TrendReady;
-  return doseResponseReady;
-}
-bool admit(bool heaterPressPending=false, bool validCo2=true, bool botao_co2_onoff=true, uint32_t currentTime=120000) {
-  actualNow=currentTime;
-  bool doseResponseReady=true;
-  uint8_t co2ClickCount=0;
-  return ''' + admission + r''';
-}
-int main() {
-  Co2DoseModel dose;
-  assert(dose.pulse(48000,1000)==80);
-  dose.learn(65,0);dose.learn(72,0);
-  assert(dose.zeroMs==0 && dose.usefulCeilingMs==0); // Initial transport delay is NOT a valve-opening floor.
-  dose.learn(80,5000);assert(dose.pulse(1000,1000)==16);
-  dose.reset();
-  dose.learn(160,2000);
-  assert(dose.pulse(2000,1000)==160); // Last duration * full deficit / last rise.
-  assert(dose.pulse(1000,1000)==80);
-  assert(dose.pulse(100000,1000)==176); // Controlled upward change, no fixed increment.
-  dose.learn(100,1000);assert(dose.pulse(1000,1000)==100);
-  dose.learn(100,500);assert(dose.pulse(1000,1000)==110); // Falling pressure.
-  dose.learn(100,2000);assert(dose.pulse(1000,1000)==50); // Higher cylinder flow.
-  // Nov6 telemetry: avoid cutting a productive 13ms dose to 5/6ms when 2137ppm short.
-  dose.learn(13,2645);assert(dose.pulse(2137,1000)==11);
-  dose.learn(11,1771);assert(dose.pulse(2490,1000)==13); // Still respects 10% growth before rounding.
-  // Actual short pulses that produced no net rise must not keep being selected.
-  dose.reset();dose.learn(63,8000);dose.learn(54,0);
-  assert(dose.zeroMs==0); // A modest reduction with delayed response is not a54ms opening threshold.
-  dose.learn(8,0);dose.learn(13,2645);
-  assert(dose.zeroMs==8 && dose.pulse(500,1000)==9);
-  assert(dose.pulse(2137,1000)==13); // Retains opening overhead; scales only useful time.
-  dose.learn(13,5000,true);assert(dose.zeroMs==0); // Excess disproves a useful-floor estimate after a flow change.
-  dose.learn(63,8000);dose.learn(5,0);
-  dose.learn(5,2000);assert(dose.zeroMs==0); // A higher-flow/earlier-opening valve invalidates stale offset.
-  dose.reset();
-  dose.learn(100,0);assert(dose.pulse(48000,1000)==110); // No response: no divide by zero or reset.
-  assert(!dose.fresh && !dose.trained);
-  dose.learn(110,0);assert(dose.pulse(48000,1000)==121);
-  for(int i=0;i<10;i++){dose.learn(1000,0);assert((dose.usefulCeilingMs==0 ? dose.zeroMs==0 : dose.zeroMs<dose.usefulCeilingMs));}
-  assert(dose.pulse(0,1000)==0 && dose.pulse(-1,1000)==0);
-  dose.reset();assert(dose.fresh && !dose.trained && dose.referenceMs==80);
-  std::mt19937 rng(20261105);
-  for(int i=0;i<20000;i++) {
-    if(i%31==0)dose.reset();
-    auto pulse=dose.pulse(1+rng()%50000,1000);
-    assert(pulse>=5 && pulse<=1000);
-    dose.learn(pulse,rng()%65536);
-    assert((dose.usefulCeilingMs==0 ? dose.zeroMs==0 : dose.zeroMs<dose.usefulCeilingMs));
-    if(dose.trained)assert(dose.zeroMs<dose.referenceMs);
+int main(){
+ resetFirmware();CO2i=48000;co2DoseModel.update(100000,CO2i,true);
+ assert(firmwarePulse(119999)==0);assert(firmwarePulse(120000)==5);
+ assert(firmwarePulse(120000,false)==0);assert(firmwarePulse(120000,true,false)==0);
+ assert(firmwarePulse(120000,true,true,1)==0);assert(firmwarePulse(120000,true,true,0,true)==0);
+ recordAutomatic(5,120000);assert(!firmwareReady(139999));assert(!firmwareReady(219999));
+ assert(firmwareReady(220000)); // Unknown-flow calibration gets a full observation window.
+ co2DoseModel.trained=true;co2DoseModel.gain=70;co2DoseModel.lastPpm=CO2i=49000;
+ co2Rate=3;updateCo2RecentRise(220000);assert(!firmwareReady(220000));
+ co2Rate=-1;assert(!firmwareReady(225999));assert(firmwareReady(226000));
+ auto p=co2DoseModel.pulse(226000);co2DoseModel.gain=140;
+ assert(co2DoseModel.pulse(226000)<=p); // A larger learned flow reduces opening.
+ co2DoseModel.lastPpm=51000;assert(co2DoseModel.pulse(226000)==0);
+ co2DoseModel.lastPpm=49000;co2DoseModel.reset(true);
+ assert(!co2DoseModel.trained&&co2DoseModel.referenceMs==5&&co2DoseModel.inventory()>0);
+ // Calibration includes gas loss; a net fall alone does not imply zero gas.
+ resetFirmware();auto &c=co2DoseModel;c.update(120000,48000,true);c.record(20,120000);
+ for(uint32_t t=122000;t<=220000;t+=2000)c.update(t,48000-(t-120000)/1000*10,true);
+ assert(c.trained&&c.gain>=1&&c.gain<=500);
+ // Restarting at an arbitrary phase must not complete calibration before the probe.
+ resetFirmware();c.update(37123,48000,true);c.record(5,100345);
+ c.update(160345,48300,true);assert(!c.trained);
+ c.update(200345,48000,true); // A long sampling gap is discarded, not learned.
+ assert(!c.trained);
+ // No response returns to isolated probes rather than learning an infinite opening.
+ resetFirmware();c.update(120000,48000,true);c.record(5,120000);
+ for(uint32_t t=122000;t<=220000;t+=2000)c.update(t,48000-(t-120000)/1000*20,true);
+ assert(!c.trained&&c.referenceMs<=100);assert(c.pulse(220000)<=18);
+ // Isolated failed probes learn opening overhead, not fixed gas flow.
+ resetFirmware();c.update(120000,48000,true);uint32_t now=120000;int32_t ppm=48000;
+ for(uint16_t duration: {5,10,15}){
+  c.record(duration,now);
+  for(int j=0;j<50;j++){
+   ppm-=c.loss(ppm)*2;if(duration==15 && j==30)ppm+=500;
+   now+=2000;c.update(now,ppm,true);
   }
-
-  CO2i=47000; assert(admit());
-  assert(!admit(true) && !admit(false,false) && !admit(false,true,false));
-  assert(!admit(false,true,true,119999));
-  CO2i=49500;assert(!admit());CO2i=47000;
-  co2LastPulseAt=119500;assert(!admit());co2LastPulseAt=100000;
-  assert(!ready(119999) && ready(120000)); // Exactly 20 seconds, including no detected response.
-  co2DoseResponsePending=true;max_co2_increase=0;
-  assert(ready(120000,true,30,false)); // Old cycle/stability counters cannot prolong the minimum.
-  co2RatePpmMin=100;assert(!ready(120000)); // Still rising: wait beyond minimum.
-  co2Rate=10;assert(!ready(120000));co2Rate=0; // New rise blocks even while old slope is falling.
-  co2MaxRiseAt=110000;assert(!ready(120000));co2MaxRiseAt=100000;
-  co2RatePpmMin=0;assert(ready(120000)); // Plateau: no need to wait until falling.
-  co2RatePpmMin=-100;assert(ready(120000));
-  assert(!ready(120000,false));
-  co2RatePpmMinReady=false;assert(!ready(120000));co2RatePpmMinReady=true;
-  for(co2DoorMode=0;co2DoorMode<=4;co2DoorMode++) {
-    assert(!ready(119999));assert(ready(120000));
-    co2RatePpmMin=100;assert(!ready(120000));co2RatePpmMin=0;
+ }
+ assert(c.zeroMs==10&&c.trained&&c.floorLearned);
+ c.trained=false;c.record(20,now);
+ for(int j=0;j<50;j++){ppm-=c.loss(ppm)*2;now+=2000;c.update(now,ppm,true);}
+ assert(c.zeroMs==10); // A loss of contact/flow cannot invent a larger mechanical delay.
+ c.update(now+2000,53500,true);assert(c.zeroMs==0&&!c.floorLearned);
+ // A full manual queue retains every commanded duration, including the overflow shot.
+ resetFirmware();for(int i=0;i<5;i++)c.record(20,1000+i*100);
+ uint32_t sum=0;for(auto &s:c.shots)sum+=s.ms;assert(sum==100);
+ // Unsigned timer subtraction survives millis rollover.
+ resetFirmware();c.previousValid=true;c.lastPpm=48000;c.trained=true;
+ recordAutomatic(5,UINT32_MAX-10000);assert(!firmwareReady(9000));assert(firmwareReady(11000));
+ // Random numerical states use only sensor/firmware bounds and actual API calls.
+ std::mt19937 rng(20261106);
+ for(int history=0;history<20000;history++){
+  resetFirmware();uint32_t t=UINT32_MAX-50000;
+  for(int n=0;n<100;n++){
+   t+=2000+(rng()%400);int32_t ppm=1000+rng()%59000;bool valid=rng()%20;
+   c.update(t,ppm,valid);uint16_t q=c.pulse(t);assert(q==0||(q>=5&&q<=1000));
+   assert(c.gain>=1&&c.gain<=500);if(q)c.record(q,t);
   }
-  co2DoorMode=0;co2LastPulseAt=0;lastCo2PulseMs=0;assert(ready(120000));
-  co2LastPulseAt=UINT32_MAX-1000;lastCo2PulseMs=100;
-  assert(!ready(1000));
-  assert(ready((uint32_t)(co2LastPulseAt+20000UL)));
-
-  // Nov6 USB replay: samples rose below baseline, then one fell again.
-  co2LastPulseAt=266000;lastCo2PulseMs=33;co2DoseResponsePending=true;
-  co2MaxRiseAt=266000;max_co2_increase=0;co2Rate=7.25f;
-  updateCo2RecentRise(277211);
-  assert(co2RecentRiseAt==277211 && max_co2_increase==0);
-  co2Rate=9.68f;updateCo2RecentRise(287561);
-  co2Rate=-1.94f;co2RatePpmMin=-1000;
-  assert(!ready(289628)); // Block the extra37ms dose from the captured trace.
-  assert(ready(293561)); // One jitter sample does not force another20s pause.
-  co2MaxRiseAt=291773; // Once a real peak appears, observe the full20s.
-  assert(!ready(311772) && ready(311773));
-  co2DoseResponsePending=false;co2Rate=10;updateCo2RecentRise(315000);
-  assert(co2RecentRiseAt==287561);
-
-  co2DoseResponsePending=true;co2Rate=0;co2RatePpmMin=0;
-  co2LastPulseAt=co2MaxRiseAt=UINT32_MAX-25000;
-  co2RecentRiseAt=UINT32_MAX-2000;
-  assert(!ready(1000) && ready(4000)); // Recent-rise grace also survives millis rollover.
-
-  for(int i=0;i<16;i++)co2RateHistoryPpm[i]=2000+(i%2?80:-80);
-  measureCo2Noise();assert(co2NoisePpm==160);
-  for(int i=0;i<16;i++)co2RateHistoryPpm[i]=2000;
-  measureCo2Noise();assert(co2NoisePpm==0);
+ }
 }
 '''
-with tempfile.TemporaryDirectory(prefix='incubadora-co2-') as folder:
-    cpp, exe = Path(folder)/'test.cpp', Path(folder)/'test'
-    cpp.write_text(harness)
-    subprocess.run(['g++','-std=c++11','-Wall','-Wextra','-Werror','-ftrapv',str(cpp),'-o',str(exe)],check=True)
+with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
+    cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test'
+    cpp.write_text(code)
+    subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2 last-dose calculation, 20s minimum, rise/plateau/fall, door and rollover checks passed.')
+print('CO2: real gates, adaptive flow, delayed inventory, no response, rollover, 20000 histories passed')

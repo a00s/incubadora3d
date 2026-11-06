@@ -1,3 +1,48 @@
+## Controle preditivo + abertura útil — GRAVADO, validação física em andamento — 2026-11-06
+
+- Firmware atual GRAVADO por scripts/arduino.sh upload --verify, saída0:32.254bytes
+  Flash/1.152RAM. HEX SHA256 b5ddfdc5ca9fd53cf8917aa16022c6493a5cfd75ff8e94aa39ec08af0e052732.
+  BOOT_COUNT23,CO2 habilitado1,aquecimento1,trava0. Não enviados ON/OFF/ACK.
+- Coletor somente leitura SEM timeout, sessão45670,PID117995:
+  /tmp/incubadora-telemetria/co2-preditivo-piso-20261106.log. Ignorar lixo antes do
+  BOOT_COUNT23. Abrir outra serial reinicia o Uno e o warmup120s; não fazê-lo sem
+  conferir o proprietário da porta. Upload anterior sem piso foi boot21, log
+  co2-preditivo-20261106.log; código anterior31730 emorigin/main era6a15e58.
+- Problema físico ainda aberto: anterior não mantinha5%, ficava46–49mil após
+  várias dezenas de minutos. Não chamar estabilidade certificada. Revisão atual
+  começa39.261ppm depois dos testes e está em calibração/recuperação; monitorar.
+- Hipótese agora sustentada por ajuste de4h: resposta aproximadamente linear,
+  ganho70,62ppm/ms,transporte54s,mistura4s,perda0,0004/s; holdout cronológico
+  último25% RMS838ppm. Não é ensaio isolado de válvula. Scripts/fit_co2_response.py
+  reproduz ajuste; relatório co2_modelo_resposta_2026-11-06.json. Isso contradiz a
+  atribuição causal antiga de toda subida à última dose e curvas não lineares.
+- Novo modelo registra gás comandado60s, projeta concentração, repõe perda20s e
+  metade do erro previsto + integral limitada±2000ppm, divide pela vazão aprendida
+  e acrescenta trecho inicial de abertura aprendido. Vazão revista100s com variação
+  +perda / milissegundos efetivos que passaram pelo atraso. Crescimento25%+5ms,
+  quantidade estimada/comando1000ppm perto da meta/5000 abaixo40mil,5–1000ms.
+  Calibração começa5ms e tem100s contados da própria sonda; ausência de resposta
+  aumenta sonda5ms até100, teto por margem57mil/prior500ppm/ms. Esses limites
+  são hipóteses operacionais, não garantia para qualquer pressão.
+- Relato/observação: no boot21,5/10ms isolados sem resposta compensada suficiente;
+  15ms mostrou captação compensada e23/33/46ms depois produziram subida clara.
+  Interpretação: trecho curto de abertura é ineficaz. Aprender piso só em sondas
+  isoladas antes do primeiro sucesso; perda de fluxo posterior não o aumenta.
+  Excesso>53mil invalida piso. Reset reabilitação/porta/sensor preserva gás pendente.
+- Mínimo20s após término mantido, espera durante subida>2ppm/s +memória6s. Retirado
+  bloqueio por30s de inclinação antiga e timer20s após pico. Histórico continua
+  para visor/perdas. Estados térmicos,botões e travas EEPROM preservados/testados.
+  CSV coluna19 chama uptake_ppm (antes dose_rise_ppm); previsão agora real.
+- Cinco suites passaram,20mil histórias numéricas, fase da sonda,rollover,porta,
+  aquecimento e visor.6048simulações4h: modelo ajustado e estresses, incluindo
+  cilindro esvaziando/troca,porta,contato/sensor/tempo morto; MUITOS estresses
+  falham, inclusive faixa>60mil com gás pendente. Conservar resultados e limites
+  no relatório co2_controle_preditivo_2026-11-06.json, não dizer todos aprovados.
+- Tentativas descartadas NÃO gravadas: reforço incondicional do pico baixo
+  chegou64mil; preditores grandes/RLS excederam Flash. Versão32254 é a compacta
+  com piso; HEX recompilado após comentários permaneceu igual ao gravado.
+- Sem CAD/STL/3MF alterados. Visualizador existente copiado para/tmp,8081HTTP200.
+
 ## Revisão autônoma: piso limitado e reavaliação com vazão maior — 2026-11-06
 
 - Estado atual GRAVADO:31.730bytes/1.125RAM, upload --verify saída0; código82e0f88.

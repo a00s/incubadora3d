@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.730 bytes de Flash (97%) e
-1.125 bytes de RAM global (54%), deixando 526 bytes de Flash e 923 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.254 bytes de Flash (99%) e
+1.152 bytes de RAM global (56%), deixando 2 bytes de Flash e 896 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,60 +403,64 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-O automático repõe abaixo de 49.500 ppm, buscando 50.000 ppm. O modelo
-`firmware/incubadora/co2_dosing.h` usa somente a última dose aplicada e a maior
-subida líquida medida desde essa dose. Não soma doses nem aprende uma curva.
+O controle de CO₂ busca 50.000 ppm com uma vazão aprendida em ppm/ms, sem
+fixar a pressão do cilindro. A revisão de 2026-11-06 substitui a atribuição de toda
+subida à última dose: o registro de quatro horas indica aproximadamente 54 s de
+transporte mais 4 s de mistura. Com doses a cada 20 s, a leitura pode corresponder
+a comandos anteriores. O ajuste aproximado teve erro RMS de 838 ppm no último
+quarto cronológico reservado para validação; não é calibração isolada da válvula.
 
-Com subida mensurável de pelo menos 50 ppm, calcula:
-`tempo = piso útil aprendido + (tempo anterior − piso útil) × déficit / subida anterior`.
-Desde 2026-11-06 repõe o déficit inteiro: usar só metade reduzia demais a abertura
-na manutenção e favorecia quedas para 47.000–48.000 ppm entre respostas.
-A redução é imediata; o aumento é limitado a 10% por dose para conter extrapolações
-quando a vazão muda. Sem subida mensurável, calcula um aumento de 10%, sem divisão
-por zero nem reiniciar a aprendizagem. A primeira referência é 80 ms, duração que
-já produziu subida no conjunto instalado; as respostas novas a substituem.
-O piso só pode ser aprendido após observar uma dose com resposta útil neste
-ciclo; o atraso inicial de enchimento não pode se tornar piso de abertura.
-Depois disso, só uma redução para menos da metade da menor duração já útil pode
-aprender um piso pela ausência de subida líquida mensurável. Uma redução moderada
-sem efeito imediato não pode virar um tempo morto grande. Ele evita voltar a pulsos ineficazes de 5–8 ms após uma dose
-produtiva. Uma resposta com duração igual ou menor invalida um piso antigo; um pico acima
-de 51.000 ppm também o descarta para permitir reduzir com uma vazão maior; o
-ganho continua sendo atualizado pela última dose, acompanhando vazão variável.
-Não é uma calibração isolada de atraso mecânico: mistura e queda influenciam a
-resposta líquida. Não há soma de doses.
-Sem resposta, existe um teto adicional calculado por déficit/150, com permissão
-mínima de até 80 ms após a primeira tentativa, para não impedir a abertura útil.
-Isso limita a duração; não força pulsos de 80 ms nem garante qualquer vazão física.
-O limite mecânico geral continua entre 5 e 1.000 ms.
+O modelo em `firmware/incubadora/co2_dosing.h` calcula uma concentração prevista
+somando o gás comandado nos últimos 60 s e descontando a perda prevista. A abertura
+é `trecho inicial aprendido + (perda de 20 s + metade do erro previsto + correção integral) / vazão aprendida`.
+A correção integral é limitada a ±2.000 ppm. A duração anterior limita o crescimento
+(25% + 5 ms); também há teto de quantidade estimada por comando: 1.000 ppm acima de
+40.000 ppm e 5.000 ppm abaixo, respeitando a abertura mínima de 5 ms e máxima de
+1.000 ms. A quantidade mínima fisicamente possível pode superar esses tetos.
 
-O intervalo mínimo é 20 s após o fim da dose. O automático aguarda enquanto a
-inclinação das últimas ~30 s superar 50 ppm/min ou a subida entre amostras superar
-2 ppm/s. Esses limiares toleram pequenas oscilações da leitura. Também exige pelo
-menos 20 s sem um novo pico desde a dose. Assim, uma subida prolonga a observação;
-um platô ou queda permite outra dose, sem esperar uma queda obrigatória nem um
-prazo de 90–600 s. O antigo contador de ciclos e a condição de estabilidade de 30 s
-continuam na telemetria legada, mas não bloqueiam mais a injeção automática.
-O sensor mantém aquecimento inicial de 120 s e precisa de histórico válido.
+A vazão é revista em janelas de 100 s, usando a variação observada mais a perda
+estimada, dividida pelos milissegundos efetivos de gás cujo atraso já decorreu.
+Sondas isoladas sem resposta suficiente aprendem o trecho inicial de abertura;
+com resposta útil, esse trecho fica preservado e uma perda posterior de fluxo não
+pode aumentá-lo. Excesso acima de 53.000 ppm o invalida para permitir nova aprendizagem. A estimativa
+sobe imediatamente quando a resposta aumenta e diminui gradualmente quando cai.
+A perda começa com uma referência de 20 ppm/s a 50.000 ppm e é estimada antes da
+primeira dose. Resposta insuficiente retorna a sondas isoladas, com incremento
+limitado e teto de abertura calculado pela margem até 57.000 ppm e pelo limite
+hipotético de 500 ppm/ms. Ganhos abaixo de 5 ppm/ms não são considerados prova
+suficiente para voltar à sequência normal. Não há garantia para qualquer pressão.
 
-Porta aberta, controle desligado, sensor inválido e travas continuam impedindo
-injeção. Retomar a porta, reativar o CO₂ ou perder a leitura reinicia a referência.
-A pausa mínima desde a última dose continua valendo. O aprendizado fica na RAM;
-estados dos controles e travas permanecem na EEPROM. Não se apaga trava de faixa
-nem se liga um controle por causa da atualização. A coluna legada `co2_proj_ppm`
-repete a concentração medida.
+O intervalo mínimo normal permanece 20 s depois do fim da dose. Durante a subida
+acima de 2 ppm/s e por 6 s após essa subida, o automático espera. Um platô ou queda
+permite nova dose conforme a previsão; não precisa esperar o histórico de 30 s
+ficar negativo. Durante a calibração, a sonda tem 100 s de observação desde seu
+próprio comando, inclusive após porta ou retomada. O aquecimento inicial do sensor
+continua em 120 s. O histórico de 30 s permanece disponível para visor e perdas.
 
-Testes locais: `python3 scripts/test_co2_control.py` e os testes de porta,
-perdas, aquecimento e visor em `scripts/test_*.py`. Simulações exploratórias:
-`python3 scripts/simulate_co2_control.py --cold-grid --transport-max-s 30 --explore`.
-Para duas câmaras acrescente `--two-chambers`. Os volumes, perdas e atrasos são
-hipóteses, não uma calibração da montagem. Os ensaios conservam excessos e casos
-que não recuperam; não declarar todos aprovados. `--require-safe-grid` é uma
-asserção opcional mais exigente que pode falhar. Resultados e hashes da revisão
-em `docs/ensaios/co2_recuperacao_2026-11-05.json`. A comparação da manutenção
-com queda/vazão variáveis está em `docs/ensaios/co2_manutencao_2026-11-06.json`.
-Para reproduzir essa grade hipotética, acrescente `--maintenance-grid` e use
-`--transport-max-s 20 --explore`; ela não é uma calibração de vazamento físico.
+Porta aberta, controle desligado, sensor inválido e travas impedem injeção.
+Reabilitar o CO₂, retomar a porta ou perder o sensor reinicia o aprendizado,
+preservando o registro de gás já comandado. Para trocar o cilindro, desligar o
+CO₂ antes da troca e reabilitá-lo depois permite sondar a vazão nova. Uma troca
+sem aviso só aparece no sensor depois do atraso físico. Estados habilitados e
+travas permanecem na EEPROM; a atualização não envia ON/OFF/ACK.
+
+O CSV conserva a ordem das colunas: `uptake_ppm` substitui
+`dose_rise_ppm` e representa variação compensada pela perda na janela corrente;
+`co2_proj_ppm` passa a mostrar a previsão. `trend_ready` mostra a liberação pela
+temporização e tendência. O contador de ciclos permanece apenas como diagnóstico
+legado. A linha separada de ppm/min foi removida, pois o mesmo valor está no CSV.
+
+Testes: `python3 scripts/test_co2_control.py` e os testes de porta, perdas,
+aquecimento e visor em `scripts/test_*.py`. O teste de CO₂ usa o header real e as
+condições de admissão extraídas do sketch, incluindo rollover e 20.000 histórias.
+Simulação: `python3 scripts/simulate_co2_control.py --report /tmp/co2.json` executa
+2.016 cenários de quatro horas; `--dead-max-ms 0` usa atuador linear, como o ajuste
+do registro; o padrão estressa também um tempo morto mecânico hipotético de 0–8 ms.
+As falhas dos estresses são conservadas no relatório, sem declarar todos aprovados.
+Os atrasos, curvas e mudanças extremas não são garantia da montagem. Relatórios
+históricos anteriores permanecem em `docs/ensaios/`; o modelo ajustado está em
+`co2_modelo_resposta_2026-11-06.json` e a revisão atual em
+`co2_controle_preditivo_2026-11-06.json` nessa pasta.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o

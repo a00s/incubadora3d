@@ -24,7 +24,6 @@ prototypes='\n'.join(re.sub(r' = MANUAL_CO2_PULSE_MS','',f[:f.index('{')].strip(
 notice=function('void drawDoorNotice(')
 visible='co2DoorMode == 2'
 restore=function('    if (controlState <= 31)')
-rise=re.search(r'int32_t increaseSincePump =.*?if \(increaseSincePump > max_co2_increase\) \{.*?\n        \}',source,re.S).group(0)
 harness=r'''
 #include <stdint.h>
 #include <assert.h>
@@ -89,7 +88,6 @@ void tick(unsigned long now) {clockMs=now;finishCo2ClickSequenceIfExpired(now);}
 void restoreControls() {uint8_t controlState=EEPROM.read(EEPROM_CONTROL_STATE);
 '''+restore+'''
 }
-void observeRise(unsigned long currentTime) {'''+rise+'''}
 '''+r'''
 const char *label=nullptr;
 int bodyLeft=-1,bodyRight=-1,openRight=0,hingeX=-1;
@@ -115,7 +113,7 @@ int main() {
   redPoll(3000);
   assert(co2DoorMode==2 && !botao_co2_onoff && !botao_aquecedor_onoff);
   assert(pins[HEATER]==HIGH && pins[CO2PUMP]==HIGH && EEPROM.read(29)==28);
-  assert(co2ClickCount==0 && heaterClickCount==0 && !co2DoseResponsePending);
+  assert(co2ClickCount==0 && heaterClickCount==0);
   redPoll(8000);assert(co2DoorMode==2); // Still held: must not toggle again.
   redUp(8100);assert(co2DoorMode==2 && !botao_aquecedor_onoff);
   drawVisibleNotice();assert(strcmp(label,"PORTA ABERTA")==0);
@@ -182,13 +180,10 @@ int main() {
   EEPROM.update(29,4);restoreControls();toggleDoorMode();
   assert(!botao_co2_onoff && !botao_aquecedor_onoff && co2DoorMode==0);
   // A deliberate restart re-probes a changed cylinder and discards old pulse duration.
-  co2DoorMode=0;botao_co2_onoff=false;co2DoseModel.learn(240,12000);
+  co2DoorMode=0;botao_co2_onoff=false;co2DoseModel.trained=true;co2DoseModel.referenceMs=240;
   assert(setCo2Enabled(true));
-  assert(!co2DoseModel.trained && co2DoseModel.fresh && lastCo2PulseMs==0);
-  max_co2_increase=0;co2_before_pump=45000;CO2i=44000;observeRise(80000);
-  assert(max_co2_increase==0);
-  CO2i=45100;observeRise(81000);CO2i=45050;observeRise(82000);
-  assert(max_co2_increase==100 && co2MaxRiseAt==81000);
+  assert(!co2DoseModel.trained && co2DoseModel.referenceMs==5 && lastCo2PulseMs==0);
+
 }
 '''
 harness='#include "'+str(Path(__file__).resolve().parents[1]/'firmware/incubadora/co2_dosing.h')+'"\nCo2DoseModel co2DoseModel;\nuint16_t co2ResponseWaitSeconds=600;\n'+harness
