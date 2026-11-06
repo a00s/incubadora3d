@@ -1,5 +1,5 @@
 {
-  "status": "uploaded_verified; physical monitoring in progress; not certified stable",
+  "status": "superseded; boot23 failed physical maintenance",
   "build": {
     "flash_bytes": 32254,
     "sram_global_bytes": 1152,
@@ -993,11 +993,12 @@
     "co2_enabled": 1,
     "heater_enabled": 1,
     "range_lock": 0,
-    "stable_validation": "pending"
+    "stable_validation": "failed: last30min39073\u201344423ppm, median40746.5"
   },
   "evidence": {
     "previous_candidate_trace": "co2-preditivo-20261106.log, boot21",
     "observation": "Isolated 5/10ms probes gave insufficient leakage-compensated response; 15ms gave positive compensated uptake. Subsequent 23/33/46ms produced a clear rise. Not isolated mechanical/pressure calibration."
   },
-  "limits": "Stress failures are preserved, including range locks and gas continuing to arrive after cutoff. Unknown large pressure changes, dead time/mixing outside learned conditions and actuator faults are not guaranteed. Do not claim all simulations pass or overnight stability."
+  "limits": "Stress failures are preserved, including range locks and gas continuing to arrive after cutoff. Unknown large pressure changes, dead time/mixing outside learned conditions and actuator faults are not guaranteed. Do not claim all simulations pass or overnight stability.",
+  "superseded_by": "co2_controle_simples_2026-11-06.json"
 }

@@ -16,12 +16,14 @@ def checksum_ok(frame: bytes) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("port", nargs="?", default="/dev/ttyACM0")
+    parser.add_argument('--keep-dtr', action='store_true', help='Do not drop DTR on close (avoid unnecessary Uno resets between captures).')
     args = parser.parse_args()
     fd = os.open(args.port, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
     try:
         attrs = termios.tcgetattr(fd)
         tty.setraw(fd)
         attrs = termios.tcgetattr(fd)
+        if args.keep_dtr: attrs[2] &= ~termios.HUPCL
         attrs[4] = termios.B9600
         attrs[5] = termios.B9600
         attrs[6][termios.VMIN] = 0
@@ -60,7 +62,7 @@ def main() -> int:
                         del pending[:1]
                     sys.stdout.flush()
                     continue
-                safe = len(pending) - 1
+                safe = len(pending) - (1 if pending[-1] == 0xFF else 0)
                 if marker >= 0:
                     safe = min(safe, marker)
                 if safe > 0:

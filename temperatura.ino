@@ -219,7 +219,7 @@ const int MANUAL_CO2_MAX_PULSE_MS = 20;
 int8_t displayHealthState = DISPLAY_WAIT;
 static_assert(CO2_TARGET_PPM == 50000 && CO2_TOLERANCE_PPM == 1000,
               "Update the dosing model when changing the CO2 setpoint");
-Co2DoseModel co2DoseModel(CO2_TARGET_PPM, CO2_TOLERANCE_PPM);
+Co2DoseModel co2DoseModel;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2RecentRiseAt = 0;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
@@ -514,11 +514,9 @@ void loop()
     }
     // A new dose is permitted after 20 s, only once the measured rise has stopped.
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
-    // Use the current rise and its recent memory, rather than waiting for an
-    // old 30 s rolling slope to turn negative after a plateau.
+    // Two consecutive valid declines below target; no projected-gas estimate.
     bool doseResponseReady = validCo2 && responseWaitComplete &&
-      co2RatePpmMinReady && co2Rate <= 2.0f &&
-      (co2RecentRiseAt == 0 || currentTime - co2RecentRiseAt >= 6000UL);
+      co2RatePpmMinReady;
     int32_t delayProporcional = validCo2 ? co2DoseModel.pulse(currentTime) : 0;
 
     
@@ -567,8 +565,8 @@ void loop()
     updateDoorState(validCo2);
     updateCo2Loss(validCo2 && co2DoorMode == 0 && !heaterPressPending);
     if (validCo2 && currentTime >= CO2_SENSOR_WARMUP_MS &&
-        // Replace expected losses before reaching the lower edge; the model
-        // discounts gas still in transit and returns zero when no dose is needed.
+        // The last useful dose is scaled by the remaining ppm. The model
+        // returns zero unless two consecutive valid readings are falling.
         CO2i < CO2_CONTROL_MAX_PPM && delayProporcional >= MANUAL_CO2_PULSE_MS &&
         botao_co2_onoff == 1 &&
         doseResponseReady && co2ClickCount == 0 && !heaterPressPending &&

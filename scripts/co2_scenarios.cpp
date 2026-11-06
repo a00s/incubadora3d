@@ -6,7 +6,7 @@
 struct Result {double peak,low,high,mean;int first,doses,minInterval,locked;};
 Result run(double g0,double g1,double lambda,int delay,double mixing,double initial,
            bool gradual=false,bool notified=false,int door=-1,double noise=0,double dead=0,
-           bool dropout=false,bool contact=false){
+           bool dropout=false,bool contact=false,bool softOpening=false){
  resetFirmware();double ppm=initial,q=0,peak=initial,lo=1e9,hi=0,total=0;
  std::vector<double> future(7300,0);int first=-1,doses=0,count=0,shortest=999999;
  uint32_t previousDose=0;int previousSensed=(int)initial;bool locked=false;
@@ -29,7 +29,9 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   if(pulse){
    double gain=gradual?g0+(g1-g0)*t/14400:(t<7200?g0:g1);
    if(contact&&t>=6000&&t<6600)gain=0;
-   future[(t+delay)/2+1]+=gain*std::max(0.0,pulse-dead);
+   double effective=std::max(0.0,pulse-dead);
+   if(softOpening)effective*=1-std::exp(-effective/20);
+   future[(t+delay)/2+1]+=gain*effective;
    recordAutomatic(pulse,now);doses++;
    if(previousDose)shortest=std::min(shortest,(int)((now-previousDose)/1000));
    previousDose=now;assert(pulse>=5&&pulse<=1000);
@@ -59,6 +61,8 @@ int main(int argc,char**argv){
  emit("noise_20",run(70,70,.0004,54,4,48000,false,false,-1,20));
  emit("dead_7_hypothesis",run(100,100,.0004,54,4,48000,false,false,-1,0,7));
  emit("high_flow",run(200,200,.0006,54,4,48000));
+ emit("observed_higher_loss",run(100,100,.0008,54,4,39000,false,false,-1,20,7));
+ emit("soft_opening_high_loss",run(100,100,.0008,54,4,39000,false,false,-1,20,5,false,false,true));
  emit("empty",run(0,0,.0004,54,4,48000));
  emit("sensor_dropout",run(70,70,.0004,54,4,48000,false,false,-1,0,0,true));
  emit("contact_outage",run(70,70,.0004,54,4,48000,false,false,-1,0,0,false,true));

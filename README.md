@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.254 bytes de Flash (99%) e
-1.152 bytes de RAM global (56%), deixando 2 bytes de Flash e 896 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.180 bytes de Flash (99%) e
+1.144 bytes de RAM global (55%), deixando 76 bytes de Flash e 904 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,64 +403,49 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-O controle de CO₂ busca 50.000 ppm com uma vazão aprendida em ppm/ms, sem
-fixar a pressão do cilindro. A revisão de 2026-11-06 substitui a atribuição de toda
-subida à última dose: o registro de quatro horas indica aproximadamente 54 s de
-transporte mais 4 s de mistura. Com doses a cada 20 s, a leitura pode corresponder
-a comandos anteriores. O ajuste aproximado teve erro RMS de 838 ppm no último
-quarto cronológico reservado para validação; não é calibração isolada da válvula.
+O controle busca 50.000 ppm, com faixa de referência de 49.000–51.000 ppm.
+A revisão simples de 2026-11-06 retirou a projeção de gás pendente do cálculo.
+Duas variações negativas consecutivas dentro de 20 s indicam queda. Entre
+aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
+O cálculo proporcional usa a última dose útil: `ms anteriores × ppm necessários /
+resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, com aumento limitado ao
+dobro da referência para conter extrapolações após mudança de vazão.
 
-O modelo em `firmware/incubadora/co2_dosing.h` calcula uma concentração prevista
-somando o gás comandado nos últimos 60 s e descontando a perda prevista. A abertura
-é `trecho inicial aprendido + (perda de 20 s + metade do erro previsto + correção integral) / vazão aprendida`.
-A correção integral é limitada a ±2.000 ppm. A duração anterior limita o crescimento
-(25% + 5 ms); também há teto de quantidade estimada por comando: 1.000 ppm acima de
-40.000 ppm e 5.000 ppm abaixo, respeitando a abertura mínima de 5 ms e máxima de
-1.000 ms. A quantidade mínima fisicamente possível pode superar esses tetos.
+O resultado observado é a maior subida a partir do vale depois da dose, mesmo
+quando o pico continua abaixo da leitura no instante do comando. A perda medida
+durante essa subida é somada para não confundir gás entregue com variação líquida.
+A perda histórica usa quedas válidas perto da meta, sem porta aberta, e não uma
+pressão fixa de cilindro. No platô de 49.000–51.000 ppm, duas amostras quase estáveis
+(até 2 ppm/s) permitem repor a perda de 20 s antes de uma queda grande. O erro para
+50.000 ppm também participa dessa dose; acima de 51.000 ppm o automático fecha.
 
-A vazão é revista em janelas de 100 s, usando a variação observada mais a perda
-estimada, dividida pelos milissegundos efetivos de gás cujo atraso já decorreu.
-Sondas isoladas sem resposta suficiente aprendem o trecho inicial de abertura;
-com resposta útil, esse trecho fica preservado e uma perda posterior de fluxo não
-pode aumentá-lo. Excesso acima de 53.000 ppm o invalida para permitir nova aprendizagem. A estimativa
-sobe imediatamente quando a resposta aumenta e diminui gradualmente quando cai.
-A perda começa com uma referência de 20 ppm/s a 50.000 ppm e é estimada antes da
-primeira dose. Resposta insuficiente retorna a sondas isoladas, com incremento
-limitado e teto de abertura calculado pela margem até 57.000 ppm e pelo limite
-hipotético de 500 ppm/ms. Ganhos abaixo de 5 ppm/ms não são considerados prova
-suficiente para voltar à sequência normal. Não há garantia para qualquer pressão.
+A recuperação usa uma dose observável de cada vez para não atribuir a resposta
+tardia à abertura errada. A primeira sonda é curta, limitada pela margem de
+concentração, e a observação inicial é de até 120 s; sem resposta útil a sonda
+cresce gradualmente. Depois de uma resposta útil, a duração observada até o pico
+(20–120 s) define a próxima janela de observação da recuperação. O platô usa
+reposições pequenas com mínimo de 20 s, sem esperar toda essa janela. Durante
+recuperação, a perda durante o tempo de resposta observado entra na quantidade a
+repor. Não há integral nem soma de doses para inventar um resultado anterior.
 
-O intervalo mínimo normal permanece 20 s depois do fim da dose. Durante a subida
-acima de 2 ppm/s e por 6 s após essa subida, o automático espera. Um platô ou queda
-permite nova dose conforme a previsão; não precisa esperar o histórico de 30 s
-ficar negativo. Durante a calibração, a sonda tem 100 s de observação desde seu
-próprio comando, inclusive após porta ou retomada. O aquecimento inicial do sensor
-continua em 120 s. O histórico de 30 s permanece disponível para visor e perdas.
+O sensor ainda tem aquecimento inicial de 120 s. Porta aberta, automático
+desligado, leitura inválida, sobretemperatura e travas EEPROM continuam impedindo
+injeção. A atualização não envia ON/OFF/ACK. Reabilitar CO₂ após troca de cilindro
+reinicia a referência de vazão; uma troca sem aviso só é percebida na resposta do
+gás. Alterações arbitrárias de pressão, atrasos e falhas mecânicas não são garantidas
+pelo software. O Uno não possui Wi-Fi nem Bluetooth integrados.
 
-Porta aberta, controle desligado, sensor inválido e travas impedem injeção.
-Reabilitar o CO₂, retomar a porta ou perder o sensor reinicia o aprendizado,
-preservando o registro de gás já comandado. Para trocar o cilindro, desligar o
-CO₂ antes da troca e reabilitá-lo depois permite sondar a vazão nova. Uma troca
-sem aviso só aparece no sensor depois do atraso físico. Estados habilitados e
-travas permanecem na EEPROM; a atualização não envia ON/OFF/ACK.
-
-O CSV conserva a ordem das colunas: `uptake_ppm` substitui
-`dose_rise_ppm` e representa variação compensada pela perda na janela corrente;
-`co2_proj_ppm` passa a mostrar a previsão. `trend_ready` mostra a liberação pela
-temporização e tendência. O contador de ciclos permanece apenas como diagnóstico
-legado. A linha separada de ppm/min foi removida, pois o mesmo valor está no CSV.
-
-Testes: `python3 scripts/test_co2_control.py` e os testes de porta, perdas,
-aquecimento e visor em `scripts/test_*.py`. O teste de CO₂ usa o header real e as
-condições de admissão extraídas do sketch, incluindo rollover e 20.000 histórias.
-Simulação: `python3 scripts/simulate_co2_control.py --report /tmp/co2.json` executa
-2.016 cenários de quatro horas; `--dead-max-ms 0` usa atuador linear, como o ajuste
-do registro; o padrão estressa também um tempo morto mecânico hipotético de 0–8 ms.
-As falhas dos estresses são conservadas no relatório, sem declarar todos aprovados.
-Os atrasos, curvas e mudanças extremas não são garantia da montagem. Relatórios
-históricos anteriores permanecem em `docs/ensaios/`; o modelo ajustado está em
-`co2_modelo_resposta_2026-11-06.json` e a revisão atual em
-`co2_controle_preditivo_2026-11-06.json` nessa pasta.
+No CSV, `uptake_ppm` mostra a subida observada da dose corrente. A coluna legada
+`co2_proj_ppm` vale `-1`, explicitando que a revisão simples não usa previsão.
+O painel não desenha esse valor como uma linha de CO₂. Capturas antigas ainda
+podem mostrar a estimativa histórica, que não deve ser confundida com previsão
+validada. Os testes usam o header e as condições de admissão reais do sketch.
+`python3 scripts/simulate_co2_control.py --explore --report /tmp/co2.json` conserva
+as falhas dos cenários de estresse. A revisão simples foi exercitada em 6.054
+simulações de quatro horas e 20.000 histórias numéricas; nem todos os cenários
+mantêm a faixa ou evitam excesso, portanto isso não certifica estabilidade física.
+Relatórios antigos são conservados em `docs/ensaios/`; a revisão simples está em
+`co2_controle_simples_2026-11-06.json`.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o
@@ -507,6 +492,49 @@ antiga consulta `0x7D` só ecoava o comando e não deve ser usada para confirmar
 Na telemetria `DATA`, `next_pulse_ms` é o próximo valor calculado e `last_pulse_ms` é o
 tempo do pulso realmente aplicado; ambos são separados de `valve_open`, que mostra o
 estado instantâneo da saída.
+
+## Histórico local de CO₂
+
+Abra [o painel local](http://127.0.0.1:8082). CO₂ e duração comandada por dose
+ficam no mesmo gráfico, com escalas de ppm e ms. Eventos têm pontos coloridos na
+curva; quando coincidem, são empilhados. O mouse mostra tipo, horário e duração.
+Abertura e fechamento de porta registrados formam um par com duração em ms; sem
+fechamento registrado não se inventa uma duração. Envios confirmados de firmware
+recebem linha vertical e identificação da revisão. Também há zoom, filtro de
+capturas/eventos, exportação do trecho e marcações manuais persistentes.
+
+```bash
+scripts/co2_dashboard.sh install   # habilitar painel local ao iniciar a sessão
+scripts/co2_logging.sh install     # habilitar coleta USB automática deste Arduino
+scripts/co2_dashboard.sh status
+scripts/co2_logging.sh status
+```
+
+Os dois serviços já foram instalados nesta máquina. São serviços do usuário;
+coleta depende de computador ligado, sessão/serviço ativos e cabo USB conectado.
+O coletor usa o identificador USB estável da placa, não abre outro leitor quando a
+porta já está ocupada e retoma após desconexão. Arquivos ficam em
+`logs/telemetria/`, com horário do computador em cada novo registro (`HOST_TIME`).
+A cópia dos arquivos históricos de `/tmp/incubadora-telemetria` é preservada nessa
+pasta; sobrescrever/truncar uma captura não descarta o arquivo já guardado. Logs,
+anotações SQLite e diários de versões/conexão ficam fora do Git.
+
+`web/co2/` e `scripts/co2_dashboard.py` não acessam a serial nem acionam a placa.
+A leitura USB é feita pelo coletor separado. `scripts/arduino.sh upload` compila,
+pausa a coleta, verifica o envio, grava horário e hash em
+`logs/firmware-events.jsonl` e retoma a coleta. Não atribui atualização de firmware
+a todo reinício. O último envio antigo conhecido foi marcado com horário
+aproximado; novos envios pela ferramenta têm início e término registrados.
+
+Nos registros antigos o horário civil é estimado pelo início da captura e pelo
+tempo do Arduino; eventos ficam próximos da leitura seguinte. Nas novas capturas
+automáticas o horário de recebimento é salvo no computador. Não há servidor
+externo, bibliotecas de gráfico por CDN ou comandos de válvula na interface.
+Para executar sem serviço: `python3 scripts/co2_dashboard.py`.
+
+Verificações do painel: `python3 scripts/test_co2_dashboard.py` e
+`python3 scripts/test_co2_logger.py`; a segunda simula USB por pseudoterminal,
+incluindo desconexão, reconexão e preservação do histórico, sem tocar na placa real.
 
 ## Gerar os arquivos
 

@@ -5,6 +5,7 @@ import argparse, hashlib, json, subprocess, tempfile
 from co2_firmware_harness import harness, ROOT
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--report',type=Path)
+p.add_argument('--explore',action='store_true',help='Keep all scenario results, including target/safety failures.')
 p.add_argument('--seed',type=int,default=20261106)
 p.add_argument('--dead-max-ms',type=float,default=8,help='Hypothetical opening dead time; 0 gives the linear plant supported by the trace fit.')
 a=p.parse_args()
@@ -26,6 +27,7 @@ report={
           'holdout_rmse_ppm':838.0,'physical_calibration':False,
           'notes':'Approximate input/output fit, not isolated valve calibration. Random delay, dead time, pressure, noise and leakage are stress hypotheses. Pending plant gas continues after valve cutoff.'},
  'named_scenarios':named,
+ 'parameter_ranges':{'initial_gain_ppm_ms':[35,200],'after_gain_ratio':[.2,4],'after_gain_ppm_ms':[7,800],'leak_fraction_s':[.0002,.0008],'delay_s':[30,70],'mixing_s':[2,12],'noise_ppm':[0,20],'opening_dead_ms':[0,a.dead_max_ms]},
  'grid':{'count':len(grid),'range_locks':sum(r['range_locked'] for r in grid),
          'peak_above_51000':sum(r['peak_ppm']>51000 for r in grid),
          'last_hour_within_49000_51000':sum(r['last_hour_min']>=49000 and r['last_hour_max']<=51000 for r in grid),
@@ -35,7 +37,7 @@ report={
 assert all(r['min_interval_s']>=20 for r in rows)
 for key in ('fitted_nominal','cold_2000','pressure_half','depleting','door','noise_20'):
     r=next(r for r in named if r['scenario']==key)
-    assert r['range_locked']==0 and r['peak_ppm']<52000,r
+    if not a.explore:assert r['range_locked']==0 and r['peak_ppm']<52000,r
 assert next(r for r in named if r['scenario']=='empty')['last_hour_max']<49000
 if a.report:a.report.write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

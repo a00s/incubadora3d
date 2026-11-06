@@ -1,3 +1,61 @@
+## ENTREGA ATUAL: firmware simples + painel + logs automáticos — 2026-11-06
+
+- GRAVADO/VERIFICADO às11:08CET:32.180Flash/1.144RAM, upload saída0; BOOT27,
+  CO2habilitado1,aquecimento1,trava0. HEX SHA256
+  d8070ed1e6091a0c454c6eeb3b60a43ca53999ce1f76335ca38000250824d682.
+  Não há outro firmware aguardando gravação. Comentários posteriores recompilaram
+  com o mesmo HEX. Não enviados ON/OFF/ACK. Estabilidade real em5% AINDA NÃO CERTIFICADA.
+- Código agora usa última dose útil, duas quedas consecutivas na janela20s e
+  proporção ms anteriores×ppm necessários/resultado anterior. Platô perto50mil
+  repõe perda histórica, sem precisar esperar queda grande. Piso entreaberturas20s.
+  Sem projeção de gás pendente nem integral. Subida observada vale→pico, corrigida
+  pela perda medida durante a subida. Calibração começa20ms limitado pela margem;
+  janela inicial120s para não atribuir resposta tardia à dose errada. Recuperação
+  observa resposta antes de aprender; janela seguinte é o tempo atépico observado
+  (20–120s). Platô usa reposições pequenas no mínimo20s. Aumento máximo2×referência,
+  duração5–1000ms; histórico de perda preservado ao reabilitar, vazão recalibrada.
+- Não afirmar que a regra pura sem observar resposta é segura: protótipo sem essa
+  guarda chegou70mil na simulação nominal e NÃO foi gravado. A revisão atual foi
+  testada em6054cenários4h/20milhistórias, com falhas de estresse preservadas em
+  docs/ensaios/co2_controle_simples_2026-11-06.json. Testes de lógica,porta,perda,
+  aquecimento e visor passaram. Não dizer todos cenários aprovados.
+- Observação física anterior: boot23(preditivo/piso,limite reduzido40mil) ficou
+ 39073–44423ppm na última meia hora(mediana40746,5). Boot25(limite48mil) atingiu50917,
+  última meia hora46845–50917(mediana48674). Usuário viu a estimativa errada no gráfico
+  e pediu a lógica simples. Revisão27 está em calibração/recuperação; manter coleta.
+- PAINEL pronto: http://127.0.0.1:8082, arquivos web/co2/, servidor
+  scripts/co2_dashboard.py. CO2 + duração comandada/dose emms em escalas separadas;
+  pontos coloridos NA CURVA, empilhados, popup afastado do cursor; portas pareadas
+  mostram duração emms nos dois eventos, sem inventar fechamento; linha vertical
+  de upload confirmado. Zoom,capturas,anotações SQLite,exportação de trecho.
+  Estimativa antiga só nas capturas antigas; firmware novo envia coluna legada-1,
+  painel não desenha como previsão. Interface não abre serial nem comanda relés.
+- COLETA AUTOMÁTICA instalada/habilitada no usuário:incubadora-co2-logger.service.
+  Porta estável /dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_2423831353535160E182-if00.
+  Processo atual141157,leitor141159(consultar systemctl/fuser antes de confiar emPID).
+  Arquivo atual logs/telemetria/usb-20261106T100825-740627Z.log. Cada linha nova tem
+  HOST_TIME com horário doPC. Não abrir outro leitor. Serviço respeita porta ocupada,
+  espera desconexão/reconexão e guarda cada captura. Coletor manual129385 foi
+  encerrado coordenadamente no upload; arquivo antigo /tmp/co2-faixa48... não é live.
+- Painel também instalado/habilitado:incubadora-co2-dashboard.service. Comandos:
+  scripts/co2_dashboard.sh{install|start|stop|status|logs};
+  scripts/co2_logging.sh{install|start|stop|restart|status|logs}.
+  Serviços são do usuário:PC/sessão/serviço ativos e caboUSB necessários. Uno não
+  temWiFi/Bluetooth integrados. Logs,anotações e diários ficam emlogs/(ignoradoGit).
+- Histórico antigo de/tmp/incubadora-telemetria copiado/arquivado emlogs/telemetria;
+  backup incremental a cada2s mesmo sem página aberta; proteção contra truncamento.
+  Horários antigos estimados; capturas novas têm horárioPC. Eventos antigos próximos
+  da leitura seguinte; novos eventos usam horário de recebimento. Oito testes do
+  painel passaram. USB automática testada com pseudoterminal, incluindo desligar/
+  religar e preservação do arquivo anterior, sem tocar na placa física.
+- scripts/arduino.sh upload agora compila, pausa logger, encerra apenas leitor
+  conhecido deste projeto, envia --verify, grava início/fim/hash em
+  logs/firmware-events.jsonl e retoma logger. Novo upload gera linha vertical real;
+  reinício comum continua separado. Primeiro evento conhecido do boot25 tem horário
+  explicitamente aproximado. Não usar só BOOT_COUNT como prova de novo firmware.
+- Sem mudanças CAD/STL/3MF. Visualizador existente copiado a/tmp/incubadora3d-viewer;
+  servidor8081 restabelecido como unidadeincubadora3d-viewer eHTTP200 conferido.
+
 ## Controle preditivo + abertura útil — GRAVADO, validação física em andamento — 2026-11-06
 
 - Firmware atual GRAVADO por scripts/arduino.sh upload --verify, saída0:32.254bytes
