@@ -1,0 +1,36 @@
+{
+  "complete": true,
+  "source": "logs/telemetria/usb-20261106T205921-906576Z.log",
+  "snapshot_sha256": "f46ebe8b6660d80a129f251516fdf9f1f2ebbedc3606edfe5728c7905780f819",
+  "boots": [
+    "2"
+  ],
+  "min_steps": 1,
+  "window_seconds": 600,
+  "elapsed_window_seconds": 724.61,
+  "latest": {
+    "host_time": 1793999745.976456,
+    "ppm": 49405,
+    "raw_ppm": 49405,
+    "co2_enabled": true,
+    "heater_enabled": true,
+    "range_lock": false,
+    "steps": 5,
+    "last_ms": 5
+  },
+  "window": {
+    "start_host_time": 1793999021.365537,
+    "end_host_time": 1793999621.263472,
+    "samples": 288,
+    "valid_samples": 287,
+    "invalid_samples": 1,
+    "min_ppm": 48452,
+    "max_ppm": 52196,
+    "mean_ppm": 49583.71,
+    "in_band_fraction_of_valid": 0.4529616724738676,
+    "in_band_fraction_of_all": 0.4513888888888889,
+    "all_controls_enabled": true,
+    "any_range_lock": false,
+    "same_boot": true
+  }
+}

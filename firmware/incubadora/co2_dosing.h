@@ -15,14 +15,14 @@ struct Co2DoseModel {
   uint8_t pendingHead = 0;
   uint8_t lastProbeMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0;
-  uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
-  uint8_t flat = 0;
+  uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0;
+  uint8_t flat = 0, nearFlat = 0;
   uint8_t falling = 0;
   bool previousValid = false, hasSent = false, trained = false, observing = false;
 
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
     if (preserve) {
-      previousValid = false; falling = flat = 0;
+      previousValid = false; falling = flat = nearFlat = 0;
       observing = false; valley = peak = 0;
       for (uint8_t i = 0; i < 5; ++i) pending[i] = Pending();
       pendingHead = 0;
@@ -30,18 +30,22 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void update(uint32_t now, int32_t ppm, bool valid, bool learn = true) {
-    if (!valid || !learn) { previousValid = false; falling = flat = 0; return; }
+    if (!valid || !learn) { previousValid = false; falling = flat = nearFlat = 0; return; }
     uint32_t elapsed = now - lastAt;
     if (previousValid && elapsed && elapsed <= 20000UL) {
       int32_t delta = ppm - lastPpm;
       if (delta < 0) {
-        if (!falling || now - firstFallAt > 20000UL) { falling = 1; firstFallAt = now; }
-        else if (falling < 2) falling++;
-      } else falling = 0;
+        if (falling < 2) falling++; // Last two valid intervals are already <=20s.
+        nearFlat = 0;
+      } else {
+        falling = 0;
+        if (delta * 1000L <= (int32_t)elapsed * 30) { if (nearFlat < 2) nearFlat++; }
+        else nearFlat = 0;
+      }
       if (delta * 1000L <= (int32_t)elapsed * 2 && delta * 1000L >= -(int32_t)elapsed * 2) { if (flat < 2) flat++; }
       else flat = 0;
 
-    } else { falling = flat = 0; }
+    } else { falling = flat = nearFlat = 0; }
     if (observing) {
       // The gas can arrive after a continuing decline. Measure the observed
       // rise from its actual valley, even if the peak stays below command ppm.
@@ -100,7 +104,7 @@ struct Co2DoseModel {
   }
 
   bool ready(uint32_t now) const {
-    bool plateau = flat >= 2 && lastPpm > 0;
+    bool plateau = (flat >= 2 || (trained && lastPpm >= 49000 && nearFlat >= 2)) && lastPpm > 0;
     return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
@@ -162,7 +166,7 @@ struct Co2DoseModel {
     if (!observing) {
       valley = peak = lastPpm; valleyAt = peakAt = now;
     }
-    falling = flat = 0;
+    falling = flat = nearFlat = 0;
     sendAt = now;
     hasSent = true;
     observing = true;

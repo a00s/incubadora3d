@@ -73,6 +73,23 @@ int main() {
   c.reset();c.update(120000,5700,true);c.record(20,120000);
   c.update(140000,5769,true);c.update(142000,5769,true);c.update(144000,5769,true);
   assert(!c.trained&&c.stepCount==0);
+  // Two recent declines remain actionable throughout a continuous decline.
+  c.reset();c.update(100000,48000,true);c.record(20,100000);
+  for(uint32_t at=102000;at<=130000;at+=2000){
+    c.update(at,48000-(at-100000)/20,true);
+    if(at>=104000)assert(c.falling==2);
+  }
+  assert(c.ready(130000)); //No periodic first-decline timestamp reset.
+  // Near target, a slow rise may request maintenance before the steep fall.
+  c.reset();c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
+  c.update(120000,49000,true);c.update(122000,49060,true);c.update(124000,49120,true);
+  assert(c.flat==0&&c.nearFlat==2&&c.ready(124000));
+  assert(c.pulse(124000)>0&&c.pulse(124000)<=40);
+  c.update(126000,49181,true);assert(!c.ready(126000)); //Faster than30ppm/s.
+  c.reset();c.trained=true;c.update(120000,10000,true);c.update(122000,10060,true);c.update(124000,10120,true);
+  assert(!c.ready(124000)); //Low-concentration recovery still waits for the rise.
+  c.reset();c.update(120000,49000,true);c.update(122000,49060,true);c.update(124000,49120,true);
+  assert(!c.ready(124000)); //No invented gain before the first measured stair.
   // Maintenance must cover measured arrival, not just the minimum pulse interval.
   c.reset();c.previousValid=true;c.flat=2;c.lastPpm=50000;
   c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
