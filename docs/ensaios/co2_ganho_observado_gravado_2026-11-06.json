@@ -1,0 +1,35 @@
+{
+  "upload": {
+    "id": "upload:c2caaa77bd9c4458922bcadb946b4e8f",
+    "t": 1793986675.48252,
+    "completed_at": 1793986687.6361172,
+    "kind": "firmware",
+    "label": "Firmware enviado e verificado · faf5aaf8",
+    "raw": "Envio iniciado 2026-11-06 18:37:55; verificação OK",
+    "source": "upload",
+    "session": null,
+    "duration_ms": 12154,
+    "estimated": false,
+    "hashes": {
+      "temperatura.ino": "a93cee641e38c300c61dfb2aa98a795c201629d915e4c8fcd86e42c90e7455b9",
+      "firmware/incubadora/co2_dosing.h": "0b7c89b77f9b730d7cb80900969dce7097fb5ce1b44908e1602be1e6b622f7fe",
+      "firmware/experimentos/co2_proporcional_simples.h": "1fb140e650e57824e605a24c049381c362558399697b2e0117ef1b924ebc2d4e",
+      ".arduino-build/incubadora.ino.hex": "faf5aaf8c0e259a7555b71595fa4e4467c59df81dc80c103b7c7ec26303c5fa0"
+    },
+    "exit_code": 0
+  },
+  "source_commit": "2ea8325",
+  "validation_report": "co2_aprendizado_subida_observada_2026-11-06.json",
+  "build": {
+    "flash": 32108,
+    "ram": 1179
+  },
+  "state": {
+    "file": "logs/telemetria/usb-20261106T173807-729729Z.log",
+    "co2_on": 0,
+    "heat_on": 1,
+    "range_lock": 0
+  },
+  "automatic_activation": false,
+  "limits": "Experimental. Delayed enabled-loop tests still fail; corrected gain arithmetic is not whole-system validation."
+}

@@ -403,16 +403,15 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-**Revisão em fonte ainda não enviada:** o aprendizado agora usa somente a subida
-observada; não acrescenta perda estimada ao ganho. A perda continua separada no
-cálculo da necessidade. Regressão real: aproximadamente372ppm estavam entrando
-como5.117ppm na referência de8ms. Compilação e teste dessa conta passaram, mas
-ensaios com atraso continuam apresentando excesso; relatório
-`docs/ensaios/co2_aprendizado_subida_observada_2026-11-06.json`.
-O Arduino continua em `84ab6cdb`; não houve reinício ou acionamento nesta revisão.
+**Revisão gravada em2026-11-06 às18:37CET:** o aprendizado usa somente a subida
+observada, sem acrescentar perda estimada ao ganho. A perda continua separada na
+necessidade. O relatório de envio é
+`docs/ensaios/co2_ganho_observado_gravado_2026-11-06.json`; os ensaios com atraso
+continuam reprovados em `co2_aprendizado_subida_observada_2026-11-06.json`.
+A gravação foi verificada; o CO₂ permanece desligado ao reiniciar.
 
 A versão instalada em2026-11-06 é **experimental, com CO₂ desligado no boot**,
-HEX `84ab6cdb`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
+HEX `faf5aaf8`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
 habilitação e retomada de CO₂ pela porta em cada reinício, preservando aquecimento.
 `python3 scripts/test_co2_experimental_boot.py` verifica32combinações salvas.
 

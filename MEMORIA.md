@@ -1,3 +1,10 @@
+## ATUAL: ganho observado GRAVADO — 2026-11-06 18:37CET
+
+- Usuário pediu explicitamente gravar a correção de ganho. ENVIADO/VERIFICADO faf5aaf8c0e259a7555b71595fa4e4467c59df81dc80c103b7c7ec26303c5fa0, saída0. Hashes de sketch/header/candidata/HEX conferidos contra journal.32.108Flash/1179RAM (148Flash/869RAM livres).
+- Instalado código2ea8325: referência só da subida observada, sem somar perda ao ganho. Perda fica separada na necessidade; média1–5,últimaabertura,max+20ms,guardsanteriores preservados. Testes aritméticos e32estados deboot passaram imediatamente antes do envio.
+- Boot continua CO₂OFF e preserva aquecimento, conforme informado antes de gravar. Não enviamosON/OFF/ACK nem desbloqueamos. Logger retomado automaticamente; firmware marcado no gráfico. Relatório docs/ensaios/co2_ganho_observado_gravado_2026-11-06.json contémupload/estado e referencia ensaios anteriores.
+- Continua EXPERIMENTAL: simulação habilitada dessa lógica já reprovou (nominal62237,4ppm e1184/2000travados). Gravação verificada não é validação da regulação5%. Não orientar ativação automática como se estivesse aprovada. Entrada anterior NÃO ENVIADO agora é histórico, foi supersedida por pedido explícito e envio desligado.
+
 ## EM FONTE, NÃO ENVIADO: ganho só da subida observada — 2026-11-06
 
 - Usuário observou estabilização~47mil, mas tempos decrescentes6ms e déficit até50mil. Verificado arquivo boot10:17:43basis124ms/40886ppm;17:59basis67ms/42270ppm. Ganho aprendido subiu329→631ppm/ms, reduzindo aberturas. Outra parte da redução vem da perda estimada decaindo no platô; não confundir tudo com alteração do ganho.
