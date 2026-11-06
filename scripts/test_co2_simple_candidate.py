@@ -42,6 +42,17 @@ int main() {
   assert(c.arrivalMs==54000&&c.responseMs==66000);
   assert(c.pulse(190000)==0); // Already commanded40+60ms cover remaining deficit.
   c.lastPpm=38000;assert(c.pulse(190000)>0); // Pending gas doesn't impose a fixed pause.
+  // Real combined stair:20+40+60ms, valley169044, peak231615.
+  // Duration must exclude the46s separating first and last contributing commands.
+  c.reset();c.update(120648,46720,true);c.record(20,120648);
+  c.update(141632,45908,true);c.record(40,141632);
+  c.update(166768,45752,true);c.record(60,166768);
+  c.update(169044,45733,true);c.update(231615,52434,true);
+  c.update(233615,52434,true);c.update(235615,52434,true);
+  assert(c.referenceMs==120&&c.referenceRise==6701);
+  assert(c.arrivalMs==48396&&c.responseMs==64847); // Not110967ms.
+  // Restore the first isolated-step model for reset preservation checks.
+  c.arrivalMs=54000;c.referenceMs=20;
   // Door/re-enable/invalid-read reset preserves measured gain; full reset doesn't.
   auto before=c.referenceRise;c.reset(true);
   assert(c.trained&&c.referenceMs==20&&c.referenceRise==before);

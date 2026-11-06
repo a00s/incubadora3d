@@ -64,7 +64,7 @@ alerta/desligamento por falta de subida ou bloqueio de variação ±15.000 ppm.
 ## Contagem de respostas atrasadas
 
 Fila de até5 comandos. A primeira escada útil mede chegada (vale) e fim (pico)
-a partir do comando mais antigo ainda sem resposta. Esses tempos ficam retidos
+com chegada a partir do comando mais antigo ainda sem resposta e duração até o pico a partir do último comando que contribuiu para a escada. Assim, não inclui os intervalos entre as doses na duração da resposta. Esses tempos ficam retidos
 até reset completo; dentro dessa janela, a quantidade prevista restante é
 descontada do déficit. Não acrescenta um temporizador fixo de observação: se o
 déficit superar a quantidade pendente, pode dosar após os20s habituais.

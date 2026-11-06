@@ -67,10 +67,12 @@ struct Co2DoseModel {
         referenceMs -= slot.ms;
         referenceRise -= slot.rise;
         uint16_t deliveredMs = 0;
+        uint32_t newestAt = pending[owner].at;
         uint32_t observedArrival = trained ? arrivalMs : valleyAt - pending[owner].at;
         for (uint8_t i = 0; i < 5; ++i) {
           if (pending[i].ms && !pending[i].learned && (int32_t)(peakAt - pending[i].at) >= (int32_t)observedArrival) {
             deliveredMs += pending[i].ms;
+            if (now - pending[i].at < now - newestAt) newestAt = pending[i].at;
             pending[i].learned = true;
           }
         }
@@ -83,7 +85,7 @@ struct Co2DoseModel {
         if (stepCount < 5) stepCount++;
         if (!trained) {
           arrivalMs = valleyAt - pending[owner].at;
-          responseMs = peakAt - pending[owner].at;
+          responseMs = peakAt - newestAt;
           if (arrivalMs >= responseMs) arrivalMs = responseMs / 2;
         }
         pending[owner].learned = true;
@@ -107,7 +109,8 @@ struct Co2DoseModel {
     if (!ready(now) || lastPpm >= 51000 || lastPpm <= 0) return 0;
     int32_t needed = 50000L - lastPpm;
     if (trained && referenceRise && referenceMs) {
-      uint32_t totalMs = 0, oldest = 20000;
+      uint16_t totalMs = 0;
+      uint32_t oldest = 20000;
       for (uint8_t i = 0; i < 5; ++i) if (pending[i].ms) {
         totalMs += pending[i].ms;
         uint32_t age = now - pending[i].at;
