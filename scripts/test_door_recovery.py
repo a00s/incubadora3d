@@ -179,13 +179,13 @@ int main() {
   // Old firmware stored no resume requests: keep both off on legacy paused boot.
   EEPROM.update(29,4);restoreControls();toggleDoorMode();
   assert(!botao_co2_onoff && !botao_aquecedor_onoff && co2DoorMode==0);
-  // A deliberate restart re-probes a changed cylinder and discards old pulse duration.
+  // Re-enabling preserves measured gain; it is not a processor reset.
   co2DoorMode=0;botao_co2_onoff=false;co2DoseModel.observing=false;co2DoseModel.trained=true;co2DoseModel.referenceMs=240;
   assert(setCo2Enabled(true));
-  assert(!co2DoseModel.trained && co2DoseModel.referenceMs==20 && lastCo2PulseMs==0);
-  // Explicit off/on resets calibration in the requested experimental controller.
+  assert(co2DoseModel.trained && co2DoseModel.referenceMs==240 && lastCo2PulseMs==0);
+  // OFF/ON clears unfinished response attribution, retaining completed stairs.
   co2DoseModel.record(20,millis());setCo2Enabled(false);setCo2Enabled(true);
-  assert(!co2DoseModel.observing&&!co2DoseModel.trained);
+  assert(!co2DoseModel.observing&&co2DoseModel.trained&&co2DoseModel.referenceMs==240);
 
 }
 '''

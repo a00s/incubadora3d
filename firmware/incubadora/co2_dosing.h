@@ -1,29 +1,33 @@
 #pragma once
 #include <stdint.h>
-
+// Measured stairs, matched to queued commands before calculating the next dose.
+// No fixed observation pause: expected gas still in transit reduces the deficit.
 // Measured1..5-stair proportion; falling/flat below target permits the next dose.
 struct Co2DoseModel {
   enum { MAX_PULSE_MS = 100 };
-  uint32_t referenceMs = 20;
+  uint16_t referenceMs = 20;
   uint32_t referenceRise = 0;
-  struct Step { uint32_t ms; uint16_t rise; } steps[5] = {};
+  struct Step { uint16_t ms; uint16_t rise; } steps[5] = {};
   uint8_t stepCount = 0, stepHead = 0;
   uint32_t responseMs = 20000;
-  uint32_t lastMs = 0;
-  uint16_t lastProbeMs = 0;
+  uint16_t lastMs = 0;
+  uint32_t arrivalMs = 0;
+  struct Pending { uint32_t at; uint8_t ms; bool learned; } pending[5] = {};
+  uint8_t pendingHead = 0;
+  uint8_t lastProbeMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
-  float lossPpmPerSec = 0;
   uint8_t flat = 0;
   uint8_t falling = 0;
   bool previousValid = false, hasSent = false, trained = false, observing = false;
 
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
-    uint32_t oldAt = sendAt;
-    bool sent = hasSent;
-    float loss = lossPpmPerSec;
-    *this = Co2DoseModel();
-    if (preserve) { sendAt = oldAt; hasSent = sent; lossPpmPerSec = loss; }
+    if (preserve) {
+      previousValid = false; falling = flat = 0;
+      observing = false; valley = peak = mass = 0;
+      for (uint8_t i = 0; i < 5; ++i) pending[i] = Pending();
+      pendingHead = 0;
+    } else *this = Co2DoseModel();
   }
 
   __attribute__((noinline,noclone)) void update(uint32_t now, int32_t ppm, bool valid, bool learn = true) {
@@ -37,10 +41,7 @@ struct Co2DoseModel {
       } else falling = 0;
       if (delta * 1000L <= (int32_t)elapsed * 2 && delta * 1000L >= -(int32_t)elapsed * 2) { if (flat < 2) flat++; }
       else flat = 0;
-      if (falling >= 2 && ppm >= 45000 && (!hasSent || now - sendAt >= 20000UL)) {
-        float observed = (lastPpm - ppm) * 1000.0f / elapsed;
-        if (observed <= 200) lossPpmPerSec = lossPpmPerSec > 0 ? lossPpmPerSec * .8f + observed * .2f : observed;
-      }
+
     } else { falling = flat = 0; }
     if (observing) {
       // The gas can arrive after a continuing decline. Measure the observed
@@ -49,23 +50,48 @@ struct Co2DoseModel {
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
-        int32_t delivered = mass; // Learn only the observed rise, without estimated loss.
+        int32_t delivered = mass; // Match the observed stair to the oldest unanswered opening.
+        uint8_t owner = 5;
+        uint32_t oldestAge = 0;
+        for (uint8_t i = 0; i < 5; ++i) {
+          uint32_t age = now - pending[i].at;
+          if (pending[i].ms && !pending[i].learned && (owner == 5 || age > oldestAge)) {
+            owner = i; oldestAge = age;
+          }
+        }
+        if (owner == 5) { observing = false; return; }
         // Only useful rises enter the history. In particular, the recorded
         // 69ppm fluctuation must not replace a response of several thousand ppm.
         if (!stepCount) { referenceMs = 0; referenceRise = 0; }
         Step &slot = steps[stepHead];
         referenceMs -= slot.ms;
         referenceRise -= slot.rise;
-        slot.ms = lastMs;
+        uint16_t deliveredMs = 0;
+        uint32_t observedArrival = trained ? arrivalMs : valleyAt - pending[owner].at;
+        for (uint8_t i = 0; i < 5; ++i) {
+          if (pending[i].ms && !pending[i].learned && (int32_t)(peakAt - pending[i].at) >= (int32_t)observedArrival) {
+            deliveredMs += pending[i].ms;
+            pending[i].learned = true;
+          }
+        }
+        if (!deliveredMs) deliveredMs = pending[owner].ms;
+        slot.ms = deliveredMs;
         slot.rise = delivered > 65535L ? 65535 : delivered;
         referenceMs += slot.ms;
         referenceRise += slot.rise;
         if (++stepHead == 5) stepHead = 0;
         if (stepCount < 5) stepCount++;
-        responseMs = peakAt - sendAt;
+        if (!trained) {
+          arrivalMs = valleyAt - pending[owner].at;
+          responseMs = peakAt - pending[owner].at;
+          if (arrivalMs >= responseMs) arrivalMs = responseMs / 2;
+        }
+        pending[owner].learned = true;
         if ((int32_t)responseMs < 20000) responseMs = 20000;
         trained = true;
         observing = false;
+        for (uint8_t i = 0; i < 5; ++i) if (pending[i].ms && !pending[i].learned) observing = true;
+        valley = peak = ppm; valleyAt = peakAt = now; mass = 0;
       }
     }
     previousValid = true;
@@ -78,15 +104,39 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
-    if (!ready(now) || lastPpm >= 50000 || lastPpm <= 0) return 0;
+    if (!ready(now) || lastPpm >= 51000 || lastPpm <= 0) return 0;
     int32_t needed = 50000L - lastPpm;
+    if (trained && referenceRise && referenceMs) {
+      uint32_t totalMs = 0, oldest = 20000;
+      for (uint8_t i = 0; i < 5; ++i) if (pending[i].ms) {
+        totalMs += pending[i].ms;
+        uint32_t age = now - pending[i].at;
+        if (age > oldest) oldest = age;
+      }
+      uint32_t maintenanceMs = totalMs * 20000UL / oldest;
+      int32_t maintenance = maintenanceMs * referenceRise / referenceMs;
+      if (maintenance > 1000) maintenance = 1000;
+      needed += maintenance;
+    }
+    if (trained && referenceRise) {
+      uint16_t remainingMs = 0;
+      for (uint8_t i = 0; i < 5; ++i) {
+        uint32_t age = now - pending[i].at;
+        if (pending[i].ms && age < responseMs) {
+          if (age <= arrivalMs) remainingMs += pending[i].ms;
+          else remainingMs += ((uint32_t)pending[i].ms * (responseMs - age) + (responseMs - arrivalMs) - 1) / (responseMs - arrivalMs);
+        }
+      }
+      needed -= (int32_t)((uint32_t)remainingMs * referenceRise / referenceMs);
+    }
     if (needed <= 0) return 0;
     uint32_t duration;
     if (trained && referenceRise) {
       // Average gain = sum(useful ppm) / sum(opening ms), using only the
       // available1..5 stairs. No five-sample wait and no percentage growth cap.
-      uint64_t calculated = ((uint64_t)referenceMs * needed + referenceRise - 1) / referenceRise;
-      duration = calculated > MAX_PULSE_MS ? MAX_PULSE_MS : calculated;
+      // referenceMs <=2500 and positive needed <=51000: product fits uint32_t.
+      uint32_t calculated = (referenceMs * (uint32_t)needed + referenceRise - 1) / referenceRise;
+      duration = calculated > MAX_PULSE_MS ? (uint32_t)MAX_PULSE_MS : calculated;
     } else {
       duration = lastProbeMs + 20UL; // User-requested calibration:20,40,60,80,... until measured gain.
     }
@@ -98,6 +148,10 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
+    pending[pendingHead].at = now;
+    pending[pendingHead].ms = ms;
+    pending[pendingHead].learned = false;
+    if (++pendingHead == 5) pendingHead = 0;
     lastProbeMs = ms;
     lastMs = ms;
     if (!observing) {

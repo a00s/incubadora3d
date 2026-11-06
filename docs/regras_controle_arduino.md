@@ -40,26 +40,40 @@ definidos explicitamente pelo usuário.
 | Regra | Efeito |
 |---|---|
 | Meta 50.000 ppm | Entra no erro usado para calcular a dose. |
-| Faixa 49.000–51.000 ppm | Referência visual e de recuperação. Dose de recuperação é zero em50.000 ppm ou mais, sem necessariamente desligar a habilitação. |
+| Faixa 49.000–51.000 ppm | Referência visual e de recuperação. Recuperação usa déficit até50.000 ppm; reposição prevista pode usar a margem até51.000. Sem nova dose a partir de51.000 ppm, sem necessariamente desligar a habilitação. |
 | Espera inicial 120 s | Não injeta durante esse tempo após reinício, mesmo habilitado. Foi acrescentada nas revisões; o primeiro código importado esperava10s. |
 | Histórico de 16 leituras e janela ≥30 s | Outra condição para liberar doses. É preenchido em paralelo ao aquecimento inicial; uma leitura inválida reinicia esse histórico. |
 | Intervalo mínimo 20 s | Entre o fechamento da válvula e nova abertura automática. Pedido pelo usuário. |
 | Duas quedas dentro de 20 s | Podem liberar a dose se as outras condições permitirem. Pedido pelo usuário. |
 | Platô | Duas variações dentro de ±2 ppm/s são tratadas como estabilidade. Essa tolerância numérica foi introduzida nas revisões. |
-| Até 5 escadas | Ganho ponderado: soma das subidas dividida pela soma das aberturas; usa imediatamente as referências disponíveis. |
+| Até 5 escadas | Ganho ponderado: soma das subidas dividida pela soma das aberturas associadas à resposta; usa imediatamente1–5 referências disponíveis. Não atribui toda resposta à última abertura se ela ainda está em trânsito. |
 | Subida mínima 200 ppm para aprender | Variações menores não atualizam o ganho. Não impede continuar a calibração. Esse filtro foi introduzido nas revisões. |
 | Calibração 20/40/60/80… ms | Enquanto não existe ganho útil. Pedido pelo usuário. |
 | Aumento máximo 20 ms | Aplica-se também às doses calculadas após aprender; reduções podem ser maiores. Pedido pelo usuário. |
 | Abertura mínima 5 ms e máxima 100 ms | Teto de 100 ms pedido explicitamente pelo usuário. Vale para calibração e doses aprendidas. Não é declaração de limite físico da válvula. O primeiro código importado usava 1–60 ms; o teto de 1.000 ms das revisões foi removido. |
-| Compensação de perda | Removida da necessidade: calcula somente (50.000 − ppm atual) × soma(ms)/soma(subidas), arredondada para cima e limitada pelos tetos. |
-| Estimativa da perda | Aprende em quedas acima de 45.000 ppm, ignora taxas acima de 200 ppm/s e filtra 80% do valor anterior + 20% do novo. Esses parâmetros foram introduzidos nas revisões; a estimativa não participa mais da dose. |
-| Religar CO₂ | Limpa o histórico de ganho, mas conserva a estimativa de perda e o horário do último comando. |
-| Leitura inválida | Impede injeção e limpa histórico/tendência. A habilitação pode continuar ligada. |
+| Compensação de perda | A antiga perda estimada×tempo de resposta foi removida. Reposição experimental: ritmo de ms comandados nas últimas5 aberturas, convertido ao equivalente de20s pelo ganho medido, limitado a1000ppm; somado ao déficit e descontado o gás previsto em trânsito. |
+| Estimativa da perda | O estimador filtrado80/20 foi removido do modelo de dose. A estatística independente de perdas do visor permanece. Reposição usa o ritmo dos comandos, que não é uma medição física isolada de perda. |
+| Religar CO₂ | Preserva o histórico de ganho e os tempos de resposta já medidos. Limpa somente atribuição inacabada e tendência. Uma leitura inválida faz o mesmo; não transforma ON/OFF em reset de processador. |
+| Leitura inválida | Impede injeção e limpa tendência/atribuição inacabada, preservando ganhos úteis. A habilitação pode continuar ligada. |
 | Botões em processamento | Sequência do botão de CO₂ ou pressão pendente no botão térmico suspendem a dosagem automática. |
 
 O ganho agora usa somente a subida observada; a antiga soma de perda ao ganho foi
 removida. Não existem mais o orçamento acumulado de 66 ms, ganho presumido de 800 ppm/ms,
 alerta/desligamento por falta de subida ou bloqueio de variação ±15.000 ppm.
+
+## Contagem de respostas atrasadas
+
+Fila de até5 comandos. A primeira escada útil mede chegada (vale) e fim (pico)
+a partir do comando mais antigo ainda sem resposta. Esses tempos ficam retidos
+até reset completo; dentro dessa janela, a quantidade prevista restante é
+descontada do déficit. Não acrescenta um temporizador fixo de observação: se o
+déficit superar a quantidade pendente, pode dosar após os20s habituais.
+
+Limitações verificadas: mais de5 comandos pendentes podem sobrescrever a
+atribuição antiga; o primeiro tempo medido não acompanha automaticamente nova
+geometria de mistura. Calibração cega20/40/60… antes de qualquer resposta ainda
+pode exceder a meta com vazão alta/atraso grande. A suíte de stress conserva
+essas falhas; não é certificação de estabilidade em qualquer cilindro.
 
 ## Condições que ainda desligam ou impedem os controles
 

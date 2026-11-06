@@ -1,92 +1,77 @@
 #!/usr/bin/env python3
-"""Check the requested arithmetic, separately from closed-loop acceptance."""
+"""Check dose arithmetic and delayed command attribution through real Uno gates."""
 from pathlib import Path
 import subprocess
 import tempfile
 from co2_firmware_harness import ROOT, harness
-
-model = Path(globals().get('MODEL_PATH', ROOT / 'firmware/experimentos/co2_proporcional_simples.h'))
+model = Path(globals().get('MODEL_PATH', ROOT/'firmware/experimentos/co2_proporcional_simples.h'))
 code = harness(model) + r'''
 int main() {
-  resetFirmware(); auto &c = co2DoseModel;
-  c.update(100000,48050,true);c.update(110000,48025,true);c.update(120000,48000,true);CO2i=48000;
-  assert(firmwarePulse(119999)==0);assert(firmwarePulse(120000)==20);
-  assert(firmwarePulse(120000,false)==0);assert(firmwarePulse(120000,true,false)==0);
-  assert(firmwarePulse(120000,true,true,1)==0);assert(firmwarePulse(120000,true,true,0,true)==0);
-  resetFirmware();
-  c.previousValid=true; c.lastPpm=49000; c.falling=2;
-  c.trained=true; c.referenceMs=20; c.referenceRise=500;c.lastProbeMs=20;
-  assert(c.pulse(120000)==40); //20ms gave500ppm;1000ppm missing.
-  c.lastPpm=49900; assert(c.pulse(120000)==5); //4ms below mechanical minimum.
-  // Real overshoot regression: estimated loss must not create demand at target.
-  c.lossPpmPerSec=150;c.responseMs=120000;
-  c.lastPpm=50890; assert(c.pulse(120000)==0);
-  c.lastPpm=50283; assert(c.pulse(120000)==0);
-  c.lastPpm=50000; assert(c.pulse(120000)==0);
-  c.lastPpm=49900; assert(c.pulse(120000)==5);
-  c.lossPpmPerSec=0;
-  c.lastPpm=51000; assert(c.pulse(120000)==0);
-  c.falling=0; c.flat=0; assert(c.pulse(120000)==0);
-  c.lastPpm=45000; c.flat=2; assert(c.pulse(120000)==40);
-  c.lastProbeMs=80;c.referenceMs=80;c.referenceRise=2000;c.lastPpm=41570;
-  assert(c.pulse(120000)==100); //Raw338ms cannot jump from80ms to338ms.
-  c.record(100,120000);c.falling=2;assert(c.pulse(140100)==100);
-  c.lastPpm=49900;assert(c.pulse(140100)==5); //Only increases are limited.
-  resetFirmware(); uint32_t t=120000; int32_t ppm=10000;
+  resetFirmware(); auto &c=co2DoseModel;
+  c.update(100000,48050,true); c.update(110000,48025,true); c.update(120000,48000,true); CO2i=48000;
+  assert(firmwarePulse(119999)==0); assert(firmwarePulse(120000)==20);
+  assert(firmwarePulse(120000,false)==0); assert(firmwarePulse(120000,true,false)==0);
+  assert(firmwarePulse(120000,true,true,1)==0); assert(firmwarePulse(120000,true,true,0,true)==0);
+  c.reset(); c.previousValid=true;c.lastPpm=49000;c.falling=2;
+  c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
+  assert(c.pulse(120000)==40); // Actual20ms/500ppm, missing1000ppm.
+  c.lastPpm=49900;assert(c.pulse(120000)==5);
+  c.lastPpm=50890;assert(c.pulse(120000)==0); // No unbounded loss*response term.
+  c.lastPpm=50283;assert(c.pulse(120000)==0);
+  c.lastPpm=50000;assert(c.pulse(120000)==0); // No history, no invented maintenance.
+  c.lastPpm=51000;assert(c.pulse(120000)==0);
+  c.lastPpm=48000;c.lastProbeMs=80;c.referenceMs=2500;c.referenceRise=1;
+  assert(c.pulse(120000)==100); // Largest physical history, product fits32bits.
+  c.record(100,120000);c.falling=2;assert(c.pulse(140001)<=100);
+  c.reset(); c.previousValid=true;c.flat=2;c.lastPpm=5700;
+  uint32_t at=120000;
+  for(unsigned n=0;n<7;n++,at+=22000) {
+    c.flat=2;
+    unsigned expected=n<5?(n+1)*20:100;
+    assert(c.pulse(at)==expected);c.record(expected,at);
+  }
+  assert(!c.trained); // No fake gain from elapsed time.
+  // First20ms response must not be attributed to the later60ms command.
+  c.reset();c.update(120000,45733,true);c.record(20,120000);
+  c.update(142000,45336,true);c.record(40,142000);
+  c.update(164000,44942,true);c.record(60,164000);
+  c.update(174000,44735,true);
+  c.update(180000,45400,true);c.update(186000,45861,true);
+  c.update(188000,45860,true);c.update(190000,45859,true);
+  assert(c.trained&&c.stepCount==1&&c.referenceMs==20&&c.referenceRise==1126);
+  assert(c.arrivalMs==54000&&c.responseMs==66000);
+  assert(c.pulse(190000)==0); // Already commanded40+60ms cover remaining deficit.
+  c.lastPpm=38000;assert(c.pulse(190000)>0); // Pending gas doesn't impose a fixed pause.
+  // Door/re-enable/invalid-read reset preserves measured gain; full reset doesn't.
+  auto before=c.referenceRise;c.reset(true);
+  assert(c.trained&&c.referenceMs==20&&c.referenceRise==before);
+  assert(!c.previousValid&&!c.observing&&c.arrivalMs==54000);
+  for(auto &p:c.pending)assert(p.ms==0);
+  c.reset();assert(!c.trained&&c.stepCount==0&&c.lastProbeMs==0);
+  // Rolling history uses1..5 available useful stairs, replacing the oldest.
+  uint32_t t=120000;int32_t ppm=10000;
   for(int n=1;n<=6;n++) {
-    c.update(t,ppm,true); c.record(20,t);
+    c.update(t,ppm,true);c.record(20,t);
     for(int j=1;j<=10;j++)c.update(t+j*2000,ppm+n*500*(j<5?j:5)/5,true);
-    ppm+=n*500; t+=20000;
+    ppm+=n*500;t+=20000;
     assert(c.stepCount==(n<5?n:5));
     assert(c.referenceMs==(unsigned)(n<5?n:5)*20);
     assert(c.referenceRise==(unsigned)(n<6?n*(n+1)*250:10000));
   }
-  // No total66ms budget, timeout, or response threshold blocks new commands.
-  resetFirmware(); c.update(120000,5700,true); c.record(20,120000);
-  unsigned expected=40,commands=1;
-  for(uint32_t at=122000;at<=720000;at+=2000) {
-    c.update(at,5700-(at-120000)/10000,true);
-    if(c.ready(at)) {
-      auto ms=c.pulse(at); assert(ms==expected); c.record(ms,at);
-      expected=expected>=80?100:expected+20;commands++;
-    }
-  }
-  assert(c.lastMs>66 && !c.trained && commands>10);
-  c.reset();c.previousValid=true;c.flat=2;c.lastPpm=5700;
-  assert(c.pulse(800000)==20); //Restart calibration, not the last doubled probe.
-  c.record(20,800000);c.update(802000,5699,true);c.update(804000,5698,true);c.update(806000,5697,true);
-  assert(!c.ready(819999));assert(c.pulse(820000)==40);
-  c.update(822000,6200,true);assert(!c.ready(822000)); //Do not double during a rise.
-  c.update(824000,6700,true);c.update(826000,6701,true);c.update(828000,6702,true);
-  assert(c.trained&&c.stepCount==1); //Switch to the measured proportion immediately.
-  c.lossPpmPerSec=0;c.lastPpm=49000;c.referenceMs=20;c.referenceRise=500;
-  assert(c.pulse(830000)==40); //Not60 from continuing the calibration sequence.
-  // Missing gain never divides by zero; a valid large ratio cannot overflow32bits.
-  c.previousValid=true; c.falling=2; c.observing=false;
-  c.trained=true; c.referenceMs=400000; c.referenceRise=1000;
-  c.lastProbeMs=1000;c.lastPpm=1000; assert(c.pulse(900000)==100);
-  c.reset(); assert(c.stepCount==0 && !c.trained);
-  c.update(120000,39600,true);c.record(20,120000);c.record(40,142000);
-  c.record(60,164000);c.record(80,186000);
-  c.update(200000,41000,true);c.update(206000,42400,true);
-  c.update(208000,42401,true);c.update(210000,42402,true);
-  assert(c.trained&&c.referenceMs==80&&c.lastMs==80); //Not the200ms sum.
-  assert(c.pulse(210000)<=100);
-  // Observed372ppm must not become5117ppm by adding estimated loss.
-  c.reset();c.update(100000,46900,true);c.record(8,100000);c.lossPpmPerSec=40;
-  for(uint32_t t=102000;t<=216000;t+=2000)c.update(t,46900,true);
-  c.update(218625,47272,true);c.update(220625,47272,true);c.update(222625,47272,true);
-  assert(c.trained&&c.referenceMs==8&&c.referenceRise==372);
-  // The same deficit now asks for more time, still bounded to+20ms.
-  c.lossPpmPerSec=0;assert(c.pulse(222625)==28);
-  // Five observed stairs keep loss estimates out of the gain average.
-  c.referenceMs=67;c.referenceRise=16990;c.lastProbeMs=6;c.lastPpm=47273;
-  assert(c.pulse(222625)==11); //Old inflated42270ppm would ask for only5ms.
+  // Noise of69ppm cannot replace a measured response with a fictitious weak gain.
+  c.reset();c.update(120000,5700,true);c.record(20,120000);
+  c.update(140000,5769,true);c.update(142000,5769,true);c.update(144000,5769,true);
+  assert(!c.trained&&c.stepCount==0);
+  // Counter wrap uses unsigned elapsed time, without expiring a recent dose.
+  c.reset();c.previousValid=true;c.flat=2;c.lastPpm=50000;
+  c.trained=true;c.referenceMs=20;c.referenceRise=500;c.responseMs=60000;c.arrivalMs=40000;
+  c.record(20,0xffffd8efUL);c.flat=2;
+  assert(c.pulse(12000)==0); // Still in transit; no duplicate correction.
+  c.flat=0;c.falling=0;assert(c.pulse(60000)==0); // Rising never starts another command.
 }
 '''
 with tempfile.TemporaryDirectory(prefix='co2-simple-candidate-') as folder:
-    cpp=Path(folder)/'test.cpp'; exe=Path(folder)/'test'
-    cpp.write_text(code)
+    cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('Candidate arithmetic passed; this does NOT certify closed-loop dosing.')
+print('Arithmetic, delayed attribution, pending quantities and preserved learning passed; physical stability remains separate.')
