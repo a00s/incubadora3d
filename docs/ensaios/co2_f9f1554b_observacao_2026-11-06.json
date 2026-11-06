@@ -1,0 +1,150 @@
+{
+  "status": "NOT_STABLE_IN_BAND",
+  "firmware_hex": "f9f1554bf4d13876eb702ab0f2b869a43ee14e0e64d2a4593d4b48065c77dc46",
+  "log": "logs/telemetria/usb-20261106T194130-654727Z.log",
+  "snapshot_sha256": "7027991b77883bdfe6f9363342e9e836c32d8a8aa22b5fed08afea900acb42fe",
+  "last_host_time": "2026-11-06T21:02:03.609761+01:00",
+  "samples": 591,
+  "longest_continuous_in_band_s": 297.75,
+  "last10min": {
+    "min_ppm": 48074,
+    "max_ppm": 52437,
+    "mean_ppm": 49867.97,
+    "fraction49000_51000": 0.6458333333333334,
+    "all_controls_enabled": true,
+    "any_range_lock": false
+  },
+  "latest": {
+    "ppm": 48586,
+    "basis_ms": 285,
+    "basis_rise": 8442,
+    "steps": 5
+  },
+  "pulses": [
+    {
+      "t": 1793994214.754553,
+      "ms": 20
+    },
+    {
+      "t": 1793994235.560498,
+      "ms": 40
+    },
+    {
+      "t": 1793994256.473641,
+      "ms": 60
+    },
+    {
+      "t": 1793994349.90317,
+      "ms": 21
+    },
+    {
+      "t": 1793994370.737937,
+      "ms": 5
+    },
+    {
+      "t": 1793994391.568934,
+      "ms": 12
+    },
+    {
+      "t": 1793994412.375585,
+      "ms": 17
+    },
+    {
+      "t": 1793994435.271574,
+      "ms": 14
+    },
+    {
+      "t": 1793994497.879865,
+      "ms": 23
+    },
+    {
+      "t": 1793994549.622333,
+      "ms": 5
+    },
+    {
+      "t": 1793994570.440523,
+      "ms": 13
+    },
+    {
+      "t": 1793994595.429959,
+      "ms": 12
+    },
+    {
+      "t": 1793994616.318661,
+      "ms": 5
+    },
+    {
+      "t": 1793994643.555609,
+      "ms": 15
+    },
+    {
+      "t": 1793994664.452709,
+      "ms": 14
+    },
+    {
+      "t": 1793994718.767604,
+      "ms": 18
+    },
+    {
+      "t": 1793994764.386894,
+      "ms": 5
+    },
+    {
+      "t": 1793994785.139661,
+      "ms": 7
+    },
+    {
+      "t": 1793994805.942202,
+      "ms": 17
+    },
+    {
+      "t": 1793994828.920543,
+      "ms": 7
+    },
+    {
+      "t": 1793994854.060387,
+      "ms": 11
+    },
+    {
+      "t": 1793994928.977542,
+      "ms": 5
+    },
+    {
+      "t": 1793994951.9018,
+      "ms": 5
+    },
+    {
+      "t": 1793994972.802665,
+      "ms": 25
+    },
+    {
+      "t": 1793994993.7076,
+      "ms": 45
+    },
+    {
+      "t": 1793995091.343359,
+      "ms": 7
+    },
+    {
+      "t": 1793995112.48224,
+      "ms": 27
+    },
+    {
+      "t": 1793995133.621049,
+      "ms": 47
+    },
+    {
+      "t": 1793995275.025529,
+      "ms": 6
+    },
+    {
+      "t": 1793995295.930492,
+      "ms": 24
+    },
+    {
+      "t": 1793995317.207403,
+      "ms": 24
+    }
+  ],
+  "conclusion": "Upload and EEPROM restoration verified, but ten continuous minutes in49000\u201351000 not achieved. Overlapping response identification remains uncertain. Prepared isolated20ms/four-minute capture requires explicit exception to user no-observation-pause instruction; not uploaded or executed."
+}
