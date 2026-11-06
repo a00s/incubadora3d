@@ -1,3 +1,11 @@
+## EM FONTE, NÃO ENVIADO: ganho só da subida observada — 2026-11-06
+
+- Usuário observou estabilização~47mil, mas tempos decrescentes6ms e déficit até50mil. Verificado arquivo boot10:17:43basis124ms/40886ppm;17:59basis67ms/42270ppm. Ganho aprendido subiu329→631ppm/ms, reduzindo aberturas. Outra parte da redução vem da perda estimada decaindo no platô; não confundir tudo com alteração do ganho.
+- Erro concreto identificado: atualização17:59 associou8ms a5117ppm, embora subida visível do degrau tenha sido~372ppm. O código somava lossPpmPerSec×tempo à subida aprendida, inflando referência em~4745ppm. Relato de estabilidade é dado útil; equilíbrio entre injeção/perda é hipótese, não prova de passagem física em cada pulso.
+- Corrigido APENAS no código: delivered=mass (subida medida), sem somar perda à aprendizagem. Perda continua separada na necessidade da próxima dose. Mantidos últimas1–5,última abertura,global+20,queda/platô eguardas existentes. Unit reproduz372+40×118,625=5117 antigo e exige372 novo; mesmoexemplo67ms/16990ppm,47273ppm,last6ms pede11ms, não5ms da baseinflada42270. Não prometer que próximo pulso físico será11ms, pois estado real de perda/referência pode mudar.
+- Testes aritméticos/boot32/porta/aquecimento/perdas/display/12painel passaram; compilou32108Flash/1179RAM. Relatório docs/ensaios/co2_aprendizado_subida_observada_2026-11-06.json conserva falhas:nominal62237,4ppm,1184/2000stress travam60000. Não foi enviado. Arduino continua84ab6cdb, semreboot ouON/OFF/ACK nesta revisão. Código emGit difere do instalado especificamente nesta correção; não dizerque firmware novo foi gravado.
+- Motivo de não enviar: não há validação do controle fechado comatraso. Corrigir contabilidade de ganho não comprova5%estável nem resolve atribuição causal de doses sobrepostas. Não esconder falhas nem introduzir pressão/ganho físicos não medidos para fazê-las sumir.
+
 ## ATUAL: máximo+20ms global, última abertura e motivo visível — 2026-11-06 16:22CET
 
 - Usuário pediu aumento máximo20ms EM TODAS as doses, não só calibração. Log real foi80→377ms às16:13:44 (não337); leitura atingiu60000 às16:13:59, depois retorno do protocolo. Outro caso15:55:21 teve salto+21893ppm após1000ms em captura anterior. Separar os casos e horários.

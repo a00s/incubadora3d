@@ -48,7 +48,7 @@ struct Co2DoseModel {
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
-        int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
+        int32_t delivered = mass; // Learn only the observed rise; loss belongs to the dose demand.
         // Only useful rises enter the history. In particular, the recorded
         // 69ppm fluctuation must not replace a response of several thousand ppm.
         if (!stepCount) { referenceMs = 0; referenceRise = 0; }

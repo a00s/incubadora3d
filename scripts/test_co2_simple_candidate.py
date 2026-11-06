@@ -65,6 +65,16 @@ int main() {
   c.update(208000,42401,true);c.update(210000,42402,true);
   assert(c.trained&&c.referenceMs==80&&c.lastMs==80); //Not the200ms sum.
   assert(c.pulse(210000)<=100);
+  // Observed372ppm must not become5117ppm by adding estimated loss.
+  c.reset();c.update(100000,46900,true);c.record(8,100000);c.lossPpmPerSec=40;
+  for(uint32_t t=102000;t<=216000;t+=2000)c.update(t,46900,true);
+  c.update(218625,47272,true);c.update(220625,47272,true);c.update(222625,47272,true);
+  assert(c.trained&&c.referenceMs==8&&c.referenceRise==372);
+  // The same deficit now asks for more time, still bounded to+20ms.
+  c.lossPpmPerSec=0;assert(c.pulse(222625)==28);
+  // Five observed stairs keep loss estimates out of the gain average.
+  c.referenceMs=67;c.referenceRise=16990;c.lastProbeMs=6;c.lastPpm=47273;
+  assert(c.pulse(222625)==11); //Old inflated42270ppm would ask for only5ms.
 }
 '''
 with tempfile.TemporaryDirectory(prefix='co2-simple-candidate-') as folder:

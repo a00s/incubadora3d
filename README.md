@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.244 bytes de Flash (99%) e
-1.179 bytes de RAM global (57%), deixando 12 bytes de Flash e 869 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.108 bytes de Flash (99%) e
+1.179 bytes de RAM global (57%), deixando 148 bytes de Flash e 869 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,12 +403,20 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
+**Revisão em fonte ainda não enviada:** o aprendizado agora usa somente a subida
+observada; não acrescenta perda estimada ao ganho. A perda continua separada no
+cálculo da necessidade. Regressão real: aproximadamente372ppm estavam entrando
+como5.117ppm na referência de8ms. Compilação e teste dessa conta passaram, mas
+ensaios com atraso continuam apresentando excesso; relatório
+`docs/ensaios/co2_aprendizado_subida_observada_2026-11-06.json`.
+O Arduino continua em `84ab6cdb`; não houve reinício ou acionamento nesta revisão.
+
 A versão instalada em2026-11-06 é **experimental, com CO₂ desligado no boot**,
 HEX `84ab6cdb`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
 habilitação e retomada de CO₂ pela porta em cada reinício, preservando aquecimento.
 `python3 scripts/test_co2_experimental_boot.py` verifica32combinações salvas.
 
-O modelo instalado copia `firmware/experimentos/co2_proporcional_simples.h`:
+O modelo em fonte deriva de `firmware/experimentos/co2_proporcional_simples.h`:
 começa em20ms e soma20ms:40/60/80/100... até existir resposta útil; o teto mecânico
 permanece1000ms. Depois usa a proporção média das1–5 escadas disponíveis:
 `ceil(somaMs × (déficit + perda durante resposta medida) / somaPpm)`.
