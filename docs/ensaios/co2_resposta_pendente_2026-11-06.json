@@ -1,0 +1,1165 @@
+{
+  "reports": [
+    {
+      "seed": 20261106,
+      "dead_time_max_ms": 8,
+      "scenario_count": 2018,
+      "simulated_hours": 8072,
+      "hashes": {
+        "temperatura.ino": "c4b6b0e421ba240a180ef2c5d4bc30a60db360b87302ae29c8f8fca347ac2f2e",
+        "firmware/incubadora/co2_dosing.h": "64460669150c4604025bb6a9772049f49767aa938cace566c4d87d4aff3b62d3",
+        "scripts/simulate_co2_control.py": "7fb533d892861b0b31f4694bdcbd7763e7402acee0a7a35d80664e4d1c728759",
+        "scripts/co2_scenarios.cpp": "a540d277400dde400cff84c95587d557b142d45a0791be017052f4b94b1d18f2",
+        "scripts/co2_firmware_harness.py": "d560b7c52e517000ff81ca7bb0226ac90293409ecb11d8804c075ce905711673"
+      },
+      "plant": {
+        "fitted_to": "Boot9 four-hour trace; last chronological quarter held out",
+        "gain_ppm_per_ms": 70.6179,
+        "leak_fraction_per_s": 0.0004,
+        "delay_s": 54,
+        "mixing_tau_s": 4,
+        "holdout_rmse_ppm": 838.0,
+        "physical_calibration": false,
+        "notes": "Approximate input/output fit, not isolated valve calibration. Random delay, dead time, pressure, noise and leakage are stress hypotheses. Pending plant gas continues after valve cutoff."
+      },
+      "named_scenarios": [
+        {
+          "scenario": "fitted_nominal",
+          "peak_ppm": 49964.8,
+          "last_hour_min": 48822.8,
+          "last_hour_max": 49953.2,
+          "last_hour_mean": 49457.8,
+          "first_band_s": 744,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "cold_2000",
+          "peak_ppm": 49986.6,
+          "last_hour_min": 48818.5,
+          "last_hour_max": 49951.9,
+          "last_hour_mean": 49454.7,
+          "first_band_s": 1094,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_30",
+          "peak_ppm": 50003.5,
+          "last_hour_min": 48683.5,
+          "last_hour_max": 49381.9,
+          "last_hour_mean": 49085.3,
+          "first_band_s": 384,
+          "doses": 325,
+          "min_interval_s": 44,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_70",
+          "peak_ppm": 49596.6,
+          "last_hour_min": 47979.8,
+          "last_hour_max": 49394.2,
+          "last_hour_mean": 48760.9,
+          "first_band_s": 1238,
+          "doses": 166,
+          "min_interval_s": 86,
+          "range_locked": 0
+        },
+        {
+          "scenario": "mixing_12",
+          "peak_ppm": 50155.0,
+          "last_hour_min": 49049.8,
+          "last_hour_max": 50045.2,
+          "last_hour_mean": 49647.1,
+          "first_band_s": 930,
+          "doses": 175,
+          "min_interval_s": 76,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_half",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 48863.8,
+          "last_hour_max": 49968.3,
+          "last_hour_mean": 49484.6,
+          "first_band_s": 744,
+          "doses": 205,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_double",
+          "peak_ppm": 51218.9,
+          "last_hour_min": 44219.8,
+          "last_hour_max": 47114.8,
+          "last_hour_mean": 45777.9,
+          "first_band_s": 744,
+          "doses": 192,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "depleting",
+          "peak_ppm": 49280.9,
+          "last_hour_min": 41946.0,
+          "last_hour_max": 49140.4,
+          "last_hour_mean": 46044.2,
+          "first_band_s": 9074,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "notified_swap",
+          "peak_ppm": 53912.6,
+          "last_hour_min": 44247.2,
+          "last_hour_max": 47186.8,
+          "last_hour_mean": 45844.4,
+          "first_band_s": 740,
+          "doses": 190,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "door",
+          "peak_ppm": 49996.1,
+          "last_hour_min": 48856.0,
+          "last_hour_max": 49993.0,
+          "last_hour_mean": 49492.4,
+          "first_band_s": 744,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "noise_20",
+          "peak_ppm": 49958.2,
+          "last_hour_min": 48286.2,
+          "last_hour_max": 49768.1,
+          "last_hour_mean": 49059.8,
+          "first_band_s": 940,
+          "doses": 196,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "dead_7_hypothesis",
+          "peak_ppm": 50059.9,
+          "last_hour_min": 48791.6,
+          "last_hour_max": 50034.0,
+          "last_hour_mean": 49488.6,
+          "first_band_s": 534,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "high_flow",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 23649.1,
+          "last_hour_max": 43044.7,
+          "last_hour_mean": 32977.5,
+          "first_band_s": -1,
+          "doses": 122,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "observed_higher_loss",
+          "peak_ppm": 46567.9,
+          "last_hour_min": 44236.2,
+          "last_hour_max": 46526.3,
+          "last_hour_mean": 45465.5,
+          "first_band_s": -1,
+          "doses": 204,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "soft_opening_high_loss",
+          "peak_ppm": 46948.2,
+          "last_hour_min": 44567.3,
+          "last_hour_max": 46945.1,
+          "last_hour_mean": 45927.9,
+          "first_band_s": -1,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "empty",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 550.0,
+          "last_hour_max": 1032.6,
+          "last_hour_mean": 735.3,
+          "first_band_s": -1,
+          "doses": 1,
+          "min_interval_s": 999999,
+          "range_locked": 0
+        },
+        {
+          "scenario": "sensor_dropout",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 3416.2,
+          "last_hour_max": 13120.3,
+          "last_hour_mean": 7143.3,
+          "first_band_s": 744,
+          "doses": 104,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "contact_outage",
+          "peak_ppm": 49993.9,
+          "last_hour_min": 2122.0,
+          "last_hour_max": 7662.2,
+          "last_hour_mean": 4249.8,
+          "first_band_s": 744,
+          "doses": 85,
+          "min_interval_s": 70,
+          "range_locked": 0
+        }
+      ],
+      "parameter_ranges": {
+        "initial_gain_ppm_ms": [
+          35,
+          200
+        ],
+        "after_gain_ratio": [
+          0.2,
+          4
+        ],
+        "after_gain_ppm_ms": [
+          7,
+          800
+        ],
+        "leak_fraction_s": [
+          0.0002,
+          0.0008
+        ],
+        "delay_s": [
+          30,
+          70
+        ],
+        "mixing_s": [
+          2,
+          12
+        ],
+        "noise_ppm": [
+          0,
+          20
+        ],
+        "opening_dead_ms": [
+          0,
+          8
+        ]
+      },
+      "grid": {
+        "count": 2000,
+        "range_locks": 0,
+        "peak_above_51000": 329,
+        "last_hour_within_49000_51000": 40,
+        "not_reached_in_4h": 874
+      },
+      "worst": [
+        {
+          "scenario": "grid_1782_mode_2",
+          "peak_ppm": 58038.7,
+          "last_hour_min": 1402.9,
+          "last_hour_max": 8386.7,
+          "last_hour_mean": 3766.5,
+          "first_band_s": 724,
+          "doses": 107,
+          "min_interval_s": 62,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1705_mode_0",
+          "peak_ppm": 55177.5,
+          "last_hour_min": 2095.5,
+          "last_hour_max": 10371.4,
+          "last_hour_mean": 5071.7,
+          "first_band_s": 1260,
+          "doses": 95,
+          "min_interval_s": 72,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1515_mode_0",
+          "peak_ppm": 55033.9,
+          "last_hour_min": 32124.5,
+          "last_hour_max": 50924.0,
+          "last_hour_mean": 38689.1,
+          "first_band_s": 7424,
+          "doses": 103,
+          "min_interval_s": 72,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_285_mode_0",
+          "peak_ppm": 54764.5,
+          "last_hour_min": 592.8,
+          "last_hour_max": 3722.2,
+          "last_hour_mean": 1499.7,
+          "first_band_s": 938,
+          "doses": 148,
+          "min_interval_s": 46,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_989_mode_4",
+          "peak_ppm": 54706.2,
+          "last_hour_min": 3493.9,
+          "last_hour_max": 13853.0,
+          "last_hour_mean": 7448.7,
+          "first_band_s": 1372,
+          "doses": 78,
+          "min_interval_s": 88,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1750_mode_0",
+          "peak_ppm": 54602.0,
+          "last_hour_min": 1034.0,
+          "last_hour_max": 6434.1,
+          "last_hour_mean": 2797.3,
+          "first_band_s": 660,
+          "doses": 109,
+          "min_interval_s": 58,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_783_mode_3",
+          "peak_ppm": 54525.7,
+          "last_hour_min": 2511.8,
+          "last_hour_max": 11498.5,
+          "last_hour_mean": 5816.8,
+          "first_band_s": 1226,
+          "doses": 92,
+          "min_interval_s": 74,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_359_mode_4",
+          "peak_ppm": 54514.1,
+          "last_hour_min": 808.4,
+          "last_hour_max": 5307.1,
+          "last_hour_mean": 2210.0,
+          "first_band_s": 7264,
+          "doses": 94,
+          "min_interval_s": 72,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_750_mode_0",
+          "peak_ppm": 54334.8,
+          "last_hour_min": 30280.9,
+          "last_hour_max": 43810.7,
+          "last_hour_mean": 37478.7,
+          "first_band_s": 770,
+          "doses": 149,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_824_mode_4",
+          "peak_ppm": 54324.5,
+          "last_hour_min": 43652.9,
+          "last_hour_max": 47499.2,
+          "last_hour_mean": 45648.1,
+          "first_band_s": 7304,
+          "doses": 190,
+          "min_interval_s": 70,
+          "range_locked": 0
+        }
+      ],
+      "limits": "Stress failures are retained. Simulation cannot guarantee unknown cylinder flow, mixing changes or a stuck valve. A notified cylinder change resets learning; an unannounced abrupt pressure change is only observable after gas reaches the sensor."
+    },
+    {
+      "seed": 20261107,
+      "dead_time_max_ms": 8,
+      "scenario_count": 2018,
+      "simulated_hours": 8072,
+      "hashes": {
+        "temperatura.ino": "c4b6b0e421ba240a180ef2c5d4bc30a60db360b87302ae29c8f8fca347ac2f2e",
+        "firmware/incubadora/co2_dosing.h": "64460669150c4604025bb6a9772049f49767aa938cace566c4d87d4aff3b62d3",
+        "scripts/simulate_co2_control.py": "7fb533d892861b0b31f4694bdcbd7763e7402acee0a7a35d80664e4d1c728759",
+        "scripts/co2_scenarios.cpp": "a540d277400dde400cff84c95587d557b142d45a0791be017052f4b94b1d18f2",
+        "scripts/co2_firmware_harness.py": "d560b7c52e517000ff81ca7bb0226ac90293409ecb11d8804c075ce905711673"
+      },
+      "plant": {
+        "fitted_to": "Boot9 four-hour trace; last chronological quarter held out",
+        "gain_ppm_per_ms": 70.6179,
+        "leak_fraction_per_s": 0.0004,
+        "delay_s": 54,
+        "mixing_tau_s": 4,
+        "holdout_rmse_ppm": 838.0,
+        "physical_calibration": false,
+        "notes": "Approximate input/output fit, not isolated valve calibration. Random delay, dead time, pressure, noise and leakage are stress hypotheses. Pending plant gas continues after valve cutoff."
+      },
+      "named_scenarios": [
+        {
+          "scenario": "fitted_nominal",
+          "peak_ppm": 49964.8,
+          "last_hour_min": 48822.8,
+          "last_hour_max": 49953.2,
+          "last_hour_mean": 49457.8,
+          "first_band_s": 744,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "cold_2000",
+          "peak_ppm": 49986.6,
+          "last_hour_min": 48818.5,
+          "last_hour_max": 49951.9,
+          "last_hour_mean": 49454.7,
+          "first_band_s": 1094,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_30",
+          "peak_ppm": 50003.5,
+          "last_hour_min": 48683.5,
+          "last_hour_max": 49381.9,
+          "last_hour_mean": 49085.3,
+          "first_band_s": 384,
+          "doses": 325,
+          "min_interval_s": 44,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_70",
+          "peak_ppm": 49596.6,
+          "last_hour_min": 47979.8,
+          "last_hour_max": 49394.2,
+          "last_hour_mean": 48760.9,
+          "first_band_s": 1238,
+          "doses": 166,
+          "min_interval_s": 86,
+          "range_locked": 0
+        },
+        {
+          "scenario": "mixing_12",
+          "peak_ppm": 50155.0,
+          "last_hour_min": 49049.8,
+          "last_hour_max": 50045.2,
+          "last_hour_mean": 49647.1,
+          "first_band_s": 930,
+          "doses": 175,
+          "min_interval_s": 76,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_half",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 48863.8,
+          "last_hour_max": 49968.3,
+          "last_hour_mean": 49484.6,
+          "first_band_s": 744,
+          "doses": 205,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_double",
+          "peak_ppm": 51218.9,
+          "last_hour_min": 44219.8,
+          "last_hour_max": 47114.8,
+          "last_hour_mean": 45777.9,
+          "first_band_s": 744,
+          "doses": 192,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "depleting",
+          "peak_ppm": 49280.9,
+          "last_hour_min": 41946.0,
+          "last_hour_max": 49140.4,
+          "last_hour_mean": 46044.2,
+          "first_band_s": 9074,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "notified_swap",
+          "peak_ppm": 53912.6,
+          "last_hour_min": 44247.2,
+          "last_hour_max": 47186.8,
+          "last_hour_mean": 45844.4,
+          "first_band_s": 740,
+          "doses": 190,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "door",
+          "peak_ppm": 49996.1,
+          "last_hour_min": 48856.0,
+          "last_hour_max": 49993.0,
+          "last_hour_mean": 49492.4,
+          "first_band_s": 744,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "noise_20",
+          "peak_ppm": 49958.2,
+          "last_hour_min": 48286.2,
+          "last_hour_max": 49768.1,
+          "last_hour_mean": 49059.8,
+          "first_band_s": 940,
+          "doses": 196,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "dead_7_hypothesis",
+          "peak_ppm": 50059.9,
+          "last_hour_min": 48791.6,
+          "last_hour_max": 50034.0,
+          "last_hour_mean": 49488.6,
+          "first_band_s": 534,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "high_flow",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 23649.1,
+          "last_hour_max": 43044.7,
+          "last_hour_mean": 32977.5,
+          "first_band_s": -1,
+          "doses": 122,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "observed_higher_loss",
+          "peak_ppm": 46567.9,
+          "last_hour_min": 44236.2,
+          "last_hour_max": 46526.3,
+          "last_hour_mean": 45465.5,
+          "first_band_s": -1,
+          "doses": 204,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "soft_opening_high_loss",
+          "peak_ppm": 46948.2,
+          "last_hour_min": 44567.3,
+          "last_hour_max": 46945.1,
+          "last_hour_mean": 45927.9,
+          "first_band_s": -1,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "empty",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 550.0,
+          "last_hour_max": 1032.6,
+          "last_hour_mean": 735.3,
+          "first_band_s": -1,
+          "doses": 1,
+          "min_interval_s": 999999,
+          "range_locked": 0
+        },
+        {
+          "scenario": "sensor_dropout",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 3416.2,
+          "last_hour_max": 13120.3,
+          "last_hour_mean": 7143.3,
+          "first_band_s": 744,
+          "doses": 104,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "contact_outage",
+          "peak_ppm": 49993.9,
+          "last_hour_min": 2122.0,
+          "last_hour_max": 7662.2,
+          "last_hour_mean": 4249.8,
+          "first_band_s": 744,
+          "doses": 85,
+          "min_interval_s": 70,
+          "range_locked": 0
+        }
+      ],
+      "parameter_ranges": {
+        "initial_gain_ppm_ms": [
+          35,
+          200
+        ],
+        "after_gain_ratio": [
+          0.2,
+          4
+        ],
+        "after_gain_ppm_ms": [
+          7,
+          800
+        ],
+        "leak_fraction_s": [
+          0.0002,
+          0.0008
+        ],
+        "delay_s": [
+          30,
+          70
+        ],
+        "mixing_s": [
+          2,
+          12
+        ],
+        "noise_ppm": [
+          0,
+          20
+        ],
+        "opening_dead_ms": [
+          0,
+          8
+        ]
+      },
+      "grid": {
+        "count": 2000,
+        "range_locks": 0,
+        "peak_above_51000": 298,
+        "last_hour_within_49000_51000": 42,
+        "not_reached_in_4h": 888
+      },
+      "worst": [
+        {
+          "scenario": "grid_313_mode_3",
+          "peak_ppm": 55571.7,
+          "last_hour_min": 727.7,
+          "last_hour_max": 4819.4,
+          "last_hour_mean": 1973.2,
+          "first_band_s": 1240,
+          "doses": 114,
+          "min_interval_s": 58,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1559_mode_4",
+          "peak_ppm": 55299.8,
+          "last_hour_min": 744.8,
+          "last_hour_max": 4988.4,
+          "last_hour_mean": 2039.9,
+          "first_band_s": 7300,
+          "doses": 102,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_359_mode_4",
+          "peak_ppm": 55275.3,
+          "last_hour_min": 28742.3,
+          "last_hour_max": 40899.6,
+          "last_hour_mean": 35113.7,
+          "first_band_s": 1484,
+          "doses": 127,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_89_mode_4",
+          "peak_ppm": 55207.9,
+          "last_hour_min": 661.9,
+          "last_hour_max": 4406.7,
+          "last_hour_mean": 1773.3,
+          "first_band_s": 1358,
+          "doses": 116,
+          "min_interval_s": 58,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_13_mode_3",
+          "peak_ppm": 55140.2,
+          "last_hour_min": 38800.3,
+          "last_hour_max": 45374.7,
+          "last_hour_mean": 42387.1,
+          "first_band_s": 1334,
+          "doses": 139,
+          "min_interval_s": 88,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_449_mode_4",
+          "peak_ppm": 55109.5,
+          "last_hour_min": 1184.1,
+          "last_hour_max": 7117.4,
+          "last_hour_mean": 3162.9,
+          "first_band_s": 1064,
+          "doses": 112,
+          "min_interval_s": 64,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1138_mode_3",
+          "peak_ppm": 54980.3,
+          "last_hour_min": 1804.1,
+          "last_hour_max": 9442.0,
+          "last_hour_mean": 4501.5,
+          "first_band_s": 7300,
+          "doses": 83,
+          "min_interval_s": 80,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_383_mode_3",
+          "peak_ppm": 54879.1,
+          "last_hour_min": 897.6,
+          "last_hour_max": 5889.1,
+          "last_hour_mean": 2479.7,
+          "first_band_s": 1192,
+          "doses": 117,
+          "min_interval_s": 52,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_638_mode_3",
+          "peak_ppm": 54846.2,
+          "last_hour_min": 2022.6,
+          "last_hour_max": 10300.6,
+          "last_hour_mean": 4977.8,
+          "first_band_s": 940,
+          "doses": 82,
+          "min_interval_s": 80,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1155_mode_0",
+          "peak_ppm": 54806.2,
+          "last_hour_min": 843.4,
+          "last_hour_max": 5558.3,
+          "last_hour_mean": 2321.9,
+          "first_band_s": 7306,
+          "doses": 99,
+          "min_interval_s": 72,
+          "range_locked": 0
+        }
+      ],
+      "limits": "Stress failures are retained. Simulation cannot guarantee unknown cylinder flow, mixing changes or a stuck valve. A notified cylinder change resets learning; an unannounced abrupt pressure change is only observable after gas reaches the sensor."
+    },
+    {
+      "seed": 20261108,
+      "dead_time_max_ms": 8,
+      "scenario_count": 2018,
+      "simulated_hours": 8072,
+      "hashes": {
+        "temperatura.ino": "c4b6b0e421ba240a180ef2c5d4bc30a60db360b87302ae29c8f8fca347ac2f2e",
+        "firmware/incubadora/co2_dosing.h": "64460669150c4604025bb6a9772049f49767aa938cace566c4d87d4aff3b62d3",
+        "scripts/simulate_co2_control.py": "7fb533d892861b0b31f4694bdcbd7763e7402acee0a7a35d80664e4d1c728759",
+        "scripts/co2_scenarios.cpp": "a540d277400dde400cff84c95587d557b142d45a0791be017052f4b94b1d18f2",
+        "scripts/co2_firmware_harness.py": "d560b7c52e517000ff81ca7bb0226ac90293409ecb11d8804c075ce905711673"
+      },
+      "plant": {
+        "fitted_to": "Boot9 four-hour trace; last chronological quarter held out",
+        "gain_ppm_per_ms": 70.6179,
+        "leak_fraction_per_s": 0.0004,
+        "delay_s": 54,
+        "mixing_tau_s": 4,
+        "holdout_rmse_ppm": 838.0,
+        "physical_calibration": false,
+        "notes": "Approximate input/output fit, not isolated valve calibration. Random delay, dead time, pressure, noise and leakage are stress hypotheses. Pending plant gas continues after valve cutoff."
+      },
+      "named_scenarios": [
+        {
+          "scenario": "fitted_nominal",
+          "peak_ppm": 49964.8,
+          "last_hour_min": 48822.8,
+          "last_hour_max": 49953.2,
+          "last_hour_mean": 49457.8,
+          "first_band_s": 744,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "cold_2000",
+          "peak_ppm": 49986.6,
+          "last_hour_min": 48818.5,
+          "last_hour_max": 49951.9,
+          "last_hour_mean": 49454.7,
+          "first_band_s": 1094,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_30",
+          "peak_ppm": 50003.5,
+          "last_hour_min": 48683.5,
+          "last_hour_max": 49381.9,
+          "last_hour_mean": 49085.3,
+          "first_band_s": 384,
+          "doses": 325,
+          "min_interval_s": 44,
+          "range_locked": 0
+        },
+        {
+          "scenario": "delay_70",
+          "peak_ppm": 49596.6,
+          "last_hour_min": 47979.8,
+          "last_hour_max": 49394.2,
+          "last_hour_mean": 48760.9,
+          "first_band_s": 1238,
+          "doses": 166,
+          "min_interval_s": 86,
+          "range_locked": 0
+        },
+        {
+          "scenario": "mixing_12",
+          "peak_ppm": 50155.0,
+          "last_hour_min": 49049.8,
+          "last_hour_max": 50045.2,
+          "last_hour_mean": 49647.1,
+          "first_band_s": 930,
+          "doses": 175,
+          "min_interval_s": 76,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_half",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 48863.8,
+          "last_hour_max": 49968.3,
+          "last_hour_mean": 49484.6,
+          "first_band_s": 744,
+          "doses": 205,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "pressure_double",
+          "peak_ppm": 51218.9,
+          "last_hour_min": 44219.8,
+          "last_hour_max": 47114.8,
+          "last_hour_mean": 45777.9,
+          "first_band_s": 744,
+          "doses": 192,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "depleting",
+          "peak_ppm": 49280.9,
+          "last_hour_min": 41946.0,
+          "last_hour_max": 49140.4,
+          "last_hour_mean": 46044.2,
+          "first_band_s": 9074,
+          "doses": 204,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "notified_swap",
+          "peak_ppm": 53912.6,
+          "last_hour_min": 44247.2,
+          "last_hour_max": 47186.8,
+          "last_hour_mean": 45844.4,
+          "first_band_s": 740,
+          "doses": 190,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "door",
+          "peak_ppm": 49996.1,
+          "last_hour_min": 48856.0,
+          "last_hour_max": 49993.0,
+          "last_hour_mean": 49492.4,
+          "first_band_s": 744,
+          "doses": 203,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "noise_20",
+          "peak_ppm": 49958.2,
+          "last_hour_min": 48286.2,
+          "last_hour_max": 49768.1,
+          "last_hour_mean": 49059.8,
+          "first_band_s": 940,
+          "doses": 196,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "dead_7_hypothesis",
+          "peak_ppm": 50059.9,
+          "last_hour_min": 48791.6,
+          "last_hour_max": 50034.0,
+          "last_hour_mean": 49488.6,
+          "first_band_s": 534,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "high_flow",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 23649.1,
+          "last_hour_max": 43044.7,
+          "last_hour_mean": 32977.5,
+          "first_band_s": -1,
+          "doses": 122,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "observed_higher_loss",
+          "peak_ppm": 46567.9,
+          "last_hour_min": 44236.2,
+          "last_hour_max": 46526.3,
+          "last_hour_mean": 45465.5,
+          "first_band_s": -1,
+          "doses": 204,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "soft_opening_high_loss",
+          "peak_ppm": 46948.2,
+          "last_hour_min": 44567.3,
+          "last_hour_max": 46945.1,
+          "last_hour_mean": 45927.9,
+          "first_band_s": -1,
+          "doses": 205,
+          "min_interval_s": 68,
+          "range_locked": 0
+        },
+        {
+          "scenario": "empty",
+          "peak_ppm": 48000.0,
+          "last_hour_min": 550.0,
+          "last_hour_max": 1032.6,
+          "last_hour_mean": 735.3,
+          "first_band_s": -1,
+          "doses": 1,
+          "min_interval_s": 999999,
+          "range_locked": 0
+        },
+        {
+          "scenario": "sensor_dropout",
+          "peak_ppm": 49996.0,
+          "last_hour_min": 3416.2,
+          "last_hour_max": 13120.3,
+          "last_hour_mean": 7143.3,
+          "first_band_s": 744,
+          "doses": 104,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "contact_outage",
+          "peak_ppm": 49993.9,
+          "last_hour_min": 2122.0,
+          "last_hour_max": 7662.2,
+          "last_hour_mean": 4249.8,
+          "first_band_s": 744,
+          "doses": 85,
+          "min_interval_s": 70,
+          "range_locked": 0
+        }
+      ],
+      "parameter_ranges": {
+        "initial_gain_ppm_ms": [
+          35,
+          200
+        ],
+        "after_gain_ratio": [
+          0.2,
+          4
+        ],
+        "after_gain_ppm_ms": [
+          7,
+          800
+        ],
+        "leak_fraction_s": [
+          0.0002,
+          0.0008
+        ],
+        "delay_s": [
+          30,
+          70
+        ],
+        "mixing_s": [
+          2,
+          12
+        ],
+        "noise_ppm": [
+          0,
+          20
+        ],
+        "opening_dead_ms": [
+          0,
+          8
+        ]
+      },
+      "grid": {
+        "count": 2000,
+        "range_locks": 0,
+        "peak_above_51000": 342,
+        "last_hour_within_49000_51000": 37,
+        "not_reached_in_4h": 886
+      },
+      "worst": [
+        {
+          "scenario": "grid_1995_mode_0",
+          "peak_ppm": 55818.1,
+          "last_hour_min": 22666.6,
+          "last_hour_max": 41030.2,
+          "last_hour_mean": 31937.1,
+          "first_band_s": 3514,
+          "doses": 151,
+          "min_interval_s": 66,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_610_mode_0",
+          "peak_ppm": 55760.9,
+          "last_hour_min": 25896.3,
+          "last_hour_max": 50956.9,
+          "last_hour_mean": 40371.0,
+          "first_band_s": 678,
+          "doses": 103,
+          "min_interval_s": 76,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_192_mode_2",
+          "peak_ppm": 55424.8,
+          "last_hour_min": 2601.1,
+          "last_hour_max": 11900.5,
+          "last_hour_mean": 6025.0,
+          "first_band_s": 590,
+          "doses": 92,
+          "min_interval_s": 72,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_450_mode_0",
+          "peak_ppm": 55172.5,
+          "last_hour_min": 744.4,
+          "last_hour_max": 5029.1,
+          "last_hour_mean": 2049.4,
+          "first_band_s": 7306,
+          "doses": 109,
+          "min_interval_s": 64,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1063_mode_3",
+          "peak_ppm": 55000.9,
+          "last_hour_min": 9879.5,
+          "last_hour_max": 23575.6,
+          "last_hour_mean": 15721.1,
+          "first_band_s": 1480,
+          "doses": 72,
+          "min_interval_s": 88,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_769_mode_4",
+          "peak_ppm": 54881.1,
+          "last_hour_min": 1459.5,
+          "last_hour_max": 8472.5,
+          "last_hour_mean": 3854.1,
+          "first_band_s": 7354,
+          "doses": 81,
+          "min_interval_s": 88,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1385_mode_0",
+          "peak_ppm": 54768.1,
+          "last_hour_min": 960.0,
+          "last_hour_max": 6227.1,
+          "last_hour_mean": 2649.2,
+          "first_band_s": 1322,
+          "doses": 101,
+          "min_interval_s": 70,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_370_mode_0",
+          "peak_ppm": 54746.0,
+          "last_hour_min": 44320.3,
+          "last_hour_max": 48670.0,
+          "last_hour_mean": 46537.0,
+          "first_band_s": 904,
+          "doses": 254,
+          "min_interval_s": 48,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1093_mode_3",
+          "peak_ppm": 54644.3,
+          "last_hour_min": 1257.0,
+          "last_hour_max": 7711.3,
+          "last_hour_mean": 3411.4,
+          "first_band_s": 7310,
+          "doses": 88,
+          "min_interval_s": 78,
+          "range_locked": 0
+        },
+        {
+          "scenario": "grid_1578_mode_3",
+          "peak_ppm": 54608.5,
+          "last_hour_min": 3522.2,
+          "last_hour_max": 13929.1,
+          "last_hour_mean": 7498.1,
+          "first_band_s": 1170,
+          "doses": 76,
+          "min_interval_s": 86,
+          "range_locked": 0
+        }
+      ],
+      "limits": "Stress failures are retained. Simulation cannot guarantee unknown cylinder flow, mixing changes or a stuck valve. A notified cylinder change resets learning; an unannounced abrupt pressure change is only observable after gas reaches the sensor."
+    }
+  ],
+  "tests": {
+    "numerical_histories": 20000,
+    "dashboard_tests": 9,
+    "door_heater_loss_display": "passed",
+    "real_trace": "228ms replacement blocked while previous response unresolved; raw19ms becomes10ms under safety envelope only after resolving response"
+  },
+  "upload": {
+    "id": "upload:f9b0566279a94568a7372cc49a7038c5",
+    "t": 1793964669.3794932,
+    "completed_at": 1793964681.5924394,
+    "kind": "firmware",
+    "label": "Firmware enviado e verificado · fb77319c",
+    "raw": "Envio iniciado 2026-11-06 12:31:09; verificação OK",
+    "source": "upload",
+    "session": null,
+    "duration_ms": 12213,
+    "estimated": false,
+    "hashes": {
+      "temperatura.ino": "c4b6b0e421ba240a180ef2c5d4bc30a60db360b87302ae29c8f8fca347ac2f2e",
+      "firmware/incubadora/co2_dosing.h": "64460669150c4604025bb6a9772049f49767aa938cace566c4d87d4aff3b62d3",
+      ".arduino-build/incubadora.ino.hex": "fb77319ce92ba9103f214e45a49b9fff462a46707e15ce07c41e835f80726ee4"
+    },
+    "exit_code": 0
+  },
+  "limits": "No automatic activation. No physical calibration of upper gain envelope. No claim of stable5%. Pending dose without useful rise remains blocked instead of repeating blindly.",
+  "post_upload": {
+    "co2_on": 0,
+    "heater_on": 0,
+    "range_lock": 0
+  }
+}

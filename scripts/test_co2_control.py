@@ -12,17 +12,18 @@ code=harness()+r'''
 int main(){
  resetFirmware();auto &c=co2DoseModel;
  c.update(100000,48050,true);c.update(110000,48025,true);c.update(120000,48000,true);CO2i=48000;
- assert(firmwarePulse(119999)==0);assert(firmwarePulse(120000)==18);
+ assert(firmwarePulse(119999)==0);assert(firmwarePulse(120000)==13);
  assert(firmwarePulse(120000,false)==0);assert(firmwarePulse(120000,true,false)==0);
  assert(firmwarePulse(120000,true,true,1)==0);assert(firmwarePulse(120000,true,true,0,true)==0);
  // The exact requested proportion, with only mechanical/growth bounds.
  resetFirmware();c.previousValid=true;c.trained=true;c.referenceMs=20;c.referenceRise=2000;
  c.lastPpm=49000;c.falling=2;c.lossPpmPerSec=0;
- assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==40); // Exact ratio; no percentage ceiling.
+ assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==40); // No populated history: raw proportion; explicit bounds tested below.
  c.lastPpm=49000;c.referenceRise=4000;assert(c.pulse(120000)==5);
  c.falling=1;assert(!c.ready(120000));c.falling=2;assert(c.ready(120000));
  recordAutomatic(10,120000);assert(!firmwareReady(139999));
- c.falling=2;c.observing=true;assert(firmwareReady(140010)); // No additional observation pause.
+ c.falling=2;c.observing=true;assert(!firmwareReady(140010)); // No stacking an unresolved response.
+ c.observing=false;assert(firmwareReady(140010)); // No extra timed pause once resolved.
  // A flat summit replenishes measured loss at the normal 20 s cadence.
  c.lastPpm=50000;c.falling=0;c.flat=2;c.lossPpmPerSec=20;c.referenceMs=20;c.referenceRise=2000;
  assert(c.pulse(140010)==5);c.lossPpmPerSec=0;assert(c.pulse(140010)==0);
@@ -52,13 +53,14 @@ int main(){
  // A flat dose with no measurable rise does not invent a new gain.
  c.lastPpm=50000;auto rise=c.referenceRise;c.record(5,230000);assert(c.observing);
  c.update(232000,50000,true);c.update(234000,50000,true);assert(c.referenceRise==rise);
- c.reset(true);assert(!c.trained&&c.referenceMs==20&&c.hasSent);
+ c.reset(true);assert(c.observing&&c.trained&&c.hasSent); // Pending gas survives reset requests.
+ c.observing=false;c.reset(true);assert(!c.trained&&c.referenceMs==20&&c.hasSent);
  // Plateau recognition has no49000/51000 gate; the separate upper cut still prevents gas.
  resetFirmware();c.previousValid=true;c.flat=2;c.lastPpm=2000;assert(c.ready(120000));
  c.lastPpm=52000;assert(c.ready(120000));assert(c.pulse(120000)==0);
  // A large proportional result is not silently converted to a10% increment.
  c.trained=true;c.referenceMs=40;c.referenceRise=2000;c.lastPpm=40000;c.lossPpmPerSec=0;
- assert(c.pulse(120000)==200);
+ assert(c.pulse(120000)==95); // Proportion200ms bounded by available headroom /200ppm per ms.
  // No response cannot divide by zero; two declines must be in the same 20 s window.
  resetFirmware();c.update(100000,48000,true);c.update(102000,47900,true);
  assert(c.falling==1);c.update(130000,47800,true);assert(c.falling==0);
@@ -79,7 +81,7 @@ int main(){
   c.lossPpmPerSec=0;c.lastPpm=49000;c.flat=2;c.falling=0;c.observing=false;
   if(n==1)assert(c.pulse(stepTime+20000)==40); //20ms→500ppm, need1000→40ms.
   if(n==2)assert(c.pulse(stepTime+20000)==27); //gain averaged over two stairs.
-  if(n==5)assert(c.pulse(stepTime+20000)==14);
+  if(n==5)assert(c.pulse(stepTime+20000)==11); // Raw14 clipped by the independently calculated safety envelope.
   if(n==6)assert(c.pulse(stepTime+20000)==10); //five newest, first is discarded.
  }
  c.reset();assert(c.stepCount==0&&!c.trained);
@@ -91,7 +93,17 @@ int main(){
  const Reading replay[]={ REPLAY_ROWS };
  for(const auto &row:replay)c.update(row.at,row.ppm,row.valid);
  assert(c.mass==69&&c.stepCount==1&&c.referenceMs==25&&c.referenceRise==4744);
- assert(c.pulse(258411)==19); //Not228ms; keep the measured useful reference.
+ assert(c.pulse(258411)==0); //No replacement dose until the outstanding response is resolved.
+ c.observing=false;assert(c.pulse(258411)==10); //Raw19 clipped by the high-flow/dead-time envelope.
+ // Delayed arrival must not be replaced by a falling or flat pre-response curve.
+ resetFirmware();c.update(120000,30000,true);c.record(20,120000);
+ for(uint32_t t=122000;t<=172000;t+=2000){c.update(t,30000-(t-120000)/100,true);assert(c.pulse(t)==0);}
+ c.update(174000,30000,true);c.update(176000,31000,true);
+ c.update(178000,32000,true);c.update(180000,32001,true);c.update(182000,32002,true);
+ assert(c.trained&&!c.observing&&c.responseMs==62000);assert(c.pulse(182000)>0);
+ c.lossPpmPerSec=10;c.lastPpm=49000;c.referenceMs=20;c.referenceRise=500;
+ for(auto &step:c.steps)step={0,0};c.stepCount=0;
+ assert(c.pulse(182000)==50); //Raw65ms, envelope50ms; no unbounded loss compensation.
  std::mt19937 rng(20261106);
  for(int history=0;history<20000;history++){
   resetFirmware();uint32_t t=UINT32_MAX-50000;
@@ -110,4 +122,4 @@ with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
     cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2: rolling1..5 stairs, real20→228ms replay corrected to19ms, proportional dose, plateau, rollover and20000 histories passed')
+print('CO2: rolling1..5 stairs, unresolved real228ms replay blocked, independent safety bound, learned response time, proportional dose, plateau, rollover and20000 histories passed')

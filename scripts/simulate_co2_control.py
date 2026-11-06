@@ -6,6 +6,7 @@ from co2_firmware_harness import harness, ROOT
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--report',type=Path)
 p.add_argument('--explore',action='store_true',help='Keep all scenario results, including target/safety failures.')
+p.add_argument('--require-no-excess',action='store_true',help='Fail if any scenario reaches60000ppm, including delayed gas after cutoff.')
 p.add_argument('--seed',type=int,default=20261106)
 p.add_argument('--dead-max-ms',type=float,default=8,help='Hypothetical opening dead time; 0 gives the linear plant supported by the trace fit.')
 a=p.parse_args()
@@ -35,6 +36,7 @@ report={
  'worst':sorted(grid,key=lambda r:r['peak_ppm'],reverse=True)[:10],
  'limits':'Stress failures are retained. Simulation cannot guarantee unknown cylinder flow, mixing changes or a stuck valve. A notified cylinder change resets learning; an unannounced abrupt pressure change is only observable after gas reaches the sensor.'}
 assert all(r['min_interval_s']>=20 for r in rows)
+if a.require_no_excess:assert all(r['peak_ppm']<60000 and not r['range_locked'] for r in rows),sorted(rows,key=lambda r:r['peak_ppm'],reverse=True)[:1]
 for key in ('fitted_nominal','cold_2000','pressure_half','depleting','door','noise_20'):
     r=next(r for r in named if r['scenario']==key)
     if not a.explore:assert r['range_locked']==0 and r['peak_ppm']<52000,r

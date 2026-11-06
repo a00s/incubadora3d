@@ -1032,14 +1032,12 @@ void printStatus(unsigned long now) {
   Serial.print(F(",co2_range_lock=")); Serial.print(co2RangeWrapLatched ? 1 : 0);
   Serial.print(F(",boot_count=")); Serial.print(eeprom_contador_int);
   Serial.print(F(",temp_c=")); printFixed(chamberTemperatureC, 2);
-  Serial.print(F(",humidity_pct=")); printFixed(NAN, 1);
   Serial.print(F(",internal_temp_c=")); printFixed(dhtint.readTemperature(), 1);
   Serial.print(F(",co2_enabled=")); Serial.print(botao_co2_onoff);
   Serial.print(F(",heater_enabled=")); Serial.print(botao_aquecedor_onoff);
   Serial.print(F(",fan_on=")); Serial.print(ventilador_status);
   Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
   Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
-  Serial.print(F(",pump_wait_cycles=")); Serial.print(contador_pomp);
   Serial.print(F(",loss_x10=")); Serial.print(lossCm3HourX10);
   Serial.print(F(",loss_ok=")); Serial.print(displayLossStable == 1 ? 1 : 0);
   Serial.println();

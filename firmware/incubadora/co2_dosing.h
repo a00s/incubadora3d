@@ -7,7 +7,7 @@ struct Co2DoseModel {
   uint32_t referenceRise = 0;
   struct Step { uint16_t ms, rise; } steps[5] = {};
   uint8_t stepCount = 0, stepHead = 0;
-  int32_t lastNeed = 0;
+  uint32_t responseMs = 20000;
   uint16_t lastMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
@@ -17,6 +17,8 @@ struct Co2DoseModel {
   bool previousValid = false, hasSent = false, trained = false, observing = false;
 
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
+    // A reset request must not erase gas already commanded and still arriving.
+    if (preserve && observing) { previousValid = false; falling = flat = 0; return; }
     uint32_t oldAt = sendAt;
     bool sent = hasSent;
     float loss = lossPpmPerSec;
@@ -60,6 +62,8 @@ struct Co2DoseModel {
         referenceRise += slot.rise;
         if (++stepHead == 5) stepHead = 0;
         if (stepCount < 5) stepCount++;
+        responseMs = peakAt - sendAt;
+        if (responseMs < 20000) responseMs = 20000;
         trained = true;
         observing = false;
       }
@@ -70,12 +74,12 @@ struct Co2DoseModel {
 
   bool ready(uint32_t now) const {
     bool plateau = flat >= 2 && lastPpm > 0;
-    return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
+    return previousValid && !observing && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
     if (!ready(now) || lastPpm >= 51000 || lastPpm <= 0) return 0;
-    int32_t needed = 50000L - lastPpm + lossPpmPerSec * 20;
+    int32_t needed = 50000L - lastPpm + lossPpmPerSec * (responseMs / 1000.0f);
     if (needed <= 0) return 0;
     uint32_t duration;
     if (trained && referenceRise) {
@@ -83,14 +87,22 @@ struct Co2DoseModel {
       // available1..5 stairs. No five-sample wait and no percentage growth cap.
       duration = ((uint32_t)referenceMs * needed + referenceRise - 1) / referenceRise;
     } else {
-      // No useful response yet: increase the short probe gradually, without
-      // inventing a gain or dividing by zero during initial chamber filling.
-      duration = hasSent && lastNeed > 0
-        ? ((uint32_t)lastMs * needed + lastNeed - 1) / lastNeed : 20;
-      uint32_t safe = (57000L - lastPpm) / 500;
-      if (safe > 100) safe = 100;
-      if (duration > safe) duration = safe;
+      duration = 20; // The only seed; unresolved probes are never stacked.
     }
+    // Bound one unresolved dose against the tested high-flow envelope. This
+    // is an independent safety bound, never a learned estimate of valve gain.
+    uint32_t upperGain = 800;
+    if (trained) {
+      upperGain = 200;
+      for (uint8_t i = 0; i < stepCount; i++) {
+        uint32_t bound = steps[i].ms <= 8 ? 800 :
+          (4UL * steps[i].rise + steps[i].ms - 9) / (steps[i].ms - 8);
+        if (bound > upperGain) upperGain = bound;
+      }
+    }
+    uint32_t headroomMs = (59000L - lastPpm) / upperGain;
+    if (headroomMs < 5) return 0;
+    if (duration > headroomMs) duration = headroomMs;
     if (duration > 1000) duration = 1000;
     if (duration < 5) duration = 5;
     return duration;
@@ -98,7 +110,6 @@ struct Co2DoseModel {
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
     lastMs = ms;
-    lastNeed = 50000L - lastPpm + lossPpmPerSec * 20;
     valley = peak = lastPpm; valleyAt = peakAt = now;
     mass = 0;
     falling = flat = 0;
