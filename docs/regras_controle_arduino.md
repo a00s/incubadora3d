@@ -51,7 +51,7 @@ definidos explicitamente pelo usuário.
 | Calibração 20/40/60/80… ms | Enquanto não existe ganho útil. Pedido pelo usuário. |
 | Aumento máximo 20 ms | Aplica-se também às doses calculadas após aprender; reduções podem ser maiores. Pedido pelo usuário. |
 | Abertura mínima 5 ms e máxima 100 ms | Teto de 100 ms pedido explicitamente pelo usuário. Vale para calibração e doses aprendidas. Não é declaração de limite físico da válvula. O primeiro código importado usava 1–60 ms; o teto de 1.000 ms das revisões foi removido. |
-| Compensação de perda | A antiga perda estimada×tempo de resposta foi removida. Reposição experimental: ritmo de ms comandados nas últimas5 aberturas, convertido ao equivalente de20s pelo ganho medido, limitado a1000ppm; somado ao déficit e descontado o gás previsto em trânsito. |
+| Compensação de perda | A antiga perda estimada×tempo de resposta foi removida. Reposição experimental: ritmo de ms comandados nas últimas5 aberturas, convertido pelo ganho medido ao tempo de chegada observado (mínimo20s e nunca além da duração do histórico disponível), limitado a500ppm; somado ao déficit e descontado o gás previsto em trânsito. |
 | Estimativa da perda | O estimador filtrado80/20 foi removido do modelo de dose. A estatística independente de perdas do visor permanece. Reposição usa o ritmo dos comandos, que não é uma medição física isolada de perda. |
 | Religar CO₂ | Preserva o histórico de ganho e os tempos de resposta já medidos. Limpa somente atribuição inacabada e tendência. Uma leitura inválida faz o mesmo; não transforma ON/OFF em reset de processador. |
 | Leitura inválida | Impede injeção e limpa tendência/atribuição inacabada, preservando ganhos úteis. A habilitação pode continuar ligada. |

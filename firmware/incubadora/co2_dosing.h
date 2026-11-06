@@ -10,12 +10,11 @@ struct Co2DoseModel {
   struct Step { uint16_t ms; uint16_t rise; } steps[5] = {};
   uint8_t stepCount = 0, stepHead = 0;
   uint32_t responseMs = 20000;
-  uint16_t lastMs = 0;
   uint32_t arrivalMs = 0;
   struct Pending { uint32_t at; uint8_t ms; bool learned; } pending[5] = {};
   uint8_t pendingHead = 0;
   uint8_t lastProbeMs = 0;
-  int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
+  int32_t lastPpm = 0, valley = 0, peak = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
   uint8_t flat = 0;
   uint8_t falling = 0;
@@ -24,7 +23,7 @@ struct Co2DoseModel {
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
     if (preserve) {
       previousValid = false; falling = flat = 0;
-      observing = false; valley = peak = mass = 0;
+      observing = false; valley = peak = 0;
       for (uint8_t i = 0; i < 5; ++i) pending[i] = Pending();
       pendingHead = 0;
     } else *this = Co2DoseModel();
@@ -48,7 +47,7 @@ struct Co2DoseModel {
       // rise from its actual valley, even if the peak stays below command ppm.
       if (ppm < valley) { valley = peak = ppm; valleyAt = peakAt = now; }
       if (ppm > peak) { peak = ppm; peakAt = now; }
-      mass = peak - valley;
+      int32_t mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
         int32_t delivered = mass; // Match the observed stair to the oldest unanswered opening.
         uint8_t owner = 5;
@@ -93,7 +92,7 @@ struct Co2DoseModel {
         trained = true;
         observing = false;
         for (uint8_t i = 0; i < 5; ++i) if (pending[i].ms && !pending[i].learned) observing = true;
-        valley = peak = ppm; valleyAt = peakAt = now; mass = 0;
+        valley = peak = ppm; valleyAt = peakAt = now;
       }
     }
     previousValid = true;
@@ -116,9 +115,13 @@ struct Co2DoseModel {
         uint32_t age = now - pending[i].at;
         if (age > oldest) oldest = age;
       }
-      uint32_t maintenanceMs = totalMs * 20000UL / oldest;
+      uint32_t horizonSeconds = arrivalMs / 1000UL;
+      if (horizonSeconds < 20) horizonSeconds = 20;
+      uint32_t historySeconds = oldest / 1000UL;
+      if (horizonSeconds > historySeconds) horizonSeconds = historySeconds;
+      uint32_t maintenanceMs = totalMs * horizonSeconds / historySeconds;
       int32_t maintenance = maintenanceMs * referenceRise / referenceMs;
-      if (maintenance > 1000) maintenance = 1000;
+      if (maintenance > 500) maintenance = 500;
       needed += maintenance;
     }
     if (trained && referenceRise) {
@@ -156,10 +159,8 @@ struct Co2DoseModel {
     pending[pendingHead].learned = false;
     if (++pendingHead == 5) pendingHead = 0;
     lastProbeMs = ms;
-    lastMs = ms;
     if (!observing) {
       valley = peak = lastPpm; valleyAt = peakAt = now;
-      mass = 0;
     }
     falling = flat = 0;
     sendAt = now;

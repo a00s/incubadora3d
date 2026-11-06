@@ -73,6 +73,20 @@ int main() {
   c.reset();c.update(120000,5700,true);c.record(20,120000);
   c.update(140000,5769,true);c.update(142000,5769,true);c.update(144000,5769,true);
   assert(!c.trained&&c.stepCount==0);
+  // Maintenance must cover measured arrival, not just the minimum pulse interval.
+  c.reset();c.previousValid=true;c.flat=2;c.lastPpm=50000;
+  c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
+  c.arrivalMs=35000;c.responseMs=65000;
+  for(int i=0;i<5;i++){c.pending[i].ms=20;c.pending[i].at=60000+i*20000;}
+  assert(c.pulse(220000)==20); //35s horizon, limited to500ppm ->20ms.
+  c.arrivalMs=0;assert(c.pulse(220000)==12); //20s minimum still applies.
+  c.arrivalMs=35000;c.lastPpm=50500;assert(c.pulse(220000)==0);
+  c.lastPpm=50900;assert(c.pulse(220000)==0);
+  // Very old response timings must not multiply beyond available command history.
+  c.lastPpm=50000;c.arrivalMs=0xffffffffUL;c.responseMs=20000;
+  assert(c.pulse(220000)==20); //500ppm cap, bounded32bit arithmetic.
+  c.referenceMs=2500;c.referenceRise=327675;c.lastPpm=49000;
+  assert(c.pulse(220000)<=40); //Largest five-stair history and+20 cap.
   // Counter wrap uses unsigned elapsed time, without expiring a recent dose.
   c.reset();c.previousValid=true;c.flat=2;c.lastPpm=50000;
   c.trained=true;c.referenceMs=20;c.referenceRise=500;c.responseMs=60000;c.arrivalMs=40000;
