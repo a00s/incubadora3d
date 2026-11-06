@@ -1,3 +1,27 @@
+## ATUAL — enviado antes de retirar USB, 2026-11-06 22:27
+
+Usuário autorizou explicitamente último envio antes de mover o computador.
+ENVIADO/VERIFICADO76562872f514449345db625edc7e9b3323b1f750ad2557c8bcfaad2ac84c892f,
+exit0 às22:27:34; header59447d8e2800540108d2bea731227c629d67916203ab024cdb319ca563ce3a03.
+Única alteração de controle desdee7dcc63f: antecipação por duas leituras não
+decrescentes até30ppm/s, com ganho aprendido, desde48000 em vez49000ppm.
+Demais cálculos, limites, porta, temperatura e EEPROM preservados.32218Flash/1185RAM.
+Boot confirmouCO₂1/heater1/lock0,48035ppm/36.99°C. NenhumON/OFF/ACK/PRIME.
+Log logs/telemetria/usb-20261106T212734-975343Z.log. Commit15c890e emorigin/main;
+fonte e testes atualizados. docs/ensaios/co2_antecipacao_48000_2026-11-06.json
+conserva2024cenários com603/2000stress travados; não afirmar todos aprovados.
+Alternativa antecipação sem piso de ppm foi rejeitada porque frio2000atingiu62425ppm.
+
+Usuário informado: upload concluído, pode tirarUSB mantendo fonte; não iniciar
+outro upload enquanto ele move o computador. Não há firmware pendente. Benefício
+real da76562872NÃO VERIFICADO; revisão e7 anterior ainda chegou48021ppm e não
+completou janela madura10min. Objetivo de melhora segueativo, não marcar completo
+só por upload. SemUSB, não inferir telemetria inexistente. Logger/painel continuam;
+Arduino não guarda histórico. Teste isolado4min segue sem autorização/não executado.
+Observador somente leitura19277 está no log anterior; seu prazo/EOF não indica
+parada deArduino/coleta. Auditoria de eventual bloqueio por desconexão deve usar
+estadoUSB/log atual e três turnos consecutivos, não a antiga pendência de calibração.
+
 ## ATUAL — antecipar manutenção perto da meta; gravado22:15 de2026-11-06
 
 - Objetivo novo do usuário continua melhorar os mínimos perto48.000ppm. O ajuste anterior8bf56dfb (somente horizonte de chegada/teto500) não comprovou benefício suficiente na janela fixa10min apósprimeiraescada:287amostrasválidas/1inválida,48452–52196ppm,média49583.7,45.3%nafaixa; comparação anterior48407–52242/60.8%. NÃO chamar essa primeira tentativa aprovada nem omitir recuperação. Relatório docs/ensaios/co2_reposicao_chegada_resultado_2026-11-06.json.
