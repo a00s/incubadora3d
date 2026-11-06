@@ -34,9 +34,10 @@ int32_t co2RateHistoryPpm[16];
 float co2Rate=0;
 bool co2DoseResponsePending=false, co2RatePpmMinReady=true;
 uint16_t co2NoisePpm=10, co2ResponseWaitSeconds=600;
+uint32_t co2RecentRiseAt=0;
 uint32_t co2LastPulseAt=100000, co2MaxRiseAt=100000, actualNow=120000;
 uint32_t millis() { return actualNow; }
-''' + function('bool co2ResponseWaitComplete(') + function('void measureCo2Noise(') + r'''
+''' + function('void updateCo2RecentRise(') + function('bool co2ResponseWaitComplete(') + function('void measureCo2Noise(') + r'''
 bool ready(uint32_t currentTime, bool validCo2=true, int contador_pomp=0, bool co2TrendReady=true) {
 ''' + gates + r'''
   (void)contador_pomp; (void)co2TrendReady;
@@ -97,6 +98,25 @@ int main() {
   co2LastPulseAt=UINT32_MAX-1000;lastCo2PulseMs=100;
   assert(!ready(1000));
   assert(ready((uint32_t)(co2LastPulseAt+20000UL)));
+
+  // Nov6 USB replay: samples rose below baseline, then one fell again.
+  co2LastPulseAt=266000;lastCo2PulseMs=33;co2DoseResponsePending=true;
+  co2MaxRiseAt=266000;max_co2_increase=0;co2Rate=7.25f;
+  updateCo2RecentRise(277211);
+  assert(co2RecentRiseAt==277211 && max_co2_increase==0);
+  co2Rate=9.68f;updateCo2RecentRise(287561);
+  co2Rate=-1.94f;co2RatePpmMin=-1000;
+  assert(!ready(289628)); // Block the extra37ms dose from the captured trace.
+  assert(ready(293561)); // One jitter sample does not force another20s pause.
+  co2MaxRiseAt=291773; // Once a real peak appears, observe the full20s.
+  assert(!ready(311772) && ready(311773));
+  co2DoseResponsePending=false;co2Rate=10;updateCo2RecentRise(315000);
+  assert(co2RecentRiseAt==287561);
+
+  co2DoseResponsePending=true;co2Rate=0;co2RatePpmMin=0;
+  co2LastPulseAt=co2MaxRiseAt=UINT32_MAX-25000;
+  co2RecentRiseAt=UINT32_MAX-2000;
+  assert(!ready(1000) && ready(4000)); // Recent-rise grace also survives millis rollover.
 
   for(int i=0;i<16;i++)co2RateHistoryPpm[i]=2000+(i%2?80:-80);
   measureCo2Noise();assert(co2NoisePpm==160);

@@ -60,10 +60,10 @@ const int32_t CO2_MIN_GAIN_ESTIMATE_X100=50;
 uint8_t co2DoorMode,co2ResponseLagSeconds;
 bool co2RatePpmMinReady,co2GainValidatedThisBoot,co2LastResponseWeak,co2DoseResponsePending;
 bool co2DoseSettled=false;uint16_t co2NoisePpm=10;uint16_t co2ResponseWaitSeconds=600;int32_t co2DoseLossPpmMin=0;
-unsigned long co2LastPulseAt,co2MaxRiseAt;
+unsigned long co2LastPulseAt,co2MaxRiseAt,co2RecentRiseAt=0;
 int32_t co2RateHistoryPpm[16];uint8_t co2RateHistoryCount=0,co2RateHistoryNext=0;
 unsigned long co2RateHistoryTime[16],co2StableSince=0;bool co2TrendReady=false;
-''' + (function('int32_t co2PulseGrowthMs(') if 'int32_t co2PulseGrowthMs(' in source else '')+function('bool co2ResponseWaitComplete(')+(function('void measureCo2Noise(') if 'void measureCo2Noise(' in source else '')+(function('void learnCo2Response(') if 'void learnCo2Response(' in source else '')+(function('int32_t calcularDelayProporcional(') if 'int32_t calcularDelayProporcional(' in source else '')+r'''
+''' + (function('void updateCo2RecentRise(') if 'void updateCo2RecentRise(' in source else '') + (function('int32_t co2PulseGrowthMs(') if 'int32_t co2PulseGrowthMs(' in source else '')+function('bool co2ResponseWaitComplete(')+(function('void measureCo2Noise(') if 'void measureCo2Noise(' in source else '')+(function('void learnCo2Response(') if 'void learnCo2Response(' in source else '')+(function('int32_t calcularDelayProporcional(') if 'int32_t calcularDelayProporcional(' in source else '')+r'''
 int choose(unsigned long currentTime) {
   int32_t co2ProjectedPpm=CO2i;
   PULSE_LIMIT
@@ -104,7 +104,7 @@ void run(const char* name,double gain0,double gain1,double loss,int lag,bool dep
  CO2i=initial_ppm;co2RatePpmMin=0;lastCo2PulseMs=0;max_co2_increase=0;
  co2GainEstimatePpmPerMsX100=1200;co2DoorMode=0;co2ResponseLagSeconds=120;
  co2RatePpmMinReady=false;co2GainValidatedThisBoot=false;co2LastResponseWeak=false;co2DoseResponsePending=false;
- co2LastPulseAt=co2MaxRiseAt=0;co2RateHistoryCount=co2RateHistoryNext=0;co2StableSince=0;co2TrendReady=false;
+ co2LastPulseAt=co2MaxRiseAt=co2RecentRiseAt=0;co2RateHistoryCount=co2RateHistoryNext=0;co2StableSince=0;co2TrendReady=false;
  double injected=0,mixed=0,mixerPpm=initial_ppm,sensorPeak=initial_ppm;
  double ppm=initial_ppm,pending=0,baseline=initial_ppm,peak=ppm,minLast=1e9,maxLast=0;
  int firstBand=-1,doorBand=-1;
@@ -130,6 +130,7 @@ void run(const char* name,double gain0,double gain1,double loss,int lag,bool dep
    CO2i=std::lround(sensorPpm+noise*std::sin(t*1.71));history.push_back(CO2i);
    co2Rate=history.size()>1?(CO2i-history[history.size()-2])/2.0f:0;
    if(!valid) {INVALID_MODEL co2DoseResponsePending=false;co2DoseSettled=false;lastCo2PulseMs=0;co2LastPulseAt=now;stable=0;}
+   RECENT_RISE
    updateRollingTrend(now,valid);stable=co2StableSince;
    if(co2DoseResponsePending && CO2i-baseline>max_co2_increase) {max_co2_increase=CO2i-baseline;co2MaxRiseAt=now;}
    if(co2DoorMode>=3 && CO2i>=49000)co2DoorMode=0;
@@ -220,6 +221,7 @@ curve_model='co2_dosing.h' in source
 harness=harness.replace('SIM_SEED',str(args.seed)).replace('TRANSPORT_MAX_S',str(args.transport_max_s))
 harness=harness.replace('RANGE_NOISE','true' if 'void measureCo2Noise(' in source else 'false')
 harness=harness.replace('PULSE_LIMIT', re.search(r'    int32_t pulseLimit =[^;]+;',source).group(0) if curve_model else 'int32_t pulseLimit=std::min<int32_t>(1000,20+((50000-CO2i)>>4));')
+harness=harness.replace('RECENT_RISE', 'if(valid)updateCo2RecentRise(now);' if 'void updateCo2RecentRise(' in source else '')
 harness=harness.replace('MODEL_LEARN', 'learnCo2Response(now);' if 'void learnCo2Response(' in source else '')
 wait_match=re.search(r'uint16_t co2ResponseWaitSeconds = (\d+);',source)
 initial_wait=int(wait_match.group(1)) if wait_match else 600

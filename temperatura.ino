@@ -235,6 +235,7 @@ bool co2DoseResponsePending = false;
 uint16_t co2NoisePpm = 10;
 unsigned long co2LastPulseAt = 0;
 unsigned long co2MaxRiseAt = 0;
+unsigned long co2RecentRiseAt = 0;
 // const float fatorProximidade = 0.01; // Ajuste este fator para calibrar o impacto da proximidade
 
 // Janela para calcular a tendência de CO2 em ppm/min
@@ -273,11 +274,18 @@ void updateDoorState(bool valid) {
   if (valid && co2DoorMode >= 3 && CO2i >= CO2_CONTROL_MIN_PPM) co2DoorMode = 0;
 }
 
+void updateCo2RecentRise(unsigned long now) {
+  // Remember a rising sample below baseline as well. A brief grace period
+  // rejects the next jitter reversal; actual new peaks retain the full20s wait.
+  if (co2DoseResponsePending && co2Rate > 2.0f) co2RecentRiseAt = now;
+}
+
 bool co2ResponseWaitComplete(unsigned long now) {
   // 20 s between doses, including after invalid readings. No long fallback.
   return (co2LastPulseAt == 0 && lastCo2PulseMs == 0) ||
          (now - co2LastPulseAt >= CO2_RESPONSE_LAG_MIN_MS &&
-          (!co2DoseResponsePending || now - co2MaxRiseAt >= CO2_RESPONSE_LAG_MIN_MS));
+          (!co2DoseResponsePending || now - co2MaxRiseAt >= CO2_RESPONSE_LAG_MIN_MS) &&
+          (co2RecentRiseAt == 0 || now - co2RecentRiseAt >= 6000UL));
 }
 
 
@@ -507,6 +515,7 @@ void loop()
         co2StableSince = 0;
         co2TrendReady = false;
       }
+      updateCo2RecentRise(currentTime);
       lastValidCo2Time = currentTime;
       co2RateHistoryPpm[co2RateHistoryNext] = CO2i;
       co2RateHistoryTime[co2RateHistoryNext] = currentTime;

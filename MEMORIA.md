@@ -1,3 +1,35 @@
+## Revisão final após pico real — gravado em 2026-11-06
+
+- Revisão física autônoma encontrou pico54.790ppm na versãobcf2e8e (déficit inteiro
+  sem a correção de espera abaixo). Não ocultar esse resultado nem dizer estável.
+- Causa verificada no trace: amostras subiram ainda abaixo da concentração anterior
+  à dose; uma reversão isolada em289.628ms liberou37ms extras. O timer do pico só
+  memorizava máximos acima daquela concentração e esquecia as subidas desde o vale.
+- Corrigido: updateCo2RecentRise guarda a última amostra com subida>2ppm/s durante
+  avaliação de uma dose. Mantém graça6s antes de reabrir, mesmo que a amostra seguinte
+  caia. Nova máxima real continua renovando espera20s, sem encurtamento. Graça curta
+  evita exigir20s extras por qualquer ruído. Preservados mínimo20s, dose pela última
+  resposta/déficit inteiro, ganho adaptativo, limites, porta, aquecimento e travas.
+- Teste reproduz valores/tempos reais277.211/287.561/289.628ms e agora bloqueia o
+  comando37ms; testa expiração6s,20s de pico, nenhum vínculo sem dose e rollover.
+  Cinco suites passaram, inclusive20.000histórias numéricas. Build31.532bytes/1.121RAM.
+- Upload final scripts/arduino.sh upload --verify, saída0. Coletor antigo102666 foi
+  parado por SIGINT antes da gravação, sem comandos para a placa. Nova coleta somente
+  leitura SEM timeout, sessão1115:
+  /tmp/incubadora-telemetria/co2-ajuste-manutencao-final-20261106.log.
+  BOOT_COUNT13; co2_enabled1,heater_enabled1,range_lock0, primeira leitura46.529ppm,
+  temperatura36,93°C. Descartar dados anteriores ao BOOT13. Sem ON/OFF/ACK enviados.
+- Mais8.104cenários finais (duas sementes, perda/vazão variáveis, partida e duas
+  câmaras), além dos12.156intermediários. Válvula com limiar manteve49.348–50.032ppm
+  na última hora; antes48.092–49.781. Grade constante final181/400 na faixa versus
+ 170/400, semente separada171/400 versus157/400. Diversos estresses seguem falhando;
+  simulação não é calibração e não prova regulação física. Relatório registra pico
+  real intermediário, resultados finais e hashes atuais de ino/header/hex.
+- Não foi fixado valor de pressão: ajuste continua pela resposta da última dose.
+  Caps de ausência de resposta/partida e teto1000ms permanecem e limitam a faixa
+  possível; não prometer gás disponível ou vazão arbitrária. Verificação prolongada
+  final de manutenção em5% ainda pendente. Sem alterações CAD.
+
 ## Ajuste de manutenção e vazão variável — gravado em 2026-11-06
 
 - Relato: mais contínuo/melhor, mas cai47–48milppm. Usuário pediu ajuste de abertura

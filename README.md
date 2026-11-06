@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.432 bytes de Flash (97%) e
-1.117 bytes de RAM global (54%), deixando 824 bytes de Flash e 931 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.532 bytes de Flash (97%) e
+1.121 bytes de RAM global (54%), deixando 724 bytes de Flash e 927 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
