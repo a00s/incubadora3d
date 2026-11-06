@@ -1492,7 +1492,7 @@
   "live_verification": {
     "log": "logs/telemetria/usb-20261106T141239-906959Z.log",
     "boot": 4,
-    "commands": [
+    "commands_and_fault": [
       {
         "host_time": 1793974483.344441,
         "raw": "EVENT,co2_probe,20"
@@ -1500,12 +1500,17 @@
       {
         "host_time": 1793974504.040378,
         "raw": "EVENT,co2_probe,46"
+      },
+      {
+        "host_time": 1793974684.768583,
+        "raw": "EVENT,co2_no_response,auto_off"
       }
     ],
-    "co2_on": 1,
+    "co2_on": 0,
     "heat_on": 1,
-    "range_lock": -1,
-    "last_ppm": 5945,
-    "physical_response_verified": false
+    "range_lock": 0,
+    "last_ppm": 5878,
+    "physical_response_verified": false,
+    "result": "20ms and46ms commanded21s apart. No useful sensor rise; automatic CO2 disabled with explicit no-response event180s after complement. Heating remained enabled. This verifies firmware sequencing, not physical gas delivery."
   }
 }
