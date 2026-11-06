@@ -27,17 +27,28 @@ int main() {
   }
   // No total66ms budget, timeout, or response threshold blocks new commands.
   resetFirmware(); c.update(120000,5700,true); c.record(20,120000);
+  unsigned expected=40,commands=1;
   for(uint32_t at=122000;at<=720000;at+=2000) {
     c.update(at,5700-(at-120000)/10000,true);
     if(c.ready(at)) {
-      auto ms=c.pulse(at); assert(ms==20); c.record(ms,at);
+      auto ms=c.pulse(at); assert(ms==expected); c.record(ms,at);
+      expected=expected>=500?1000:expected*2;commands++;
     }
   }
-  assert(c.lastMs>66 && !c.trained);
+  assert(c.lastMs>66 && !c.trained && commands>10);
+  c.reset();c.previousValid=true;c.flat=2;c.lastPpm=5700;
+  assert(c.pulse(800000)==20); //Restart calibration, not the last doubled probe.
+  c.record(20,800000);c.update(802000,5699,true);c.update(804000,5698,true);c.update(806000,5697,true);
+  assert(!c.ready(819999));assert(c.pulse(820000)==40);
+  c.update(822000,6200,true);assert(!c.ready(822000)); //Do not double during a rise.
+  c.update(824000,6700,true);c.update(826000,6701,true);c.update(828000,6702,true);
+  assert(c.trained&&c.stepCount==1); //Switch to the measured proportion immediately.
+  c.lossPpmPerSec=0;c.lastPpm=49000;c.referenceMs=20;c.referenceRise=500;
+  assert(c.pulse(830000)==40); //Not80 from continuing the doubling sequence.
   // Missing gain never divides by zero; a valid large ratio cannot overflow32bits.
   c.previousValid=true; c.falling=2; c.observing=false;
   c.trained=true; c.referenceMs=400000; c.referenceRise=1000;
-  c.lastPpm=1000; assert(c.pulse(800000)==1000);
+  c.lastPpm=1000; assert(c.pulse(900000)==1000);
   c.reset(); assert(c.stepCount==0 && !c.trained);
 }
 '''

@@ -1,3 +1,9 @@
+## CANDIDATA: calibração20ms dobrando; NÃO ENVIADA — 2026-11-06
+
+- Usuário especificou início20ms e dobrar até ver mudança, supondo espaço para preencher. Implementado na candidata offline firmware/experimentos/co2_proporcional_simples.h:20/40/80/160/320/640, teto mecânico já existente1000ms; depois do primeiro resultado útil passa à proporção média1–5. Sem800ppm/ms ou teto66ms. Dose não dobra durante subida relevante, respeita20s e reset volta20. Explicado que ausência de subida também pode ser atraso, não prova espaço livre.
+- Teste da sequência, parada durante subida, troca para ganho medido, reset e aritmética passou. Simulação fechada REPROVOU: nominal aproximado107706,8ppm;1869/2000 aleatórios atingem trava60000. Relatório docs/ensaios/co2_calibracao_dobrando_reprovada_2026-11-06.json preserva falhas e hipóteses; não são medições físicas atuais. Não gravar como validado nem repetir versão com excesso conhecido.
+- Arduino e produção continuam e91dcb05, sem upload/ON/OFF/ACK nesta tarefa. A candidata não foi instalada. Separar calibração20ms dobrando (pedido agora esclarecido) da atribuição temporal das escadas e gás ainda em trânsito (ainda sem solução validada). Não substituir limites imaginados por outros para fazer testes passarem. Relatório literal anterior é histórico de outro hash, não ensaio da candidata atual.
+
 ## CANDIDATA SIMPLES OFFLINE; NÃO ENVIADA — 2026-11-06
 
 - Usuário rejeitou limites/hipóteses não medidos e reiterou a regra simples de proporção1–5, queda/platô e20s. Implementada separadamente em firmware/experimentos/co2_proporcional_simples.h. Produção/Arduino permanecem e91dcb05, sem novo upload ou comando ON/OFF/ACK nesta tarefa. Não fingir que simplificação foi gravada ou que recuperação física foi resolvida.

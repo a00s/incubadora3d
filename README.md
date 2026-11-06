@@ -404,7 +404,10 @@ de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
 Há uma candidata solicitada de proporção direta, **offline e reprovada para envio**,
-em `firmware/experimentos/co2_proporcional_simples.h`. Seu teste de aritmética é
+em `firmware/experimentos/co2_proporcional_simples.h`. A calibração começa em20ms e
+dobra até existir resposta útil; então usa a média medida1–5. O teto mecânico
+continua1000ms. O relatório atual é
+`docs/ensaios/co2_calibracao_dobrando_reprovada_2026-11-06.json`. Seu teste de aritmética é
 `python3 scripts/test_co2_simple_candidate.py`; passar essa conta não valida
 controle com atraso. O relatório `docs/ensaios/co2_proporcao_literal_reprovada_2026-11-06.json`
 preserva os excessos simulados. `--model firmware/experimentos/co2_proporcional_simples.h`

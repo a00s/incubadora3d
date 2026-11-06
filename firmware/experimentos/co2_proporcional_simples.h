@@ -9,6 +9,7 @@ struct Co2DoseModel {
   uint8_t stepCount = 0, stepHead = 0;
   uint32_t responseMs = 20000;
   uint32_t lastMs = 0;
+  uint16_t lastProbeMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
   float lossPpmPerSec = 0;
@@ -86,7 +87,7 @@ struct Co2DoseModel {
       uint64_t calculated = ((uint64_t)referenceMs * needed + referenceRise - 1) / referenceRise;
       duration = calculated > 1000 ? 1000 : calculated;
     } else {
-      duration = 20; // No usable response yet: repeat the initial probe, never divide by zero.
+      duration = lastProbeMs ? (uint32_t)lastProbeMs * 2 : 20; // User-requested calibration:20,40,80,... until measured gain.
     }
     if (duration > 1000) duration = 1000;
     if (duration < 5) duration = 5;
@@ -94,6 +95,7 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
+    lastProbeMs = ms;
     if (observing) lastMs += ms;
     else {
       lastMs = ms;
