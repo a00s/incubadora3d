@@ -78,6 +78,7 @@ function showTooltip(t,px=null,py=null,events=[]){
   $('tip-ppm').textContent=eventTitle(event);
   $('tip-details').textContent=(p[1]===null?'Sem leitura válida':fmt.format(p[1])+' ppm · '+percent(p[1]))+' · '+(p[2]===null?'—':decimal.format(p[2])+' °C');
   let details=[];
+  if(event.kind==='dose'&&event.basis_steps!==null&&event.basis_steps!==undefined){if(event.basis_steps>0)details.push('Base: '+fmt.format(event.basis_steps)+' escada(s) · '+fmt.format(event.basis_rise_ppm)+' ppm / '+fmt.format(event.basis_ms)+' ms');else details.push('Ainda sem escada útil de referência');}
   if(event.kind==='door'&&event.duration_ms!==null)details.push('Duração entre registros: '+fmt.format(event.duration_ms)+' ms ('+decimal.format(event.duration_ms/1000)+' s)');
   if(event.open_ended)details.push('Sem fechamento registrado · '+fmt.format(event.elapsed_ms)+' ms até a última leitura');
   if(event.source==='annotation')details.push('Marcação manual');

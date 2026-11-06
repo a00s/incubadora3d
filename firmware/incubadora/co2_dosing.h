@@ -1,10 +1,13 @@
 #pragma once
 #include <stdint.h>
 
-// Last useful dose and measured loss only. No pending-gas projection or integral correction.
+// Rolling gain from up to five useful staircases; no pending-gas projection or observation pause.
 struct Co2DoseModel {
   uint16_t referenceMs = 20;
-  uint16_t referenceRise = 0;
+  uint32_t referenceRise = 0;
+  struct Step { uint16_t ms, rise; } steps[5] = {};
+  uint8_t stepCount = 0, stepHead = 0;
+  int32_t lastNeed = 0;
   uint16_t lastMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
@@ -43,10 +46,20 @@ struct Co2DoseModel {
       if (ppm < valley) { valley = peak = ppm; valleyAt = peakAt = now; }
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
-      if ((falling >= 2 || flat >= 2) && mass >= 50 && now - sendAt >= 20000UL) {
-        referenceMs = lastMs;
+      if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
         int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
-        referenceRise = delivered > 65535L ? 65535 : delivered;
+        // Only useful rises enter the history. In particular, the recorded
+        // 69ppm fluctuation must not replace a response of several thousand ppm.
+        if (!stepCount) { referenceMs = 0; referenceRise = 0; }
+        Step &slot = steps[stepHead];
+        referenceMs -= slot.ms;
+        referenceRise -= slot.rise;
+        slot.ms = lastMs;
+        slot.rise = delivered > 65535L ? 65535 : delivered;
+        referenceMs += slot.ms;
+        referenceRise += slot.rise;
+        if (++stepHead == 5) stepHead = 0;
+        if (stepCount < 5) stepCount++;
         trained = true;
         observing = false;
       }
@@ -66,12 +79,14 @@ struct Co2DoseModel {
     if (needed <= 0) return 0;
     uint32_t duration;
     if (trained && referenceRise) {
-      // Last opening * (remaining ppm + measured loss refill) / observed dose result.
+      // Average gain = sum(useful ppm) / sum(opening ms), using only the
+      // available1..5 stairs. No five-sample wait and no percentage growth cap.
       duration = ((uint32_t)referenceMs * needed + referenceRise - 1) / referenceRise;
     } else {
       // No useful response yet: increase the short probe gradually, without
       // inventing a gain or dividing by zero during initial chamber filling.
-      duration = hasSent ? lastMs + (lastMs + 3) / 4 : 20;
+      duration = hasSent && lastNeed > 0
+        ? ((uint32_t)lastMs * needed + lastNeed - 1) / lastNeed : 20;
       uint32_t safe = (57000L - lastPpm) / 500;
       if (safe > 100) safe = 100;
       if (duration > safe) duration = safe;
@@ -83,6 +98,7 @@ struct Co2DoseModel {
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
     lastMs = ms;
+    lastNeed = 50000L - lastPpm + lossPpmPerSec * 20;
     valley = peak = lastPpm; valleyAt = peakAt = now;
     mass = 0;
     falling = flat = 0;

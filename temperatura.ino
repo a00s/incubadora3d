@@ -210,7 +210,6 @@ unsigned long heaterPressedAt = 0;
 
 // Variáveis para calcular a taxa de aumento de CO2
 float co2Rate = 0; // Armazena a taxa de aumento do CO2
-float maxRate = 0;
 const int MANUAL_CO2_PULSE_MS = 5; // Pulso curto já citado como referência experimental
 const int MANUAL_CO2_MAX_PULSE_MS = 20;
 #define DISPLAY_FAULT 0
@@ -477,7 +476,6 @@ void loop()
         co2Delta = CO2i - previousCo2i;
         if (deltaTime > 0) {
           co2Rate = co2Delta * 1000.0f / deltaTime;
-          if (co2Rate > maxRate) maxRate = co2Rate;
         } else {
           co2Rate = 0;
         }
@@ -586,13 +584,12 @@ void loop()
       co2LastPulseAt = millis();
 
       contador_pomp = POMP_WAITING_TIME;
-      maxRate = 0;
     } else {
       digitalWrite(CO2PUMP, HIGH);
     }
 
     if (!serialHeaderPrinted) {
-    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,uptake_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm"));
+    Serial.println(F("DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,basis_ms,delta_ppm,basis_rise_ppm,basis_steps,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm"));
       serialHeaderPrinted = true;
     }
     Serial.print(F("DATA,")); Serial.print(currentTime); Serial.print(','); Serial.print(CO2i); Serial.print(','); Serial.print(validCo2 ? 1 : 0);
@@ -602,8 +599,8 @@ void loop()
     Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0); Serial.print(','); Serial.print(delayProporcional); Serial.print(',');
     Serial.print(lastCo2PulseMs); Serial.print(',');
     printFixed(co2Rate, 2); Serial.print(','); Serial.print(co2RatePpmMinReady ? 1 : 0); Serial.print(','); Serial.print(co2RatePpmMin); Serial.print(',');
-    printFixed(maxRate, 2); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
-    Serial.print(co2DoseModel.mass); Serial.print(','); Serial.print(contador_pomp); Serial.print(','); Serial.print(doseResponseReady ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println((int32_t)co2DoseModel.projection(currentTime));
+    Serial.print(co2DoseModel.referenceMs); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
+    Serial.print(co2DoseModel.referenceRise); Serial.print(','); Serial.print(co2DoseModel.stepCount); Serial.print(','); Serial.print(doseResponseReady ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println((int32_t)co2DoseModel.projection(currentTime));
 
     if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
@@ -1070,7 +1067,6 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   lastCo2PulseMs = pulseMs;
   co2LastPulseAt = now;
 
-  maxRate = 0;
   if (!freshReading) lossFresh = false;
   finishCo2Loss();
   if (co2DoorMode == 4) co2DoorMode = 3;

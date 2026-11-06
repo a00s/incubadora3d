@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Real sketch gates + last-dose proportional calculation and measured loss refill."""
 from pathlib import Path
+import json
 import subprocess
 import tempfile
 from co2_firmware_harness import harness
+fixture=json.loads((Path(__file__).parent/'fixtures/co2_jump_228.json').read_text())
+replay_rows=',\n'.join('{%d,%d,%d}'%(t,p,int(v)) for t,p,v in fixture['rows'])
 code=harness()+r'''
 #include <random>
 int main(){
@@ -65,6 +68,30 @@ int main(){
  resetFirmware();c.previousValid=true;c.lastPpm=48000;c.trained=true;c.referenceRise=2000;
  recordAutomatic(5,UINT32_MAX-10000);c.observing=false;c.falling=2;
  assert(!firmwareReady(9000));assert(firmwareReady(11000));
+ // Use1,2,...5 actual stairs, without waiting for five. Roll the oldest out.
+ resetFirmware();uint32_t stepTime=120000;int32_t level=20000;
+ for(int n=1;n<=6;n++){
+  c.update(stepTime,level,true);c.record(20,stepTime);
+  for(int j=1;j<=10;j++)c.update(stepTime+j*2000,level+(n*500*(j<5?j:5))/5,true);
+  level+=n*500;stepTime+=20000;
+  assert(c.stepCount==(n<5?n:5));assert(c.referenceMs==(n<5?n:5)*20);
+  assert(c.referenceRise==(n<6?n*(n+1)*250:10000));
+  c.lossPpmPerSec=0;c.lastPpm=49000;c.flat=2;c.falling=0;c.observing=false;
+  if(n==1)assert(c.pulse(stepTime+20000)==40); //20ms→500ppm, need1000→40ms.
+  if(n==2)assert(c.pulse(stepTime+20000)==27); //gain averaged over two stairs.
+  if(n==5)assert(c.pulse(stepTime+20000)==14);
+  if(n==6)assert(c.pulse(stepTime+20000)==10); //five newest, first is discarded.
+ }
+ c.reset();assert(c.stepCount==0&&!c.trained);
+ // Replay the actual20→228ms failure. The69ppm wiggle must not enter the history.
+ resetFirmware();c.steps[0].ms=25;c.steps[0].rise=4744;c.stepCount=1;c.stepHead=1;
+ c.referenceMs=25;c.referenceRise=4744;c.trained=true;c.previousValid=true;
+ c.lastPpm=46971;c.lastAt=237389;c.lossPpmPerSec=34.967f;c.record(20,237389);
+ struct Reading {uint32_t at;int32_t ppm;bool valid;};
+ const Reading replay[]={ REPLAY_ROWS };
+ for(const auto &row:replay)c.update(row.at,row.ppm,row.valid);
+ assert(c.mass==69&&c.stepCount==1&&c.referenceMs==25&&c.referenceRise==4744);
+ assert(c.pulse(258411)==19); //Not228ms; keep the measured useful reference.
  std::mt19937 rng(20261106);
  for(int history=0;history<20000;history++){
   resetFirmware();uint32_t t=UINT32_MAX-50000;
@@ -72,13 +99,15 @@ int main(){
    t+=2000+rng()%400;int32_t ppm=1000+rng()%59000;bool valid=rng()%20;
    c.update(t,ppm,valid);auto q=c.pulse(t);assert(q==0||(q>=5&&q<=1000));
    assert(c.lossPpmPerSec>=0&&c.lossPpmPerSec<=200);
+   assert(c.stepCount<=5&&c.referenceMs<=5000&&c.referenceRise<=327675UL);
    if(q)c.record(q,t);
   }
  }
 }
 '''
+code=code.replace('REPLAY_ROWS',replay_rows)
 with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
     cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2: actual gates, proportional dose, two declines/20s, flat loss refill, no observation pause, rollover, 20000 histories passed')
+print('CO2: rolling1..5 stairs, real20→228ms replay corrected to19ms, proportional dose, plateau, rollover and20000 histories passed')

@@ -149,6 +149,10 @@ def parse_log(text: str, name: str, start_epoch: float):
                 current['start']=offset
         for event in pending:
             event.update(t=event.get('received_at') or point[0],session=current['id'],source='firmware',id=f"{current['id']}:{int(ms)}:{len(current['events'])}")
+            if event['kind']=='dose':
+                event['basis_ms']=v('basis_ms')
+                event['basis_rise_ppm']=v('basis_rise_ppm')
+                event['basis_steps']=v('basis_steps')
             # Restart belongs to the start of uptime, rather than 1.5 s later.
             if event['kind'] in ('restart','warmup') and event.get('received_at') is None:event['t']=offset
             current['events'].append(event)

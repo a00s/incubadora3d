@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 31.784 bytes de Flash (99%) e
-1.140 bytes de RAM global (55%), deixando 472 bytes de Flash e 908 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.232 bytes de Flash (99%) e
+1.164 bytes de RAM global (56%), deixando 24 bytes de Flash e 884 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -409,9 +409,11 @@ Duas variações negativas consecutivas dentro de 20 s indicam queda.
 Duas amostras quase estáveis também liberam pelo platô em qualquer leitura válida,
 sem exigir primeiro cair nem estar acima de49.000ppm; o corte superior é separado. Entre
 aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
-O cálculo proporcional usa a última dose útil: `ms anteriores × ppm necessários /
-resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, sem teto percentual de crescimento na
-proporção aprendida. Antes da primeira resposta útil, a sonda ainda é gradual.
+O cálculo proporcional usa até cinco escadas úteis: `soma dos ms × ppm necessários /
+soma das subidas`. Usa imediatamente uma referência, depois duas, até cinco; a sexta
+substitui a mais antiga. Após reset, o histórico fica vazio e a primeira sonda é20ms. Aberturas ficam entre 5 e 1.000 ms, sem teto percentual de crescimento na
+proporção aprendida. Antes da primeira resposta útil, ajusta a sonda anterior pela razão das necessidades,
+respeitando a margem de concentração.
 
 O resultado observado é a maior subida a partir do vale depois da dose, mesmo
 quando o pico continua abaixo da leitura no instante do comando. A perda medida
@@ -424,8 +426,8 @@ pressão fixa de cilindro. No platô, duas amostras quase estáveis
 A revisão atual **não tem pausa adicional de observação**: após o mínimo de
 20 s, duas quedas válidas dentro da janela de 20 s podem liberar a nova dose.
 Enquanto o CO₂ sobe, não injeta. Não existe espera de 60/120 s para isolar resposta.
-Sem resposta útil, a sonda cresce gradualmente e continua limitada pela margem de
-concentração. A referência só aprende uma subida mensurável; no platô, a reposição
+Sem resposta útil, a sonda continua limitada pela margem de concentração.
+A referência exige subida líquida de pelo menos200ppm; no platô, a reposição
 da perda histórica evita precisar esperar uma queda grande. Não há projeção de gás
 pendente nem integral. O usuário pediu observar essa lógica simples pelos gráficos.
 
@@ -436,15 +438,20 @@ reinicia a referência de vazão; uma troca sem aviso só é percebida na respos
 gás. Alterações arbitrárias de pressão, atrasos e falhas mecânicas não são garantidas
 pelo software. O Uno não possui Wi-Fi nem Bluetooth integrados.
 
-No CSV, `uptake_ppm` mostra a subida observada da dose corrente. A coluna legada
+No CSV atual, `basis_ms`, `basis_rise_ppm` e `basis_steps` mostram a base usada
+no cálculo e aparecem no tooltip da dose. Substituem os campos antigos
+`max_rate_ppm_s`, `uptake_ppm` e `wait_cycles`, mantendo as posições. A coluna legada
 `co2_proj_ppm` vale `-1`, explicitando que a revisão simples não usa previsão.
 O painel não desenha esse valor como uma linha de CO₂. Capturas antigas ainda
 podem mostrar a estimativa histórica, que não deve ser confundida com previsão
 validada. Os testes usam o header e as condições de admissão reais do sketch.
 `python3 scripts/simulate_co2_control.py --explore --report /tmp/co2.json` conserva
-as falhas dos cenários de estresse. A revisão simples foi exercitada em 6.054
-simulações de quatro horas e 20.000 histórias numéricas; nem todos os cenários
+as falhas dos cenários de estresse. A revisão com média de cinco foi exercitada em2.018
+simulações de quatro horas e20.000 histórias numéricas; nem todos os cenários
 mantêm a faixa ou evitam excesso, portanto isso não certifica estabilidade física.
+O relatório atual é `docs/ensaios/co2_media_cinco_escadas_2026-11-06.json`.
+O replay real corrige a dose228ms para19ms, mas cenários com atraso ainda excedem
+60.000ppm: o automático permanece desligado e essa revisão não autoriza reativação.
 Relatórios antigos são conservados em `docs/ensaios/`; a revisão simples está em
 `co2_plato_proporcao_direta_2026-11-06.json`; a revisão sem pausa anterior está
 em `co2_sem_pausa_2026-11-06.json`, e a versão com pausa foi arquivada em

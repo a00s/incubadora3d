@@ -61,6 +61,14 @@ class Chronology(unittest.TestCase):
         self.assertEqual([e['duration_ms'] for e in doors],[8400,8400])
         self.assertAlmostEqual(doors[0]['t'],1700000003.1)
 
+    def test_dose_tooltip_has_actual_average_basis(self):
+        header=FALLBACK[:]
+        header[17]='basis_ms';header[19]='basis_rise_ppm';header[20]='basis_steps'
+        row=data(3000).strip().split(',');row[17]='100';row[19]='5000';row[20]='5'
+        text='BOOT_COUNT,1\n'+','.join(header)+'\n'+data(1000)+'EVENT,co2_pulse,20\n'+','.join(row)+'\n'
+        dose=next(e for e in parse_log(text,'basis',1000)[0]['events'] if e['kind']=='dose')
+        self.assertEqual((dose['basis_ms'],dose['basis_rise_ppm'],dose['basis_steps']),(100,5000,5))
+
     def test_restart_segments_and_rollover(self):
         sessions=parse_log(capture(1,3)+capture(2,2),'a',1000)
         self.assertEqual(len(sessions),2)

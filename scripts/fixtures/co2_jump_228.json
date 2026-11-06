@@ -1,0 +1,62 @@
+{
+  "source": "boot33 real trace, preceding20ms command at237389ms",
+  "reference_ms": 25,
+  "reference_rise_ppm": 4744,
+  "baseline_ppm": 46971,
+  "dose_ms": 20,
+  "dose_at_ms": 237389,
+  "loss_ppm_s": 34.967,
+  "rows": [
+    [
+      239478,
+      46991,
+      true
+    ],
+    [
+      241796,
+      46971,
+      true
+    ],
+    [
+      243889,
+      46967,
+      true
+    ],
+    [
+      245946,
+      46955,
+      true
+    ],
+    [
+      248005,
+      46959,
+      true
+    ],
+    [
+      250106,
+      46986,
+      true
+    ],
+    [
+      252173,
+      46989,
+      true
+    ],
+    [
+      254287,
+      47024,
+      true
+    ],
+    [
+      256349,
+      47012,
+      true
+    ],
+    [
+      258411,
+      46993,
+      true
+    ]
+  ],
+  "rejected_original_command_ms": 228
+}

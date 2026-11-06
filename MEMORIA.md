@@ -1,3 +1,13 @@
+## ATUAL: média das últimas 1–5 escadas — 2026-11-06 12:13 CET
+
+- GRAVADO E VERIFICADO: HEX `7d308dbd3fe7e415bb303b9b7858fcf1b21297aa9d75f8f71b206f4b6702ba82`, saída 0. Flash 32.232 / RAM global 1.164 bytes. Restam 24 bytes Flash e 884 RAM.
+- Após reset, primeira sonda 20 ms; depois usa imediatamente as referências úteis disponíveis (1, 2, ... até 5). Ganho ponderado = soma das subidas / soma dos ms. A sexta substitui a primeira. Dose = teto(somaMs × déficit com perda20s / somaPpm), limites físicos 5–1000 ms. Antes de referência útil, ajusta a última sonda pela razão das necessidades, respeitando margem de concentração.
+- Subida líquida mínima útil 200 ppm evita aprender ruído como resposta. Replay físico do boot33: oscilação de69ppm não substitui referência25ms/4744ppm; dose calculada19ms, contra228ms da versão anterior. Não há teto percentual de crescimento, nem pausa adicional de observação. Platô em qualquer ppm válido, mínimo20s e travas permanecem.
+- CSV mantém posições, mas campos antigos max_rate_ppm_s/uptake_ppm/wait_cycles agora são basis_ms/basis_rise_ppm/basis_steps. Tooltip da dose mostra a base efetivamente usada.
+- VERIFICADO após upload: CO₂ automático0, aquecimento0, trava0. Trava já havia sido limpa por botão (ACK registrado); NÃO afirmar que ficou travado. Nenhum comando ON/OFF/ACK enviado por nós. Leitura baixa após wrap não comprova purga; usuário relatou apenas retorno do número. Não orientar reativação com essa evidência.
+- Testes: 20.000 histórias numéricas, replay real, média1–5, reset, proporção, platô e rollover passaram;9 testes painel e sintaxe JS passaram. Relatório `docs/ensaios/co2_media_cinco_escadas_2026-11-06.json`:2.018 cenários/8.072h simuladas, com EXCESSOS ainda presentes (nominal ~68.961ppm; frio ~196.644ppm). Média corrige referência espúria específica, NÃO valida segurança sob atraso. Automático deve permanecer desligado enquanto essa limitação existir.
+- LoggerUSB e painel continuam capturando; firmware marcado por linha vertical com horário/hash do envio. Viewer8081 respondeu200. Sem alteração CAD.
+
 ## ÚLTIMA: platô qualquer ppm + proporção sem teto10% — 2026-11-06
 
 - Usuário pediu agir no platô antes de cair emqualquer valor e rejeitou incrementos
