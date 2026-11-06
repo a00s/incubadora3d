@@ -1,4 +1,3 @@
-#define CO2_EXPERIMENTAL_START_DISABLED 1
 #pragma once
 #include <stdint.h>
 

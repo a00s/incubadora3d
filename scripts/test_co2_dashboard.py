@@ -61,6 +61,14 @@ class Chronology(unittest.TestCase):
         self.assertEqual([e['duration_ms'] for e in doors],[8400,8400])
         self.assertAlmostEqual(doors[0]['t'],1700000003.1)
 
+    def test_fast_change_is_not_a_lock_or_shutdown(self):
+        text=capture(count=1)+'EVENT,co2_fast_change,delta_ppm,19600\n'+data(3000,20000)
+        session=parse_log(text,'fast-change',1000)[0]
+        event=next(e for e in session['events'] if e['raw'].startswith('EVENT,co2_fast_change'))
+        self.assertEqual(event['kind'],'control')
+        self.assertIsNone(session['points'][-1][14])
+        self.assertEqual(session['points'][-1][6:9],[1,1,0])
+
     def test_disable_reason_persists_until_enabled_with_original_event_time(self):
         def sample(ms,on,locked=0,ppm=38179):
             row=data(ms,ppm,0 if locked else 1).strip().split(',')

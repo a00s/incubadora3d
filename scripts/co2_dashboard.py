@@ -35,6 +35,10 @@ def describe_event(row):
     if row[0] == 'EVENT':
         key = row[1] if len(row)>1 else ''
         value = row[2] if len(row)>2 else ''
+        if key == 'co2_fast_change':
+            delta=number(row[3]) if len(row)>3 else None
+            change=(f'{int(delta):+,}'.replace(',','.')+' ppm') if delta is not None else 'não detalhada'
+            return ('control','Variação de CO₂ registrada · '+change,None)
         if key == 'co2_protocol_jump_suspected':
             delta=number(row[3]) if len(row)>3 else None
             change=(f'{int(delta):+,}'.replace(',','.')+' ppm') if delta is not None else 'não detalhado'

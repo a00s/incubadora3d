@@ -287,11 +287,6 @@ void setup()
         botao_co2_onoff = botao_aquecedor_onoff = 0;
       }
     }
-#ifdef CO2_EXPERIMENTAL_START_DISABLED
-    botao_co2_onoff = 0;
-    doorResumeControls &= ~1;
-    saveControlState();
-#endif
     // A persisted range fault always overrides a saved CO2 enable request.
     if (co2RangeWrapLatched) botao_co2_onoff = 0;
     EEPROM.get(EEPROM_CONTADOR, eeprom_contador_int);
@@ -299,9 +294,6 @@ void setup()
     EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
     Serial.print(F("BOOT_COUNT,"));
     Serial.println(eeprom_contador_int);
-#ifdef CO2_EXPERIMENTAL_START_DISABLED
-    Serial.println(F("EVT,CO2_BOOT"));
-#endif
     if (co2RangeWrapLatched) Serial.println(F("EVENT,co2_range_lock_restored_after_boot"));
    
     
@@ -454,14 +446,10 @@ void loop()
         co2RawReferenceReady = true;
       } else {
         int32_t rawCo2Jump = sensorPpm - lastCo2RawPpm;
+        // A large change can be real. Log it without changing controls or EEPROM.
         if (rawCo2Jump >= 15000 || rawCo2Jump <= -15000) {
-          co2RangeWrapLatched = true;
-          mySensorCO2.rawLoggingEnabled = true;
-          EEPROM.update(EEPROM_CO2_RANGE_LOCK, CO2_SENSOR_LOCK_MAGIC);
-          setCo2Enabled(false);
-          Serial.print(F("EVENT,co2_protocol_jump_suspected,delta_ppm,"));
-          Serial.print(rawCo2Jump);
-          Serial.println(F(",control_locked_until_restart"));
+          Serial.print(F("EVENT,co2_fast_change,delta_ppm,"));
+          Serial.println(rawCo2Jump);
         }
         lastCo2RawPpm = sensorPpm;
       }

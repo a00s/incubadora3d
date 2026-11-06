@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.108 bytes de Flash (99%) e
-1.179 bytes de RAM global (57%), deixando 148 bytes de Flash e 869 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.004 bytes de Flash (99%) e
+1.179 bytes de RAM global (57%), deixando 252 bytes de Flash e 869 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,17 +403,23 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-**Revisão gravada em2026-11-06 às18:37CET:** o aprendizado usa somente a subida
-observada, sem acrescentar perda estimada ao ganho. A perda continua separada na
-necessidade. O relatório de envio é
-`docs/ensaios/co2_ganho_observado_gravado_2026-11-06.json`; os ensaios com atraso
-continuam reprovados em `co2_aprendizado_subida_observada_2026-11-06.json`.
-A gravação foi verificada; o CO₂ permanece desligado ao reiniciar.
+**Versão instalada `cf89948b`,2026-11-06 às19:10CET:** restaura da EEPROM os
+últimos estados ligado/desligado de CO₂ e aquecimento, sem forçarOFF ou escrever
+outra configuração no boot. Saltos±15.000ppm são somente registrados no log;
+não desligam nem gravam trava. O corte absoluto60.000ppm continua ativo.
 
-A versão instalada em2026-11-06 é **experimental, com CO₂ desligado no boot**,
-HEX `faf5aaf8`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
-habilitação e retomada de CO₂ pela porta em cada reinício, preservando aquecimento.
-`python3 scripts/test_co2_experimental_boot.py` verifica32combinações salvas.
+`python3 scripts/test_control_persistence.py` verifica os quatro estados ON/OFF,
+repetições de reinício, pausa de porta e ausência de sobrescrita no boot.
+`python3 scripts/test_co2_reading_changes.py` verifica que mudanças grandes são
+aceitas e que o corte absoluto continua funcionando. A próxima escolha de ON/OFF
+é salva no byte29; aprendizado de ganho e PID permanece na RAM.
+A auditoria de todas as demais regras conferidas está em
+[docs/regras_controle_arduino.md](docs/regras_controle_arduino.md).
+Relatório de envio: `docs/ensaios/co2_persistencia_e_sem_trava_delta_2026-11-06.json`.
+
+A dosagem ainda é experimental; esta correção de persistência não valida5% estável.
+O ganho continua usando apenas subida observada, e a perda fica separada na
+necessidade. Os relatórios anteriores conservam as falhas com atraso.
 
 O modelo em fonte deriva de `firmware/experimentos/co2_proporcional_simples.h`:
 começa em20ms e soma20ms:40/60/80/100... até existir resposta útil; o teto mecânico
@@ -425,7 +431,7 @@ Não existem ganho presumido800ppm/ms, orçamento66ms, teto por margem59000
 ou desligamento por ausência de subida. O filtro200ppm só evita aprender ruído. Toda abertura, inclusive após calibrar,
 pode aumentar no máximo20ms em relação à última; reduções podem ser maiores.
 Cada escada usa os ms da última abertura como referência, sem somar sondas anteriores.
-Continuam supervisor51mil/60000, falha de leitura/protocolo, temperatura, porta e
+Continuam supervisor51mil/60000, falha de leitura, temperatura, porta e
 warmup120s. Não há previsão de gás pendente; coluna legada projetada vale-1.
 
 **Não está validada para injeção automática.** O relatório
@@ -707,7 +713,8 @@ não permite deduzir voltas anteriores. Porta registrada aberta interrompe infer
 de retorno para não transformar purga conhecida em continuidade fictícia.
 
 O painel mostra causa e horário do desligamento no cartão e eventos, preservando
-o motivo original até reativação. Boot experimental registra `EVT,CO2_BOOT`.
+o motivo original até reativação. `EVT,CO2_BOOT` permanece apenas no histórico
+das versões antigas; a versão atual não força CO₂ OFF no reinício.
 Exportação acrescenta `co2_off_reason` e `co2_off_at`. Ao observar retorno durante
 a queda numa captura iniciada após volta anterior, a interface pode reconstruir
 retroativamente a continuidade mínima com≈; não interpreta automaticamente0→65mil

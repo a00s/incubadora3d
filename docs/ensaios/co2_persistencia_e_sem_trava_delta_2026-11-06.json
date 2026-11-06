@@ -1,0 +1,49 @@
+{
+  "upload": {
+    "id": "upload:c44c3ca98e2642eea15686cab5cb2db7",
+    "t": 1793988615.7178817,
+    "completed_at": 1793988627.5383782,
+    "kind": "firmware",
+    "label": "Firmware enviado e verificado · cf89948b",
+    "raw": "Envio iniciado 2026-11-06 19:10:15; verificação OK",
+    "source": "upload",
+    "session": null,
+    "duration_ms": 11820,
+    "estimated": false,
+    "hashes": {
+      "temperatura.ino": "898d75c5624edd9333cbc1bdf48d835290e0f2dff1b4ddd414006d35ceca87c4",
+      "firmware/incubadora/co2_dosing.h": "1fb140e650e57824e605a24c049381c362558399697b2e0117ef1b924ebc2d4e",
+      "firmware/experimentos/co2_proporcional_simples.h": "1fb140e650e57824e605a24c049381c362558399697b2e0117ef1b924ebc2d4e",
+      ".arduino-build/incubadora.ino.hex": "cf89948b0e070b182b2d3743482a6fedb31b727cddf75d0482546569c1055253"
+    },
+    "exit_code": 0
+  },
+  "build": {
+    "flash": 32004,
+    "ram": 1179
+  },
+  "changes": [
+    "Remove forced CO2 OFF and boot EEPROM overwrite",
+    "Restore saved CO2 and heater states",
+    "Remove +/-15000ppm jump lock; diagnostic only; retain absolute60000ppm lock"
+  ],
+  "tests": {
+    "all_four_states": true,
+    "repeated_logical_power_cycles": 20,
+    "door_states": 32,
+    "boot_writes_control_byte": false,
+    "reading_400_20000_59000_400": "no shutdown and no EEPROM writes",
+    "absolute60000ppm": "lock and disable retained",
+    "dashboard": 13
+  },
+  "state": {
+    "file": "logs/telemetria/usb-20261106T181027-626678Z.log",
+    "initial_co2_on": 0,
+    "initial_heat_on": 1,
+    "current_co2_on": 0,
+    "current_heat_on": 1,
+    "range_lock": 0
+  },
+  "hardware_commands": "No ON/OFF/ACK sent; only firmware upload. Existing stored OFF/ON preserved.",
+  "limits": "Persistence and delta rule only; CO2 control remains experimentally unvalidated. Existing startup120s, learning thresholds, software duration limits and thermal interlocks are unchanged."
+}
