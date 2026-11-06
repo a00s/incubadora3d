@@ -1,3 +1,30 @@
+## Revisão autônoma: piso limitado e reavaliação com vazão maior — 2026-11-06
+
+- Estado atual GRAVADO:31.730bytes/1.125RAM, upload --verify saída0; código82e0f88.
+  BOOT_COUNT19,co2_enabled1,heater_enabled1,range_lock0; leitura inicial53.263ppm
+  caindo (ciclo da revisão intermediária), temperatura36,80°C. Sem ON/OFF/ACK.
+  Coleta atual somente leitura SEM timeout, sessão76010:
+  /tmp/incubadora-telemetria/co2-revisao-autonoma-20261106.log. Não abrir outro leitor
+  sem conferir proprietário da porta; abrir serial reinicia o Uno e o warmup120s.
+- Piso: só aprende após primeiro sucesso deste boot e com dose sem subida MENOR
+  QUE METADE da menor duração já útil. Uma redução moderada com resposta tardia
+  não pode virar piso grande. Testes:63ms com efeito/54ms sem efeito→piso0; partida
+  com65/72ms sem efeito→piso0. Preservado cálculo pela última dose/déficit inteiro.
+- Pico acima51.000ppm descarta piso antigo para permitir aberturas menores quando
+  a vazão aumenta. Resposta com duração<=piso também o invalida. Ganho se atualiza
+  pela última resposta; não foi fixado manômetro nem uma abertura para esta pressão.
+  Caps de ausência de resposta, inicialização e máximo1000ms continuam limitando
+  a faixa possível. Sem alteração de PID térmico, portas ou travas EEPROM.
+- Cinco testes C++ passaram,20.000histórias, piso, ganho maior/menor, excesso,
+  retomada de subidas e rollover. Simulações desta revisão:10.140execuções, duas
+  sementes, partida, vazão variável, duas câmaras e comparação sem piso. Caso de
+  limiar10ms manteve49.348–50.032ppm na última hora versus46.941–50.188 sem piso;
+  caso com queda de vazão49.383–50.096. Muitos estresses falham e não são calibração.
+- Relatório co2_manutencao_2026-11-06.json conserva picos intermediários (54.790ppm),
+  versões, hipóteses e hashes atuais de ino/header/hex. Estabilidade física final
+  prolongada ainda não certificada; deixar aprendizado rodar sem novos reinícios.
+  Sem CAD/3MF alterados; visualizador em/tmp atualizado e8081 respondeu200.
+
 ## Piso útil aprendido da abertura — gravado em 2026-11-06 (mais recente)
 
 - Na retomada real com a revisão5e69972, após dose produtiva63ms o cálculo voltou
