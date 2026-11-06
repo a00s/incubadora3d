@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.180 bytes de Flash (99%) e
-1.144 bytes de RAM global (55%), deixando 76 bytes de Flash e 904 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 31.880 bytes de Flash (99%) e
+1.140 bytes de RAM global (55%), deixando 376 bytes de Flash e 908 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -409,7 +409,7 @@ Duas variações negativas consecutivas dentro de 20 s indicam queda. Entre
 aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
 O cálculo proporcional usa a última dose útil: `ms anteriores × ppm necessários /
 resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, com aumento limitado ao
-dobro da referência para conter extrapolações após mudança de vazão.
+10% acima da referência para conter extrapolações após mudança de vazão.
 
 O resultado observado é a maior subida a partir do vale depois da dose, mesmo
 quando o pico continua abaixo da leitura no instante do comando. A perda medida
@@ -419,14 +419,13 @@ pressão fixa de cilindro. No platô de 49.000–51.000 ppm, duas amostras quase
 (até 2 ppm/s) permitem repor a perda de 20 s antes de uma queda grande. O erro para
 50.000 ppm também participa dessa dose; acima de 51.000 ppm o automático fecha.
 
-A recuperação usa uma dose observável de cada vez para não atribuir a resposta
-tardia à abertura errada. A primeira sonda é curta, limitada pela margem de
-concentração, e a observação inicial é de até 120 s; sem resposta útil a sonda
-cresce gradualmente. Depois de uma resposta útil, a duração observada até o pico
-(20–120 s) define a próxima janela de observação da recuperação. O platô usa
-reposições pequenas com mínimo de 20 s, sem esperar toda essa janela. Durante
-recuperação, a perda durante o tempo de resposta observado entra na quantidade a
-repor. Não há integral nem soma de doses para inventar um resultado anterior.
+A revisão atual **não tem pausa adicional de observação**: após o mínimo de
+20 s, duas quedas válidas dentro da janela de 20 s podem liberar a nova dose.
+Enquanto o CO₂ sobe, não injeta. Não existe espera de 60/120 s para isolar resposta.
+Sem resposta útil, a sonda cresce gradualmente e continua limitada pela margem de
+concentração. A referência só aprende uma subida mensurável; no platô, a reposição
+da perda histórica evita precisar esperar uma queda grande. Não há projeção de gás
+pendente nem integral. O usuário pediu observar essa lógica simples pelos gráficos.
 
 O sensor ainda tem aquecimento inicial de 120 s. Porta aberta, automático
 desligado, leitura inválida, sobretemperatura e travas EEPROM continuam impedindo
@@ -445,6 +444,7 @@ as falhas dos cenários de estresse. A revisão simples foi exercitada em 6.054
 simulações de quatro horas e 20.000 histórias numéricas; nem todos os cenários
 mantêm a faixa ou evitam excesso, portanto isso não certifica estabilidade física.
 Relatórios antigos são conservados em `docs/ensaios/`; a revisão simples está em
+`co2_sem_pausa_2026-11-06.json`; a revisão anterior com pausa foi arquivada em
 `co2_controle_simples_2026-11-06.json`.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por

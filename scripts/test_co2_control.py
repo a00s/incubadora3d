@@ -15,11 +15,11 @@ int main(){
  // The exact requested proportion, with only mechanical/growth bounds.
  resetFirmware();c.previousValid=true;c.trained=true;c.referenceMs=20;c.referenceRise=2000;
  c.lastPpm=49000;c.falling=2;c.lossPpmPerSec=0;
- assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==40);
+ assert(c.pulse(120000)==10);c.lastPpm=46000;assert(c.pulse(120000)==22); // Upward extrapolation capped at10%.
  c.lastPpm=49000;c.referenceRise=4000;assert(c.pulse(120000)==5);
  c.falling=1;assert(!c.ready(120000));c.falling=2;assert(c.ready(120000));
  recordAutomatic(10,120000);assert(!firmwareReady(139999));
- c.observing=false;c.falling=2;assert(firmwareReady(140010));
+ c.falling=2;c.observing=true;assert(firmwareReady(140010)); // No additional observation pause.
  // A flat summit replenishes measured loss at the normal 20 s cadence.
  c.lastPpm=50000;c.falling=0;c.flat=2;c.lossPpmPerSec=20;c.referenceMs=20;c.referenceRise=2000;
  assert(c.pulse(140010)==5);c.lossPpmPerSec=0;assert(c.pulse(140010)==0);
@@ -29,10 +29,10 @@ int main(){
  // A real valley-to-peak rise remains useful even below ppm at the command.
  resetFirmware();c.update(100000,50000,true);c.record(20,100000);
  c.update(110000,47000,true);c.update(120000,47500,true);c.update(130000,49000,true);
- c.update(140000,48900,true);c.update(150000,48800,true);assert(!c.trained);
+ c.update(140000,48900,true);c.update(150000,48800,true);assert(c.trained);
  for(uint32_t t=160000;t<=220000;t+=10000)c.update(t,48800-(t-150000)/100,true);
  assert(c.trained&&c.referenceMs==20&&c.referenceRise>=2000);
- assert(c.responseMs>=20000&&c.responseMs<=120000);
+
  // Maintenance never relearns a false small gain from overlapping flat doses.
  c.lastPpm=50000;auto rise=c.referenceRise;c.record(5,230000);assert(!c.observing);
  c.update(232000,50000,true);c.update(234000,50000,true);assert(c.referenceRise==rise);
@@ -62,4 +62,4 @@ with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
     cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2: actual gates, proportional dose, two declines/20s, flat loss refill, response observation, rollover, 20000 histories passed')
+print('CO2: actual gates, proportional dose, two declines/20s, flat loss refill, no observation pause, rollover, 20000 histories passed')

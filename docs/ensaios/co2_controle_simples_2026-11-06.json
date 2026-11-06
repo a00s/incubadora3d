@@ -1,5 +1,5 @@
 {
-  "status": "uploaded_verified; physical stabilization not certified",
+  "status": "superseded: user explicitly requested removal of observation pause",
   "build": {
     "flash_bytes": 32180,
     "sram_global_bytes": 1144,
@@ -1210,5 +1210,6 @@
       "conclusion": "improved but still below target at times"
     }
   },
-  "limits": "All stress failures are retained. There are range locks and excursions in hypothetical scenarios; no universal pressure/delay/fault guarantee. Physical stability is not certified by simulation."
+  "limits": "All stress failures are retained. There are range locks and excursions in hypothetical scenarios; no universal pressure/delay/fault guarantee. Physical stability is not certified by simulation.",
+  "superseded_by": "co2_sem_pausa_2026-11-06.json"
 }

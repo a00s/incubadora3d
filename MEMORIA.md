@@ -1,3 +1,30 @@
+## ATUALÍSSIMO: SEM PAUSA DE OBSERVAÇÃO, gravado às11:30CET — 2026-11-06
+
+- Usuário rejeitou explicitamente a pausa de observação ("nada de pausa") e pediu
+  envio imediato para observar gráficos. Retirada TODA espera adicional de60/120s.
+  Regra normal:2quedas consecutivas dentro20s ou platô perto50mil com perda medida;
+  mínimo20s após fecharválvula. Última dose útil proporcional ao déficit+perda20s.
+  Aumento limitado10%,5–1000ms; sem projeção de gás pendente/integral. Somente o
+  aquecimento inicial do sensor120s após reboot permanece, informado ao usuário.
+- ENVIO CONCLUÍDO E VERIFICADO11:30:18CET, saída0. HEX
+  1f436a30e49e66035643ab62650e0dc8d8fdd0aaecf78b116b664eac50fe6e67,
+ 31.880Flash/1.140RAM. Esta é a última versão; nenhuma outra pendente.
+  Arquivo live novo logs/telemetria/usb-20261106T103018-565295Z.log.
+  Logger e painel ativos; identificar boot/estado pela captura antes de concluir.
+- Versão anterior d8070ed1 tinha observação120s e calibração conservadora: ppm
+  caíram para31549. Não foi falta dehabilitação (CO2on1,trava0). Doses20/25/32/40/
+ 46/49/50 a cada~120s; depois100ms automático em968s. Usuário injetou manual20ms
+  em983s e confirmou passagem degás. Sensor subiu31832→32703→33979; não atribuir
+  toda subida ao manual, pois100ms automático antecedeu14s. Essa lentidão motivou
+  remover observação. Sem novos ON/OFF/ACK. Não afirmar que5% está estável.
+- Testes de cálculo, duasquedas20s, ausência depausa,platô,rollover,20milhistórias,
+  porta,aquecimento,perdas,visor passaram.6054simulações de4h preservam falhas,
+  inclusive excesso/travas em cenários. Relatório co2_sem_pausa_2026-11-06.json;
+  versão anterior marcada superseded. Usuário quer acompanhar os gráficos agora.
+- PAINEL,marcadores/escala ms,registros automáticos e comandos seguem descritos na
+  seção anterior. Não abrir segundo leitor USB. Upload via scripts/arduino.sh
+  coordena logger e grava evento vertical real de início/fim/hash/verificação.
+
 ## ENTREGA ATUAL: firmware simples + painel + logs automáticos — 2026-11-06
 
 - GRAVADO/VERIFICADO às11:08CET:32.180Flash/1.144RAM, upload saída0; BOOT27,

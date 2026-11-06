@@ -8,7 +8,6 @@ struct Co2DoseModel {
   uint16_t lastMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
-  uint32_t responseMs = 120000UL;
   float lossPpmPerSec = 0;
   uint8_t flat = 0;
   uint8_t falling = 0;
@@ -44,12 +43,10 @@ struct Co2DoseModel {
       if (ppm < valley) { valley = peak = ppm; valleyAt = peakAt = now; }
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
-      if (falling >= 2 && mass >= 50 && now - sendAt >= responseMs) {
+      if (falling >= 2 && mass >= 50 && now - sendAt >= 20000UL) {
         referenceMs = lastMs;
         int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
         referenceRise = delivered > 65535L ? 65535 : delivered;
-        uint32_t measuredResponse = peakAt - sendAt;
-        responseMs = measuredResponse < 20000UL ? 20000UL : (measuredResponse > 120000UL ? 120000UL : measuredResponse);
         trained = true;
         observing = false;
       }
@@ -60,21 +57,19 @@ struct Co2DoseModel {
 
   bool ready(uint32_t now) const {
     bool plateau = trained && flat >= 2 && lastPpm >= 49000 && lastPpm <= 51000;
-    return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL) &&
-      (!observing || now - sendAt >= responseMs);
+    return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
     if (!ready(now) || lastPpm >= 51000 || lastPpm <= 0) return 0;
-    uint32_t compensateMs = trained && lastPpm >= 49000 ? 20000UL : responseMs;
-    int32_t needed = 50000L - lastPpm + lossPpmPerSec * (compensateMs / 1000.0f);
+    int32_t needed = 50000L - lastPpm + lossPpmPerSec * 20;
     if (needed <= 0) return 0;
     uint32_t duration;
     if (trained && referenceRise) {
       // Last opening * (remaining ppm + measured loss refill) / observed dose result.
       duration = ((uint32_t)referenceMs * needed + referenceRise - 1) / referenceRise;
       // Avoid a large unobserved upward jump after a cylinder/flow change.
-      uint32_t growthLimit = (uint32_t)referenceMs * 2;
+      uint32_t growthLimit = referenceMs + (referenceMs + 9) / 10;
       if (duration > growthLimit) duration = growthLimit;
     } else {
       // No useful response yet: increase the short probe gradually, without
