@@ -1,3 +1,15 @@
+## USB retirado após último envio — 2026-11-06 22:29
+
+Desconexão confirmada por/dev/ttyACM*ausente e log sem novos dados. Último DATA
+recebido da76562872:uptime39252ms,47767ppm,CO₂1/heater1/lock0; ainda dentro
+dos120s iniciais. Isso não comprova resultado de manutenção nem estado físico
+após desconectar. Não existe histórico interno para recuperar esse intervalo.
+Não executar novo upload enquanto usuário move o computador. Fonte de produção
+e testes já estão emorigin/main; nenhuma versão nova pendente. Observador somente
+leitura do loge7 anterior foi encerrado (não o logger nem o painel). Serviços de
+coleta aguardam reconexão. Primeiro turno com este impedimento físico confirmado:
+novo objetivo de melhora continua incompleto, sem antecipar blockedantesde3turnos.
+
 ## ATUAL — enviado antes de retirar USB, 2026-11-06 22:27
 
 Usuário autorizou explicitamente último envio antes de mover o computador.
