@@ -299,6 +299,9 @@ void setup()
     EEPROM.put(EEPROM_CONTADOR, eeprom_contador_int);
     Serial.print(F("BOOT_COUNT,"));
     Serial.println(eeprom_contador_int);
+#ifdef CO2_EXPERIMENTAL_START_DISABLED
+    Serial.println(F("EVT,CO2_BOOT"));
+#endif
     if (co2RangeWrapLatched) Serial.println(F("EVENT,co2_range_lock_restored_after_boot"));
    
     

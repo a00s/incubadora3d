@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / 'web/co2'
-COLS = ['t','ppm','temp','last_ms','next_ms','rate','co2_on','heat_on','locked','projected','uptime_ms','raw_ppm','display_ppm','wrap_estimated']
+COLS = ['t','ppm','temp','last_ms','next_ms','rate','co2_on','heat_on','locked','projected','uptime_ms','raw_ppm','display_ppm','wrap_estimated','co2_off_reason','co2_off_at']
 FALLBACK = 'DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,dose_rise_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm'.split(',')
 
 
@@ -35,6 +35,14 @@ def describe_event(row):
     if row[0] == 'EVENT':
         key = row[1] if len(row)>1 else ''
         value = row[2] if len(row)>2 else ''
+        if key == 'co2_protocol_jump_suspected':
+            delta=number(row[3]) if len(row)>3 else None
+            change=(f'{int(delta):+,}'.replace(',','.')+' ppm') if delta is not None else 'não detalhado'
+            return ('alert','CO₂ bloqueado · salto de leitura '+change,None)
+        if key == 'co2_near_protocol_limit':
+            return ('alert','CO₂ bloqueado · leitura atingiu 60.000 ppm',None)
+        if key == 'co2_range_lock_restored_after_boot':
+            return ('alert','Trava anterior de CO₂ restaurada no reinício',None)
         if key == 'co2_no_response':
             return ('control', 'Desligamento pela versão antiga · regra de subida removida', None)
         if key == 'door':
@@ -53,6 +61,8 @@ def describe_event(row):
             return ('control','Ventilador '+('ligado' if value=='on' else 'desligado'),None)
         if key=='co2_button_clicks':
             return ('button',f'Botão CO₂ · {value} toque(s)',None)
+    if row[:2]==['EVT','CO2_BOOT']:
+        return ('control','CO₂ desligado no reinício · firmware experimental',None)
     if row[0]=='EVT' and 'SAFE_OFF' in row:
         return ('alert','Desligamento de segurança',None)
     if row[0]=='ACK':
@@ -83,21 +93,22 @@ def parse_log(text: str, name: str, start_epoch: float):
     previous_raw=None
     wrap_offset=0
     door_open=False
+    unwrap_anchor=0
 
     def new_session(counter, inferred=False):
-        nonlocal current,ordinal,boot,previous_ms,previous_point,offset,pending,previous_raw,wrap_offset,door_open
+        nonlocal current,ordinal,boot,previous_ms,previous_point,offset,pending,previous_raw,wrap_offset,door_open,unwrap_anchor
         if current and current['points']:
             offset=current['points'][-1][0]
         ordinal+=1
         boot=counter
         key=hashlib.sha1(f'{name}:{ordinal}:{counter}'.encode()).hexdigest()[:16]
-        current={'id':key,'file':name,'boot':counter,'estimated_time':True,'points':[], 'events':[], 'start':offset,'end':offset}
+        current={'id':key,'file':name,'boot':counter,'estimated_time':True,'points':[], 'events':[], 'start':offset,'end':offset,'co2_off_reason':None,'co2_off_at':None}
         sessions.append(current)
         pending=[{'kind':'restart','label':f'Reinício · boot {counter}' if counter is not None else 'Início da captura / reinício detectado', 'raw':f'BOOT_COUNT,{counter}' if counter is not None else 'uptime reset / capture start','duration_ms':None,'estimated':inferred}]
         if counter is not None or inferred:
             pending.append({'kind':'warmup','label':'Aquecimento inicial do sensor · 120 s','raw':'firmware warmup','duration_ms':120000,'estimated':False})
         previous_ms=previous_point=None
-        previous_raw=None;wrap_offset=0;door_open=False
+        previous_raw=None;wrap_offset=0;door_open=False;unwrap_anchor=0
 
     for line in lines:
         try:
@@ -124,7 +135,9 @@ def parse_log(text: str, name: str, start_epoch: float):
             kind,label,duration=describe_event(row)
             if row[:2]==['EVENT','door']:
                 door_open=len(row)>2 and row[2]=='open'
-                if door_open:previous_raw=None;wrap_offset=0
+                if door_open:
+                    previous_raw=None;wrap_offset=0
+                    unwrap_anchor=len(current['points']) if current else 0
             pending.append({'kind':kind,'label':label,'raw':','.join(row),'duration_ms':duration,'estimated':False,'received_at':received})
             continue
         if row[0]!='DATA' or len(row)!=26: continue
@@ -153,15 +166,24 @@ def parse_log(text: str, name: str, start_epoch: float):
             parsed=number(values.get(key))
             return default if parsed is None else parsed
         point=[round(received if received is not None else offset+ms/1000,3),ppm,v('temp_c'),v('last_pulse_ms'),v('next_pulse_ms'),v('rate_ppm_s'),v('co2_enabled',0),v('heater_enabled',0),v('co2_range_lock',0),(v('co2_proj_ppm') if v('co2_proj_ppm') is not None and v('co2_proj_ppm')>=0 else None),int(ms)]
+        if previous_ms is not None and ms-previous_ms>10000:
+            previous_raw=None;wrap_offset=0;unwrap_anchor=len(current['points'])
         display_ppm=ppm
         if raw_ppm is not None and (ppm is not None or point[8]):
             if previous_raw is not None and previous_ms is not None and ms-previous_ms<=10000 and not door_open:
                 if point[8] and previous_raw-raw_ppm>32768:wrap_offset+=65536
-                elif wrap_offset>=65536 and raw_ppm-previous_raw>32768:wrap_offset-=65536
+                elif raw_ppm-previous_raw>32768:
+                    if wrap_offset>=65536:wrap_offset-=65536
+                    elif point[8] and previous_point and previous_point[8]:
+                        # A capture can start after an earlier unobserved wrap.
+                        # Infer only the minimum continuous nonnegative history.
+                        for old in current['points'][unwrap_anchor:]:
+                            if old[12] is not None:old[12]+=65536;old[13]=True
             display_ppm=raw_ppm+wrap_offset
             previous_raw=raw_ppm
         else:
             previous_raw=None
+            unwrap_anchor=len(current['points'])+1
         point.extend([raw_ppm,display_ppm,bool(wrap_offset and display_ppm is not None)])
         if received is not None:
             current['estimated_time']=False
@@ -177,11 +199,35 @@ def parse_log(text: str, name: str, start_epoch: float):
             # Restart belongs to the start of uptime, rather than 1.5 s later.
             if event['kind'] in ('restart','warmup') and event.get('received_at') is None:event['t']=offset
             current['events'].append(event)
+        reason=None;reason_at=None
+        for event in current['events'][-len(pending):] if pending else []:
+            raw=event['raw']
+            if raw.startswith(('EVENT,co2_protocol_jump_suspected','EVENT,co2_near_protocol_limit','EVENT,co2_range_lock_restored_after_boot')):
+                if previous_point and not previous_point[6] and previous_point[8] and point[8] and current['co2_off_reason'] and reason is None:
+                    continue # Further diagnostics must not replace the original disable cause.
+                reason=event['label'];reason_at=event['t']
+            elif raw=='EVENT,door,open':reason='Porta marcada como aberta';reason_at=event['t']
+            elif raw.startswith(('ACK,CO2,RANGE_UNLOCKED_AUTO_OFF','EVENT,co2_lock_cleared')):
+                reason='Trava limpa; automático permanece desligado';reason_at=event['t']
+            elif raw in ('ACK,CO2,OFF','ACK,ALL,OFF'):
+                reason='Desligado por comando';reason_at=event['t']
+            elif raw=='EVT,CO2_BOOT':reason='Desligado no reinício: firmware experimental';reason_at=event['t']
+            elif raw=='EVT,SAFE_OFF':reason='Proteção de temperatura';reason_at=event['t']
+            elif raw=='EVENT,co2_button_clicks,1' and previous_point and previous_point[6] and not point[6]:
+                reason='Desligado pelo botão CO₂';reason_at=event['t']
+        if point[6]:
+            current['co2_off_reason']=None;current['co2_off_at']=None
+        elif reason:
+            current['co2_off_reason']=reason;current['co2_off_at']=reason_at
+        elif not current['co2_off_reason']:
+            current['co2_off_reason']='Desligado no início da captura; causa anterior não registrada' if previous_point is None else 'Desligamento registrado sem motivo detalhado'
+            current['co2_off_at']=point[0]
+        point.extend([current['co2_off_reason'],current['co2_off_at']])
         pending=[]
         if previous_point:
             for index,kind,label in [(6,'control','CO₂ automático'),(7,'control','Aquecimento'),(8,'alert','Trava de CO₂')]:
                 if point[index]!=previous_point[index]:
-                    current['events'].append({'id':f"{current['id']}:{int(ms)}:state:{index}",'t':point[0],'session':current['id'],'kind':kind,'label':label+(' ativado' if point[index] else ' desativado'),'raw':f'DATA transition,{COLS[index]},{point[index]}','duration_ms':None,'source':'state','estimated':False})
+                    current['events'].append({'id':f"{current['id']}:{int(ms)}:state:{index}",'t':point[0],'session':current['id'],'kind':kind,'label':('CO₂ desativado · '+point[14]) if index==6 and not point[6] and point[14] else label+(' ativado' if point[index] else ' desativado'),'raw':f'DATA transition,{COLS[index]},{point[index]}','duration_ms':None,'source':'state','estimated':False})
             if (ppm is None)!=(previous_point[1] is None):
                 current['events'].append({'id':f"{current['id']}:{int(ms)}:sensor",'t':point[0],'session':current['id'],'kind':'sensor','label':'Sensor recuperado' if ppm is not None else 'Sensor sem leitura válida','raw':'DATA validity transition','duration_ms':None,'source':'state','estimated':False})
         current['points'].append(point)

@@ -61,6 +61,26 @@ class Chronology(unittest.TestCase):
         self.assertEqual([e['duration_ms'] for e in doors],[8400,8400])
         self.assertAlmostEqual(doors[0]['t'],1700000003.1)
 
+    def test_disable_reason_persists_until_enabled_with_original_event_time(self):
+        def sample(ms,on,locked=0,ppm=38179):
+            row=data(ms,ppm,0 if locked else 1).strip().split(',')
+            row[7]=str(on);row[24]=str(locked)
+            return ','.join(row)+'\n'
+        text='BOOT_COUNT,1\n'+HEADER+'HOST_TIME,1700000000\n'+sample(1000,1,0,16286)
+        text+='HOST_TIME,1700000001.25\nEVENT,co2_protocol_jump_suspected,delta_ppm,21893,control_locked_until_restart\n'
+        text+='HOST_TIME,1700000002\n'+sample(3000,0,1)+'EVENT,co2_protocol_jump_suspected,delta_ppm,-57354,control_locked_until_restart\n'+sample(5000,0,1)
+        text+=sample(7000,1)
+        points=parse_log(text,'reason',1000)[0]['points']
+        self.assertIn('+21.893',points[1][14])
+        self.assertEqual(points[1][14:16],points[2][14:16])
+        self.assertEqual(points[1][15],1700000001.25)
+        self.assertEqual(points[3][14:16],[None,None])
+        bootrow=sample(1000,0)
+        boot=parse_log('BOOT_COUNT,1\n'+HEADER+'EVT,CO2_BOOT\n'+bootrow,'boot-off',1000)[0]['points'][0]
+        self.assertIn('firmware experimental',boot[14])
+        text=capture(count=1)+'EVENT,co2_button_clicks,1\n'+sample(3000,0)
+        self.assertIn('botão',parse_log(text,'button-off',1000)[0]['points'][-1][14])
+
     def test_locked_raw_and_counter_wrap_are_preserved_separately(self):
         def locked(ms,raw):
             row=data(ms,raw,0).strip().split(',');row[24]='1'
@@ -76,6 +96,13 @@ class Chronology(unittest.TestCase):
         # A capture starting low and locked cannot reveal how many wraps happened.
         unknown=parse_log('BOOT_COUNT,2\n'+HEADER+locked(1000,785),'unknown',1000)[0]['points'][0]
         self.assertEqual(unknown[12],785);self.assertFalse(unknown[13])
+        reverse=parse_log('BOOT_COUNT,4\n'+HEADER+locked(1000,34464)+locked(3000,20000)+locked(5000,109)+locked(7000,65325),'reverse',1000)[0]['points']
+        self.assertEqual([p[12] for p in reverse],[100000,85536,65645,65325])
+        self.assertTrue(reverse[0][13])
+        self.assertIsNone(reverse[0][1])
+        gap=parse_log('BOOT_COUNT,5\n'+HEADER+locked(1000,34464)+locked(100000,109)+locked(102000,65325),'gap-wrap',1000)[0]['points']
+        self.assertEqual([p[12] for p in gap],[34464,65645,65325])
+        self.assertFalse(gap[0][13])
         # A recorded door opening is not evidence of counter rollover.
         door=parse_log('BOOT_COUNT,3\n'+HEADER+locked(1000,65000)+'EVENT,door,open\n'+locked(3000,500),'door-wrap',1000)[0]['points'][-1]
         self.assertEqual(door[12],500);self.assertFalse(door[13])

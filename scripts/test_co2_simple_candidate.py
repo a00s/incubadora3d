@@ -15,12 +15,16 @@ int main() {
   assert(firmwarePulse(120000,true,true,1)==0);assert(firmwarePulse(120000,true,true,0,true)==0);
   resetFirmware();
   c.previousValid=true; c.lastPpm=49000; c.falling=2;
-  c.trained=true; c.referenceMs=20; c.referenceRise=500;
+  c.trained=true; c.referenceMs=20; c.referenceRise=500;c.lastProbeMs=20;
   assert(c.pulse(120000)==40); //20ms gave500ppm;1000ppm missing.
   c.lastPpm=49900; assert(c.pulse(120000)==5); //4ms below mechanical minimum.
   c.lastPpm=51000; assert(c.pulse(120000)==0);
   c.falling=0; c.flat=0; assert(c.pulse(120000)==0);
-  c.lastPpm=45000; c.flat=2; assert(c.pulse(120000)==200);
+  c.lastPpm=45000; c.flat=2; assert(c.pulse(120000)==40);
+  c.lastProbeMs=80;c.referenceMs=80;c.referenceRise=2000;c.lastPpm=41570;
+  assert(c.pulse(120000)==100); //Raw338ms cannot jump from80ms to338ms.
+  c.record(100,120000);c.falling=2;assert(c.pulse(140100)==120);
+  c.lastPpm=49900;assert(c.pulse(140100)==5); //Only increases are limited.
   resetFirmware(); uint32_t t=120000; int32_t ppm=10000;
   for(int n=1;n<=6;n++) {
     c.update(t,ppm,true); c.record(20,t);
@@ -53,8 +57,14 @@ int main() {
   // Missing gain never divides by zero; a valid large ratio cannot overflow32bits.
   c.previousValid=true; c.falling=2; c.observing=false;
   c.trained=true; c.referenceMs=400000; c.referenceRise=1000;
-  c.lastPpm=1000; assert(c.pulse(900000)==1000);
+  c.lastProbeMs=1000;c.lastPpm=1000; assert(c.pulse(900000)==1000);
   c.reset(); assert(c.stepCount==0 && !c.trained);
+  c.update(120000,39600,true);c.record(20,120000);c.record(40,142000);
+  c.record(60,164000);c.record(80,186000);
+  c.update(200000,41000,true);c.update(206000,42400,true);
+  c.update(208000,42401,true);c.update(210000,42402,true);
+  assert(c.trained&&c.referenceMs==80&&c.lastMs==80); //Not the200ms sum.
+  assert(c.pulse(210000)<=100);
 }
 '''
 with tempfile.TemporaryDirectory(prefix='co2-simple-candidate-') as folder:

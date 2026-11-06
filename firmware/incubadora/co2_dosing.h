@@ -90,6 +90,8 @@ struct Co2DoseModel {
     } else {
       duration = lastProbeMs + 20UL; // User-requested calibration:20,40,60,80,... until measured gain.
     }
+    uint32_t nextMaximum = lastProbeMs ? (uint32_t)lastProbeMs + 20 : 20;
+    if (duration > nextMaximum) duration = nextMaximum;
     if (duration > 1000) duration = 1000;
     if (duration < 5) duration = 5;
     return duration;
@@ -97,9 +99,8 @@ struct Co2DoseModel {
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
     lastProbeMs = ms;
-    if (observing) lastMs += ms;
-    else {
-      lastMs = ms;
+    lastMs = ms;
+    if (!observing) {
       valley = peak = lastPpm; valleyAt = peakAt = now;
       mass = 0;
     }

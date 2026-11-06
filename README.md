@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.172 bytes de Flash (99%) e
-1.179 bytes de RAM global (57%), deixando 84 bytes de Flash e 869 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.244 bytes de Flash (99%) e
+1.179 bytes de RAM global (57%), deixando 12 bytes de Flash e 869 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -404,7 +404,7 @@ de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
 A versão instalada em2026-11-06 é **experimental, com CO₂ desligado no boot**,
-HEX `f995720e`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
+HEX `84ab6cdb`. Foi enviada a pedido explícito, sem ativar injeção. O sketch zera
 habilitação e retomada de CO₂ pela porta em cada reinício, preservando aquecimento.
 `python3 scripts/test_co2_experimental_boot.py` verifica32combinações salvas.
 
@@ -415,14 +415,16 @@ permanece1000ms. Depois usa a proporção média das1–5 escadas disponíveis:
 Duas quedas dentro20s ou platô abaixo da meta permitem dose; subida relevante
 faz esperar estabilização. Intervalo mínimo20s após fechar a válvula.
 Não existem ganho presumido800ppm/ms, orçamento66ms, teto por margem59000
-ou desligamento por ausência de subida. O filtro200ppm só evita aprender ruído.
+ou desligamento por ausência de subida. O filtro200ppm só evita aprender ruído. Toda abertura, inclusive após calibrar,
+pode aumentar no máximo20ms em relação à última; reduções podem ser maiores.
+Cada escada usa os ms da última abertura como referência, sem somar sondas anteriores.
 Continuam supervisor51mil/60000, falha de leitura/protocolo, temperatura, porta e
 warmup120s. Não há previsão de gás pendente; coluna legada projetada vale-1.
 
 **Não está validada para injeção automática.** O relatório
-`docs/ensaios/co2_calibracao_incremento20_2026-11-06.json` registra envio e ensaios
-com controlador hipoteticamente habilitado: o modelo nominal atingiu~98.465ppm;
-1.847/2.000cenários aleatórios acionaram trava60000. A conta aritmética e a
+`docs/ensaios/co2_limite_global20_ultima_dose_2026-11-06.json` registra envio e ensaios
+com controlador hipoteticamente habilitado: o modelo nominal atingiu~61.685ppm;
+1.113/2.000cenários aleatórios acionaram trava60000. A conta aritmética e a
 inicialização desligada passaram; isso não certifica segurança ao ativar o controle.
 A trava fecha a válvula, mas não recolhe gás já comandado e ainda a caminho.
 Relatórios anteriores e respectivas falhas permanecem em `docs/ensaios/`.
@@ -696,3 +698,10 @@ e `ppm` válido permanecem intactas; o JSON exportado acrescenta `raw_ppm`,
 `display_ppm` e `wrap_estimated`. Reinício ou captura já iniciada com leitura baixa
 não permite deduzir voltas anteriores. Porta registrada aberta interrompe inferência
 de retorno para não transformar purga conhecida em continuidade fictícia.
+
+O painel mostra causa e horário do desligamento no cartão e eventos, preservando
+o motivo original até reativação. Boot experimental registra `EVT,CO2_BOOT`.
+Exportação acrescenta `co2_off_reason` e `co2_off_at`. Ao observar retorno durante
+a queda numa captura iniciada após volta anterior, a interface pode reconstruir
+retroativamente a continuidade mínima com≈; não interpreta automaticamente0→65mil
+como subida física. Porta registrada ou lacuna>10s interrompe essa inferência.

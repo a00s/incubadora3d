@@ -9,7 +9,7 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
            bool dropout=false,bool contact=false,bool softOpening=false){
  resetFirmware();double ppm=initial,q=0,peak=initial,lo=1e9,hi=0,total=0;
  std::vector<double> future(7300,0);int first=-1,doses=0,count=0,shortest=999999;
- uint32_t previousDose=0;int previousSensed=(int)initial;bool locked=false;
+ uint16_t previousPulseMs=0;uint32_t previousDose=0;int previousSensed=(int)initial;bool locked=false;
  for(int t=0;t<14400;t+=2){
   uint32_t now=(uint32_t)t*1000;
   bool opened=door>=0&&t>=door&&t<door+30;
@@ -27,6 +27,7 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   if(valid)updateCo2RecentRise(now);
   uint16_t pulse=firmwarePulse(now,valid,botao_co2_onoff&&!opened);
   if(pulse){
+   assert(pulse<=previousPulseMs+20);previousPulseMs=pulse;
    double gain=gradual?g0+(g1-g0)*t/14400:(t<7200?g0:g1);
    if(contact&&t>=6000&&t<6600)gain=0;
    double effective=std::max(0.0,pulse-dead);
