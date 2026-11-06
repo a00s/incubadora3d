@@ -45,7 +45,7 @@ definidos explicitamente pelo usuário.
 | Histórico de 16 leituras e janela ≥30 s | Outra condição para liberar doses. É preenchido em paralelo ao aquecimento inicial; uma leitura inválida reinicia esse histórico. |
 | Intervalo mínimo 20 s | Entre o fechamento da válvula e nova abertura automática. Pedido pelo usuário. |
 | Duas quedas dentro de 20 s | As duas últimas quedas consecutivas, cada intervalo válido de até20s, podem liberar a dose pelas condições restantes. Não reinicia a contagem a cada20s durante uma queda contínua. Pedido pelo usuário. |
-| Platô | Duas variações dentro de ±2ppm/s continuam sendo platô em qualquer valor e fecham uma escada para aprender. Perto da meta (a partir de49.000ppm, com ganho aprendido), duas leituras não decrescentes de até30ppm/s também permitem reposição antecipada. Essa tolerância adicional não altera a definição de escada usada no ganho. |
+| Platô | Duas variações dentro de ±2ppm/s continuam sendo platô em qualquer valor e fecham uma escada para aprender. Perto da meta (a partir de48.000ppm, com ganho aprendido), duas leituras não decrescentes de até30ppm/s também permitem reposição antecipada. Essa tolerância adicional não altera a definição de escada usada no ganho. |
 | Até 5 escadas | Ganho ponderado: soma das subidas dividida pela soma das aberturas associadas à resposta; usa imediatamente1–5 referências disponíveis. Não atribui toda resposta à última abertura se ela ainda está em trânsito. |
 | Subida mínima 200 ppm para aprender | Variações menores não atualizam o ganho. Não impede continuar a calibração. Esse filtro foi introduzido nas revisões. |
 | Calibração 20/40/60/80… ms | Enquanto não existe ganho útil. Pedido pelo usuário. |

@@ -104,7 +104,7 @@ struct Co2DoseModel {
   }
 
   bool ready(uint32_t now) const {
-    bool plateau = (flat >= 2 || (trained && lastPpm >= 49000 && nearFlat >= 2)) && lastPpm > 0;
+    bool plateau = (flat >= 2 || (trained && lastPpm >= 48000 && nearFlat >= 2)) && lastPpm > 0;
     return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 

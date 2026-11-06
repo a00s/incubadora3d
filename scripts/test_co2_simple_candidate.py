@@ -90,6 +90,11 @@ int main() {
   assert(!c.ready(124000)); //Low-concentration recovery still waits for the rise.
   c.reset();c.update(120000,49000,true);c.update(122000,49060,true);c.update(124000,49120,true);
   assert(!c.ready(124000)); //No invented gain before the first measured stair.
+  // Do not wait for49000ppm when a trained recovery is already flattening at48000.
+  c.reset();c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
+  c.update(120000,48000,true);c.update(122000,48060,true);c.update(124000,48120,true);
+  assert(c.ready(124000)&&c.pulse(124000)>0&&c.pulse(124000)<=40);
+  c.update(126000,48181,true);assert(!c.ready(126000));
   // Maintenance must cover measured arrival, not just the minimum pulse interval.
   c.reset();c.previousValid=true;c.flat=2;c.lastPpm=50000;
   c.trained=true;c.referenceMs=20;c.referenceRise=500;c.lastProbeMs=20;
