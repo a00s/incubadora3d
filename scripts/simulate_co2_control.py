@@ -32,7 +32,8 @@ report={
  'grid':{'count':len(grid),'range_locks':sum(r['range_locked'] for r in grid),
          'peak_above_51000':sum(r['peak_ppm']>51000 for r in grid),
          'last_hour_within_49000_51000':sum(r['last_hour_min']>=49000 and r['last_hour_max']<=51000 for r in grid),
-         'not_reached_in_4h':sum(r['first_band_s']<0 for r in grid)},
+         'not_reached_in_4h':sum(r['first_band_s']<0 for r in grid),
+         'no_response_faults':sum(r['no_response_fault'] for r in grid)},
  'worst':sorted(grid,key=lambda r:r['peak_ppm'],reverse=True)[:10],
  'limits':'Stress failures are retained. Simulation cannot guarantee unknown cylinder flow, mixing changes or a stuck valve. A notified cylinder change resets learning; an unannounced abrupt pressure change is only observable after gas reaches the sensor.'}
 assert all(r['min_interval_s']>=20 for r in rows)
@@ -41,5 +42,11 @@ for key in ('fitted_nominal','cold_2000','pressure_half','depleting','door','noi
     r=next(r for r in named if r['scenario']==key)
     if not a.explore:assert r['range_locked']==0 and r['peak_ppm']<52000,r
 assert next(r for r in named if r['scenario']=='empty')['last_hour_max']<49000
+for key in ('cold_16000_dead22','cold_6400_dead22'):
+    r=next(r for r in named if r['scenario']==key)
+    assert 0 <= r['first_band_s'] <= 1200 and not r['no_response_fault'],r
+for key in ('empty','delay_300'):
+    assert next(r for r in named if r['scenario']==key)['no_response_fault']==1
+
 if a.report:a.report.write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

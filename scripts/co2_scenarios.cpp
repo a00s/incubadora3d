@@ -3,7 +3,7 @@
 #include <vector>
 #include <random>
 #include <cstdio>
-struct Result {double peak,low,high,mean;int first,doses,minInterval,locked;};
+struct Result {double peak,low,high,mean;int first,doses,minInterval,locked,noResponse;};
 Result run(double g0,double g1,double lambda,int delay,double mixing,double initial,
            bool gradual=false,bool notified=false,int door=-1,double noise=0,double dead=0,
            bool dropout=false,bool contact=false,bool softOpening=false){
@@ -25,7 +25,8 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   co2DoseModel.update(now,sensed,valid,!opened);
   if(!valid){co2DoseModel.reset(true);co2LastPulseAt=now;lastCo2PulseMs=0;}
   if(valid)updateCo2RecentRise(now);
-  uint16_t pulse=firmwarePulse(now,valid,!opened);
+  serviceResponseFault(now);
+  uint16_t pulse=firmwarePulse(now,valid,botao_co2_onoff&&!opened);
   if(pulse){
    double gain=gradual?g0+(g1-g0)*t/14400:(t<7200?g0:g1);
    if(contact&&t>=6000&&t<6600)gain=0;
@@ -41,14 +42,20 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
   if(t>=10800){lo=std::min(lo,ppm);hi=std::max(hi,ppm);total+=ppm;count++;}
  }
  assert(shortest==999999||shortest>=20);
- return {peak,lo,hi,total/count,first,doses,shortest,locked?1:0};
+ return {peak,lo,hi,total/count,first,doses,shortest,locked?1:0,co2DoseModel.noResponse(14398000)?1:0};
 }
 void emit(const char*name,Result r){
- printf("{\"scenario\":\"%s\",\"peak_ppm\":%.1f,\"last_hour_min\":%.1f,\"last_hour_max\":%.1f,\"last_hour_mean\":%.1f,\"first_band_s\":%d,\"doses\":%d,\"min_interval_s\":%d,\"range_locked\":%d}\n",name,r.peak,r.low,r.high,r.mean,r.first,r.doses,r.minInterval,r.locked);
+ printf("{\"scenario\":\"%s\",\"peak_ppm\":%.1f,\"last_hour_min\":%.1f,\"last_hour_max\":%.1f,\"last_hour_mean\":%.1f,\"first_band_s\":%d,\"doses\":%d,\"min_interval_s\":%d,\"range_locked\":%d,\"no_response_fault\":%d}\n",name,r.peak,r.low,r.high,r.mean,r.first,r.doses,r.minInterval,r.locked,r.noResponse);
 }
 int main(int argc,char**argv){
  unsigned seed=argc>1?(unsigned)std::strtoul(argv[1],nullptr,10):20261106;
+ emit("door_swap_regression_47",run(157.856850,609.770903,.000676,70,2.784806,2000,false,true,7200,0,.523818));
+ emit("door_swap_regression_1497",run(134.156792,535.700463,.000711,44,10.019819,2000,false,true,7200,0,7.839629));
  emit("fitted_nominal",run(70.6179,70.6179,.0004,54,4,48000));
+ emit("cold_16000_dead22",run(70,70,.0004,54,4,16000,false,false,-1,0,22));
+ emit("cold_6400_dead22",run(70,70,.0004,54,4,6400,false,false,-1,0,22));
+ emit("delay_180",run(70,70,.0004,180,4,16000));
+ emit("delay_300",run(70,70,.0004,300,4,16000));
  emit("cold_2000",run(70.6179,70.6179,.0004,54,4,2000));
  emit("delay_30",run(70,70,.0004,30,4,48000));
  emit("delay_70",run(70,70,.0004,70,4,48000));

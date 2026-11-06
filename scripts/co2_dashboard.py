@@ -35,6 +35,8 @@ def describe_event(row):
     if row[0] == 'EVENT':
         key = row[1] if len(row)>1 else ''
         value = row[2] if len(row)>2 else ''
+        if key == 'co2_no_response':
+            return ('alert', 'CO₂ sem resposta · automático desligado', None)
         if key == 'door':
             return ('door', 'Porta aberta' if value=='open' else 'Porta fechada', None)
         if key in ('co2_pulse','co2_probe'):

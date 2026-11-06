@@ -28,7 +28,7 @@ names=['void setDisplayBackground(', 'void setDisplayForeground(', 'void updateA
 functions=[function(n) for n in names]
 prototypes='\n'.join(f[:f.index('{')].strip()+';' for f in functions)
 globals_=source[source.index('bool displayCacheValid'):source.index('unsigned long lastValidCo2Time')]
-harness=r'''
+harness='#include \"'+str(Path(__file__).resolve().parents[1]/'firmware/incubadora/co2_dosing.h')+'\"\nCo2DoseModel co2DoseModel;\n'+r'''
 #include <stdint.h>
 #include <cmath>
 #include <cstring>
@@ -154,6 +154,11 @@ int main() {
  assert(ucg.has("RECUPERANDO") && ucg.has("ppm/min") && ucg.has("cm3/h"));
  assert(!ucg.has("PORTA ABERTA"));
  co2DoorMode=2;ucg.reset();renderDisplay(36.8,30,true);ucg.assertOpen();
+ // No-response faults are visible; temperature faults keep priority.
+ co2DoorMode=0;co2DoseModel.update(fakeMillis,6400,true);co2DoseModel.record(20,fakeMillis);
+ fakeMillis+=180000;ucg.reset();renderDisplay(37.0,30,true);assert(ucg.has("CO2 SEM RESP"));
+ ucg.reset();renderDisplay(NAN,30,false);assert(ucg.has("TEMP LOST"));
+ co2DoseModel.reset();
  // Every numeric field preserves unchanged glyphs and erases only changed cells.
  co2DoorMode=0;CO2i=50000;co2RatePpmMin=-100;lossCm3HourX10=240;
  renderDisplay(37.0,30,true);ucg.reset();CO2i=50001;renderDisplay(37.0,30,true);

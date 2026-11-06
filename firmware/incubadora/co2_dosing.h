@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-// Rolling gain from up to five useful staircases; no pending-gas projection or observation pause.
+// Rolling gain from up to five useful stairs; bounded retries retain the gas account.
 struct Co2DoseModel {
   uint16_t referenceMs = 20;
   uint32_t referenceRise = 0;
@@ -9,6 +9,9 @@ struct Co2DoseModel {
   uint8_t stepCount = 0, stepHead = 0;
   uint32_t responseMs = 20000;
   uint16_t lastMs = 0;
+  int32_t batchPpm = 0;
+  uint32_t batchAt = 0, settleAt = 0;
+  bool combined = false;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
   float lossPpmPerSec = 0;
@@ -18,7 +21,7 @@ struct Co2DoseModel {
 
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
     // A reset request must not erase gas already commanded and still arriving.
-    if (preserve && observing) { previousValid = false; falling = flat = 0; return; }
+    if (preserve && observing) { combined = true; previousValid = false; falling = flat = 0; return; }
     uint32_t oldAt = sendAt;
     bool sent = hasSent;
     float loss = lossPpmPerSec;
@@ -27,7 +30,7 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void update(uint32_t now, int32_t ppm, bool valid, bool learn = true) {
-    if (!valid || !learn) { previousValid = false; falling = 0; return; }
+    if (!valid || !learn || noResponse(now)) { previousValid = false; falling = flat = 0; return; }
     uint32_t elapsed = now - lastAt;
     if (previousValid && elapsed && elapsed <= 20000UL) {
       int32_t delta = ppm - lastPpm;
@@ -49,6 +52,12 @@ struct Co2DoseModel {
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
+        // If two commands form one response, the first plateau may precede
+        // the second arrival. Keep their measured spacing in the gas account.
+        if (combined && !settleAt) settleAt = now + (sendAt - batchAt);
+        if (combined && (int32_t)(now - settleAt) < 0) {
+          lastPpm = ppm; lastAt = now; previousValid = true; return;
+        }
         int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
         // Only useful rises enter the history. In particular, the recorded
         // 69ppm fluctuation must not replace a response of several thousand ppm.
@@ -63,7 +72,7 @@ struct Co2DoseModel {
         if (++stepHead == 5) stepHead = 0;
         if (stepCount < 5) stepCount++;
         responseMs = peakAt - sendAt;
-        if (responseMs < 20000) responseMs = 20000;
+        if ((int32_t)responseMs < 20000) responseMs = 20000;
         trained = true;
         observing = false;
       }
@@ -72,9 +81,11 @@ struct Co2DoseModel {
     lastPpm = ppm; lastAt = now;
   }
 
+  __attribute__((noinline,noclone)) bool noResponse(uint32_t now) const { return observing && now - sendAt >= 180000UL; }
+
   bool ready(uint32_t now) const {
     bool plateau = flat >= 2 && lastPpm > 0;
-    return previousValid && !observing && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
+    return previousValid && !noResponse(now) && (!observing || mass < 200) && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
@@ -100,7 +111,14 @@ struct Co2DoseModel {
         if (bound > upperGain) upperGain = bound;
       }
     }
-    uint32_t headroomMs = (59000L - lastPpm) / upperGain;
+    if ((observing || combined) && upperGain < 800) upperGain = 800;
+    int32_t budgetPpm = observing && batchPpm > lastPpm ? batchPpm : lastPpm;
+    uint32_t headroomMs = (59000L - budgetPpm) / upperGain;
+    if (observing) {
+      if (headroomMs <= lastMs) return 0;
+      headroomMs -= lastMs;
+      duration = headroomMs; // Remaining gas budget, never an unbounded retry.
+    }
     if (headroomMs < 5) return 0;
     if (duration > headroomMs) duration = headroomMs;
     if (duration > 1000) duration = 1000;
@@ -109,9 +127,15 @@ struct Co2DoseModel {
   }
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
-    lastMs = ms;
-    valley = peak = lastPpm; valleyAt = peakAt = now;
-    mass = 0;
+    if (observing) { lastMs += ms; combined = true; }
+    else {
+      combined = false;
+      lastMs = ms;
+      batchPpm = lastPpm;
+      batchAt = now; settleAt = 0;
+      valley = peak = lastPpm; valleyAt = peakAt = now;
+      mass = 0;
+    }
     falling = flat = 0;
     sendAt = now;
     hasSent = true;

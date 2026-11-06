@@ -22,7 +22,8 @@ int main(){
  c.lastPpm=49000;c.referenceRise=4000;assert(c.pulse(120000)==5);
  c.falling=1;assert(!c.ready(120000));c.falling=2;assert(c.ready(120000));
  recordAutomatic(10,120000);assert(!firmwareReady(139999));
- c.falling=2;c.observing=true;assert(!firmwareReady(140010)); // No stacking an unresolved response.
+ c.falling=2;c.observing=true;c.mass=200;assert(!firmwareReady(140010)); // Once rising, wait for its result.
+ c.mass=0;assert(firmwareReady(140010)); // Insufficient first probe: remaining bounded budget.
  c.observing=false;assert(firmwareReady(140010)); // No extra timed pause once resolved.
  // A flat summit replenishes measured loss at the normal 20 s cadence.
  c.lastPpm=50000;c.falling=0;c.flat=2;c.lossPpmPerSec=20;c.referenceMs=20;c.referenceRise=2000;
@@ -93,17 +94,50 @@ int main(){
  const Reading replay[]={ REPLAY_ROWS };
  for(const auto &row:replay)c.update(row.at,row.ppm,row.valid);
  assert(c.mass==69&&c.stepCount==1&&c.referenceMs==25&&c.referenceRise==4744);
- assert(c.pulse(258411)==0); //No replacement dose until the outstanding response is resolved.
+ assert(c.pulse(258411)==0); //Remaining budget is below5ms: never issue228ms.
  c.observing=false;assert(c.pulse(258411)==10); //Raw19 clipped by the high-flow/dead-time envelope.
  // Delayed arrival must not be replaced by a falling or flat pre-response curve.
  resetFirmware();c.update(120000,30000,true);c.record(20,120000);
- for(uint32_t t=122000;t<=172000;t+=2000){c.update(t,30000-(t-120000)/100,true);assert(c.pulse(t)==0);}
+ for(uint32_t t=122000;t<=138000;t+=2000){c.update(t,30000-(t-120000)/100,true);assert(c.pulse(t)==0);}
+ for(uint32_t t=140000;t<=172000;t+=2000){c.update(t,30000-(t-120000)/100,true);assert(c.pulse(t)<=16);}
  c.update(174000,30000,true);c.update(176000,31000,true);
  c.update(178000,32000,true);c.update(180000,32001,true);c.update(182000,32002,true);
  assert(c.trained&&!c.observing&&c.responseMs==62000);assert(c.pulse(182000)>0);
  c.lossPpmPerSec=10;c.lastPpm=49000;c.referenceMs=20;c.referenceRise=500;
  for(auto &step:c.steps)step={0,0};c.stepCount=0;
  assert(c.pulse(182000)==50); //Raw65ms, envelope50ms; no unbounded loss compensation.
+ // Real two-hour stall: bounded complement, then explicit fault rather than silent waiting.
+ resetFirmware();c.update(119853,15986,true);recordAutomatic(20,121909);
+ const Reading noResponseReplay[]={ NO_RESPONSE_ROWS };
+ int complements=0;uint32_t secondAt=0;
+ for(const auto &row:noResponseReplay){
+   c.update(row.at,row.ppm,row.valid);serviceResponseFault(row.at);
+   auto retry=firmwarePulse(row.at);
+   if(retry){assert(!complements&&retry==33);recordAutomatic(retry,row.at);secondAt=row.at;complements++;}
+ }
+ assert(complements==1&&c.lastMs==53&&c.stepCount==0);
+ assert(!botao_co2_onoff&&responseFaultEvents==1);
+ assert(c.noResponse(secondAt+180000)&&!c.ready(secondAt+180000));
+ c.update(secondAt+182000,17000,true);assert(c.noResponse(secondAt+182000));
+ c.reset(true);assert(c.noResponse(secondAt+182000)); //Off/on retains the gas account.
+ c.reset();c.update(120000,6400,true);c.record(20,120000);
+ c.update(138000,6390,true);c.update(140100,6380,true);
+ auto retry=c.pulse(142200);assert(retry==45);c.record(retry,142200);
+ assert(c.lastMs==65&&c.combined);
+ for(uint32_t t=144200;t<=320200;t+=2000){c.update(t,6380,true);assert(c.pulse(t)==0);}
+ assert(c.noResponse(322200));
+ // First plateau must not discharge the gas account of a later complement.
+ c.reset();c.update(120000,2000,true);c.record(20,120000);
+ c.update(138000,1990,true);c.update(140100,1980,true);
+ assert(c.pulse(142200)==51);c.record(51,142200);
+ c.update(190000,10000,true);c.update(192000,13000,true);
+ c.update(194000,13001,true);c.update(196000,13002,true);
+ assert(!c.trained&&c.observing&&c.settleAt==218200);
+ c.update(212000,25000,true);c.update(214000,40000,true);c.update(216000,42000,true);
+ c.update(218000,42001,true);c.update(220000,42002,true);
+ assert(c.trained&&!c.observing&&c.referenceMs==71&&c.referenceRise>40000);
+ assert(c.pulse(220000)<=21); //All71ms, not just the last51ms, form the denominator.
+ c.flat=2;c.update(222000,0,false);assert(!c.previousValid&&c.flat==0);
  std::mt19937 rng(20261106);
  for(int history=0;history<20000;history++){
   resetFirmware();uint32_t t=UINT32_MAX-50000;
@@ -117,9 +151,11 @@ int main(){
  }
 }
 '''
-code=code.replace('REPLAY_ROWS',replay_rows)
+no_response=json.loads((Path(__file__).parent/'fixtures/co2_no_response_20ms.json').read_text())
+no_response_rows=',\n'.join('{%d,%d,%d}'%(t,p,int(v)) for t,p,v in no_response['rows'])
+code=code.replace('REPLAY_ROWS',replay_rows).replace('NO_RESPONSE_ROWS',no_response_rows)
 with tempfile.TemporaryDirectory(prefix='co2-test-') as folder:
     cpp=Path(folder)/'test.cpp';exe=Path(folder)/'test';cpp.write_text(code)
     subprocess.run(['g++','-std=c++11','-O2',str(cpp),'-o',str(exe)],check=True)
     subprocess.run([str(exe)],check=True)
-print('CO2: rolling1..5 stairs, unresolved real228ms replay blocked, independent safety bound, learned response time, proportional dose, plateau, rollover and20000 histories passed')
+print('CO2: rolling1..5 stairs, real20ms stall retried within budget, timeout auto-off, real228ms replay blocked, independent safety bound, learned response time, proportional dose, plateau, rollover and20000 histories passed')

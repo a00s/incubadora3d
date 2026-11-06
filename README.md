@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.224 bytes de Flash (99%) e
-1.164 bytes de RAM global (56%), deixando 32 bytes de Flash e 884 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.206 bytes de Flash (99%) e
+1.175 bytes de RAM global (57%), deixando 50 bytes de Flash e 873 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,75 +403,58 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-O controle busca 50.000 ppm, com faixa de referência de 49.000–51.000 ppm.
-A revisão simples de 2026-11-06 retirou a projeção de gás pendente do cálculo.
-Duas variações negativas consecutivas dentro de 20 s indicam queda.
-Duas amostras quase estáveis também liberam pelo platô em qualquer leitura válida,
-sem exigir primeiro cair nem estar acima de49.000ppm; o corte superior é separado. Entre
-aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
-O cálculo proporcional usa até cinco escadas úteis: `soma dos ms × ppm necessários /
-soma das subidas`. Usa imediatamente uma referência, depois duas, até cinco; a sexta
-substitui a mais antiga. Após reset, o histórico fica vazio e a primeira sonda parte de20ms, sujeita à margem de segurança. Aberturas ficam entre 5 e 1.000 ms, sem incremento percentual fixo na
-proporção aprendida, com limite independente pela margem até59.000ppm. Uma dose sem resposta útil permanece pendente: não é substituída por outra sonda.
+O controle busca 50.000 ppm, com faixa de referência49.000–51.000ppm.
+Duas quedas consecutivas dentro de20s ou um platô em qualquer leitura válida
+permitem calcular a próxima abertura. O intervalo mínimo entre aberturas continua20s
+após fechar a válvula; enquanto há subida relevante, não injeta.
 
-O resultado observado é a maior subida a partir do vale depois da dose, mesmo
-quando o pico continua abaixo da leitura no instante do comando. A perda medida
-durante essa subida é somada para não confundir gás entregue com variação líquida.
-A perda histórica usa quedas válidas perto da meta, sem porta aberta, e não uma
-pressão fixa de cilindro. A necessidade inclui a perda durante o tempo medido entre
-comando e pico da última escada (mínimo20s), em vez de usar sempre20s. No platô, duas amostras quase estáveis
-(até 2 ppm/s) permitem repor a perda de 20 s antes de uma queda grande. O erro para
-50.000 ppm também participa dessa dose; acima de 51.000 ppm o automático fecha.
+A dose usa a média ponderada das últimas1–5 escadas úteis:
+`ceil(somaMs × (déficit + perda durante resposta medida) / somaPpm)`.
+Usa as referências disponíveis imediatamente, sem esperar cinco. Reset físico limpa
+esse histórico e parte de uma sonda20ms, sujeita aos limites. Mede a subida desde
+o vale real e acrescenta a perda medida durante a subida; ruído menor que200ppm
+não vira nova referência de ganho. Doses ficam entre5–1000ms e têm um limite
+independente pela margem até59.000ppm. Esse teto usa hipóteses de ganho alto,
+mudança4× de vazão e até8ms de tempo morto; não é calibração física do cilindro.
 
-A revisão atual não acrescenta um temporizador fixo de observação, mas impede
-sobrescrever uma dose pendente. Mesmo após20s, a queda antes de o gás chegar não
-libera outra dose: precisa detectar a subida útil e seu término. Uma resposta ausente
-interrompe a sequência automática; é uma limitação deliberada contra acúmulo invisível.
-Desligar/religar o controle ou perder a leitura não apaga uma dose pendente na RAM.
-Enquanto o CO₂ sobe, não injeta. O reset físico ainda perde essa RAM.
-O limite de abertura usa `margem até59000 / ganho superior`. O ganho superior
-considera cada uma das cinco escadas, uma mudança de vazão de até4× e até8ms
-de tempo morto de abertura; piso200ppm/ms, ou800ppm/ms enquanto não há referência
-ou quando a dose de referência é≤8ms. Esses números definem o envelope ensaiado,
-não são medições físicas do regulador e não garantem pressão arbitrária.
-A referência exige subida líquida de pelo menos200ppm; no platô, a reposição
-da perda histórica evita precisar esperar uma queda grande. Não há projeção de gás
-pendente nem integral. O usuário pediu observar essa lógica simples pelos gráficos.
+A correção de2026-11-06 evita esperar indefinidamente pela primeira sonda:
+se ela não produzir resposta útil, após20s pode enviar um complemento limitado
+pela margem restante, descontando **todos os ms já enviados e ainda pendentes**.
+Exemplo do replay real:20ms a15.986ppm permite mais33ms, total53ms;
+a6.400ppm,20ms permite mais45ms, total65ms. São resultados da conta,
+não uma tabela de doses fixas. Não aumenta a abertura repetidamente sem limite.
+O complemento entra no mesmo resultado medido; o denominador usa o total dos ms.
+O primeiro platô pode corresponder só à primeira dose: nesse caso conserva a
+conta até o platô observado mais o espaçamento real entre os comandos. Não há
+um novo temporizador fixo de observação de60/120s. A dose posterior a uma escada
+complementada também conserva um teto de ganho alto até obter resposta isolada.
 
-O sensor ainda tem aquecimento inicial de 120 s. Porta aberta, automático
-desligado, leitura inválida, sobretemperatura e travas EEPROM continuam impedindo
-injeção. A atualização não envia ON/OFF/ACK. Reabilitar CO₂ após troca de cilindro
-reinicia a referência de vazão quando não há dose pendente; uma troca sem aviso só é percebida na resposta do
-gás. Alterações arbitrárias de pressão, atrasos e falhas mecânicas não são garantidas
-pelo software. O Uno não possui Wi-Fi nem Bluetooth integrados.
+Se uma resposta continuar pendente por180s desde a última abertura, fecha o
+automático, emite `EVENT,co2_no_response,auto_off` e mostra **CO2 SEM RESP** no
+visor e alerta no gráfico. Uma oscilação posterior ou desligar/religar o controle
+não apaga essa falha nem o gás contabilizado. É necessário verificar gás, válvula,
+sensor e condição real da câmara antes de reiniciar um ensaio; o reset físico
+perde a conta em RAM. Sem resposta física, o código não pode comprovar a passagem de gás.
 
-No CSV atual, `basis_ms`, `basis_rise_ppm` e `basis_steps` mostram a base usada
-no cálculo e aparecem no tooltip da dose. Substituem os campos antigos
-`max_rate_ppm_s`, `uptake_ppm` e `wait_cycles`, mantendo as posições. A coluna legada
-`co2_proj_ppm` vale `-1`, explicitando que a revisão simples não usa previsão.
-O painel não desenha esse valor como uma linha de CO₂. Capturas antigas ainda
-podem mostrar a estimativa histórica, que não deve ser confundida com previsão
-validada. Os testes usam o header e as condições de admissão reais do sketch.
-`python3 scripts/simulate_co2_control.py --explore --report /tmp/co2.json` conserva
-as falhas dos cenários de estresse. A revisão de resposta pendente foi exercitada em6.054
-simulações de quatro horas e20.000 histórias numéricas; nem todos os cenários
-mantêm a faixa ou evitam excesso, portanto isso não certifica estabilidade física.
-O relatório atual é `docs/ensaios/co2_resposta_pendente_2026-11-06.json`.
-Nenhum dos6.054 cenários atingiu60.000ppm; ainda existem picos acima51.000ppm e
-cenários que não recuperam a meta. Isso não certifica segurança física ou estabilidade.
-O replay da falha228ms agora bloqueia a nova dose porque a resposta anterior não terminou.
-O automático permanece desligado após envio. No comando STATUS foram retirados
-`humidity_pct` (sempreNaN, sem sensor de umidade) e `pump_wait_cycles` (contador
-legado que não decide doses), para caber no Uno. O CSV mantém suas posições.
-Relatórios antigos são conservados em `docs/ensaios/`; a revisão simples está em
-`co2_plato_proporcao_direta_2026-11-06.json`; a revisão sem pausa anterior está
-em `co2_sem_pausa_2026-11-06.json`, e a versão com pausa foi arquivada em
-`co2_controle_simples_2026-11-06.json`.
+Mantidos aquecimento inicial do sensor120s, pausa de porta, cortes por temperatura,
+leitura inválida, limite superior51.000ppm e travas EEPROM de concentração/protocolo.
+O envio preserva a habilitação salva e não envia ON/OFF/ACK: se estava ligado,
+o automático volta a operar após o aquecimento inicial. O Uno não tem Wi-Fi nem Bluetooth.
+No CSV, `basis_ms`, `basis_rise_ppm` e `basis_steps` mostram a base efetivamente usada
+no tooltip da dose; as posições não mudam. `co2_proj_ppm=-1` indica ausência de
+previsão. O comando STATUS responde `STATUS,see_DATA`: o estado completo já
+é transmitido a cada ciclo nas linhas DATA. Retirado o contador legado de espera,
+que não participava das decisões, para caber no Uno.
 
-A proporção direta solicitada ainda apresentou excessos graves nos modelos com
-atraso, inclusive acima60.000ppm. Esses resultados estão preservados no relatório;
-a versão está em teste acompanhado pelos gráficos, sem certificação de estabilidade
-ou segurança universal. A trava não retira gás já liberado.
+O relatório atual é `docs/ensaios/co2_recuperacao_sem_espera_infinita_2026-11-06.json`:
+6.072cenários de4h,3sementes e20.000histórias numéricas. Nenhum cenário ensaiado
+atingiu60.000ppm; ainda há picos acima51.000ppm, falhas de recuperação e desligamentos
+por ausência de resposta. Os cenários com sonda inicial ineficaz por tempo morto22ms,
+partindo de16mil ou6.400ppm, atingiram a faixa em menos20min no modelo, sem falha.
+Isso não comprova recuperação física nesse prazo nem estabilidade de5%.
+`python3 scripts/simulate_co2_control.py --explore --require-no-excess --report /tmp/co2.json`
+preserva os resultados completos e reprova qualquer pico≥60mil nos cenários.
+Relatórios anteriores e as limitações permanecem em `docs/ensaios/`.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o

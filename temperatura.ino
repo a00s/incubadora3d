@@ -124,7 +124,6 @@ DHT dhtint(DHT_TEMPERATURA_INT_PIN, DHTTYPE);
 #define TEMPERATURE_GOOD_MAX (HEATER_SETPOINT_C + 0.1)
 #define TEMPERATURE_DISPLAY_NEAR_MIN (HEATER_SETPOINT_C - 0.5)
 #define TEMPERATURE_DISPLAY_NEAR_MAX (HEATER_SETPOINT_C + 0.5)
-#define POMP_WAITING_TIME 30 // Cerca de 1 minuto com o ciclo atual de 2 s para o MH-Z perceber o pulso
 #define MAX_INTERNAL_TEMP 31 // Liga fan acima de 31 C; desliga abaixo de 30 C
 
 #define VENTILADOR_PIN 3
@@ -136,7 +135,6 @@ Ucglib_ST7735_18x128x160_HWSPI ucg(/*cd=*/ 9, /*cs=*/ 10, /*reset=*/ 8);
 bool botao_co2_onoff = false;
 bool botao_aquecedor_onoff = false;
 int32_t last_co2i = 0;
-uint8_t contador_pomp;
 int32_t CO2i = 0;
 int32_t lastCo2RawPpm = 0;
 uint16_t lastCo2PulseMs = 0;
@@ -330,7 +328,6 @@ void setup()
     
     ucg.begin(UCG_FONT_MODE_TRANSPARENT);
     ucg.setRotate180();
-    contador_pomp = POMP_WAITING_TIME;
 //    if (MCUSR & (1 << WDRF)) {
 //      Serial.println("Watchdog reset detected.");
 //      EEPROM.put(ERROR_LOG_ADDRESS, "Watchdog reset detected."); // Optionally log to EEPROM
@@ -510,6 +507,10 @@ void loop()
       co2RateHistoryNext = 0;
       co2RatePpmMinReady = false;
     }
+    if (botao_co2_onoff && co2DoseModel.noResponse(currentTime)) {
+      setCo2Enabled(false);
+      Serial.println(F("EVENT,co2_no_response,auto_off"));
+    }
     // A new dose is permitted after 20 s, only once the measured rise has stopped.
     bool responseWaitComplete = co2ResponseWaitComplete(currentTime);
     // Two consecutive valid declines below target; no projected-gas estimate.
@@ -583,7 +584,6 @@ void loop()
       co2AnimationUntil = millis() + 3000UL;
       co2LastPulseAt = millis();
 
-      contador_pomp = POMP_WAITING_TIME;
     } else {
       digitalWrite(CO2PUMP, HIGH);
     }
@@ -602,7 +602,6 @@ void loop()
     Serial.print(co2DoseModel.referenceMs); Serial.print(','); Serial.print(co2Delta); Serial.print(',');
     Serial.print(co2DoseModel.referenceRise); Serial.print(','); Serial.print(co2DoseModel.stepCount); Serial.print(','); Serial.print(doseResponseReady ? 1 : 0); Serial.print(','); Serial.print(heaterPidDemandMs); Serial.print(','); printFixed(heaterTempRateCPerMin, 2); Serial.print(','); Serial.print(co2RangeWrapLatched ? 1 : 0); Serial.print(','); Serial.println((int32_t)co2DoseModel.projection(currentTime));
 
-    if (contador_pomp > 0) contador_pomp--;
     serviceInputsForTwoSeconds();
     // delay(60000);
 }
@@ -741,6 +740,7 @@ void drawHealthIndicator() {
   if (displaySafetyAlert == 1) ucg.print(F("SENSOR FAIL"));
   else if (displaySafetyAlert == 2) ucg.print(F("TEMP TOO HOT"));
   else if (displaySafetyAlert == 3) ucg.print(F("TEMP LOST"));
+  else if (displaySafetyAlert == 4) ucg.print(F("CO2 SEM RESP"));
   else ucg.print(co2RangeWrapLatched ? F("CO2 BLOQUEADO") :
                  (co2DoorMode >= 3 ? F("RECUPERANDO") : F("CO2 ppm")));
   if (!displaySafetyAlert) {
@@ -905,7 +905,8 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
   uint8_t conditionsAtTarget = (co2AtTarget ? 1 : 0) + (temperatureAtTarget ? 1 : 0);
   int8_t healthState = conditionsAtTarget == 0 ? DISPLAY_FAULT :
                        (conditionsAtTarget == 1 ? DISPLAY_WAIT : DISPLAY_READY);
-  uint8_t safetyAlert = safetyFault ? safetyFault : (isnan(temperature) ? 3 : 0);
+  uint8_t safetyAlert = safetyFault ? safetyFault : (isnan(temperature) ? 3 :
+    (co2DoseModel.noResponse(millis()) ? 4 : 0));
   int8_t rangeLockState = co2RangeWrapLatched ? 1 : 0;
   bool lockChanged = rangeLockState != displayCo2RangeLock;
   if (healthState != displayHealthState || lockChanged || safetyAlert != displaySafetyAlert) {
@@ -1026,21 +1027,7 @@ void renderDisplay(float temperature, float internalTemperature, bool co2Valid) 
 }
 
 void printStatus(unsigned long now) {
-  Serial.print(F("STATUS,ms=")); Serial.print(now);
-  Serial.print(F(",co2_ppm=")); Serial.print(CO2i);
-  Serial.print(F(",co2_valid=")); Serial.print(CO2i > 0 && CO2i <= CO2_SENSOR_PROTOCOL_MAX_PPM && !co2RangeWrapLatched ? 1 : 0);
-  Serial.print(F(",co2_range_lock=")); Serial.print(co2RangeWrapLatched ? 1 : 0);
-  Serial.print(F(",boot_count=")); Serial.print(eeprom_contador_int);
-  Serial.print(F(",temp_c=")); printFixed(chamberTemperatureC, 2);
-  Serial.print(F(",internal_temp_c=")); printFixed(dhtint.readTemperature(), 1);
-  Serial.print(F(",co2_enabled=")); Serial.print(botao_co2_onoff);
-  Serial.print(F(",heater_enabled=")); Serial.print(botao_aquecedor_onoff);
-  Serial.print(F(",fan_on=")); Serial.print(ventilador_status);
-  Serial.print(F(",valve_open=")); Serial.print(digitalRead(CO2PUMP) == LOW ? 1 : 0);
-  Serial.print(F(",heater_on=")); Serial.print(digitalRead(HEATER) == LOW ? 1 : 0);
-  Serial.print(F(",loss_x10=")); Serial.print(lossCm3HourX10);
-  Serial.print(F(",loss_ok=")); Serial.print(displayLossStable == 1 ? 1 : 0);
-  Serial.println();
+  Serial.println(F("STATUS,see_DATA")); // Complete state is streamed in every DATA row.
 }
 
 bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) {
@@ -1073,7 +1060,6 @@ bool manualCo2Pulse(const char *source, uint16_t pulseMs = MANUAL_CO2_PULSE_MS) 
   delay(pulseMs);
   digitalWrite(CO2PUMP, HIGH);
   co2AnimationUntil = millis() + 3000UL;
-  contador_pomp = POMP_WAITING_TIME;
   Serial.print(F("EVENT,co2_manual_pulse,")); Serial.print(source); Serial.print(','); Serial.print(pulseMs);
   Serial.println(F("ms"));
   return true;
