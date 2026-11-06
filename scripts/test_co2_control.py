@@ -52,12 +52,15 @@ int main() {
   Co2DoseModel dose;
   assert(dose.pulse(48000,1000)==80);
   dose.learn(160,2000);
-  assert(dose.pulse(4000,1000)==160); // Last duration * half deficit / last rise.
-  assert(dose.pulse(1000,1000)==40);
+  assert(dose.pulse(2000,1000)==160); // Last duration * full deficit / last rise.
+  assert(dose.pulse(1000,1000)==80);
   assert(dose.pulse(100000,1000)==176); // Controlled upward change, no fixed increment.
-  dose.learn(100,1000);assert(dose.pulse(1000,1000)==50);
-  dose.learn(100,500);assert(dose.pulse(1000,1000)==100); // Falling pressure.
-  dose.learn(100,2000);assert(dose.pulse(1000,1000)==25); // Higher cylinder flow.
+  dose.learn(100,1000);assert(dose.pulse(1000,1000)==100);
+  dose.learn(100,500);assert(dose.pulse(1000,1000)==110); // Falling pressure.
+  dose.learn(100,2000);assert(dose.pulse(1000,1000)==50); // Higher cylinder flow.
+  // Nov6 telemetry: avoid cutting a productive 13ms dose to 5/6ms when 2137ppm short.
+  dose.learn(13,2645);assert(dose.pulse(2137,1000)==11);
+  dose.learn(11,1771);assert(dose.pulse(2490,1000)==13); // Still respects 10% growth before rounding.
   dose.learn(100,0);assert(dose.pulse(48000,1000)==110); // No response: no divide by zero or reset.
   assert(!dose.fresh && !dose.trained);
   dose.learn(110,0);assert(dose.pulse(48000,1000)==121);

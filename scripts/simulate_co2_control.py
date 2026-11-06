@@ -12,6 +12,7 @@ parser.add_argument("--seed",type=int,default=20261105)
 parser.add_argument("--source",type=Path)
 parser.add_argument("--header",type=Path)
 parser.add_argument("--cold-grid",action="store_true")
+parser.add_argument("--maintenance-grid",action="store_true",help="Hypothetical higher-loss and short-pulse conditions motivated by Nov6 telemetry; not a chamber fit.")
 parser.add_argument("--explore",action="store_true")
 parser.add_argument("--transport-max-s",type=int,default=300,help="Hypothetical transport bound, not a measured sensor delay.")
 parser.add_argument("--require-safe-grid",action="store_true")
@@ -192,15 +193,20 @@ int main(){
  run("observed_nonlinear_door",60,60,0.05,4,false,true,false,15,2,false,0,45000,1);
  run("observed_nonlinear_swap",60,120,0.05,4,false,true,true,15,2,false,0,2000,1);
  run("observed_contact_repair",60,60,0.5,4,false,false,false,15,2,false,0,2000,2);
+ run("maintenance_low_loss",120,120,10,4,false,false,false,10,0,false,0,48000);
+ run("maintenance_mid_loss",250,250,25,8,false,false,false,8,0,false,0,48000);
+ run("maintenance_high_loss",400,400,40,8,false,false,false,10,0,false,0,48000);
+ run("maintenance_depleting",250,150,25,6,true,false,false,10,0,false,0,48000);
+ run("maintenance_valve_threshold",250,250,25,8,false,false,false,8,0,false,5,48000);
  std::mt19937 rng(SIM_SEED);
  auto unit=[&](){return double(rng())/rng.max();};
  for(int i=0;i<2000;i++) {
-   int mode=i%5; double g0=0.5+unit()*149.5;
-   double g1=mode==0?g0:(mode==1?g0*(0.05+0.9*unit()):0.5+149.5*unit());
-   double loss=0.01+unit()*2.99;int lag=int(unit()*(TRANSPORT_MAX_S/2+1))*2;
-   double mixing=10+unit()*110;double noise=i%3==0?unit()*80:0;
+   int mode=i%5; double g0=(MAINTENANCE_GRID?100.0:0.5)+unit()*(MAINTENANCE_GRID?400.0:149.5);
+   double g1=mode==0?g0:(mode==1?g0*(0.05+0.9*unit()):(MAINTENANCE_GRID?100.0:0.5)+(MAINTENANCE_GRID?400.0:149.5)*unit());
+   double loss=(MAINTENANCE_GRID?5.0:0.01)+unit()*(MAINTENANCE_GRID?45.0:2.99);int lag=int(unit()*(TRANSPORT_MAX_S/2+1))*2;
+   double mixing=(MAINTENANCE_GRID?2.0:10.0)+unit()*(MAINTENANCE_GRID?18.0:110.0);double noise=i%3==0?unit()*80:0;
    char name[80];snprintf(name,sizeof(name),"grid_%d_mode_%d",i,mode);
-   run(name,g0,g1,loss,lag,mode==1,mode==2,mode==2||mode==3,mixing,noise,i%4==0,i%6==0?unit()*80:0,GRID_INITIAL_PPM,i%2);
+   run(name,g0,g1,loss,lag,mode==1,mode==2,mode==2||mode==3,mixing,noise,i%4==0,i%6==0?unit()*(MAINTENANCE_GRID?8:80):0,GRID_INITIAL_PPM,MAINTENANCE_GRID?0:i%2);
  }
 }
 '''
@@ -223,6 +229,7 @@ if curve_model:
     header=args.header or (Path(__file__).resolve().parents[1]/'firmware/incubadora/co2_dosing.h')
     harness='#include '+json.dumps(str(header))+'\nCo2DoseModel co2DoseModel;\n'+harness
 harness=harness.replace('TWO_CHAMBERS',str(args.two_chambers).lower()).replace('MIXER_FRACTION',repr(args.mixer_fraction)).replace('SENSOR_IN_MIXER',str(args.sensor_node=='mixer').lower())
+harness=harness.replace('MAINTENANCE_GRID',str(args.maintenance_grid).lower())
 harness=harness.replace('GRID_INITIAL_PPM', '2000' if args.cold_grid else '45000')
 # Keep compiled harness configuration tied to the real firmware macros.
 for macro in ('CO2_TARGET_PPM','CO2_CONTROL_MIN_PPM','CO2_TOLERANCE_PPM',
@@ -263,11 +270,12 @@ summary={
     'firmware_sha256':hashlib.sha256(source.encode()).hexdigest(),
     'dosing_header_sha256':hashlib.sha256(header.read_bytes()).hexdigest() if curve_model else None,
     'simulator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-    'chamber_model':{'two_chambers':args.two_chambers,'mixer_volume_fraction_assumed':args.mixer_fraction if args.two_chambers else None,'sensor_node':args.sensor_node if args.two_chambers else 'single chamber','calibrated':False,'notes':'Transport, dispersion and chamber exchange are separate assumptions. Gas balance and tank limiting cases checked. Firmware timing still includes its legacy cycle counter.'},
+    'chamber_model':{'two_chambers':args.two_chambers,'mixer_volume_fraction_assumed':args.mixer_fraction if args.two_chambers else None,'sensor_node':args.sensor_node if args.two_chambers else 'single chamber','calibrated':False,'notes':'Transport, dispersion and chamber exchange are separate assumptions. Gas balance and tank limiting cases checked; dose gates extracted from current source. Maintenance grid is exploratory, not a fitted chamber.'},
     'grid_initial_ppm':2000 if args.cold_grid else 45000,
+    'maintenance_grid':args.maintenance_grid,
     'seed':args.seed,'scenario_count':len(rows),'simulated_hours':len(rows)*8,
     'model':'Real C++ dose selection, response timing and model header. Hypothetical chamber: transport lag + exponential mixing + constant loss; linear/dead-time and nonlinear valve plants. Nonlinear plant includes measured 207/320ms responses not used as dose presets. 30s door pause; sensor failure; valve contact outage then restoration. This is not a physical validation.',
-    'parameter_ranges':{'gain_ppm_ms':[0.5,150],'loss_ppm_s':[0.01,3],'transport_delay_s':[0,args.transport_max_s],'mixing_time_constant_s':[10,120],'noise_ppm':[0,80],'valve_dead_time_ms':[0,80]},
+    'parameter_ranges':{'gain_ppm_ms':[100,500] if args.maintenance_grid else [0.5,150],'loss_ppm_s':[5,50] if args.maintenance_grid else [0.01,3],'transport_delay_s':[0,args.transport_max_s],'mixing_time_constant_s':[2,20] if args.maintenance_grid else [10,120],'noise_ppm':[0,80],'valve_dead_time_ms':[0,8] if args.maintenance_grid else [0,80]},
     'grid_modes':{'0':'constant flow','1':'gradual depletion','2':'door + notified cylinder swap','3':'notified swap','4':'unannounced swap'},
     'grid_results':{},'named_scenarios':[r for r in rows if not r['scenario'].startswith('grid_')],
     'worst_notified_peaks':sorted([r for r in grid if not r['scenario'].endswith('mode_4')],key=lambda r:r['peak_ppm'],reverse=True)[:8],

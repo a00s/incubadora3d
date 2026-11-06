@@ -1,3 +1,41 @@
+## Ajuste de manutenção e vazão variável — gravado em 2026-11-06
+
+- Relato: mais contínuo/melhor, mas cai47–48milppm. Usuário pediu ajuste de abertura
+  e depois autorizou conduzir revisão/gravação sozinho enquanto dorme, considerando
+  a variação da pressão com o enchimento do cilindro.
+- Evidência: última hora do log antigo teve1.725amostras, mínimo44.363, mediana46.803,
+  máximo50.360ppm. Doses produtivas de11/13ms eram cortadas para5–9ms e só depois
+  voltavam a crescer, permitindo queda. São respostas líquidas; não diagnosticar
+  vazamento físico exclusivamente com a queda do sensor (mistura também contribui).
+- Mudança no firmware é uma linha no header: último tempo × déficit INTEIRO / última
+  subida, em vez de metade do déficit. Aumento limitado10% antes do arredondamento,
+  redução imediata, aprendizado pela última dose. Preservados20s, espera por subida,
+  porta, warmup120s, limites/caps de dose, aquecimento e travas persistentes.
+- Pressão: continua usando a resposta nova de cada dose, sem valor de manômetro nem
+  ajuste para uma pressão fixa. Ganho menor pede tempo maior, ganho maior reduz
+  imediatamente. Caps iniciais/sem resposta e teto1000ms ainda limitam a adaptação;
+  não prometer funcionamento com vazão arbitrária ou cilindro sem gás.
+- Cinco testes passaram, incluindo20.000histórias e exemplos13ms/2645ppm/deficit2137
+  (6ms antigos→11ms novos), ganhos decrescentes/crescentes e gates/porta/rollover.
+  Build31.432bytes/1.117RAM. Upload --verify terminou com saída0.
+- Coleta somente observação sessão55176, SEM timeout:
+  /tmp/incubadora-telemetria/co2-ajuste-manutencao-20261106.log. Abrir serial reiniciou
+  o Uno: BOOT_COUNT11; co2_enabled1,heater_enabled1,range_lock0; primeira leitura
+ 43.876ppm e temperatura36,61–36,80°C durante retomada térmica/warmup. Descartar
+  linhas duplicadas anteriores ao BOOT_COUNT11. Sem ON/OFF/ACK enviados.
+- Observação USB inicial após warmup: doses62 e69ms em sequência, depois aguardou
+  a subida sem novas injeções; leitura40.428→47.136ppm de pico parcial. Atribuição
+  individual não é calibração isolada. Ainda não comprova manutenção em5%.
+- 12.156cenários modelados8h: comparação antes/depois em duas sementes, grade
+  anterior de partida e duas câmaras com maior queda/vazão (hipotéticas). No caso
+  de válvula com abertura mínima, mínimo da última hora48.092→49.348ppm e máximo
+ 49.781→50.032; pico transitório50.889 sem mudança. Grade constante dentro da faixa
+  na última hora170/400→216/400; semente separada157/400→200/400. Outros estresses
+  continuam falhando (excesso ou nível baixo); não declarar tudo aprovado.
+- Evidência, comandos, resultados e hashes de ino/header/hex em
+  docs/ensaios/co2_manutencao_2026-11-06.json. Regulação física prolongada pendente.
+  Sem alterações CAD; visualizador existente atualizado em/tmp e8081 conferido.
+
 ## Última dose como referência — gravado em 2026-11-05
 
 - Decisão explícita do usuário: simplificar, aprender pela última dose, repor quando

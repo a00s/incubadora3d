@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.444 bytes de Flash (97%) e
-1.117 bytes de RAM global (54%), deixando 812 bytes de Flash e 931 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.432 bytes de Flash (97%) e
+1.117 bytes de RAM global (54%), deixando 824 bytes de Flash e 931 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -408,7 +408,9 @@ O automático repõe abaixo de 49.500 ppm, buscando 50.000 ppm. O modelo
 subida líquida medida desde essa dose. Não soma doses nem aprende uma curva.
 
 Com subida mensurável de pelo menos 50 ppm, calcula:
-`tempo = tempo anterior × (metade do déficit / subida anterior)`.
+`tempo = tempo anterior × (déficit inteiro / subida anterior)`.
+Desde 2026-11-06 repõe o déficit inteiro: usar só metade reduzia demais a abertura
+na manutenção e favorecia quedas para 47.000–48.000 ppm entre respostas.
 A redução é imediata; o aumento é limitado a 10% por dose para conter extrapolações
 quando a vazão muda. Sem subida mensurável, calcula um aumento de 10%, sem divisão
 por zero nem reiniciar a aprendizagem. A primeira referência é 80 ms, duração que
@@ -441,7 +443,10 @@ Para duas câmaras acrescente `--two-chambers`. Os volumes, perdas e atrasos sã
 hipóteses, não uma calibração da montagem. Os ensaios conservam excessos e casos
 que não recuperam; não declarar todos aprovados. `--require-safe-grid` é uma
 asserção opcional mais exigente que pode falhar. Resultados e hashes da revisão
-em `docs/ensaios/co2_recuperacao_2026-11-05.json`.
+em `docs/ensaios/co2_recuperacao_2026-11-05.json`. A comparação da manutenção
+com queda/vazão variáveis está em `docs/ensaios/co2_manutencao_2026-11-06.json`.
+Para reproduzir essa grade hipotética, acrescente `--maintenance-grid` e use
+`--transport-max-s 20 --explore`; ela não é uma calibração de vazamento físico.
 
 A porta usa um toque longo no botão vermelho de temperatura: segure sozinho por
 2 segundos. Na primeira vez, marca PORTA ABERTA, para aquecimento e CO₂ e mostra o

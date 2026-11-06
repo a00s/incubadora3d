@@ -21,7 +21,7 @@ struct Co2DoseModel {
     if (deficit <= 0) return 0;
     float calculated = referenceMs;
     if (!fresh) {
-      calculated = trained ? referenceMs * (deficit * 0.5f / referenceRise)
+      calculated = trained ? referenceMs * ((float)deficit / referenceRise)
                            : referenceMs * 1.1f;
       // Limit upward extrapolation; a new cylinder can change the flow.
       float growthLimit = referenceMs * 1.1f;
