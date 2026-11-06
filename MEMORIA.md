@@ -1,3 +1,16 @@
+## Validação aguardando reconexão — auditoria concluída
+
+A ausência deUSB e de novos dados foi conferida em três turnos consecutivos após
+a retirada do cabo. Sem coleta, não há evidência para concluir a melhora real da
+76562872. A mudança foi testada, gravada/verificada e enviada aoGit; falta somente
+a avaliação física correspondente, que ainda pode exigir ajuste se reprovar.
+Registrar objetivo blocked por falta da conexão, sem declarar sucesso e sem
+alterar Arduino, EEPROM, logger ou painel. Não fazer novos uploads durante a
+mudança de sala. Retomar com dados atuais após reconexão, não inferir o intervalo
+semUSB, nem executar o teste isolado pendente sem resposta explícita do usuário.
+Esta auditoria é do impedimentoUSB atual, independente do antigo bloqueio por
+calibração. Repositório estava limpo e último log permanece em39252ms apósboot.
+
 ## USB retirado após último envio — 2026-11-06 22:29
 
 Desconexão confirmada por/dev/ttyACM*ausente e log sem novos dados. Último DATA
