@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.618 bytes de Flash (97%) e
-1.125 bytes de RAM global (54%), deixando 638 bytes de Flash e 923 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-05 usa 31.730 bytes de Flash (97%) e
+1.125 bytes de RAM global (54%), deixando 526 bytes de Flash e 923 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -417,9 +417,11 @@ por zero nem reiniciar a aprendizagem. A primeira referência é 80 ms, duraçã
 já produziu subida no conjunto instalado; as respostas novas a substituem.
 O piso só pode ser aprendido após observar uma dose com resposta útil neste
 ciclo; o atraso inicial de enchimento não pode se tornar piso de abertura.
-Depois disso, o piso é aprendido quando uma duração menor que outra já útil não produz subida
-líquida mensurável. Ele evita voltar a pulsos ineficazes de 5–8 ms após uma dose
-produtiva. Uma resposta com duração igual ou menor invalida um piso antigo; o
+Depois disso, só uma redução para menos da metade da menor duração já útil pode
+aprender um piso pela ausência de subida líquida mensurável. Uma redução moderada
+sem efeito imediato não pode virar um tempo morto grande. Ele evita voltar a pulsos ineficazes de 5–8 ms após uma dose
+produtiva. Uma resposta com duração igual ou menor invalida um piso antigo; um pico acima
+de 51.000 ppm também o descarta para permitir reduzir com uma vazão maior; o
 ganho continua sendo atualizado pela última dose, acompanhando vazão variável.
 Não é uma calibração isolada de atraso mecânico: mistura e queda influenciam a
 resposta líquida. Não há soma de doses.

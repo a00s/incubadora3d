@@ -46,6 +46,7 @@ harness=r'''
 #define DELAY_MAXIMO 1000
 #define CO2_TARGET_PPM 50000L
 #define CO2_CONTROL_MIN_PPM 49000L
+#define CO2_CONTROL_MAX_PPM 51000L
 #define CO2_TOLERANCE_PPM 1000L
 #define CO2_MAX_RISING_RATE_PPM_PER_MIN 50L
 #define CO2_RESPONSE_LAG_MIN_MS 90000UL
@@ -54,6 +55,7 @@ harness=r'''
 #define CO2_DOSE_OBSERVATION_MS 300000UL
 struct Silent { template<class T> void print(T){} } Serial;
 float co2Rate=0;
+int32_t co2_before_pump=0;
 int32_t CO2i,co2RatePpmMin,lastCo2PulseMs,max_co2_increase,co2ProjectedPpm;
 int32_t co2GainEstimatePpmPerMsX100;
 const int32_t CO2_MIN_GAIN_ESTIMATE_X100=50;
@@ -101,7 +103,7 @@ void checkTankPhysics() {
 void run(const char* name,double gain0,double gain1,double loss,int lag,bool depletion,bool door,bool swap=false,double mixing=30,double noise=0,bool dropout=false,double valve_dead_ms=0,double initial_ppm=45000,int shape=0) {
  MODEL_RESET
  co2NoisePpm=10;co2DoseSettled=false;
- CO2i=initial_ppm;co2RatePpmMin=0;lastCo2PulseMs=0;max_co2_increase=0;
+ CO2i=co2_before_pump=initial_ppm;co2RatePpmMin=0;lastCo2PulseMs=0;max_co2_increase=0;
  co2GainEstimatePpmPerMsX100=1200;co2DoorMode=0;co2ResponseLagSeconds=120;
  co2RatePpmMinReady=false;co2GainValidatedThisBoot=false;co2LastResponseWeak=false;co2DoseResponsePending=false;
  co2LastPulseAt=co2MaxRiseAt=co2RecentRiseAt=0;co2RateHistoryCount=co2RateHistoryNext=0;co2StableSince=0;co2TrendReady=false;
@@ -144,7 +146,7 @@ void run(const char* name,double gain0,double gain1,double loss,int lag,bool dep
      MODEL_LEARN
    }
    if(t>=120 && !doorOpen && !rangeLocked && CO2i<49500 && ready(now,valid,now-co2LastPulseAt>=60000?0:30,stable && now-stable>=30000)) {
-     int pulse=choose(now);lastCo2PulseMs=pulse;baseline=CO2i;max_co2_increase=0;
+     int pulse=choose(now);lastCo2PulseMs=pulse;baseline=co2_before_pump=CO2i;max_co2_increase=0;
      co2DoseResponsePending=true;co2DoseSettled=false;co2LastPulseAt=co2MaxRiseAt=now;stable=co2StableSince=0;co2TrendReady=false;
      if(co2DoorMode==4)co2DoorMode=3;
      double gain=depletion?gain0+(gain1-gain0)*t/28800.0:(t<14400?gain0:gain1);
@@ -231,12 +233,14 @@ harness=harness.replace('MODEL_RESET', 'co2DoseModel.reset();co2ResponseWaitSeco
 harness=harness.replace('INVALID_MODEL', ('co2DoseModel.reset();' if 'co2DoseModel.reset();' in source[source.index('    } else {\n      co2Rate = 0;'):source.index('    bool responseWaitComplete =')] else 'co2DoseModel.fresh=true;co2ResponseWaitSeconds=600;') if curve_model else '')
 if curve_model:
     header=args.header or (Path(__file__).resolve().parents[1]/'firmware/incubadora/co2_dosing.h')
+    if 'bool overshot' not in header.read_text():
+        harness=harness.replace(',\n          co2_before_pump + measuredRise > CO2_CONTROL_MAX_PPM', '')
     harness='#include '+json.dumps(str(header))+'\nCo2DoseModel co2DoseModel;\n'+harness
 harness=harness.replace('TWO_CHAMBERS',str(args.two_chambers).lower()).replace('MIXER_FRACTION',repr(args.mixer_fraction)).replace('SENSOR_IN_MIXER',str(args.sensor_node=='mixer').lower())
 harness=harness.replace('MAINTENANCE_GRID',str(args.maintenance_grid).lower())
 harness=harness.replace('GRID_INITIAL_PPM', '2000' if args.cold_grid else '45000')
 # Keep compiled harness configuration tied to the real firmware macros.
-for macro in ('CO2_TARGET_PPM','CO2_CONTROL_MIN_PPM','CO2_TOLERANCE_PPM',
+for macro in ('CO2_TARGET_PPM','CO2_CONTROL_MIN_PPM','CO2_CONTROL_MAX_PPM','CO2_TOLERANCE_PPM',
               'CO2_STABLE_TIME_MS','CO2_MAX_RISING_RATE_PPM_PER_MIN','CO2_RESPONSE_LAG_MIN_MS',
               'CO2_RESPONSE_LAG_MAX_MS','CO2_DOSE_OBSERVATION_MS'):
     definition=re.search(r'^#define '+macro+r' (.+)$',source,re.M).group(1)

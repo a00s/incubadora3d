@@ -12,12 +12,13 @@ struct Co2DoseModel {
 
   void reset() { *this = Co2DoseModel(); }
 
-  void learn(uint16_t pulseMs, uint16_t risePpm) {
+  void learn(uint16_t pulseMs, uint16_t risePpm, bool overshot = false) {
+    if (overshot) zeroMs = 0; // A changed flow must be allowed to reduce below a stale floor.
     if (risePpm >= 50) {
       // A shorter successful opening disproves a stale zero-response interval.
       if (pulseMs <= zeroMs) zeroMs = 0;
       if (usefulCeilingMs == 0 || pulseMs < usefulCeilingMs) usefulCeilingMs = pulseMs;
-    } else if (usefulCeilingMs != 0 && pulseMs < usefulCeilingMs && pulseMs > zeroMs) {
+    } else if (usefulCeilingMs != 0 && pulseMs * 2UL < usefulCeilingMs && pulseMs > zeroMs) {
       // Do not interpret loss of flow at a proven useful duration as dead time.
       zeroMs = pulseMs;
     }

@@ -645,7 +645,8 @@ void loop()
       if (co2DoseResponsePending && lastCo2PulseMs > 0) {
         int32_t measuredRise = max_co2_increase;
         if (measuredRise > 65535L) measuredRise = 65535L;
-        co2DoseModel.learn(lastCo2PulseMs, measuredRise >= 50 ? measuredRise : 0);
+        co2DoseModel.learn(lastCo2PulseMs, measuredRise >= 50 ? measuredRise : 0,
+          co2_before_pump + measuredRise > CO2_CONTROL_MAX_PPM);
         co2DoseResponsePending = false;
       }
       if (lastCo2PulseMs == 0 || co2DoorMode == 4) {

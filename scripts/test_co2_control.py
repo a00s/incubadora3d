@@ -67,10 +67,14 @@ int main() {
   dose.learn(13,2645);assert(dose.pulse(2137,1000)==11);
   dose.learn(11,1771);assert(dose.pulse(2490,1000)==13); // Still respects 10% growth before rounding.
   // Actual short pulses that produced no net rise must not keep being selected.
+  dose.reset();dose.learn(63,8000);dose.learn(54,0);
+  assert(dose.zeroMs==0); // A modest reduction with delayed response is not a54ms opening threshold.
   dose.learn(8,0);dose.learn(13,2645);
   assert(dose.zeroMs==8 && dose.pulse(500,1000)==9);
   assert(dose.pulse(2137,1000)==13); // Retains opening overhead; scales only useful time.
-  dose.learn(7,2000);assert(dose.zeroMs==0); // A higher-flow/earlier-opening valve invalidates stale offset.
+  dose.learn(13,5000,true);assert(dose.zeroMs==0); // Excess disproves a useful-floor estimate after a flow change.
+  dose.learn(63,8000);dose.learn(5,0);
+  dose.learn(5,2000);assert(dose.zeroMs==0); // A higher-flow/earlier-opening valve invalidates stale offset.
   dose.reset();
   dose.learn(100,0);assert(dose.pulse(48000,1000)==110); // No response: no divide by zero or reset.
   assert(!dose.fresh && !dose.trained);
