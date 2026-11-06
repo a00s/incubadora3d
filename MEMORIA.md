@@ -1,3 +1,16 @@
+## Auditoria de impedimento — 2026-11-06 21:04CET
+
+Aguardando autorização explícita para o teste isolado já preparado. O pedido de
+continuação automática não responde à pergunta pendente. Nenhuma alternativa
+ensaiada demonstrou estabilidade suficiente; não realizar novos uploads com
+falhas conhecidas nem executar a pausa contrariando a instrução do usuário.
+Estado conferido: versão f9f1554b, CO₂ e aquecimento habilitados, sem trava;
+leitura49.021ppm. Logger e painel ativos, repositório limpo antes deste registro.
+Não enviar ON/OFF/ACK/PRIME nem alterar EEPROM. O observador somente de leitura
+41013 pode continuar até seu prazo; não confundir seu término com o Arduino ou
+com a coleta USB contínua. Retomar o próximo passo dependente somente após a
+resposta sobre a exceção de quatro minutos.
+
 ## PENDENTE: autorização para medição isolada — 2026-11-06 21:02CET
 
 - Produção permanece f9f1554b (header e0937ed6), CO₂1/heater1/lock0, log usb-20261106T194130-654727Z.log. Nenhum upload/ON/OFF/ACK/PRIME adicional nesta preparação. Fonte e HEX normais não foram trocados pelo build separado.
@@ -5,7 +18,7 @@
 - Contagem de ganho atual substituiu referência inicial120/6529 por pequenas subidas líquidas em reposição contínua (ex.59ms/411ppm). Atribuição e perdas simultâneas continuam ambíguas. Tentativa offline de excluir sobreposição descartou também a primeira referência útil ao reproduzir o log; NÃO enviada, fonte temporária só em .arduino-build/co2_distinguishable_candidate.h. Relatório de simulação apenas /tmp/co2_distinguishable.json; não confundir com instalado.
 - Preparado teste isolado explícito em docs/teste_isolado_co2.md e scripts/prepare_co2_isolated_capture.py. Script NÃO envia nada: cópia separada troca somente warmup120→240s e default serialmanual5→20ms, mantendo botões/mínimo automático/EEPROM/aquecimento. Captura:120s sem nova dose, único20ms se válido/abaixo49mil/semtrava, mais120s; automático pode retomar aos240s; restaurar versão normal antes de encerrar. Não repetir PRIME se ACK ausente.
 - Compilação da captura passou32222Flash/1195RAM. Fonte/HEX/manifeste em .arduino-build/isolated_capture_{sketch,binary}, manifest isolated_capture_prepared.json; cópia versionada docs/ensaios/co2_captura_isolada_preparada_2026-11-06.json. NÃO ENVIADO. Se aprovado, journal precisa hashes da captura, não identidade da fonte normal; preparação documenta isso. Não usar upload normal cegamente para HEXtemporário.
-- Pergunta assíncrona já enviada solicitando exceção à instrução explícita do usuário “nada de pausa de observação”; opções autorizar teste4min ou manterautomático. AGUARDAR RESPOSTA; silêncio não autoriza pausa, uploadcaptura ou PRIME. Não pedir de novo sem necessidade. Objetivo continuaativo, não concluído; bloqueio de autorização surgiu agora, sem três turnos repetidos ainda.
+- Pergunta assíncrona já enviada solicitando exceção à instrução explícita do usuário “nada de pausa de observação”; opções autorizar teste4min ou manterautomático. AGUARDAR RESPOSTA; silêncio não autoriza pausa, uploadcaptura ou PRIME. Não pedir de novo sem necessidade. A autorização permaneceu ausente em três turnos consecutivos do objetivo, incluindo o turno em que foi solicitada. Auditoria de bloqueio satisfeita: o próximo teste necessário contraria a proibição explícita de pausa e não pode ser executado por silêncio ou pela continuação automática. Objetivo não concluído; registrar blocked até resposta do usuário. Não repetir perguntas nem enviar comandos enquanto aguarda.
 - Observador SOMENTE LEITURA vivo em sessão exec41013, deadline30min desde~20:42:38 (até~21:12:38), imprime JSON30s e escreve /tmp/co2-live-validation.json. Critério:10min contínuos49000–51000/controlesON/lock0. Não é atuador, não reiniciar só por timeout de poll. Revalidar sessão se continuar. Logger e painel são unidades user separadas. Observador pode encerrar2 se não cumprir critério; isso não para Arduino/logger.
 
 ## ATUAL — duração da resposta sem os intervalos entre doses; gravado às20:41 de2026-11-06
