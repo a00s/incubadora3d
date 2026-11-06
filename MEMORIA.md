@@ -1,3 +1,10 @@
+## ATUAL: teto100ms por pulso — 2026-11-06 19:28CET
+
+- Usuário definiu que pulso não deve ultrapassar100ms e pediu gravar/Git/testar. Aplicado MAX_PULSE_MS=100 tanto ao resultado proporcional treinado quanto à calibração; mantémmin5ms e aumento máximo20ms.20→40→60→80→100, sem ultrapassar100nas próximas tentativas. Pulsos manuais já estavamlimitados20ms. Não acrescentamos alerta, desligamento ou outro comportamento se a conta pedir>100: só limita abertura.
+- ENVIADO/VERIFICADO b24c687a40e87be37b879841beb57fb96d8874ffe31ce2252f1d9728c4825c7a, saída0.32.002Flash/1.179RAM,254Flash/869RAM livres. Hashes completos conferidos. temperatura.ino idêntico à revisão de persistência: não alteramosEEPROM, retomadaCO₂/aquecimento, delta15000 diagnóstico outravasabsolutas. NenhumON/OFF/ACK enviado.
+- Testes fonteinstalada:seqlinearaté100 e repetição100,conta enormeclamp100,80→100eapós100permanece100,reduçãopodeir5;4configEEPROM/cicloslógicos/porta;grandesvariaçõessembloqueio.2024cenários afirmam emCADA pulso<=100e aumento<=20. Painel13testes passou. Relatório docs/ensaios/co2_maximo100ms_2026-11-06.json preserva falhas:nominal62237,4ppm,1118/2000stress comtrava60000. Não afirmar5%validado: teto100élimiteexplicitamentepedido, não certificação da regulação.
+- Auditoria docs/regras_controle_arduino.md atualizada5–100ms (original1–60, anteriormáximo1000 removido). Logger/painel ativos,uploadmarcadonográfico; viewer8081/cópiaservida conferidos. SemCAD/3MF alterados.
+
 ## ATUAL: persistência EEPROM restaurada; removida trava±15000 — 2026-11-06 19:10CET
 
 - DECISÃO EXPLÍCITA DO USUÁRIO: CO₂ e aquecimento devem retomar a última configuração ligada/desligada salva, inclusive após falta de energia, como antes. Não introduzir regras operacionais novas ou exceções de boot escondidas. Solicitou também remover bloqueio por salto15000, pois variação pode ser real. Outras regras foram somente auditadas, NÃO alteradas.

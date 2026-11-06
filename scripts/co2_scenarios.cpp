@@ -35,7 +35,7 @@ Result run(double g0,double g1,double lambda,int delay,double mixing,double init
    future[(t+delay)/2+1]+=gain*effective;
    recordAutomatic(pulse,now);doses++;
    if(previousDose)shortest=std::min(shortest,(int)((now-previousDose)/1000));
-   previousDose=now;assert(pulse>=5&&pulse<=1000);
+   previousDose=now;assert(pulse>=5&&pulse<=100);
   }
   peak=std::max(peak,ppm);
   if(ppm>=49000&&ppm<=51000&&first<0)first=t;

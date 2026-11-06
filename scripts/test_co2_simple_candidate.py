@@ -23,7 +23,7 @@ int main() {
   c.lastPpm=45000; c.flat=2; assert(c.pulse(120000)==40);
   c.lastProbeMs=80;c.referenceMs=80;c.referenceRise=2000;c.lastPpm=41570;
   assert(c.pulse(120000)==100); //Raw338ms cannot jump from80ms to338ms.
-  c.record(100,120000);c.falling=2;assert(c.pulse(140100)==120);
+  c.record(100,120000);c.falling=2;assert(c.pulse(140100)==100);
   c.lastPpm=49900;assert(c.pulse(140100)==5); //Only increases are limited.
   resetFirmware(); uint32_t t=120000; int32_t ppm=10000;
   for(int n=1;n<=6;n++) {
@@ -41,7 +41,7 @@ int main() {
     c.update(at,5700-(at-120000)/10000,true);
     if(c.ready(at)) {
       auto ms=c.pulse(at); assert(ms==expected); c.record(ms,at);
-      expected=expected>=980?1000:expected+20;commands++;
+      expected=expected>=80?100:expected+20;commands++;
     }
   }
   assert(c.lastMs>66 && !c.trained && commands>10);
@@ -57,7 +57,7 @@ int main() {
   // Missing gain never divides by zero; a valid large ratio cannot overflow32bits.
   c.previousValid=true; c.falling=2; c.observing=false;
   c.trained=true; c.referenceMs=400000; c.referenceRise=1000;
-  c.lastProbeMs=1000;c.lastPpm=1000; assert(c.pulse(900000)==1000);
+  c.lastProbeMs=1000;c.lastPpm=1000; assert(c.pulse(900000)==100);
   c.reset(); assert(c.stepCount==0 && !c.trained);
   c.update(120000,39600,true);c.record(20,120000);c.record(40,142000);
   c.record(60,164000);c.record(80,186000);

@@ -3,6 +3,7 @@
 
 // Measured1..5-stair proportion; falling/flat below target permits the next dose.
 struct Co2DoseModel {
+  enum { MAX_PULSE_MS = 100 };
   uint32_t referenceMs = 20;
   uint32_t referenceRise = 0;
   struct Step { uint32_t ms; uint16_t rise; } steps[5] = {};
@@ -85,13 +86,13 @@ struct Co2DoseModel {
       // Average gain = sum(useful ppm) / sum(opening ms), using only the
       // available1..5 stairs. No five-sample wait and no percentage growth cap.
       uint64_t calculated = ((uint64_t)referenceMs * needed + referenceRise - 1) / referenceRise;
-      duration = calculated > 1000 ? 1000 : calculated;
+      duration = calculated > MAX_PULSE_MS ? MAX_PULSE_MS : calculated;
     } else {
       duration = lastProbeMs + 20UL; // User-requested calibration:20,40,60,80,... until measured gain.
     }
     uint32_t nextMaximum = lastProbeMs ? (uint32_t)lastProbeMs + 20 : 20;
     if (duration > nextMaximum) duration = nextMaximum;
-    if (duration > 1000) duration = 1000;
+    if (duration > MAX_PULSE_MS) duration = MAX_PULSE_MS;
     if (duration < 5) duration = 5;
     return duration;
   }

@@ -264,8 +264,8 @@ sg dialout -c 'scripts/arduino.sh monitor'
 ```
 
 O upload compila primeiro e verifica o firmware gravado. Feche qualquer outro monitor
-serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.004 bytes de Flash (99%) e
-1.179 bytes de RAM global (57%), deixando 252 bytes de Flash e 869 bytes de RAM para
+serial antes de compilar/gravar. A revisão de 2026-11-06 usa 32.002 bytes de Flash (99%) e
+1.179 bytes de RAM global (57%), deixando 254 bytes de Flash e 869 bytes de RAM para
 pilha e chamadas.
 
 A tela numérica fixa mostra CO₂ em destaque, temperatura e temperatura interna
@@ -403,7 +403,7 @@ não é salvo em EEPROM. A alteração foi motivada por pico tardio
 de 37,51 °C no Arduino após o teste de porta de 2026-10-27, com a saída
 já desligada. Verificação física do novo controle em andamento; passar
 momentaneamente por 37,0 °C não comprova estabilidade prolongada.
-**Versão instalada `cf89948b`,2026-11-06 às19:10CET:** restaura da EEPROM os
+**Versão instalada `b24c687a`,2026-11-06 às19:28CET:** restaura da EEPROM os
 últimos estados ligado/desligado de CO₂ e aquecimento, sem forçarOFF ou escrever
 outra configuração no boot. Saltos±15.000ppm são somente registrados no log;
 não desligam nem gravam trava. O corte absoluto60.000ppm continua ativo.
@@ -423,7 +423,7 @@ necessidade. Os relatórios anteriores conservam as falhas com atraso.
 
 O modelo em fonte deriva de `firmware/experimentos/co2_proporcional_simples.h`:
 começa em20ms e soma20ms:40/60/80/100... até existir resposta útil; o teto mecânico
-permanece1000ms. Depois usa a proporção média das1–5 escadas disponíveis:
+é100ms, por decisão explícita do usuário. Nenhum pulso calculado pode ultrapassá-lo. Depois usa a proporção média das1–5 escadas disponíveis:
 `ceil(somaMs × (déficit + perda durante resposta medida) / somaPpm)`.
 Duas quedas dentro20s ou platô abaixo da meta permitem dose; subida relevante
 faz esperar estabilização. Intervalo mínimo20s após fechar a válvula.
