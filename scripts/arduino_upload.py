@@ -17,7 +17,7 @@ UNIT='incubadora-co2-logger.service'
 
 def identity():
     result={}
-    for name in ('temperatura.ino','firmware/incubadora/co2_dosing.h','.arduino-build/incubadora.ino.hex'):
+    for name in ('temperatura.ino','firmware/incubadora/co2_dosing.h','firmware/experimentos/co2_proporcional_simples.h','.arduino-build/incubadora.ino.hex'):
         path=ROOT/name
         if path.exists():result[name]=hashlib.sha256(path.read_bytes()).hexdigest()
     return result

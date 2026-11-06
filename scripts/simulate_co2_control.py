@@ -23,7 +23,7 @@ grid=[r for r in rows if r['scenario'].startswith('grid_')]
 report={
  'seed':a.seed,'dead_time_max_ms':a.dead_max_ms,'scenario_count':len(rows),'simulated_hours':len(rows)*4,
  'hashes':{str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in
-           [ROOT/'temperatura.ino',(a.model.resolve() if a.model else ROOT/'firmware/incubadora/co2_dosing.h'),Path(__file__),ROOT/'scripts/co2_scenarios.cpp',ROOT/'scripts/co2_firmware_harness.py']},
+           [ROOT/'temperatura.ino',ROOT/'firmware/experimentos/co2_proporcional_simples.h',(a.model.resolve() if a.model else ROOT/'firmware/incubadora/co2_dosing.h'),Path(__file__),ROOT/'scripts/co2_scenarios.cpp',ROOT/'scripts/co2_firmware_harness.py']},
  'plant':{'fitted_to':'Boot9 four-hour trace; last chronological quarter held out',
           'gain_ppm_per_ms':70.6179,'leak_fraction_per_s':.0004,'delay_s':54,'mixing_tau_s':4,
           'holdout_rmse_ppm':838.0,'physical_calibration':False,

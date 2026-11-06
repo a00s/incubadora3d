@@ -183,9 +183,9 @@ int main() {
   co2DoorMode=0;botao_co2_onoff=false;co2DoseModel.observing=false;co2DoseModel.trained=true;co2DoseModel.referenceMs=240;
   assert(setCo2Enabled(true));
   assert(!co2DoseModel.trained && co2DoseModel.referenceMs==20 && lastCo2PulseMs==0);
-  // Off/on cannot erase an outstanding physical dose to bypass the admission gate.
+  // Explicit off/on resets calibration in the requested experimental controller.
   co2DoseModel.record(20,millis());setCo2Enabled(false);setCo2Enabled(true);
-  assert(co2DoseModel.observing);
+  assert(!co2DoseModel.observing&&!co2DoseModel.trained);
 
 }
 '''

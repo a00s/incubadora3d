@@ -1,17 +1,16 @@
+#define CO2_EXPERIMENTAL_START_DISABLED 1
 #pragma once
 #include <stdint.h>
 
-// Rolling gain from up to five useful stairs; bounded retries retain the gas account.
+// Measured1..5-stair proportion; falling/flat below target permits the next dose.
 struct Co2DoseModel {
-  uint16_t referenceMs = 20;
+  uint32_t referenceMs = 20;
   uint32_t referenceRise = 0;
-  struct Step { uint16_t ms, rise; } steps[5] = {};
+  struct Step { uint32_t ms; uint16_t rise; } steps[5] = {};
   uint8_t stepCount = 0, stepHead = 0;
   uint32_t responseMs = 20000;
-  uint16_t lastMs = 0;
-  int32_t batchPpm = 0;
-  uint32_t batchAt = 0, settleAt = 0;
-  bool combined = false;
+  uint32_t lastMs = 0;
+  uint16_t lastProbeMs = 0;
   int32_t lastPpm = 0, valley = 0, peak = 0, mass = 0;
   uint32_t sendAt = 0, lastAt = 0, valleyAt = 0, peakAt = 0, firstFallAt = 0;
   float lossPpmPerSec = 0;
@@ -20,8 +19,6 @@ struct Co2DoseModel {
   bool previousValid = false, hasSent = false, trained = false, observing = false;
 
   __attribute__((noinline,noclone)) void reset(bool preserve = false) {
-    // A reset request must not erase gas already commanded and still arriving.
-    if (preserve && observing) { combined = true; previousValid = false; falling = flat = 0; return; }
     uint32_t oldAt = sendAt;
     bool sent = hasSent;
     float loss = lossPpmPerSec;
@@ -52,12 +49,6 @@ struct Co2DoseModel {
       if (ppm > peak) { peak = ppm; peakAt = now; }
       mass = peak - valley;
       if ((falling >= 2 || flat >= 2) && mass >= 200 && now - sendAt >= 20000UL) {
-        // If two commands form one response, the first plateau may precede
-        // the second arrival. Keep their measured spacing in the gas account.
-        if (combined && !settleAt) settleAt = now + (sendAt - batchAt);
-        if (combined && (int32_t)(now - settleAt) < 0) {
-          lastPpm = ppm; lastAt = now; previousValid = true; return;
-        }
         int32_t delivered = mass + lossPpmPerSec * ((peakAt - valleyAt) / 1000.0f);
         // Only useful rises enter the history. In particular, the recorded
         // 69ppm fluctuation must not replace a response of several thousand ppm.
@@ -83,7 +74,7 @@ struct Co2DoseModel {
 
   bool ready(uint32_t now) const {
     bool plateau = flat >= 2 && lastPpm > 0;
-    return previousValid && (!observing || mass < 200) && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
+    return previousValid && (falling >= 2 || plateau) && (!hasSent || now - sendAt >= 20000UL);
   }
 
   __attribute__((noinline,noclone)) uint16_t pulse(uint32_t now) const {
@@ -94,43 +85,21 @@ struct Co2DoseModel {
     if (trained && referenceRise) {
       // Average gain = sum(useful ppm) / sum(opening ms), using only the
       // available1..5 stairs. No five-sample wait and no percentage growth cap.
-      duration = ((uint32_t)referenceMs * needed + referenceRise - 1) / referenceRise;
+      uint64_t calculated = ((uint64_t)referenceMs * needed + referenceRise - 1) / referenceRise;
+      duration = calculated > 1000 ? 1000 : calculated;
     } else {
-      duration = 20; // The only seed; unresolved probes are never stacked.
+      duration = lastProbeMs ? (uint32_t)lastProbeMs * 2 : 20; // User-requested calibration:20,40,80,... until measured gain.
     }
-    // Bound one unresolved dose against the tested high-flow envelope. This
-    // is an independent safety bound, never a learned estimate of valve gain.
-    uint32_t upperGain = 800;
-    if (trained) {
-      upperGain = 200;
-      for (uint8_t i = 0; i < stepCount; i++) {
-        uint32_t bound = steps[i].ms <= 8 ? 800 :
-          (4UL * steps[i].rise + steps[i].ms - 9) / (steps[i].ms - 8);
-        if (bound > upperGain) upperGain = bound;
-      }
-    }
-    if ((observing || combined) && upperGain < 800) upperGain = 800;
-    int32_t budgetPpm = observing && batchPpm > lastPpm ? batchPpm : lastPpm;
-    uint32_t headroomMs = (59000L - budgetPpm) / upperGain;
-    if (observing) {
-      if (headroomMs <= lastMs) return 0;
-      headroomMs -= lastMs;
-      duration = headroomMs; // Remaining gas budget, never an unbounded retry.
-    }
-    if (headroomMs < 5) return 0;
-    if (duration > headroomMs) duration = headroomMs;
     if (duration > 1000) duration = 1000;
     if (duration < 5) duration = 5;
     return duration;
   }
 
   __attribute__((noinline,noclone)) void record(uint16_t ms, uint32_t now) {
-    if (observing) { lastMs += ms; combined = true; }
+    lastProbeMs = ms;
+    if (observing) lastMs += ms;
     else {
-      combined = false;
       lastMs = ms;
-      batchPpm = lastPpm;
-      batchAt = now; settleAt = 0;
       valley = peak = lastPpm; valleyAt = peakAt = now;
       mass = 0;
     }

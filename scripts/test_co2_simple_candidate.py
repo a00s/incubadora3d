@@ -5,10 +5,15 @@ import subprocess
 import tempfile
 from co2_firmware_harness import ROOT, harness
 
-model = ROOT / 'firmware/experimentos/co2_proporcional_simples.h'
+model = Path(globals().get('MODEL_PATH', ROOT / 'firmware/experimentos/co2_proporcional_simples.h'))
 code = harness(model) + r'''
 int main() {
   resetFirmware(); auto &c = co2DoseModel;
+  c.update(100000,48050,true);c.update(110000,48025,true);c.update(120000,48000,true);CO2i=48000;
+  assert(firmwarePulse(119999)==0);assert(firmwarePulse(120000)==20);
+  assert(firmwarePulse(120000,false)==0);assert(firmwarePulse(120000,true,false)==0);
+  assert(firmwarePulse(120000,true,true,1)==0);assert(firmwarePulse(120000,true,true,0,true)==0);
+  resetFirmware();
   c.previousValid=true; c.lastPpm=49000; c.falling=2;
   c.trained=true; c.referenceMs=20; c.referenceRise=500;
   assert(c.pulse(120000)==40); //20ms gave500ppm;1000ppm missing.

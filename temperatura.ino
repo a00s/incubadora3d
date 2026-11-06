@@ -287,6 +287,11 @@ void setup()
         botao_co2_onoff = botao_aquecedor_onoff = 0;
       }
     }
+#ifdef CO2_EXPERIMENTAL_START_DISABLED
+    botao_co2_onoff = 0;
+    doorResumeControls &= ~1;
+    saveControlState();
+#endif
     // A persisted range fault always overrides a saved CO2 enable request.
     if (co2RangeWrapLatched) botao_co2_onoff = 0;
     EEPROM.get(EEPROM_CONTADOR, eeprom_contador_int);
