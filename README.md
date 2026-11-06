@@ -410,8 +410,8 @@ Duas amostras quase estáveis também liberam pelo platô em qualquer leitura v�
 sem exigir primeiro cair nem estar acima de49.000ppm; o corte superior é separado. Entre
 aberturas permanece a pausa mínima de 20 s após o fechamento da válvula.
 O cálculo proporcional usa a última dose útil: `ms anteriores × ppm necessários /
-resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, com aumento limitado ao
-10% acima da referência para conter extrapolações após mudança de vazão.
+resultado anterior`. Aberturas ficam entre 5 e 1.000 ms, sem teto percentual de crescimento na
+proporção aprendida. Antes da primeira resposta útil, a sonda ainda é gradual.
 
 O resultado observado é a maior subida a partir do vale depois da dose, mesmo
 quando o pico continua abaixo da leitura no instante do comando. A perda medida
