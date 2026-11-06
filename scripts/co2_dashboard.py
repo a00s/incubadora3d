@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / 'web/co2'
-COLS = ['t','ppm','temp','last_ms','next_ms','rate','co2_on','heat_on','locked','projected','uptime_ms']
+COLS = ['t','ppm','temp','last_ms','next_ms','rate','co2_on','heat_on','locked','projected','uptime_ms','raw_ppm','display_ppm','wrap_estimated']
 FALLBACK = 'DATA,ms,co2_ppm,co2_valid,temp_c,rh_pct,t_int_c,co2_enabled,heater_enabled,heater_on,fan_on,valve_open,next_pulse_ms,last_pulse_ms,rate_ppm_s,rate_ppm_min_valid,rate_ppm_min,max_rate_ppm_s,delta_ppm,dose_rise_ppm,wait_cycles,trend_ready,heater_pid_demand_ms,heat_rate_c_min,co2_range_lock,co2_proj_ppm'.split(',')
 
 
@@ -80,9 +80,12 @@ def parse_log(text: str, name: str, start_epoch: float):
     previous_point=None
     offset=start_epoch
     host_time=None
+    previous_raw=None
+    wrap_offset=0
+    door_open=False
 
     def new_session(counter, inferred=False):
-        nonlocal current,ordinal,boot,previous_ms,previous_point,offset,pending
+        nonlocal current,ordinal,boot,previous_ms,previous_point,offset,pending,previous_raw,wrap_offset,door_open
         if current and current['points']:
             offset=current['points'][-1][0]
         ordinal+=1
@@ -94,6 +97,7 @@ def parse_log(text: str, name: str, start_epoch: float):
         if counter is not None or inferred:
             pending.append({'kind':'warmup','label':'Aquecimento inicial do sensor · 120 s','raw':'firmware warmup','duration_ms':120000,'estimated':False})
         previous_ms=previous_point=None
+        previous_raw=None;wrap_offset=0;door_open=False
 
     for line in lines:
         try:
@@ -118,6 +122,9 @@ def parse_log(text: str, name: str, start_epoch: float):
             continue
         if row[0] in ('EVENT','EVT','ACK'):
             kind,label,duration=describe_event(row)
+            if row[:2]==['EVENT','door']:
+                door_open=len(row)>2 and row[2]=='open'
+                if door_open:previous_raw=None;wrap_offset=0
             pending.append({'kind':kind,'label':label,'raw':','.join(row),'duration_ms':duration,'estimated':False,'received_at':received})
             continue
         if row[0]!='DATA' or len(row)!=26: continue
@@ -138,12 +145,24 @@ def parse_log(text: str, name: str, start_epoch: float):
             else:
                 continue
         if previous_ms is not None and ms==previous_ms: continue
-        ppm=number(values.get('co2_ppm'))
+        raw_ppm=number(values.get('co2_ppm'))
+        if raw_ppm is None or not 0<=raw_ppm<=65535:raw_ppm=None
+        ppm=raw_ppm
         if values.get('co2_valid')!='1' or ppm is None or not 0<ppm<=65535: ppm=None
         def v(key,default=None):
             parsed=number(values.get(key))
             return default if parsed is None else parsed
         point=[round(received if received is not None else offset+ms/1000,3),ppm,v('temp_c'),v('last_pulse_ms'),v('next_pulse_ms'),v('rate_ppm_s'),v('co2_enabled',0),v('heater_enabled',0),v('co2_range_lock',0),(v('co2_proj_ppm') if v('co2_proj_ppm') is not None and v('co2_proj_ppm')>=0 else None),int(ms)]
+        display_ppm=ppm
+        if raw_ppm is not None and (ppm is not None or point[8]):
+            if previous_raw is not None and previous_ms is not None and ms-previous_ms<=10000 and not door_open:
+                if point[8] and previous_raw-raw_ppm>32768:wrap_offset+=65536
+                elif wrap_offset>=65536 and raw_ppm-previous_raw>32768:wrap_offset-=65536
+            display_ppm=raw_ppm+wrap_offset
+            previous_raw=raw_ppm
+        else:
+            previous_raw=None
+        point.extend([raw_ppm,display_ppm,bool(wrap_offset and display_ppm is not None)])
         if received is not None:
             current['estimated_time']=False
             if not current['points']:

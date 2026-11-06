@@ -88,7 +88,7 @@ struct Co2DoseModel {
       uint64_t calculated = ((uint64_t)referenceMs * needed + referenceRise - 1) / referenceRise;
       duration = calculated > 1000 ? 1000 : calculated;
     } else {
-      duration = lastProbeMs ? (uint32_t)lastProbeMs * 2 : 20; // User-requested calibration:20,40,80,... until measured gain.
+      duration = lastProbeMs + 20UL; // User-requested calibration:20,40,60,80,... until measured gain.
     }
     if (duration > 1000) duration = 1000;
     if (duration < 5) duration = 5;

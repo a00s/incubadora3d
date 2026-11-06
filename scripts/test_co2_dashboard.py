@@ -61,6 +61,25 @@ class Chronology(unittest.TestCase):
         self.assertEqual([e['duration_ms'] for e in doors],[8400,8400])
         self.assertAlmostEqual(doors[0]['t'],1700000003.1)
 
+    def test_locked_raw_and_counter_wrap_are_preserved_separately(self):
+        def locked(ms,raw):
+            row=data(ms,raw,0).strip().split(',');row[24]='1'
+            return ','.join(row)+'\n'
+        text='BOOT_COUNT,1\n'+HEADER+data(1000,59000)+locked(3000,65470)+locked(5000,785)+locked(7000,1581)+locked(9000,65000)
+        points=parse_log(text,'wrap',1000)[0]['points']
+        self.assertEqual([p[12] for p in points],[59000,65470,66321,67117,65000])
+        self.assertEqual([p[11] for p in points],[59000,65470,785,1581,65000])
+        self.assertIsNone(points[2][1])
+        self.assertEqual(points[2][8],1)
+        self.assertTrue(points[2][13])
+        self.assertFalse(points[-1][13])
+        # A capture starting low and locked cannot reveal how many wraps happened.
+        unknown=parse_log('BOOT_COUNT,2\n'+HEADER+locked(1000,785),'unknown',1000)[0]['points'][0]
+        self.assertEqual(unknown[12],785);self.assertFalse(unknown[13])
+        # A recorded door opening is not evidence of counter rollover.
+        door=parse_log('BOOT_COUNT,3\n'+HEADER+locked(1000,65000)+'EVENT,door,open\n'+locked(3000,500),'door-wrap',1000)[0]['points'][-1]
+        self.assertEqual(door[12],500);self.assertFalse(door[13])
+
     def test_legacy_no_response_is_history_not_a_current_alert(self):
         text=capture(count=1)+'EVENT,co2_no_response,auto_off\n'+data(3000,6400)
         event=next(e for e in parse_log(text,'fault',1000)[0]['events'] if e['raw'].startswith('EVENT,co2_no_response'))
